@@ -3,9 +3,11 @@ from typing import Optional
 
 from homeassistant.components.switch import SwitchDevice
 
-from . import EWeLinkDevice
+from . import DOMAIN, EWeLinkDevice
 
 _LOGGER = logging.getLogger(__name__)
+
+ATTRS = ('humidity', 'temperature')
 
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
@@ -14,7 +16,12 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         return
 
     # TODO: переписать грамотнее
-    device: EWeLinkDevice = discovery_info['device']
+    deviceid = discovery_info['deviceid']
+    device = hass.data[DOMAIN].get(deviceid)
+    if not isinstance(device, EWeLinkDevice):
+        _LOGGER.warning(f"Can't setup {deviceid}")
+        return
+
     data = discovery_info['data']
     if 'switch' in data:
         add_entities([SonoffSwitch(device, 0, data)])
@@ -29,6 +36,7 @@ class SonoffSwitch(SwitchDevice):
                  initdata: dict = None):
         self.device = device
         self.channel = channel
+        self._attrs = {}
         self._state = None
 
         if initdata:
@@ -37,6 +45,10 @@ class SonoffSwitch(SwitchDevice):
         device.listen(self._update)
 
     def _update(self, data: dict, schedule_update: bool = True):
+        for k in ATTRS:
+            if k in data:
+                self._attrs[k] = data[k]
+
         self._state = data['switches'][self.channel - 1]['switch'] \
             if self.channel else data['switch']
 
@@ -61,6 +73,10 @@ class SonoffSwitch(SwitchDevice):
     def state(self):
         """Return the state of the switch."""
         return self._state
+
+    @property
+    def state_attributes(self):
+        return self._attrs
 
     def turn_on(self, **kwargs) -> None:
         """Turn the entity on."""

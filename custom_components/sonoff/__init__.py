@@ -25,10 +25,10 @@ ZEROCONF_NAME = 'eWeLink_{}._ewelink._tcp.local.'
 
 
 def setup(hass, config):
-    devices = config[DOMAIN].get('devices', [])
+    hass.data[DOMAIN] = devices = config[DOMAIN].get('devices', [])
 
-    def add_device(device, data: dict):
-        info = {'device': device, 'data': data}
+    def add_device(deviceid: str, data: dict):
+        info = {'deviceid': deviceid, 'data': data}
         load_platform(hass, 'switch', DOMAIN, info, config)
 
     listener = EWeLinkListener(devices)
@@ -111,6 +111,8 @@ class EWeLinkListener:
             for k, v in info.properties.items()
         }
 
+        _LOGGER.debug(f"Properties: {properties}")
+
         host = str(ipaddress.ip_address(info.address))
         deviceid = properties['id']
 
@@ -128,13 +130,14 @@ class EWeLinkListener:
 
             data = decrypt(properties, apikey)
             data = json.loads(data)
+            _LOGGER.debug(f"Data: {data}")
         else:
             raise NotImplementedError()
 
         self.devices[deviceid] = device = \
             EWeLinkDevice(host, deviceid, config, zeroconf)
 
-        self._add_device(device, data)
+        self._add_device(deviceid, data)
 
     def remove_service(self, zeroconf: Zeroconf, type: str, name: str):
         _LOGGER.debug(f"Remove service {name}")
@@ -179,9 +182,12 @@ class EWeLinkDevice:
             for k, v in info.properties.items()
         }
 
+        _LOGGER.debug(f"Properties: {properties}")
+
         if properties.get('encrypt'):
             data = decrypt(properties, self.config['apikey'])
             data = json.loads(data)
+            _LOGGER.debug(f"Data: {data}")
         else:
             raise NotImplementedError()
 
