@@ -1,0 +1,112 @@
+import base64
+import hashlib
+import hmac
+import json
+import os
+import time
+import uuid
+from base64 import b64decode
+from base64 import b64encode
+from typing import Optional
+
+import requests
+from Crypto.Cipher import AES
+from Crypto.Hash import MD5
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad
+from Crypto.Util.Padding import unpad
+
+
+def _params(**kwargs):
+    """Generate params for sonoff API. Pretend mobile application."""
+    return {
+        **kwargs,
+        'version': 6,
+        'ts': int(time.time()),
+        'nonce': int(time.time_ns() / 10000),
+        'appid': 'oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq',
+        'imei': str(uuid.uuid4()),
+        'os': 'android',
+        'model': '',
+        'romVersion': '',
+        'appVersion': '3.12.0'
+    }
+
+
+def load_cache(filename: str) -> Optional[dict]:
+    """Load device list from file."""
+    if os.path.isfile(filename):
+        with open(filename, 'rt', encoding='utf-8') as f:
+            return json.load(f)
+    return None
+
+
+def save_cache(filename: str, data: dict):
+    """Save device list to file."""
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
+
+
+def load_devices(username, password):
+    """Load device list from ewelink servers."""
+
+    params = _params(email=username, password=password)
+    hex_dig = hmac.new(b'6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM',
+                       json.dumps(params).encode(),
+                       digestmod=hashlib.sha256).digest()
+    headers = {'Authorization': "Sign " + base64.b64encode(hex_dig).decode()}
+    r = requests.post('https://eu-api.coolkit.cc:8080/api/user/login',
+                      headers=headers, json=params)
+    resp = r.json()
+
+    headers = {'Authorization': "Bearer " + resp['at']}
+    params = _params(apiKey=resp['user']['apikey'], lang='en')
+    r = requests.get('https://eu-api.coolkit.cc:8080/api/user/device',
+                     headers=headers, params=params)
+    resp = r.json()
+
+    if resp['error'] == 0:
+        return resp['devicelist']
+
+    return None
+
+
+def encrypt(payload: dict, devicekey: str):
+    devicekey = devicekey.encode('utf-8')
+
+    hash_ = MD5.new()
+    hash_.update(devicekey)
+    key = hash_.digest()
+
+    iv = get_random_bytes(16)
+    plaintext = json.dumps(payload['data']).encode('utf-8')
+
+    cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+    padded = pad(plaintext, AES.block_size)
+    ciphertext = cipher.encrypt(padded)
+
+    payload['encrypt'] = True
+    payload['iv'] = b64encode(iv).decode('utf-8')
+    payload['data'] = b64encode(ciphertext).decode('utf-8')
+
+    return payload
+
+
+def decrypt(payload: dict, devicekey: str):
+    try:
+        devicekey = devicekey.encode('utf-8')
+
+        hash_ = MD5.new()
+        hash_.update(devicekey)
+        key = hash_.digest()
+
+        encoded = ''.join([payload[f'data{i}'] for i in range(1, 4, 1) if
+                           f'data{i}' in payload])
+
+        cipher = AES.new(key, AES.MODE_CBC, iv=b64decode(payload['iv']))
+        ciphertext = b64decode(encoded)
+        padded = cipher.decrypt(ciphertext)
+        return unpad(padded, AES.block_size)
+
+    except:
+        return None

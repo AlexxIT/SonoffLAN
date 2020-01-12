@@ -1,0 +1,81 @@
+import logging
+from typing import Optional
+
+from homeassistant.helpers.entity import ToggleEntity
+
+from . import EWeLinkDevice
+
+_LOGGER = logging.getLogger(__name__)
+
+ATTRS = ('humidity', 'temperature')
+
+
+class EWeLinkToggle(ToggleEntity):
+    def __init__(self, device: EWeLinkDevice, channels: list = None):
+        """
+        :param device: Устройство через которое принимаются и передаются
+            команды
+        :param channels: Список каналов или None для одноканальных устройств
+        """
+        self.device = device
+        self.channels = channels
+        self._attrs = {}
+        self._name = None
+        self._is_on = False
+
+        self._update(device, False)
+
+        device.listen(self._update)
+
+    async def async_added_to_hass(self) -> None:
+        # Присваиваем имя устройства только на этом этапе, чтоб в `entity_id`
+        # было "sonoff_{unique_id}". Если имя присвоить в конструкторе - в
+        # `entity_id` попадёт имя в латинице.
+        self._name = self.device.name
+
+    def _update(self, device: EWeLinkDevice, schedule_update: bool = True):
+        """Обновление от устройства.
+
+        :param device: Устройство в котором произошло обновление
+        :param schedule_update: Оповещать HA о обновление
+        """
+        for k in ATTRS:
+            if k in device.state:
+                self._attrs[k] = device.state[k]
+
+        is_on = device.is_on(self.channels)
+        self._is_on = any(is_on) if self.channels else is_on
+
+        if schedule_update:
+            self.schedule_update_ha_state()
+
+    @property
+    def should_poll(self) -> bool:
+        # Устройство само присылает обновление своего состояния по Multicast.
+        return False
+
+    @property
+    def unique_id(self) -> Optional[str]:
+        if self.channels:
+            chid = ''.join(str(ch) for ch in self.channels)
+            return f'{self.device.deviceid}_{chid}'
+        else:
+            return self.device.deviceid
+
+    @property
+    def name(self) -> Optional[str]:
+        return self._name
+
+    @property
+    def state_attributes(self):
+        return self._attrs
+
+    @property
+    def is_on(self) -> bool:
+        return self._is_on
+
+    def turn_on(self, **kwargs) -> None:
+        self.device.turn_on(self.channels)
+
+    def turn_off(self, **kwargs) -> None:
+        self.device.turn_off(self.channels)
