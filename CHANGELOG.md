@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.4] - 2020-01-18
+
+### Added
+
+- Support Sonoff in DIY mode
+
 ## [0.2.3] - 2020-01-18
 
 ### Added

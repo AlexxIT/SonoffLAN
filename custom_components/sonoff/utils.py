@@ -10,6 +10,7 @@ from base64 import b64encode
 from typing import Optional
 
 import requests
+
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
@@ -100,8 +101,8 @@ def decrypt(payload: dict, devicekey: str):
         hash_.update(devicekey)
         key = hash_.digest()
 
-        encoded = ''.join([payload[f'data{i}'] for i in range(1, 4, 1) if
-                           f'data{i}' in payload])
+        encoded = ''.join([payload[f'data{i}'] for i in range(1, 4, 1)
+                           if f'data{i}' in payload])
 
         cipher = AES.new(key, AES.MODE_CBC, iv=b64decode(payload['iv']))
         ciphertext = b64decode(encoded)

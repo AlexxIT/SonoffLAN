@@ -40,7 +40,7 @@ def setup(hass, hass_config):
 
     # load devices from configuration.yaml
     if not devices:
-        devices = config.get(CONF_DEVICES)
+        devices = config.get(CONF_DEVICES, {})
 
     # concat ewelink devices with yaml devices
     elif CONF_DEVICES in config:
@@ -52,15 +52,6 @@ def setup(hass, hass_config):
             else:
                 _LOGGER.debug(f"Add device config {deviceid}")
                 devices[deviceid] = devicecfg
-
-    if not devices:
-        _LOGGER.error("Empty device list")
-        return False
-
-    # add deviceid to all device config
-    for k, v in devices.items():
-        if 'deviceid' not in v:
-            v['deviceid'] = k
 
     hass.data[DOMAIN] = devices
 
@@ -146,7 +137,6 @@ class EWeLinkListener:
         host = str(ipaddress.ip_address(info.address))
         deviceid = properties['id']
 
-        # TODO: check no did
         device = self.devices.get(deviceid)
         if isinstance(device, EWeLinkDevice):
             # TODO: check update host
@@ -166,10 +156,15 @@ class EWeLinkListener:
             # Fix Sonoff RF Bridge sintax bug
             if data.startswith(b'{"rf'):
                 data = data.replace(b'"="', b'":"')
-            state = json.loads(data)
-            _LOGGER.debug(f"State: {state}")
         else:
-            raise NotImplementedError()
+            data = ''.join([properties[f'data{i}'] for i in range(1, 4, 1)
+                            if f'data{i}' in properties])
+
+        state = json.loads(data)
+        _LOGGER.debug(f"State: {state}")
+
+        if 'deviceid' not in config:
+            config['deviceid'] = deviceid
 
         self.devices[deviceid] = EWeLinkDevice(host, config, state, zeroconf)
 
@@ -247,12 +242,12 @@ class EWeLinkDevice:
             # Fix Sonoff RF Bridge sintax bug
             if data.startswith(b'{"rf'):
                 data = data.replace(b'"="', b'":"')
-            data = json.loads(data)
-            _LOGGER.debug(f"Data: {data}")
         else:
-            raise NotImplementedError()
+            data = ''.join([properties[f'data{i}'] for i in range(1, 4, 1)
+                            if f'data{i}' in properties])
 
-        self.state = data
+        self.state = json.loads(data)
+        _LOGGER.debug(f"State: {self.state}")
 
         for handler in self._update_handlers:
             handler(self)
@@ -264,12 +259,15 @@ class EWeLinkDevice:
         :param data: Данные для команды
         :return:
         """
-        payload = utils.encrypt({
+        payload = {
             'sequence': str(int(time.time())),
             'deviceid': self.deviceid,
             'selfApikey': '123',
             'data': data
-        }, self.devicekey)
+        }
+
+        if self.devicekey:
+            payload = utils.encrypt(payload, self.devicekey)
 
         _LOGGER.debug(f"Send {command} to {self.deviceid}: {payload}")
 
