@@ -4,4 +4,6 @@ Control Sonoff Devices with eWeLink (vanilla) firmware over LAN from Home Assist
 
 Russian readme: [here](https://github.com/AlexxIT/SonoffLAN).
 
+[Changelog in English](https://github.com/AlexxIT/SonoffLAN/blob/master/CHANGELOG.md)
+
 English manual in development...
