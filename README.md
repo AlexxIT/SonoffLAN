@@ -17,8 +17,15 @@
   удобной интеграции в голосовые ассистенты
 - есть возможность объединить несколько каналов в один источник света и 
   управлять яркостью
+  
+## Протестированные устройства
 
-[Changelog in English](./CHANGELOG.md)
+- Sonoff Basic (самой первой версии)
+- Sonoff Mini (режим DIY включать не нужно)
+- Sonoff TH (показывает температуру и влажность)
+- Sonoff 4CH Pro R2
+- Sonoff RF Bridge 433
+- Выключатели [MiniTiger](https://ru.aliexpress.com/item/33016227381.html)
 
 ## Примеры конфигов
 
@@ -77,6 +84,45 @@ sonoff:
       - light # зона 2 (канал 2)
       - device_class: light # зона 3 (каналы 3 и 4)
         channels: [3, 4]
+```
+
+## Sonoff RF Bridge 433
+
+Хоть компонент и поддерживает обучение - рекомендуется обучать кнопки через 
+приложение eWeLink.
+
+`command` - порядковый номер изученной кнопки в приложении
+
+При получении комманды создаётся событие `sonoff.remote` с порядковым номером 
+команды и временем срабатывание (в UTC, присылает устройство).
+
+```yaml
+automation:
+- alias: Test RF
+  trigger:
+    platform: event
+    event_type: sonoff.remote
+    event_data:
+      command: 0
+  action:
+    service: homeassistant.toggle
+    entity_id: remote.sonoff_1000abcdefg
+
+script:
+  send_num1:
+    sequence:
+    - service: remote.send_command
+      data:
+        entity_id: remote.sonoff_1000abcdefg
+        command: 1
+
+  send_num111:
+    sequence:
+    - service: remote.send_command
+      data:
+        entity_id: remote.sonoff_1000abcdefg
+        command: [1, 1, 1]
+        delay_secs: 1
 ```
 
 ## Параметры:

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.3] - 2020-01-18
+
+### Added
+
+- Support Sonoff RF Bridge 433
+
 ## [0.2.2] - 2020-01-18
 
 ### Fixed

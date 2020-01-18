@@ -19,8 +19,8 @@ DOMAIN = 'sonoff'
 ZEROCONF_NAME = 'eWeLink_{}._ewelink._tcp.local.'
 
 
-def setup(hass, config):
-    config = config[DOMAIN]
+def setup(hass, hass_config):
+    config = hass_config[DOMAIN]
 
     # load devices from file in config dir
     filename = hass.config.path('.sonoff.json')
@@ -57,6 +57,11 @@ def setup(hass, config):
         _LOGGER.error("Empty device list")
         return False
 
+    # add deviceid to all device config
+    for k, v in devices.items():
+        if 'deviceid' not in v:
+            v['deviceid'] = k
+
     hass.data[DOMAIN] = devices
 
     def add_device(devicecfg: dict, state: dict):
@@ -72,13 +77,18 @@ def setup(hass, config):
         if not device_class:
             if 'switch' in state:
                 device_class = 'switch'
-            else:
+            elif 'switches' in state:
                 device_class = ['switch'] * 4
+            elif devicecfg.get('uiid') == 28:
+                device_class = 'remote'
+            else:
+                _LOGGER.error(f"Unknown device_class {deviceid}")
+                return
 
         if isinstance(device_class, str):
             # read single device_class
             info = {'deviceid': deviceid, 'channels': None}
-            load_platform(hass, device_class, DOMAIN, info, config)
+            load_platform(hass, device_class, DOMAIN, info, hass_config)
         else:
             # read multichannel device_class
             for channels, component in enumerate(device_class, 1):
@@ -91,7 +101,7 @@ def setup(hass, config):
                     channels = [channels]
 
                 info = {'deviceid': deviceid, 'channels': channels}
-                load_platform(hass, component, DOMAIN, info, config)
+                load_platform(hass, component, DOMAIN, info, hass_config)
 
     listener = EWeLinkListener(devices)
     listener.listen(add_device)
@@ -153,14 +163,13 @@ class EWeLinkListener:
                 return
 
             data = utils.decrypt(properties, devicekey)
+            # Fix Sonoff RF Bridge sintax bug
+            if data.startswith(b'{"rf'):
+                data = data.replace(b'"="', b'":"')
             state = json.loads(data)
             _LOGGER.debug(f"State: {state}")
         else:
             raise NotImplementedError()
-
-        # TODO: fix me
-        if 'deviceid' not in config:
-            config['deviceid'] = deviceid
 
         self.devices[deviceid] = EWeLinkDevice(host, config, state, zeroconf)
 
@@ -235,6 +244,9 @@ class EWeLinkDevice:
 
         if properties.get('encrypt'):
             data = utils.decrypt(properties, self.config['devicekey'])
+            # Fix Sonoff RF Bridge sintax bug
+            if data.startswith(b'{"rf'):
+                data = data.replace(b'"="', b'":"')
             data = json.loads(data)
             _LOGGER.debug(f"Data: {data}")
         else:
@@ -252,8 +264,6 @@ class EWeLinkDevice:
         :param data: Данные для команды
         :return:
         """
-        _LOGGER.debug(f"Send {command} to {self.deviceid}")
-
         payload = utils.encrypt({
             'sequence': str(int(time.time())),
             'deviceid': self.deviceid,
@@ -261,9 +271,12 @@ class EWeLinkDevice:
             'data': data
         }, self.devicekey)
 
+        _LOGGER.debug(f"Send {command} to {self.deviceid}: {payload}")
+
         try:
             r = requests.post(f'http://{self.host}:8081/zeroconf/{command}',
                               json=payload, timeout=10)
+            _LOGGER.debug(r.text)
             if r.json()['error'] != 0:
                 _LOGGER.warning(
                     f"Error when send {command} to {self.deviceid}")
@@ -323,3 +336,9 @@ class EWeLinkDevice:
             for channel, switch in channels.items()
         ]
         self.send('switches', {'switches': switches})
+
+    def transmit(self, channel: int):
+        self.send('transmit', {"rfChl": channel})
+
+    def learn(self, channel: int):
+        self.send('capture', {"rfChl": channel})
