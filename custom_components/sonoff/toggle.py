@@ -67,6 +67,10 @@ class EWeLinkToggle(ToggleEntity):
         return self._name
 
     @property
+    def supported_features(self):
+        return 0
+
+    @property
     def state_attributes(self):
         return self._attrs
 
