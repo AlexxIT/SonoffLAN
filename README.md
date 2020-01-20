@@ -175,6 +175,16 @@ script:
 4. Скопировать полученные `deviceid` и `apikey` (это и есть `devicekey`)
 5. Подключиться к своей Wi-Fi сети и настроить Sonoff через приложение eWeLink
 
+## Демонстрация
+
+**Sonoff 4CH Pro R2**, настроен как единый источник света с управлением яркостью
+
+[![Control Sonoff Devices with eWeLink firmware over LAN from Home Assistant](https://img.youtube.com/vi/X7PcYfDy57A/0.jpg)](https://www.youtube.com/watch?v=X7PcYfDy57A)
+
+## Поддержка HACS
+
+![Support HACS](hacs.png)
+
 ## Описание протокола
 
 - Для обнаружения устройств Sonoff используется **Zeroconf** 
@@ -207,6 +217,15 @@ POST http://192.168.1.175:8081/zeroconf/switches
 
 ```json
 {"switches": [{"outlet": 0, "switch": "on"}]}
+```
+
+## Отладка компонента
+
+```yaml
+logger:
+  default: info
+  logs:
+    custom_components.sonoff: debug
 ```
 
 ## Полезные ссылки
