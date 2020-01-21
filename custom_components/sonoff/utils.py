@@ -24,7 +24,7 @@ def _params(**kwargs):
         **kwargs,
         'version': 6,
         'ts': int(time.time()),
-        'nonce': int(time.time_ns() / 10000),
+        'nonce': int(time.time() * 100000),
         'appid': 'oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq',
         'imei': str(uuid.uuid4()),
         'os': 'android',

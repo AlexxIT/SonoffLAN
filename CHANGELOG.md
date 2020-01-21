@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5] - 2020-01-21
+
+### Added
+
+- Support Sonoff Pow
+- rssi device attribute
+
 ## [0.2.4] - 2020-01-18
 
 ### Added

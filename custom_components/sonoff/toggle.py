@@ -7,7 +7,7 @@ from . import EWeLinkDevice
 
 _LOGGER = logging.getLogger(__name__)
 
-ATTRS = ('humidity', 'temperature')
+ATTRS = ('humidity', 'temperature', 'power', 'current', 'voltage')
 
 
 class EWeLinkToggle(ToggleEntity):

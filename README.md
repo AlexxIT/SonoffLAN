@@ -26,6 +26,7 @@
 - [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (режим DIY включать не нужно)
 - [Sonoff TH](https://www.itead.cc/sonoff-th.html) (показывает температуру и влажность)
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
+- [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (показывает энергопотребление)
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html)
 - Выключатели [MiniTiger](https://ru.aliexpress.com/item/33016227381.html)
 
@@ -136,6 +137,24 @@ script:
         delay_secs: 1
 ```
 
+## Sonoff TH и Pow
+
+Температура, влажность и остальные параметры устройств хранятся в их аттрибутах. Их можно вывести через [Template](https://www.home-assistant.io/integrations/template/)-сенсор.
+
+```yaml
+sensor:
+- platform: template
+  sensors:
+    temperature_purifier:
+      friendly_name: Температура
+      device_class: temperature
+      value_template: "{{ state_attr('switch.sonoff_1000abcdefg', 'temperature') }}"
+    humidity_purifier:
+      friendly_name: Влажность
+      device_class: humidity
+      value_template: "{{ state_attr('switch.sonoff_1000abcdefg', 'humidity') }}"
+```
+
 ## Параметры:
 
 - **reload** - *optional*  
@@ -144,7 +163,8 @@ script:
 - **device_class** - *optional*, переопределяет тип устройства (по умолчанию 
   все устройства **sonoff** отображаются как `switch`). Может быть строкой 
   или массивом строк (для многоканальных выключателей). Поддерживает типы:
-  `light`, `fan`, `switch`.
+  `light`, `fan`, `switch`, `remote` (только для *Sonoff RF Bridge 433*).
+
 
 ## Работа с китайскими серверами
 
