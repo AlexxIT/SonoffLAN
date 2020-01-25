@@ -6,7 +6,10 @@ from functools import lru_cache
 from typing import Callable
 
 import requests
-from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_DEVICES
+import voluptuous as vol
+from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_DEVICES, \
+    CONF_NAME, CONF_DEVICE_CLASS
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.discovery import load_platform
 
 from zeroconf import ServiceBrowser, Zeroconf
@@ -15,6 +18,21 @@ from . import utils
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = 'sonoff'
+
+CONFIG_SCHEMA = vol.Schema({
+    DOMAIN: vol.Schema({
+        vol.Optional(CONF_USERNAME): cv.string,
+        vol.Optional(CONF_PASSWORD): cv.string,
+        vol.Optional('reload', default='once'): cv.string,
+        vol.Optional(CONF_DEVICES): {
+            cv.string: vol.Schema({
+                vol.Optional(CONF_NAME): cv.string,
+                vol.Optional(CONF_DEVICE_CLASS): vol.Any(str, list),
+                vol.Optional('devicekey'): cv.string,
+            }, extra=vol.ALLOW_EXTRA),
+        },
+    }, extra=vol.ALLOW_EXTRA),
+}, extra=vol.ALLOW_EXTRA)
 
 ZEROCONF_NAME = 'eWeLink_{}._ewelink._tcp.local.'
 

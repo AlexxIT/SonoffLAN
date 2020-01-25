@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.8] - 2020-01-25
+
+### Changed
+
+- Add config check (fix only numbers in password or deviceid)
+
 ## [0.2.7] - 2020-01-25
 
 ### Fixed
