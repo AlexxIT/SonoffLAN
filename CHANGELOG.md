@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.7] - 2020-01-25
+
+### Fixed
+
+- Support non Euro eWeLink server
+- Fix readme about `reload: always` default value
+
 ## [0.2.6] - 2020-01-22
 
 ### Added

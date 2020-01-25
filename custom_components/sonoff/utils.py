@@ -60,9 +60,16 @@ def load_devices(username, password):
                       headers=headers, json=params)
     resp = r.json()
 
+    region = resp['region']
+    if region != 'eu':
+        r = requests.post(
+            f"https://{region}-api.coolkit.cc:8080/api/user/login",
+            headers=headers, json=params)
+        resp = r.json()
+
     headers = {'Authorization': "Bearer " + resp['at']}
     params = _params(apiKey=resp['user']['apikey'], lang='en')
-    r = requests.get('https://eu-api.coolkit.cc:8080/api/user/device',
+    r = requests.get(f"https://{region}-api.coolkit.cc:8080/api/user/device",
                      headers=headers, params=params)
     resp = r.json()
 
