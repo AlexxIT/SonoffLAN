@@ -27,6 +27,7 @@
 - [Sonoff TH](https://www.itead.cc/sonoff-th.html) (показывает температуру и влажность)
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
 - [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (показывает энергопотребление)
+- [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.htmlw)
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html)
 - Выключатели [MiniTiger](https://ru.aliexpress.com/item/33016227381.html)
 
