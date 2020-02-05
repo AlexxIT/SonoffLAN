@@ -1,39 +1,40 @@
-# Sonoff
+# Sonoff control from Home Assistant
 
-Компонент для работы с устройствами **eWeLink** по локальной сети. Устройства 
-должны быть обновлены на прошивку 3й версии. В локальной сети должен 
-поддерживаться **Multicast**.
+- [Readme in Russian](README_ru.md)
+- [Changelog in English](CHANGELOG.md)
 
-Основные моменты компонента: 
+Home Assistant Custom Component for control **eWeLink** (Sonoff) devices over Local Network (LAN).
 
-- работает с оригинальной прошивкой Sonoff, нет необходимости перепрошивать 
-  устройства
-- работает по локальной сети, нет тормозов китайских серверов
-- работает с устройствами без DIY-режима
-- работает с устройствами в DIY-режиме
-- можно получить список устройств с серверов eWeLink, либо настроить его 
-  вручную (список сохраняется локально и может больше не запрашиваться)
-- мгновенное получение нового состояния устройств по Multicast (привет 
-  Yeelight)
-- есть возможность менять тип устройства (например свет или вентилятор), для 
-  удобной интеграции в голосовые ассистенты
-- есть возможность объединить несколько каналов в один источник света и 
-  управлять яркостью
+Devices should have firmware v3+. LAN should support **Multicast** traffic.
+
+Pros:
+
+- work with original eWeLink/Sonoff firmware, no need to flash devices
+- work over local network (LAN), no Cloud Server dependency
+- work with devices without DIY-mode
+- work with devices in DIY-mode
+- support single and multi-channel devices
+- support TH and POW device attributes
+- support Sonoff RF Bridge 433 3 for receive and send commands
+- instant device state update with Multicast
+- (optional) load devices list from eWeLink Servers (with names and apikey/devicekey) and save it locally
+- (optional) change device type (switch, light or fan)
+- (optional) set multi-channel device as one light with brightness control
   
-## Протестированные устройства
+## Tested Devices
 
-- Sonoff Basic (самой первой версии)
-- [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (режим DIY включать не нужно)
-- [Sonoff TH](https://www.itead.cc/sonoff-th.html) (показывает температуру и влажность)
+- Sonoff Basic (first version)
+- [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode)
+- [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity)
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
-- [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (показывает энергопотребление)
+- [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (shows power consumption)
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.htmlw)
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html)
-- Выключатели [MiniTiger](https://ru.aliexpress.com/item/33016227381.html)
+- Switch [MiniTiger](https://ru.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
 
-## Примеры конфигов
+## Config Examples
 
-Минимальный конфиг:
+Minimum config:
 
 ```yaml
 sonoff:
@@ -41,20 +42,19 @@ sonoff:
   password: mypassword
 ```
 
-Расширенный конфиг:
+Advanced config:
 
 ```yaml
 sonoff:
   username: mymail@gmail.com
   password: mypassword
-  reload: always  # обновлять список устройств при каждом запуске HA
+  reload: always  # update device list every time HA starts
   devices:
     1000abcdefg:
       device_class: light
 ```
 
-Устройства можно задать вручную, без подключения к китайским серверам. Но в 
-этом случае нужно знать `devicekey` для каждого устройства.
+Devices can be set manually, without connecting to Cloud Servers. But in this case, you need to know the `devicekey` for each device.
 
 ```yaml
 sonoff:
@@ -63,7 +63,7 @@ sonoff:
       devicekey: f9765c85-463a-4623-9cbe-8d59266cb2e4
 ```
 
-Примеры использования `device_class`:
+Examples of using `device_class`:
 
 ```yaml
 sonoff:
@@ -71,25 +71,25 @@ sonoff:
   password: mypassword
   reload: once
   devices:
-    1000abcde0: # коридор свет
+    1000abcde0: # corridor light
       device_class: light
-    1000abcde1: # детская свет (двойной выключатель, одна люстра)
+    1000abcde1: # children's light (double switch, one light entity)
       device_class:
       - device_class: light
         channels: [1, 2]
-    1000abcde2: # туалет свет и вытяжка (двойной выключатель)
+    1000abcde2: # toilet light and fan (double switch)
       device_class: [light, fan]
-    1000abcde3: # спальня свет и подсветка (двойной выключатель)
+    1000abcde3: # bedroom light and backlight (double switch)
       device_class: [light, light]
-    1000abcde4: # зал три зоны света Sonoff 4CH
+    1000abcde4: # hall three light zones Sonoff 4CH
       device_class:
-      - light # зона 1 (канал 1)
-      - light # зона 2 (канал 2)
-      - device_class: light # зона 3 (каналы 3 и 4)
+      - light # zone 1 (channel 1)
+      - light # zone 2 (channel 2)
+      - device_class: light # zone 3 (channels 3 and 4)
         channels: [3, 4]
 ```
 
-Для устройств в режиме DIY хватит:
+Minimum config for devices only in DIY mode:
 
 ```yaml
 sonoff:
@@ -97,15 +97,13 @@ sonoff:
 
 ## Sonoff RF Bridge 433
 
-Хоть компонент и поддерживает обучение - рекомендуется обучать кнопки через 
-приложение eWeLink.
+Although the component supports training, it is recommended to train buttons through the eWeLink application.
 
-Компонент умеет как отправлять RF-сигналы, так и получать их, но только ранее обученные.
+The component can both send RF signals and receive them, but only previously trained.
 
-При получении команды создаётся событие `sonoff.remote` с порядковым номером 
-кнопки и временем срабатывания (в UTC, присылает устройство).
+When a command is received, the event `sonoff.remote` is generated with a button number and response time (in UTC, sends the device).
 
-`command` - порядковый номер изученной кнопки в приложении.
+`command` - number of the button in the eWeLink application.
 
 
 ```yaml
@@ -139,107 +137,61 @@ script:
 
 ## Sonoff TH и Pow
 
-Температура, влажность и остальные параметры устройств хранятся в их аттрибутах. Их можно вывести через [Template](https://www.home-assistant.io/integrations/template/)-сенсор.
+Temperature, humidity and other parameters of the devices are stored in their attributes. They can be displayed through [Template](https://www.home-assistant.io/integrations/template/)-sensor.
 
 ```yaml
 sensor:
 - platform: template
   sensors:
     temperature_purifier:
-      friendly_name: Температура
+      friendly_name: Temperature
       device_class: temperature
       value_template: "{{ state_attr('switch.sonoff_1000abcdefg', 'temperature') }}"
     humidity_purifier:
-      friendly_name: Влажность
+      friendly_name: Humidity
       device_class: humidity
       value_template: "{{ state_attr('switch.sonoff_1000abcdefg', 'humidity') }}"
 ```
 
-## Параметры:
+## Parameters:
 
 - **reload** - *optional*  
-  `always` - загружать список устройств при каждом старте HA  
-  `once` - (по умолчанию) загрузить список устройств единожды
-- **device_class** - *optional*, переопределяет тип устройства (по умолчанию 
-  все устройства **sonoff** отображаются как `switch`). Может быть строкой 
-  или массивом строк (для многоканальных выключателей). Поддерживает типы:
-  `light`, `fan`, `switch`, `remote` (только для *Sonoff RF Bridge 433*).
+  `always` - load device list every time HA starts
+  `once` - (default) download device list once
+- **device_class** - *optional*, overrides device type (default all **sonoff** devices are displayed as `switch`). May be a string or an array of strings (for multi-channel switches). Supports types: `light`, `fan`, `switch`, `remote` (only for *Sonoff RF Bridge 433*).
 
 
-## Работа с китайскими серверами
+## Work with Cloud Servers
 
-Если в настройках указать `username` и `password` (опционально) - при первом
-запуске HA скачает список устройств **eWeLink** с китайских серверов и сохранит
-в файле `/config/.sonoff.json` (скрытый файл).
+With `username` and` password` in the config (optional) - component loads list of devices from eWeLink Servers and save it in the file `/config/.sonoff.json` (hidden file).
 
-Другие запросы к серверам компонент не делает.
+The component does not make other requests to servers.
 
-Список загрузится только один раз. И при старте ХА список устройств будет 
-загружаться из локального файла. В этом случае, когда у вас появятся новые 
-устройства **eWeLink** - вручную удалите файл и перезагрузите ХА.
+The list will be loaded only once. At the next start, the list will be loaded from the local file. When you have new **eWeLink** devices - manually delete the file and reboot the HA.
 
-Если в настройках указать `reload: always` - при каждом старте HA этот файл 
-будет обновляться.
+With `reload: always` in the config - the list will be loaded from servers at each start.
 
-Список устройств будет загружаться из локального файла даже если убрать 
-`username` и `password` из настроек.
+The list will be loaded from the local file even if you remove `username` and` password` from the settings.
 
-## Получение devicekey вручную
+## Getting devicekey manually
 
-При желании ключ устройства можно получить таким способом.
+1. Put the device in setup mode
+2. Connect to the Wi-Fi network `ITEAD-10000`, password` 12345678`
+3. Open in browser `http://10.10.7.1/device`
+4. Copy `deviceid` and `apikey` (this is `devicekey`)
+5. Connect to your Wi-Fi network and setup Sonoff via the eWeLink app
 
-1. Перевести устройство в режим настройки (*на выключателе это долгое 
-удерживание одной из кнопок*)
-2. Подключиться к Wi-Fi сети `ITEAD-10000`, пароль `12345678`
-3. Открыть в браузере `http://10.10.7.1/device`
-4. Скопировать полученные `deviceid` и `apikey` (это и есть `devicekey`)
-5. Подключиться к своей Wi-Fi сети и настроить Sonoff через приложение eWeLink
+## Demo
 
-## Демонстрация
-
-**Sonoff 4CH Pro R2**, настроен как единый источник света с управлением яркостью
+**Sonoff 4CH Pro R2**, configured as a single light source with brightness control.
 
 [![Control Sonoff Devices with eWeLink firmware over LAN from Home Assistant](https://img.youtube.com/vi/X7PcYfDy57A/0.jpg)](https://www.youtube.com/watch?v=X7PcYfDy57A)
 
-## Поддержка HACS
+## HACS Support
 
 ![Support HACS](hacs.png)
 
-## Описание протокола
-
-- Для обнаружения устройств Sonoff используется **Zeroconf** 
-(сервис `_ewelink._tcp.local.`)
-- В сообщении **Zeroconf** устройство передаёт своё текущее состояние и 
-настройки
-- Изменение состояния устройства так же передаётся по **Zeroconf** 
-(сервис `eWeLink_1000abcdef._ewelink._tcp.local.`)
-- Устройство управляется через POST-запросы вида 
-`http://{ip}:8081/zeroconf/{command}` с JSON в теле запроса
-- В 3й версии прошивки при отключенном режиме DIY - сообщения и управляющие 
-комманды шифруются алгоритмом AES 128, где в качестве ключа используется 
-`devicekey` 
-
-**Пример:**
-
-```
-POST http://192.168.1.175:8081/zeroconf/switches
-{
-    "sequence": "1570626382", 
-    "deviceid": "1000abcdef", 
-    "selfApikey": "123", 
-    "data": "MpiTz2jyRiIIaEB4z1nv/ZUaJuToGv8N5SY+G/5tDjQ3f+FGZ/2L0vajqzwbcjIS", 
-    "encrypt": true, 
-    "iv": "SI3QEXgpvuaHM3hL/1f3eg=="
-}
-```
-
-В `data` закодирована комманда:
-
-```json
-{"switches": [{"outlet": 0, "switch": "on"}]}
-```
-
-## Отладка компонента
+## Component Debugging
 
 ```yaml
 logger:
@@ -248,7 +200,7 @@ logger:
     custom_components.sonoff: debug
 ```
 
-## Полезные ссылки
+## Useful Links
 
 - https://github.com/mattsaxon/sonoff-lan-mode-homeassistant
 - https://blog.ipsumdomus.com/sonoff-switch-complete-hack-without-firmware-upgrade-1b2d6632c01
