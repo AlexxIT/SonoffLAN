@@ -1,5 +1,7 @@
 # Sonoff
 
+[![Donate](https://img.shields.io/badge/donate-Yandex-red.svg)](https://money.yandex.ru/to/41001428278477)
+
 Компонент для работы с устройствами **eWeLink** по локальной сети. Устройства 
 должны быть обновлены на прошивку 3й версии. В локальной сети должен 
 поддерживаться **Multicast**.

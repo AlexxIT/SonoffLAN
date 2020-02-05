@@ -1,5 +1,7 @@
 # Sonoff control from Home Assistant
 
+[![Donate](https://img.shields.io/badge/donate-Yandex-red.svg)](https://money.yandex.ru/to/41001428278477)
+
 - [Readme in Russian](README_ru.md)
 - [Changelog in English](CHANGELOG.md)
 
@@ -15,7 +17,7 @@ Pros:
 - work with devices in DIY-mode
 - support single and multi-channel devices
 - support TH and POW device attributes
-- support Sonoff RF Bridge 433 3 for receive and send commands
+- support Sonoff RF Bridge 433 for receive and send commands
 - instant device state update with Multicast
 - (optional) load devices list from eWeLink Servers (with names and apikey/devicekey) and save it locally
 - (optional) change device type (switch, light or fan)
@@ -27,7 +29,7 @@ Pros:
 - [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode)
 - [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity)
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
-- [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (shows power consumption)
+- [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (show power consumption)
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html)
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html)
 - Switch [MiniTiger](https://ru.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
@@ -156,7 +158,7 @@ sensor:
 ## Parameters:
 
 - **reload** - *optional*  
-  `always` - load device list every time HA starts
+  `always` - load device list every time HA starts  
   `once` - (default) download device list once
 - **device_class** - *optional*, overrides device type (default all **sonoff** devices are displayed as `switch`). May be a string or an array of strings (for multi-channel switches). Supports types: `light`, `fan`, `switch`, `remote` (only for *Sonoff RF Bridge 433*).
 
@@ -171,7 +173,7 @@ The list will be loaded only once. At the next start, the list will be loaded fr
 
 With `reload: always` in the config - the list will be loaded from servers at each start.
 
-The list will be loaded from the local file even if you remove `username` and` password` from the settings.
+The list will be loaded from the local file even if you remove `username` and `password` from the settings.
 
 ## Getting devicekey manually
 
