@@ -124,6 +124,7 @@ SWITCH = 'switch'
 SWITCH2 = ['switch', 'switch']
 SWITCH3 = ['switch', 'switch', 'switch']
 SWITCH4 = ['switch', 'switch', 'switch', 'switch']
+SWITCHX = ['switch']
 
 UIIDS = {
     1: SWITCH,
@@ -140,10 +141,13 @@ UIIDS = {
     30: SWITCH3,
     31: SWITCH4,
     44: 'light',  # Sonoff D1
+    77: SWITCHX,  # Sonoff Micro
+    78: SWITCHX,
     81: SWITCH,
     82: SWITCH2,
     83: SWITCH3,
     84: SWITCH4,
+    107: SWITCHX
 }
 
 TYPES = {
