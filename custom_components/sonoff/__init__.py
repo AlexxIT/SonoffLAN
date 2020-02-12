@@ -86,6 +86,10 @@ def setup(hass, hass_config):
             device_class = utils.guess_device_class(devicecfg)
 
         if not device_class:
+            _LOGGER.warning(f"Please, send this device type to developer: "
+                            f"{devicecfg['type']}")
+
+            # Fallback guess device_class from device state
             if 'switch' in state:
                 device_class = 'switch'
             elif 'switches' in state:
