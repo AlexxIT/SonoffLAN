@@ -86,6 +86,12 @@ def setup(hass, hass_config):
             device_class = utils.guess_device_class(devicecfg)
 
         if not device_class:
+            if 'switch' in state:
+                device_class = 'switch'
+            elif 'switches' in state:
+                device_class = ['switch'] * 4
+
+        if not device_class:
             _LOGGER.error(f"Unknown device_class {deviceid}")
             return
 
