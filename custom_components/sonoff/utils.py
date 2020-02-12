@@ -118,3 +118,45 @@ def decrypt(payload: dict, devicekey: str):
 
     except:
         return None
+
+
+SWITCH = 'switch'
+SWITCH2 = ['switch', 'switch']
+SWITCH3 = ['switch', 'switch', 'switch']
+SWITCH4 = ['switch', 'switch', 'switch', 'switch']
+
+UIIDS = {
+    1: SWITCH,
+    2: SWITCH2,
+    3: SWITCH3,
+    4: SWITCH4,
+    5: SWITCH,
+    6: SWITCH,
+    7: SWITCH2,
+    8: SWITCH3,
+    9: SWITCH4,
+    28: 'remote',  # Sonoff RF Brigde 433
+    29: SWITCH2,
+    30: SWITCH3,
+    31: SWITCH4,
+    44: 'light',  # Sonoff D1
+    81: SWITCH,
+    82: SWITCH2,
+    83: SWITCH3,
+    84: SWITCH4,
+}
+
+TYPES = {
+    'plug': SWITCH,
+    'strip': SWITCH4,
+    'light': 'light',
+    'rf': 'remote'
+}
+
+
+def guess_device_class(config: dict):
+    """Get device_class from uiid (from eWeLink Servers) or from zeroconf type.
+    """
+    uiid = config.get('uiid')
+    type_ = config.get('type')
+    return UIIDS.get(uiid) or TYPES.get(type_)

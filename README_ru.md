@@ -31,6 +31,7 @@
 - [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (показывает энергопотребление)
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html)
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html)
+- [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (диммер с управлением яркостью)
 - Выключатели [MiniTiger](https://ru.aliexpress.com/item/33016227381.html)
 
 ## Примеры конфигов

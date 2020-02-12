@@ -3,7 +3,7 @@ import json
 import logging
 import time
 from functools import lru_cache
-from typing import Callable
+from typing import Callable, Optional
 
 import requests
 import voluptuous as vol
@@ -82,17 +82,12 @@ def setup(hass, hass_config):
         deviceid = devicecfg['deviceid']
 
         device_class = devicecfg.get('device_class')
-        # set default device_class - switch
         if not device_class:
-            if 'switch' in state:
-                device_class = 'switch'
-            elif 'switches' in state:
-                device_class = ['switch'] * 4
-            elif devicecfg.get('uiid') == 28:
-                device_class = 'remote'
-            else:
-                _LOGGER.error(f"Unknown device_class {deviceid}")
-                return
+            device_class = utils.guess_device_class(devicecfg)
+
+        if not device_class:
+            _LOGGER.error(f"Unknown device_class {deviceid}")
+            return
 
         if isinstance(device_class, str):
             # read single device_class
@@ -183,6 +178,9 @@ class EWeLinkListener:
 
         if 'deviceid' not in config:
             config['deviceid'] = deviceid
+
+        # strip, plug, light, rf
+        config['type'] = properties['type']
 
         self.devices[deviceid] = EWeLinkDevice(host, config, state, zeroconf)
 
@@ -299,7 +297,7 @@ class EWeLinkDevice:
         except:
             _LOGGER.warning(f"Can't send {command} to {self.deviceid}")
 
-    def is_on(self, channels: list):
+    def is_on(self, channels: Optional[list]):
         """Включены ли указанные каналы.
 
         :param channels: Список каналов для проверки, либо None
@@ -314,7 +312,7 @@ class EWeLinkDevice:
         else:
             return self.state['switch'] == 'on'
 
-    def turn_on(self, channels: list):
+    def turn_on(self, channels: Optional[list]):
         """Включает указанные каналы.
 
         :param channels: Список каналов, либо None
@@ -328,7 +326,7 @@ class EWeLinkDevice:
         else:
             self.send('switch', {'switch': 'on'})
 
-    def turn_off(self, channels: list):
+    def turn_off(self, channels: Optional[list]):
         """Выключает указанные каналы.
 
         :param channels: Список каналов, либо None
