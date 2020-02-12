@@ -19,7 +19,7 @@ Pros:
 - support TH and POW device attributes
 - support Sonoff RF Bridge 433 for receive and send commands
 - instant device state update with Multicast
-- (optional) load devices list from eWeLink Servers (with names and apikey/devicekey) and save it locally
+- (optional) load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
 - (optional) change device type (switch, light or fan)
 - (optional) set multi-channel device as one light with brightness control
   
