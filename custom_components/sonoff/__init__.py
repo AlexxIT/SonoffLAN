@@ -219,6 +219,7 @@ class EWeLinkDevice:
 
         self._browser = None
         self._update_handlers = []
+        self._seq = None
 
     @property
     @lru_cache()
@@ -262,6 +263,12 @@ class EWeLinkDevice:
         }
 
         _LOGGER.debug(f"Properties: {properties}")
+
+        # for some users devices send updates several times
+        if self._seq == properties['seq']:
+            return
+
+        self._seq = properties['seq']
 
         if properties.get('encrypt'):
             data = utils.decrypt(properties, self.config['devicekey'])
