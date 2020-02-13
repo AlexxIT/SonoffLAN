@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.10 - 2020-02-13
+
+### Fixed
+
+- Some users devices send updates several times
+- Some users had update errors at startup
+
 ## 0.2.9 - 2020-02-12
 
 ### Added
