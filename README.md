@@ -38,6 +38,7 @@ Pros:
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html)
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands)
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control)
+- [Sonoff S55](https://www.itead.cc/sonoff-s55.html)
 - Switch [MiniTiger](https://ru.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
 
 ## Config Examples

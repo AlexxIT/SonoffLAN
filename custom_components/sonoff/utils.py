@@ -153,6 +153,7 @@ UIIDS = {
 TYPES = {
     'plug': SWITCH,
     'enhanced_plug': SWITCH,  # Sonoff Pow R2?
+    'th_plug': SWITCH,  # Sonoff TH?
     'strip': SWITCH4,
     'light': 'light',
     'rf': 'remote'
