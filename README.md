@@ -22,7 +22,12 @@ Pros:
 - (optional) load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
 - (optional) change device type (switch, light or fan)
 - (optional) set multi-channel device as one light with brightness control
-  
+
+**Component review from DrZzs**
+
+[![Component review from DrZzs](https://img.youtube.com/vi/DsTqOlrQQ1k/0.jpg)](https://www.youtube.com/watch?v=DsTqOlrQQ1k)
+
+
 ## Tested Devices
 
 - Sonoff Basic (first version)
@@ -31,8 +36,8 @@ Pros:
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
 - [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (show power consumption)
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html)
-- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html)
-- [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (light with brightness control)
+- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands)
+- [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control)
 - Switch [MiniTiger](https://ru.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
 
 ## Config Examples
