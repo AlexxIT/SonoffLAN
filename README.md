@@ -1,5 +1,6 @@
 # Sonoff control from Home Assistant
 
+[![Donate](https://img.shields.io/badge/donate-Coffee-yellow.svg)](https://www.buymeacoffee.com/AlexxIT)
 [![Donate](https://img.shields.io/badge/donate-Yandex-red.svg)](https://money.yandex.ru/to/41001428278477)
 
 - [Readme in Russian](README_ru.md)
