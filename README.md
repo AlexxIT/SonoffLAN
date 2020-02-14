@@ -54,6 +54,14 @@ sonoff:
   password: mypassword
 ```
 
+or
+
+```yaml
+sonoff:
+  username: +910123456789  # important to use country code
+  password: mypassword
+```
+
 Advanced config:
 
 ```yaml

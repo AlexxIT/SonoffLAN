@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.11 - 2020-02-14
+
+### Added
+
+- Support login with phone number
+
 ## 0.2.10 - 2020-02-13
 
 ### Fixed

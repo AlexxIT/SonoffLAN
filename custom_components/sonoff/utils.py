@@ -60,7 +60,7 @@ def load_devices(username: str, password: str):
 
     params = _params(email=username, password=password) \
         if '@' in username else \
-        _params(phoneNumber=f"{username}", password=password)
+        _params(phoneNumber=username, password=password)
 
     hex_dig = hmac.new(b'6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM',
                        json.dumps(params).encode(),
