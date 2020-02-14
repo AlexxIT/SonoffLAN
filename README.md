@@ -30,7 +30,7 @@ Pros:
 
 ## Tested Devices
 
-- Sonoff Basic (first version)
+- [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html)
 - [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode)
 - [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity)
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
@@ -39,7 +39,9 @@ Pros:
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands)
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control)
 - [Sonoff S55](https://www.itead.cc/sonoff-s55.html)
-- Switch [MiniTiger](https://ru.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
+- [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
+- [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
+- [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
 
 ## Config Examples
 
