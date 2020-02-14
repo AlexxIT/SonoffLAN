@@ -33,7 +33,7 @@ class EWeLinkRemote(RemoteDevice):
         # `entity_id` попадёт имя в латинице.
         self._name = self.device.name
 
-    def _update(self, device: EWeLinkDevice, schedule_update: bool = True):
+    def _update(self, device: EWeLinkDevice):
         for k, v in device.state.items():
             if k.startswith('rfTrig'):
                 channel = int(k[6:])

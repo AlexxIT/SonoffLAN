@@ -1,5 +1,6 @@
 # Sonoff control from Home Assistant
 
+[![Donate](https://img.shields.io/badge/donate-Coffee-yellow.svg)](https://www.buymeacoffee.com/AlexxIT)
 [![Donate](https://img.shields.io/badge/donate-Yandex-red.svg)](https://money.yandex.ru/to/41001428278477)
 
 - [Readme in Russian](README_ru.md)
@@ -22,18 +23,26 @@ Pros:
 - (optional) load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
 - (optional) change device type (switch, light or fan)
 - (optional) set multi-channel device as one light with brightness control
-  
+
+**Component review from DrZzs**
+
+[![Component review from DrZzs](https://img.youtube.com/vi/DsTqOlrQQ1k/0.jpg)](https://www.youtube.com/watch?v=DsTqOlrQQ1k)
+
+
 ## Tested Devices
 
-- Sonoff Basic (first version)
+- [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html)
 - [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode)
 - [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity)
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
 - [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (show power consumption)
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html)
-- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html)
-- [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (light with brightness control)
-- Switch [MiniTiger](https://ru.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
+- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands)
+- [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control)
+- [Sonoff S55](https://www.itead.cc/sonoff-s55.html)
+- [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
+- [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
+- [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
 
 ## Config Examples
 

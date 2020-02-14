@@ -32,14 +32,14 @@ class EWeLinkLight(EWeLinkToggle):
 
         super().__init__(device, channels)
 
-    def _update(self, device: EWeLinkDevice, schedule_update: bool = True):
+    def _update(self, device: EWeLinkDevice):
         # яркость прилетает не всегда
         if 'brightness' in device.state:
             self._brightness = round(device.state['brightness'] * 2.55)
 
         self._is_on = device.is_on(None)
 
-        if schedule_update:
+        if self.hass:
             self.schedule_update_ha_state()
 
     @property
@@ -75,7 +75,7 @@ class EWeLinkLightGroup(EWeLinkLight):
     яркости.
     """
 
-    def _update(self, device: EWeLinkDevice, schedule_update: bool = True):
+    def _update(self, device: EWeLinkDevice):
         for k in ATTRS:
             if k in device.state:
                 self._attrs[k] = device.state[k]
@@ -89,7 +89,7 @@ class EWeLinkLightGroup(EWeLinkLight):
         else:
             self._is_on = False
 
-        if schedule_update:
+        if self.hass:
             self.schedule_update_ha_state()
 
     def turn_on(self, **kwargs) -> None:

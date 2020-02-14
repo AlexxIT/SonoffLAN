@@ -86,6 +86,10 @@ def setup(hass, hass_config):
             device_class = utils.guess_device_class(devicecfg)
 
         if not device_class:
+            _LOGGER.warning(f"Please, send this device type to developer: "
+                            f"{devicecfg['type']}")
+
+            # Fallback guess device_class from device state
             if 'switch' in state:
                 device_class = 'switch'
             elif 'switches' in state:
@@ -215,6 +219,7 @@ class EWeLinkDevice:
 
         self._browser = None
         self._update_handlers = []
+        self._seq = None
 
     @property
     @lru_cache()
@@ -258,6 +263,12 @@ class EWeLinkDevice:
         }
 
         _LOGGER.debug(f"Properties: {properties}")
+
+        # for some users devices send updates several times
+        if self._seq == properties['seq']:
+            return
+
+        self._seq = properties['seq']
 
         if properties.get('encrypt'):
             data = utils.decrypt(properties, self.config['devicekey'])
