@@ -43,6 +43,7 @@ Pros:
 - [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
 - [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
 - [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
+- [Sonoff Slampher R2](https://www.aliexpress.com/item/32864320127.html)
 
 ## Config Examples
 

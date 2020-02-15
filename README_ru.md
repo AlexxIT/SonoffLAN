@@ -33,6 +33,7 @@
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html)
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (диммер с управлением яркостью)
 - Выключатели [MiniTiger](https://ru.aliexpress.com/item/33016227381.html)
+- [Sonoff Slampher R2](https://www.aliexpress.com/item/32864320127.html)
 
 ## Примеры конфигов
 
