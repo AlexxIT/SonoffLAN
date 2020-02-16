@@ -8,7 +8,9 @@
 
 Home Assistant Custom Component for control **eWeLink** (Sonoff) devices over Local Network (LAN).
 
-Devices should have firmware v3+. LAN should support **Multicast** traffic.
+**Support only devices with firmware v3+**. LAN should support **Multicast** traffic.
+
+Supporting firmware v2 **in development**. Unfortunately I do not have such devices.
 
 Pros:
 
@@ -28,6 +30,9 @@ Pros:
 
 [![Component review from DrZzs](https://img.youtube.com/vi/DsTqOlrQQ1k/0.jpg)](https://www.youtube.com/watch?v=DsTqOlrQQ1k)
 
+There is another great component by [@peterbuga](https://github.com/peterbuga/HASS-sonoff-ewelink), that works with cloud servers.
+
+Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant), [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.
 
 ## Tested Devices
 
@@ -35,7 +40,7 @@ Pros:
 - [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode)
 - [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity)
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
-- [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (show power consumption)
+- [Sonoff Pow R2](https://www.itead.cc/sonoff-pow-r2.html) (show power consumption)
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html)
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands)
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control)
@@ -222,7 +227,8 @@ logger:
 
 ## Useful Links
 
+- https://github.com/peterbuga/HASS-sonoff-ewelink
+- https://github.com/beveradb/sonoff-lan-mode-homeassistant
 - https://github.com/mattsaxon/sonoff-lan-mode-homeassistant
 - https://blog.ipsumdomus.com/sonoff-switch-complete-hack-without-firmware-upgrade-1b2d6632c01
 - https://github.com/itead/Sonoff_Devices_DIY_Tools/blob/master/SONOFF%20DIY%20MODE%20Protocol%20Doc%20v1.4.md
-- https://github.com/peterbuga/HASS-sonoff-ewelink
