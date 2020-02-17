@@ -25,6 +25,7 @@
 ## Протестированные устройства
 
 - Sonoff Basic (самой первой версии)
+- [Sonoff BasicR3](https://www.itead.cc/sonoff-basicr3-wifi-diy-smart-switch.html)
 - [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (режим DIY включать не нужно)
 - [Sonoff TH](https://www.itead.cc/sonoff-th.html) (показывает температуру и влажность)
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
