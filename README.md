@@ -10,7 +10,7 @@ Home Assistant Custom Component for control **eWeLink** (Sonoff) devices over Lo
 
 **Support only devices with firmware v3+**. LAN should support **Multicast** traffic.
 
-Supporting firmware v2 **in development**. Unfortunately I do not have such devices.
+Supporting firmware v2 **in development** ([read more](https://github.com/AlexxIT/SonoffLAN/issues/31)). Unfortunately I do not have such devices.
 
 Pros:
 
