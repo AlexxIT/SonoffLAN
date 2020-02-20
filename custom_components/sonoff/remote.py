@@ -31,8 +31,13 @@ class EWeLinkRemote(RemoteDevice):
         # init button names
         self._buttons = {}
         for remote in self.device.config.get('tags', {}).get('zyx_info', []):
-            for button in remote.get('buttonName'):
-                self._buttons.update(button)
+            buttons = remote['buttonName']
+            if len(buttons) > 1:
+                for button in buttons:
+                    self._buttons.update(button)
+            else:
+                k = next(iter(buttons[0]))
+                self._buttons.update({k: remote['name']})
 
     async def async_added_to_hass(self) -> None:
         # Присваиваем имя устройства только на этом этапе, чтоб в `entity_id`
