@@ -84,7 +84,7 @@ def load_devices(username: str, password: str):
         resp = r.json()
 
     headers = {'Authorization': "Bearer " + resp['at']}
-    params = _params(apiKey=resp['user']['apikey'], lang='en')
+    params = _params(apiKey=resp['user']['apikey'], lang='en', getTags=1)
     r = requests.get(f"https://{region}-api.coolkit.cc:8080/api/user/device",
                      headers=headers, params=params)
     resp = r.json()
