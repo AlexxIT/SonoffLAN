@@ -44,6 +44,7 @@ Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-h
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html)
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands)
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control)
+- [Sonoff S31](https://www.itead.cc/sonoff-s31.html) (show power consumption)
 - [Sonoff S55](https://www.itead.cc/sonoff-s55.html)
 - [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
 - [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
@@ -215,6 +216,19 @@ The list will be loaded from the local file even if you remove `username` and `p
 ## HACS Support
 
 ![Support HACS](hacs.png)
+
+## Common problems
+
+Not show devices.
+
+1. Currently only supported devices with firmware v3+
+2. Common problems with Multicast:
+- two routers
+- docker with port forwarding
+- virtual machine with port forwarding
+- virtualbox
+- linux firewall
+- linux network driver
 
 ## Component Debugging
 
