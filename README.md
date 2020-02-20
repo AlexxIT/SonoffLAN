@@ -123,14 +123,17 @@ sonoff:
 
 ## Sonoff RF Bridge 433
 
-Although the component supports training, it is recommended to train buttons through the eWeLink application.
+Component will create only one entity per RF Bridge - `remote.sonoff_1000abcdefg`. Entity RF Buttons or RF Sensors are not created!
 
-The component can both send RF signals and receive them, but only previously trained.
+You can receive signals from RF Buttons and RF Sensors through an event `sonoff.remote`. And send signals using the service `remote.send_command`.
+
+Although the component supports training, it is recommended to train RF Buttons through the eWeLink application.
 
 When a command is received, the event `sonoff.remote` is generated with a button number and response time (in UTC, sends the device).
 
 `command` - number of the button in the eWeLink application.
 
+Example for receive RF signal via [Automation](https://www.home-assistant.io/integrations/automation/):
 
 ```yaml
 automation:
@@ -139,19 +142,25 @@ automation:
     platform: event
     event_type: sonoff.remote
     event_data:
-      command: 0
+      command: 0  # button/sensor number in eWeLink application
   action:
     service: homeassistant.toggle
     entity_id: remote.sonoff_1000abcdefg
+```
 
+Example for send RF signal via [Script](https://www.home-assistant.io/integrations/script/):
+
+```yaml
 script:
+  # send one command
   send_num1:
     sequence:
     - service: remote.send_command
       data:
         entity_id: remote.sonoff_1000abcdefg
-        command: 1
+        command: 1  # button/sensor number in eWeLink application
 
+  # send three commands
   send_num111:
     sequence:
     - service: remote.send_command
@@ -219,16 +228,16 @@ The list will be loaded from the local file even if you remove `username` and `p
 
 ## Common problems
 
-Not show devices.
+**Devices are not displayed**
 
 1. Currently only supported devices with firmware v3+
 2. Common problems with Multicast:
-- two routers
-- docker with port forwarding
-- virtual machine with port forwarding
-- virtualbox
-- linux firewall
-- linux network driver
+   - two routers
+   - docker with port forwarding
+   - virtual machine with port forwarding
+   - virtualbox
+   - linux firewall
+   - linux network driver
 
 ## Component Debugging
 
@@ -259,7 +268,7 @@ switch: 'on'
 
 Example service params to multi-channel switch:
 
-```
+```yaml
 device: 1000123456
 command: switches
 switches: [{outlet: 0, switch: 'off'}]
@@ -267,7 +276,7 @@ switches: [{outlet: 0, switch: 'off'}]
 
 Example service params to dimmer:
 
-```
+```yaml
 device: 1000123456
 command: dimmable
 switch: 'on'
