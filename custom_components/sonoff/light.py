@@ -3,7 +3,7 @@ import logging
 from homeassistant.components.light import SUPPORT_BRIGHTNESS, \
     ATTR_BRIGHTNESS
 
-from . import DOMAIN, EWeLinkDevice, utils
+from . import DOMAIN, EWeLinkDevice
 from .toggle import ATTRS, EWeLinkToggle
 
 _LOGGER = logging.getLogger(__name__)
@@ -16,15 +16,32 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     deviceid = discovery_info['deviceid']
     channels = discovery_info['channels']
     device = hass.data[DOMAIN][deviceid]
-    if channels and len(channels) >= 2:
+    if device.config['type'] == 'fan_light':
+        add_entities([SonoffFan03Light(device)])
+    elif device.config['type'] == 'light':
+        add_entities([SonoffD1(device)])
+    elif channels and len(channels) >= 2:
         add_entities([EWeLinkLightGroup(device, channels)])
-    elif utils.guess_device_class(device.config) == 'light':
-        add_entities([EWeLinkLight(device)])
     else:
         add_entities([EWeLinkToggle(device, channels)])
 
 
-class EWeLinkLight(EWeLinkToggle):
+class SonoffFan03Light(EWeLinkToggle):
+    def _update(self, device: EWeLinkDevice):
+        # яркость прилетает не всегда
+        self._is_on = device.state.get('light')
+
+        if self.hass:
+            self.schedule_update_ha_state()
+
+    def turn_on(self, **kwargs) -> None:
+        self.device.send('light', {'light': 'on'})
+
+    def turn_off(self, **kwargs) -> None:
+        self.device.send('light', {'light': 'off'})
+
+
+class SonoffD1(EWeLinkToggle):
     """Sonoff D1"""
 
     def __init__(self, device: EWeLinkDevice, channels: list = None):
@@ -66,7 +83,7 @@ class EWeLinkLight(EWeLinkToggle):
                                       'mode': 0})
 
 
-class EWeLinkLightGroup(EWeLinkLight):
+class EWeLinkLightGroup(SonoffD1):
     """Отличается от обычного переключателя настройкой яркости. Логично
     использовать только для двух и более каналов. Умеет запоминать яркость на
     момент выключения.
