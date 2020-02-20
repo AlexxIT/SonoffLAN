@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.12 - 2020-02-20
+
+### Added
+
+- Service `sonoff.send_command` to send low-level commands.
+
+### Changed
+
+- Unknown devices will be added as binary_sensor. For debugging purposes
+
 ## 0.2.11 - 2020-02-14
 
 ### Added

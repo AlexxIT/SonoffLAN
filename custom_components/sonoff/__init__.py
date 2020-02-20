@@ -9,6 +9,7 @@ import requests
 import voluptuous as vol
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_DEVICES, \
     CONF_NAME, CONF_DEVICE_CLASS
+from homeassistant.core import ServiceCall
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.discovery import load_platform
 
@@ -94,10 +95,8 @@ def setup(hass, hass_config):
                 device_class = 'switch'
             elif 'switches' in state:
                 device_class = ['switch'] * 4
-
-        if not device_class:
-            _LOGGER.error(f"Unknown device_class {deviceid}")
-            return
+            else:
+                device_class = 'binary_sensor'
 
         if isinstance(device_class, str):
             # read single device_class
@@ -119,6 +118,20 @@ def setup(hass, hass_config):
 
     listener = EWeLinkListener(devices)
     listener.listen(add_device)
+
+    async def send_command(call: ServiceCall):
+        data = dict(call.data)
+
+        deviceid = str(data.pop('device'))
+        command = data.pop('command')
+
+        device = devices.get(deviceid)
+        if isinstance(device, EWeLinkDevice):
+            device.send(command, data)
+        else:
+            _LOGGER.error(f"Device {deviceid} not found")
+
+    hass.services.register(DOMAIN, 'send_command', send_command)
 
     return True
 

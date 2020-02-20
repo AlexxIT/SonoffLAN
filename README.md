@@ -232,11 +232,47 @@ Not show devices.
 
 ## Component Debugging
 
+Add to your `configuration.yaml`:
+
 ```yaml
 logger:
   default: info
   logs:
     custom_components.sonoff: debug
+```
+
+Only devices with firmware 3 and higher are supported.
+
+All unknown devices with command `switch` support will be added as `switch`.
+
+All other unknown devices will be added as `binary_sensor` (always `off`). The full state of the device is displayed in its attributes.
+
+The component adds the service `sonoff.send_command` to send low-level commands.
+
+Example service params to single switch:
+
+```yaml
+device: 1000123456
+command: switch
+switch: 'on'
+```
+
+Example service params to multi-channel switch:
+
+```
+device: 1000123456
+command: switches
+switches: [{outlet: 0, switch: 'off'}]
+```
+
+Example service params to dimmer:
+
+```
+device: 1000123456
+command: dimmable
+switch: 'on'
+brightness: 50
+mode: 0
 ```
 
 ## Useful Links
