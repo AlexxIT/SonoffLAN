@@ -244,9 +244,12 @@ class EWeLinkDevice:
     def devicekey(self):
         return self.config.get('devicekey')
 
-    @property
-    @lru_cache()
-    def name(self):
+    def name(self, channels: Optional[list] = None):
+        if channels and len(channels) == 1:
+            ch = str(channels[0] - 1)
+            return self.config.get('tags', {}).get('ck_channel_name', {}).\
+                get(ch) or self.config.get('name')
+
         return self.config.get('name')
 
     def listen(self, update_device: Callable):

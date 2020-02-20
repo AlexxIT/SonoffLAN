@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.13 - 2020-02-21
+
+### Added
+
+- Load friendly names for **RF Bridge** buttons from cloud servers
+- **RF Bridge** displays last pressed button in attributes
+- Send **RF Bridge** command by button name
+- Load friendly names for multi-channel switch child buttons from cloud servers
+
+You must manually delete the `.sonoff.json` file to update names.
+
 ## 0.2.12 - 2020-02-20
 
 ### Added

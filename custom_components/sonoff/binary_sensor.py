@@ -15,7 +15,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
 
 class EWeLinkBinarySensor(BinarySensorDevice):
-    def __init__(self, device):
+    def __init__(self, device: EWeLinkDevice):
         self.device = device
         self._attrs = {}
         self._name = None
@@ -25,7 +25,7 @@ class EWeLinkBinarySensor(BinarySensorDevice):
         device.listen(self._update)
 
     async def async_added_to_hass(self) -> None:
-        self._name = self.device.name
+        self._name = self.device.name()
 
     def _update(self, device: EWeLinkDevice):
         state = {k: json.dumps(v) for k, v in device.state.items()}
