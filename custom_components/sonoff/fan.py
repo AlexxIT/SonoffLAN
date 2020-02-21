@@ -110,7 +110,10 @@ class SonoffFan02(SonoffFanBase):
 
 class SonoffFan03(SonoffFanBase):
     def _update(self, device: EWeLinkDevice):
-        if device.state.get('fan'):
+        if 'fan' not in device.state:
+            return
+
+        if device.state['fan'] == 'on':
             speed = device.state.get('speed', 1)
             self._speed = self.speed_list[speed]
         else:

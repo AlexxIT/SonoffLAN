@@ -28,8 +28,10 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
 class SonoffFan03Light(EWeLinkToggle):
     def _update(self, device: EWeLinkDevice):
-        # яркость прилетает не всегда
-        self._is_on = device.state.get('light')
+        if 'light' not in device.state:
+            return
+
+        self._is_on = device.state['light'] == 'on'
 
         if self.hass:
             self.schedule_update_ha_state()
