@@ -1,3 +1,4 @@
 {
-    "name": "Sonoff with eWeLink firmware"
+    "name": "Sonoff LAN",
+    "render_readme": true
 }
