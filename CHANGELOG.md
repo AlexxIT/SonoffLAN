@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.14 - 2020-02-22
+
+### Added
+
+- Support Sonoff iFan02 and iFan03 (light and fan with speed control)
+
 ## 0.2.13 - 2020-02-21
 
 ### Added
