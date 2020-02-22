@@ -112,7 +112,7 @@ def setup(hass, hass_config):
                         channels = component['channels']
                         component = component['device_class']
                     else:
-                        component, channels = component.popitem()
+                        component, channels = list(component.items())[0]
 
                     if isinstance(channels, int):
                         channels = [channels]
