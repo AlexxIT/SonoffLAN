@@ -104,14 +104,20 @@ def setup(hass, hass_config):
             load_platform(hass, device_class, DOMAIN, info, hass_config)
         else:
             # read multichannel device_class
-            for channels, component in enumerate(device_class, 1):
+            for i, component in enumerate(device_class, 1):
                 # read device with several channels
                 if isinstance(component, dict):
-                    channels = component['channels']
-                    component = component['device_class']
+                    if 'device_class' in component:
+                        # backward compatibility
+                        channels = component['channels']
+                        component = component['device_class']
+                    else:
+                        component, channels = list(component.items())[0]
 
-                if isinstance(channels, int):
-                    channels = [channels]
+                    if isinstance(channels, int):
+                        channels = [channels]
+                else:
+                    channels = [i]
 
                 info = {'deviceid': deviceid, 'channels': channels}
                 load_platform(hass, component, DOMAIN, info, hass_config)
