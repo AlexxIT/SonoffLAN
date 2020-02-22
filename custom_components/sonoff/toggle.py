@@ -77,8 +77,8 @@ class EWeLinkToggle(ToggleEntity):
     def is_on(self) -> bool:
         return self._is_on
 
-    def turn_on(self, **kwargs) -> None:
-        self.device.turn_on(self.channels)
+    async def async_turn_on(self, **kwargs) -> None:
+        await self.device.turn_on(self.channels)
 
-    def turn_off(self, **kwargs) -> None:
-        self.device.turn_off(self.channels)
+    async def async_turn_off(self, **kwargs) -> None:
+        await self.device.turn_off(self.channels)

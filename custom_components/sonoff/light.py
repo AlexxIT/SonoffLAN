@@ -9,7 +9,8 @@ from .toggle import ATTRS, EWeLinkToggle
 _LOGGER = logging.getLogger(__name__)
 
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
+async def async_setup_platform(hass, config, add_entities,
+                               discovery_info=None):
     if discovery_info is None:
         return
 
@@ -57,13 +58,13 @@ class EWeLinkLight(EWeLinkToggle):
             ATTR_BRIGHTNESS: self.brightness
         }
 
-    def turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs) -> None:
         if ATTR_BRIGHTNESS in kwargs:
             self._brightness = kwargs[ATTR_BRIGHTNESS]
 
         br = round(self._brightness / 2.55)
-        self.device.send('dimmable', {'switch': 'on', 'brightness': br,
-                                      'mode': 0})
+        await self.device.send('dimmable', {'switch': 'on', 'brightness': br,
+                                            'mode': 0})
 
 
 class EWeLinkLightGroup(EWeLinkLight):
@@ -92,7 +93,7 @@ class EWeLinkLightGroup(EWeLinkLight):
         if self.hass:
             self.schedule_update_ha_state()
 
-    def turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs) -> None:
         if ATTR_BRIGHTNESS in kwargs:
             self._brightness = kwargs[ATTR_BRIGHTNESS]
 
@@ -101,7 +102,7 @@ class EWeLinkLightGroup(EWeLinkLight):
 
         # если попытались включить при нулевой яркости - включаем весь свет
         if cnt == 0 and ATTR_BRIGHTNESS not in kwargs:
-            self.device.turn_on(self.channels)
+            await self.device.turn_on(self.channels)
             return
 
         # первую часть света включаем, вторую - выключаем
@@ -109,4 +110,4 @@ class EWeLinkLightGroup(EWeLinkLight):
             channel: i < cnt
             for i, channel in enumerate(self.channels)
         }
-        self.device.turn_bulk(channels)
+        await self.device.turn_bulk(channels)
