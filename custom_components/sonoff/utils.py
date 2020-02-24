@@ -10,7 +10,7 @@ from base64 import b64decode
 from base64 import b64encode
 from typing import Optional
 
-import requests
+from aiohttp import ClientSession
 
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
@@ -51,7 +51,7 @@ def save_cache(filename: str, data: dict):
         json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
 
 
-def load_devices(username: str, password: str):
+async def load_devices(username: str, password: str, session: ClientSession):
     """Load device list from ewelink servers."""
 
     # add a plus to the beginning of the phone number
@@ -66,9 +66,10 @@ def load_devices(username: str, password: str):
                        json.dumps(params).encode(),
                        digestmod=hashlib.sha256).digest()
     headers = {'Authorization': "Sign " + base64.b64encode(hex_dig).decode()}
-    r = requests.post('https://eu-api.coolkit.cc:8080/api/user/login',
-                      headers=headers, json=params)
-    resp = r.json()
+
+    r = await session.post('https://eu-api.coolkit.cc:8080/api/user/login',
+                           headers=headers, json=params)
+    resp = await r.json()
 
     if 'region' not in resp:
         info = 'email' if '@' in username else 'phone'
@@ -78,16 +79,17 @@ def load_devices(username: str, password: str):
     region = resp['region']
     if region != 'eu':
         _LOGGER.debug(f"Redirect to region: {region}")
-        r = requests.post(
+        r = await session.post(
             f"https://{region}-api.coolkit.cc:8080/api/user/login",
             headers=headers, json=params)
-        resp = r.json()
+        resp = await r.json()
 
     headers = {'Authorization': "Bearer " + resp['at']}
     params = _params(apiKey=resp['user']['apikey'], lang='en', getTags=1)
-    r = requests.get(f"https://{region}-api.coolkit.cc:8080/api/user/device",
-                     headers=headers, params=params)
-    resp = r.json()
+    r = await session.get(
+        f"https://{region}-api.coolkit.cc:8080/api/user/device",
+        headers=headers, params=params)
+    resp = await r.json()
 
     if resp['error'] == 0:
         return resp['devicelist']

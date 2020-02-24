@@ -10,7 +10,8 @@ from . import DOMAIN, EWeLinkDevice
 _LOGGER = logging.getLogger(__name__)
 
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
+async def async_setup_platform(hass, config, add_entities,
+                               discovery_info=None):
     if discovery_info is None:
         return
 
@@ -85,11 +86,11 @@ class EWeLinkRemote(RemoteDevice):
     def state_attributes(self):
         return self._attrs
 
-    def turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs):
         self._state = True
         self.schedule_update_ha_state()
 
-    def turn_off(self, **kwargs):
+    async def turn_off(self, **kwargs):
         self._state = False
         self.schedule_update_ha_state()
 
@@ -110,11 +111,11 @@ class EWeLinkRemote(RemoteDevice):
                 _LOGGER.error(f"Not found RF button for {command}")
                 return
 
-            self.device.transmit(int(channel))
+            await self.device.transmit(int(channel))
 
-    def learn_command(self, **kwargs):
+    async def async_learn_command(self, **kwargs):
         if not self._state:
             return
 
         command = kwargs[ATTR_COMMAND]
-        self.device.learn(int(command[0]))
+        await self.device.learn(int(command[0]))

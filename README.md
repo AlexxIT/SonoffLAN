@@ -37,22 +37,23 @@ Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-h
 
 ## Tested Devices
 
-- [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html)
-- [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode)
+- [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html) fw 3.0.1
+- [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode) fw 3.3.0
 - [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity)
-- [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
+- [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html) fw 3.3.0
 - [Sonoff Pow R2](https://www.itead.cc/sonoff-pow-r2.html) (show power consumption)
-- [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html)
-- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands)
-- [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control)
-- [Sonoff iFan02](https://www.itead.cc/ru/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control)
-- [Sonoff iFan03](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control)
+- [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html) fw 3.4.0
+- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) fw 3.3.0
+- [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0
+- [Sonoff iFan02](https://www.itead.cc/ru/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control) fw 3.3.0
+- [Sonoff iFan03](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) 3.4.0
 - [Sonoff S26](https://www.itead.cc/sonoff-s26-wifi-smart-plug.html)
 - [Sonoff S31](https://www.itead.cc/sonoff-s31.html) (show power consumption)
 - [Sonoff S55](https://www.itead.cc/sonoff-s55.html)
+- [Sonoff SV](https://www.itead.cc/ru/sonoff-sv.html) fw 3.0.1
 - [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
 - [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
-- [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
+- [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line) fw 3.3.0
 
 ## Config Examples
 

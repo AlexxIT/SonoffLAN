@@ -5,13 +5,14 @@ import time
 from functools import lru_cache
 from typing import Callable, Optional
 
-import requests
 import voluptuous as vol
+from aiohttp import ClientSession
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_DEVICES, \
     CONF_NAME, CONF_DEVICE_CLASS
 from homeassistant.core import ServiceCall
-from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.discovery import load_platform
+from homeassistant.helpers import config_validation as cv, discovery
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.typing import HomeAssistantType
 
 from zeroconf import ServiceBrowser, Zeroconf
 from . import utils
@@ -38,20 +39,22 @@ CONFIG_SCHEMA = vol.Schema({
 ZEROCONF_NAME = 'eWeLink_{}._ewelink._tcp.local.'
 
 
-def setup(hass, hass_config):
+async def async_setup(hass: HomeAssistantType, hass_config: dict):
     config = hass_config[DOMAIN]
 
     # load devices from file in config dir
     filename = hass.config.path('.sonoff.json')
     devices = utils.load_cache(filename)
 
+    session = async_get_clientsession(hass)
+
     # reload devices from ewelink servers
     if CONF_USERNAME in config and CONF_PASSWORD in config:
         reload = config.get('reload', 'once')
         if not devices or reload == 'always':
             _LOGGER.debug("Load device list from ewelink servers")
-            newdevices = utils.load_devices(config[CONF_USERNAME],
-                                            config[CONF_PASSWORD])
+            newdevices = await utils.load_devices(
+                config[CONF_USERNAME], config[CONF_PASSWORD], session)
             if newdevices is not None:
                 newdevices = {p['deviceid']: p for p in newdevices}
                 utils.save_cache(filename, newdevices)
@@ -101,7 +104,8 @@ def setup(hass, hass_config):
         if isinstance(device_class, str):
             # read single device_class
             info = {'deviceid': deviceid, 'channels': None}
-            load_platform(hass, device_class, DOMAIN, info, hass_config)
+            hass.async_create_task(discovery.async_load_platform(
+                hass, device_class, DOMAIN, info, hass_config))
         else:
             # read multichannel device_class
             for i, component in enumerate(device_class, 1):
@@ -120,9 +124,10 @@ def setup(hass, hass_config):
                     channels = [i]
 
                 info = {'deviceid': deviceid, 'channels': channels}
-                load_platform(hass, component, DOMAIN, info, hass_config)
+                hass.async_create_task(discovery.async_load_platform(
+                    hass, component, DOMAIN, info, hass_config))
 
-    listener = EWeLinkListener(devices)
+    listener = EWeLinkListener(devices, session)
     listener.listen(add_device)
 
     async def send_command(call: ServiceCall):
@@ -133,22 +138,23 @@ def setup(hass, hass_config):
 
         device = devices.get(deviceid)
         if isinstance(device, EWeLinkDevice):
-            device.send(command, data)
+            await device.send(command, data)
         else:
             _LOGGER.error(f"Device {deviceid} not found")
 
-    hass.services.register(DOMAIN, 'send_command', send_command)
+    hass.services.async_register(DOMAIN, 'send_command', send_command)
 
     return True
 
 
 class EWeLinkListener:
-    def __init__(self, devices: dict):
+    def __init__(self, devices: dict, session: ClientSession):
         """Ищет устройства ewelink в локально сети.
 
         :param devices: словарь настроек устройств, где ключ - deviceid
         """
         self.devices = devices
+        self.session = session
 
         self._add_device = None
 
@@ -211,7 +217,8 @@ class EWeLinkListener:
         # strip, plug, light, rf
         config['type'] = properties['type']
 
-        self.devices[deviceid] = EWeLinkDevice(host, config, state, zeroconf)
+        self.devices[deviceid] = EWeLinkDevice(host, config, state, zeroconf,
+                                               self.session)
 
         self._add_device(config, state)
 
@@ -224,7 +231,7 @@ class EWeLinkDevice:
     """Класс, реализующий протокол взаимодействия с устройством."""
 
     def __init__(self, host: str, config: dict, state: dict,
-                 zeroconf: Zeroconf = None):
+                 zeroconf: Zeroconf, session: ClientSession):
         """
         :param host: IP-адрес устройства (для отправки на него команд)
         :param config: конфиг устройства (deviceid, devicekey...)
@@ -234,7 +241,8 @@ class EWeLinkDevice:
         self.host = host
         self.config = config
         self.state = state
-        self.zeroconf = zeroconf
+        self._session = session
+        self._zeroconf = zeroconf
 
         self._browser = None
         self._update_handlers = []
@@ -253,8 +261,8 @@ class EWeLinkDevice:
     def name(self, channels: Optional[list] = None):
         if channels and len(channels) == 1:
             ch = str(channels[0] - 1)
-            return self.config.get('tags', {}).get('ck_channel_name', {}).\
-                get(ch) or self.config.get('name')
+            return self.config.get('tags', {}).get('ck_channel_name', {}). \
+                       get(ch) or self.config.get('name')
 
         return self.config.get('name')
 
@@ -268,7 +276,7 @@ class EWeLinkDevice:
 
         if not self._browser:
             service = ZEROCONF_NAME.format(self.deviceid)
-            self._browser = ServiceBrowser(self.zeroconf, service,
+            self._browser = ServiceBrowser(self._zeroconf, service,
                                            listener=self)
 
     def update_service(self, zeroconf: Zeroconf, type_: str, name: str):
@@ -307,7 +315,22 @@ class EWeLinkDevice:
         for handler in self._update_handlers:
             handler(self)
 
-    def send(self, command: str, data: dict):
+    def is_on(self, channels: Optional[list]):
+        """Включены ли указанные каналы.
+
+        :param channels: Список каналов для проверки, либо None
+        :return: Список bool, либо один bool соответственно
+        """
+        if channels:
+            switches = self.state['switches']
+            return [
+                switches[channel - 1]['switch'] == 'on'
+                for channel in channels
+            ]
+        else:
+            return self.state['switch'] == 'on'
+
+    async def send(self, command: str, data: dict):
         """Послать команду на устройство.
 
         :param command: Команда (switch, switches и т.п.)
@@ -327,31 +350,18 @@ class EWeLinkDevice:
         _LOGGER.debug(f"Send {command} to {self.deviceid}: {payload}")
 
         try:
-            r = requests.post(f'http://{self.host}:8081/zeroconf/{command}',
-                              json=payload, timeout=10)
-            _LOGGER.debug(r.text)
-            if r.json()['error'] != 0:
+            r = await self._session.post(
+                f"http://{self.host}:8081/zeroconf/{command}",
+                json=payload)
+            _LOGGER.debug(await r.text())
+            resp = await r.json()
+            if resp['error'] != 0:
                 _LOGGER.warning(
                     f"Error when send {command} to {self.deviceid}")
         except:
             _LOGGER.warning(f"Can't send {command} to {self.deviceid}")
 
-    def is_on(self, channels: Optional[list]):
-        """Включены ли указанные каналы.
-
-        :param channels: Список каналов для проверки, либо None
-        :return: Список bool, либо один bool соответственно
-        """
-        if channels:
-            switches = self.state['switches']
-            return [
-                switches[channel - 1]['switch'] == 'on'
-                for channel in channels
-            ]
-        else:
-            return self.state['switch'] == 'on'
-
-    def turn_on(self, channels: Optional[list]):
+    async def turn_on(self, channels: Optional[list]):
         """Включает указанные каналы.
 
         :param channels: Список каналов, либо None
@@ -361,11 +371,11 @@ class EWeLinkDevice:
                 {'outlet': channel - 1, 'switch': 'on'}
                 for channel in channels
             ]
-            self.send('switches', {'switches': switches})
+            await self.send('switches', {'switches': switches})
         else:
-            self.send('switch', {'switch': 'on'})
+            await self.send('switch', {'switch': 'on'})
 
-    def turn_off(self, channels: Optional[list]):
+    async def turn_off(self, channels: Optional[list]):
         """Выключает указанные каналы.
 
         :param channels: Список каналов, либо None
@@ -375,11 +385,11 @@ class EWeLinkDevice:
                 {'outlet': channel - 1, 'switch': 'off'}
                 for channel in channels
             ]
-            self.send('switches', {'switches': switches})
+            await self.send('switches', {'switches': switches})
         else:
-            self.send('switch', {'switch': 'off'})
+            await self.send('switch', {'switch': 'off'})
 
-    def turn_bulk(self, channels: dict):
+    async def turn_bulk(self, channels: dict):
         """Включает, либо выключает указанные каналы.
 
         :param channels: Словарь каналов, ключ - номер канала, значение - bool
@@ -388,10 +398,10 @@ class EWeLinkDevice:
             {'outlet': channel - 1, 'switch': 'on' if switch else 'off'}
             for channel, switch in channels.items()
         ]
-        self.send('switches', {'switches': switches})
+        await self.send('switches', {'switches': switches})
 
-    def transmit(self, channel: int):
-        self.send('transmit', {"rfChl": channel})
+    async def transmit(self, channel: int):
+        await self.send('transmit', {"rfChl": channel})
 
-    def learn(self, channel: int):
-        self.send('capture', {"rfChl": channel})
+    async def learn(self, channel: int):
+        await self.send('capture', {"rfChl": channel})
