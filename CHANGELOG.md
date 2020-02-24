@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.15 - 2020-02-24
+
+### Changed
+
+- The component is completely rewritten to asynchronous work.
+
 ## 0.2.14 - 2020-02-22
 
 ### Added
