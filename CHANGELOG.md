@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.16 - 2020-02-25
+
+### Added
+
+- `default_class` config option 
+
 ## 0.2.15 - 2020-02-24
 
 ### Changed

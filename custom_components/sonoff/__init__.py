@@ -21,11 +21,15 @@ _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = 'sonoff'
 
+CONF_RELOAD = 'reload'
+CONF_DEFAULT_CLASS = 'default_class'
+
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
         vol.Optional(CONF_USERNAME): cv.string,
         vol.Optional(CONF_PASSWORD): cv.string,
-        vol.Optional('reload', default='once'): cv.string,
+        vol.Optional(CONF_RELOAD, default='once'): cv.string,
+        vol.Optional(CONF_DEFAULT_CLASS, default='switch'): cv.string,
         vol.Optional(CONF_DEVICES): {
             cv.string: vol.Schema({
                 vol.Optional(CONF_NAME): cv.string,
@@ -50,7 +54,7 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
 
     # reload devices from ewelink servers
     if CONF_USERNAME in config and CONF_PASSWORD in config:
-        reload = config.get('reload', 'once')
+        reload = config.get(CONF_RELOAD, 'once')
         if not devices or reload == 'always':
             _LOGGER.debug("Load device list from ewelink servers")
             newdevices = await utils.load_devices(
@@ -77,6 +81,9 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
 
     hass.data[DOMAIN] = devices
 
+    default_class = config[CONF_DEFAULT_CLASS]
+    utils.init_device_class(default_class)
+
     def add_device(devicecfg: dict, state: dict):
         """Add device to Home Assistant.
 
@@ -95,9 +102,9 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
 
             # Fallback guess device_class from device state
             if 'switch' in state:
-                device_class = 'switch'
+                device_class = default_class
             elif 'switches' in state:
-                device_class = ['switch'] * 4
+                device_class = [default_class] * 4
             else:
                 device_class = 'binary_sensor'
 

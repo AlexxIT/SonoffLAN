@@ -138,46 +138,51 @@ def decrypt(payload: dict, devicekey: str):
         return None
 
 
-SWITCH = 'switch'
-SWITCH2 = ['switch', 'switch']
-SWITCH3 = ['switch', 'switch', 'switch']
-SWITCH4 = ['switch', 'switch', 'switch', 'switch']
-SWITCHX = ['switch']
+UIIDS = {}
+TYPES = {}
 
-UIIDS = {
-    1: SWITCH,
-    2: SWITCH2,
-    3: SWITCH3,
-    4: SWITCH4,
-    5: SWITCH,
-    6: SWITCH,
-    7: SWITCH2,
-    8: SWITCH3,
-    9: SWITCH4,
-    28: 'remote',  # Sonoff RF Brigde 433
-    29: SWITCH2,
-    30: SWITCH3,
-    31: SWITCH4,
-    34: ['light', {'fan': [2, 3, 4]}],  # Sonoff iFan02 and iFan03
-    44: 'light',  # Sonoff D1
-    77: SWITCHX,  # Sonoff Micro
-    78: SWITCHX,
-    81: SWITCH,
-    82: SWITCH2,
-    83: SWITCH3,
-    84: SWITCH4,
-    107: SWITCHX
-}
 
-TYPES = {
-    'plug': SWITCH,  # Basic, Mini
-    'enhanced_plug': SWITCH,  # Sonoff Pow R2?
-    'th_plug': SWITCH,  # Sonoff TH?
-    'strip': SWITCH4,  # 4CH Pro R2, Micro!, iFan02!
-    'light': 'light',  # D1
-    'rf': 'remote',  # RF Bridge 433
-    'fan_light': ['light', 'fan'],  # iFan03
-}
+def init_device_class(default_class: str = 'switch'):
+    switch1 = default_class
+    switch2 = [default_class, default_class]
+    switch3 = [default_class, default_class, default_class]
+    switch4 = [default_class, default_class, default_class, default_class]
+    switchx = [default_class]
+
+    UIIDS.update({
+        1: switch1,
+        2: switch2,
+        3: switch3,
+        4: switch4,
+        5: switch1,
+        6: switch1,
+        7: switch2,
+        8: switch3,
+        9: switch4,
+        28: 'remote',  # Sonoff RF Brigde 433
+        29: switch2,
+        30: switch3,
+        31: switch4,
+        34: ['light', {'fan': [2, 3, 4]}],  # Sonoff iFan02 and iFan03
+        44: 'light',  # Sonoff D1
+        77: switchx,  # Sonoff Micro
+        78: switchx,
+        81: switch1,
+        82: switch2,
+        83: switch3,
+        84: switch4,
+        107: switchx
+    })
+
+    TYPES.update({
+        'plug': switch1,  # Basic, Mini
+        'enhanced_plug': switch1,  # Sonoff Pow R2?
+        'th_plug': switch1,  # Sonoff TH?
+        'strip': switch4,  # 4CH Pro R2, Micro!, iFan02!
+        'light': 'light',  # D1
+        'rf': 'remote',  # RF Bridge 433
+        'fan_light': ['light', 'fan'],  # iFan03
+    })
 
 
 def guess_device_class(config: dict):

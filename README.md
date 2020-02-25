@@ -47,6 +47,7 @@ Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-h
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0
 - [Sonoff iFan02](https://www.itead.cc/ru/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control) fw 3.3.0
 - [Sonoff iFan03](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) 3.4.0
+- [Sonoff S20](https://www.itead.cc/smart-socket.html)
 - [Sonoff S26](https://www.itead.cc/sonoff-s26-wifi-smart-plug.html)
 - [Sonoff S31](https://www.itead.cc/sonoff-s31.html) (show power consumption)
 - [Sonoff S55](https://www.itead.cc/sonoff-s55.html)
@@ -80,9 +81,10 @@ sonoff:
   username: mymail@gmail.com
   password: mypassword
   reload: always  # update device list every time HA starts
+  default_class: light  # changes the default class of all devices from switch to light
   devices:
     1000abcdefg:
-      device_class: light
+      device_class: light  # changes the default class of the device from switch to light
 ```
 
 Devices can be set manually, without connecting to Cloud Servers. But in this case, you need to know the `devicekey` for each device.
@@ -106,8 +108,7 @@ sonoff:
       device_class: light
     1000abcde1: # children's light (double switch, one light entity)
       device_class:
-      - device_class: light
-        channels: [1, 2]
+      - light: [1, 2]
     1000abcde2: # toilet light and fan (double switch)
       device_class: [light, fan]
     1000abcde3: # bedroom light and backlight (double switch)
@@ -116,8 +117,7 @@ sonoff:
       device_class:
       - light # zone 1 (channel 1)
       - light # zone 2 (channel 2)
-      - device_class: light # zone 3 (channels 3 and 4)
-        channels: [3, 4]
+      - light: [3, 4] # zone 3 (channels 3 and 4)
 ```
 
 Minimum config for devices only in DIY mode:
@@ -189,7 +189,8 @@ sensor:
 - **reload** - *optional*  
   `always` - load device list every time HA starts  
   `once` - (default) download device list once
-- **device_class** - *optional*, overrides device type (default all **sonoff** devices are displayed as `switch`). May be a string or an array of strings (for multi-channel switches). Supports types: `light`, `fan`, `switch`, `remote` (only for *Sonoff RF Bridge 433*).
+- **default_class** - *optional*, default `switch`, overrides default device type of all devices
+- **device_class** - *optional*, overrides device type (default all **sonoff** devices are displayed as `default_class`). May be a string or an array of strings (for multi-channel switches). Supports types: `light`, `fan`, `switch`, `remote` (only for *Sonoff RF Bridge 433*).
 
 
 ## Work with Cloud Servers
