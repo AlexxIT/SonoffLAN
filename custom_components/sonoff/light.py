@@ -37,11 +37,11 @@ class SonoffFan03Light(EWeLinkToggle):
         if self.hass:
             self.schedule_update_ha_state()
 
-    def turn_on(self, **kwargs) -> None:
-        self.device.send('light', {'light': 'on'})
+    async def turn_on(self, **kwargs) -> None:
+        await self.device.send('light', {'light': 'on'})
 
-    def turn_off(self, **kwargs) -> None:
-        self.device.send('light', {'light': 'off'})
+    async def turn_off(self, **kwargs) -> None:
+        await self.device.send('light', {'light': 'off'})
 
 
 class SonoffD1(EWeLinkToggle):
