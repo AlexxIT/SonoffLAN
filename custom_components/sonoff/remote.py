@@ -90,7 +90,7 @@ class EWeLinkRemote(RemoteDevice):
         self._state = True
         self.schedule_update_ha_state()
 
-    async def turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs):
         self._state = False
         self.schedule_update_ha_state()
 

@@ -100,17 +100,17 @@ class SonoffFan02(SonoffFanBase):
         if self.hass:
             self.schedule_update_ha_state()
 
-    async def set_speed(self, speed: str) -> None:
+    async def async_set_speed(self, speed: str) -> None:
         channels = IFAN02_STATES.get(speed)
         await self.device.turn_bulk(channels)
 
-    async def turn_on(self, speed: Optional[str] = None, **kwargs) -> None:
+    async def async_turn_on(self, speed: Optional[str] = None, **kwargs):
         if speed:
-            await self.set_speed(speed)
+            await self.async_set_speed(speed)
         else:
             await self.device.turn_on([2])
 
-    async def turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs) -> None:
         await self.device.turn_off([2])
 
 
@@ -128,15 +128,15 @@ class SonoffFan03(SonoffFanBase):
         if self.hass:
             self.schedule_update_ha_state()
 
-    async def set_speed(self, speed: str) -> None:
+    async def async_set_speed(self, speed: str) -> None:
         speed = self.speed_list.index(speed)
         await self.device.send('fan', {'fan': 'on', 'speed': speed})
 
-    async def turn_on(self, speed: Optional[str] = None, **kwargs) -> None:
+    async def async_turn_on(self, speed: Optional[str] = None, **kwargs):
         if speed:
-            await self.set_speed(speed)
+            await self.async_set_speed(speed)
         else:
             await self.device.send('fan', {'fan': 'on'})
 
-    async def turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs) -> None:
         await self.device.send('fan', {'fan': 'off'})
