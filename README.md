@@ -5,7 +5,6 @@
 [![Donate](https://img.shields.io/badge/donate-Yandex-red.svg)](https://money.yandex.ru/to/41001428278477)
 
 - [Readme in Russian](https://github.com/AlexxIT/SonoffLAN/blob/master/README_ru.md)
-- [Changelog in English](https://github.com/AlexxIT/SonoffLAN/blob/master/CHANGELOG.md)
 
 Home Assistant Custom Component for control **eWeLink** (Sonoff) devices over Local Network (LAN).
 
