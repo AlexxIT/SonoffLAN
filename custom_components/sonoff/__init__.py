@@ -376,6 +376,11 @@ class EWeLinkDevice:
         except:
             _LOGGER.warning(f"Can't send {command} to {self.deviceid}")
 
+    @property
+    @lru_cache()
+    def is_th_3_4_0(self):
+        return self.state.get('deviceType') in ('normal', 'temperature')
+
     async def turn_on(self, channels: Optional[list]):
         """Включает указанные каналы.
 
@@ -387,6 +392,9 @@ class EWeLinkDevice:
                 for channel in channels
             ]
             await self.send('switches', {'switches': switches})
+        elif self.is_th_3_4_0:
+            await self.send('switch', {'switch': 'on', 'mainSwitch': 'on',
+                                       'deviceType': 'normal'})
         else:
             await self.send('switch', {'switch': 'on'})
 
@@ -401,6 +409,9 @@ class EWeLinkDevice:
                 for channel in channels
             ]
             await self.send('switches', {'switches': switches})
+        elif self.is_th_3_4_0:
+            await self.send('switch', {'switch': 'off', 'mainSwitch': 'off',
+                                       'deviceType': 'normal'})
         else:
             await self.send('switch', {'switch': 'off'})
 
