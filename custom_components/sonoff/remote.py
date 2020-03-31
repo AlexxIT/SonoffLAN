@@ -62,9 +62,6 @@ class EWeLinkRemote(RemoteDevice):
                 channel = int(k[5:])
                 _LOGGER.info(f"Learn command {channel}: {v}")
 
-            else:
-                break
-
     @property
     def should_poll(self) -> bool:
         # Устройство само присылает обновление своего состояния по Multicast.
