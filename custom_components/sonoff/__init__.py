@@ -310,10 +310,11 @@ class EWeLinkDevice:
         _LOGGER.debug(f"Properties: {properties}")
 
         # for some users devices send updates several times
-        if self._seq == properties['seq']:
-            return
+        if 'seq' in properties:
+            if self._seq == properties['seq']:
+                return
 
-        self._seq = properties['seq']
+            self._seq = properties['seq']
 
         if properties.get('encrypt'):
             data = utils.decrypt(properties, self.config['devicekey'])
