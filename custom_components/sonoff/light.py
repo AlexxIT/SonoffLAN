@@ -3,28 +3,48 @@ import logging
 from homeassistant.components.light import SUPPORT_BRIGHTNESS, \
     ATTR_BRIGHTNESS
 
-from . import DOMAIN, EWeLinkDevice, utils
+from . import DOMAIN, EWeLinkDevice
 from .toggle import ATTRS, EWeLinkToggle
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
+async def async_setup_platform(hass, config, add_entities,
+                               discovery_info=None):
     if discovery_info is None:
         return
 
     deviceid = discovery_info['deviceid']
     channels = discovery_info['channels']
     device = hass.data[DOMAIN][deviceid]
-    if channels and len(channels) >= 2:
+    if device.config['type'] == 'fan_light':
+        add_entities([SonoffFan03Light(device)])
+    elif device.config['type'] == 'light':
+        add_entities([SonoffD1(device)])
+    elif channels and len(channels) >= 2:
         add_entities([EWeLinkLightGroup(device, channels)])
-    elif utils.guess_device_class(device.config) == 'light':
-        add_entities([EWeLinkLight(device)])
     else:
         add_entities([EWeLinkToggle(device, channels)])
 
 
-class EWeLinkLight(EWeLinkToggle):
+class SonoffFan03Light(EWeLinkToggle):
+    def _update(self, device: EWeLinkDevice):
+        if 'light' not in device.state:
+            return
+
+        self._is_on = device.state['light'] == 'on'
+
+        if self.hass:
+            self.schedule_update_ha_state()
+
+    async def async_turn_on(self, **kwargs) -> None:
+        await self.device.send('light', {'light': 'on'})
+
+    async def async_turn_off(self, **kwargs) -> None:
+        await self.device.send('light', {'light': 'off'})
+
+
+class SonoffD1(EWeLinkToggle):
     """Sonoff D1"""
 
     def __init__(self, device: EWeLinkDevice, channels: list = None):
@@ -57,16 +77,16 @@ class EWeLinkLight(EWeLinkToggle):
             ATTR_BRIGHTNESS: self.brightness
         }
 
-    def turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs) -> None:
         if ATTR_BRIGHTNESS in kwargs:
             self._brightness = kwargs[ATTR_BRIGHTNESS]
 
         br = round(self._brightness / 2.55)
-        self.device.send('dimmable', {'switch': 'on', 'brightness': br,
-                                      'mode': 0})
+        await self.device.send('dimmable', {'switch': 'on', 'brightness': br,
+                                            'mode': 0})
 
 
-class EWeLinkLightGroup(EWeLinkLight):
+class EWeLinkLightGroup(SonoffD1):
     """Отличается от обычного переключателя настройкой яркости. Логично
     использовать только для двух и более каналов. Умеет запоминать яркость на
     момент выключения.
@@ -92,7 +112,7 @@ class EWeLinkLightGroup(EWeLinkLight):
         if self.hass:
             self.schedule_update_ha_state()
 
-    def turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs) -> None:
         if ATTR_BRIGHTNESS in kwargs:
             self._brightness = kwargs[ATTR_BRIGHTNESS]
 
@@ -101,7 +121,7 @@ class EWeLinkLightGroup(EWeLinkLight):
 
         # если попытались включить при нулевой яркости - включаем весь свет
         if cnt == 0 and ATTR_BRIGHTNESS not in kwargs:
-            self.device.turn_on(self.channels)
+            await self.device.turn_on(self.channels)
             return
 
         # первую часть света включаем, вторую - выключаем
@@ -109,4 +129,4 @@ class EWeLinkLightGroup(EWeLinkLight):
             channel: i < cnt
             for i, channel in enumerate(self.channels)
         }
-        self.device.turn_bulk(channels)
+        await self.device.turn_bulk(channels)

@@ -1,14 +1,16 @@
-# Sonoff control from Home Assistant
+# Sonoff LAN control from Home Assistant
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 [![Donate](https://img.shields.io/badge/donate-Coffee-yellow.svg)](https://www.buymeacoffee.com/AlexxIT)
 [![Donate](https://img.shields.io/badge/donate-Yandex-red.svg)](https://money.yandex.ru/to/41001428278477)
 
-- [Readme in Russian](README_ru.md)
-- [Changelog in English](CHANGELOG.md)
+- [Readme in Russian](https://github.com/AlexxIT/SonoffLAN/blob/master/README_ru.md)
 
 Home Assistant Custom Component for control **eWeLink** (Sonoff) devices over Local Network (LAN).
 
-Devices should have firmware v3+. LAN should support **Multicast** traffic.
+**Support only devices with firmware v3+**. LAN should support **Multicast** traffic.
+
+Supporting firmware v2 **in development** ([read more](https://github.com/AlexxIT/SonoffLAN/issues/31)). Unfortunately I do not have such devices.
 
 Pros:
 
@@ -24,26 +26,37 @@ Pros:
 - (optional) change device type (switch, light or fan)
 - (optional) set multi-channel device as one light with brightness control
 
-**Component review from DrZzs**
+**Component review from DrZzs (HOWTO about HACS)**
 
 [![Component review from DrZzs](https://img.youtube.com/vi/DsTqOlrQQ1k/0.jpg)](https://www.youtube.com/watch?v=DsTqOlrQQ1k)
 
+There is another great component by [@peterbuga](https://github.com/peterbuga/HASS-sonoff-ewelink), that works with cloud servers.
+
+Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant), [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.
 
 ## Tested Devices
 
-- [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html)
-- [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode)
-- [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity)
-- [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html)
-- [Sonoff Pow](https://www.itead.cc/sonoff-pow.html) (show power consumption)
-- [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html)
-- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands)
-- [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control)
+- [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html) fw 3.0.1
+- [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode) fw 3.3.0
+- [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity) fw 3.4.0
+- [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html) fw 3.3.0
+- [Sonoff Pow R2](https://www.itead.cc/sonoff-pow-r2.html) (show power consumption)
+- [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html) fw 3.4.0
+- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) fw 3.3.0, 3.4.0
+- [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0, 3.5.0
+- [Sonoff Dual](https://www.itead.cc/sonoff-dual.html)
+- [Sonoff iFan02](https://www.itead.cc/ru/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control) fw 3.3.0
+- [Sonoff iFan03](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) fw 3.4.0
+- [Sonoff S20](https://www.itead.cc/smart-socket.html)
+- [Sonoff S26](https://www.itead.cc/sonoff-s26-wifi-smart-plug.html)
+- [Sonoff S31](https://www.itead.cc/sonoff-s31.html) (show power consumption)
 - [Sonoff S55](https://www.itead.cc/sonoff-s55.html)
+- [Sonoff SV](https://www.itead.cc/ru/sonoff-sv.html) fw 3.0.1
 - [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
 - [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
 - [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line)
 - [Sonoff Slampher R2](https://www.aliexpress.com/item/32864320127.html)
+
 
 ## Config Examples
 
@@ -70,9 +83,10 @@ sonoff:
   username: mymail@gmail.com
   password: mypassword
   reload: always  # update device list every time HA starts
+  default_class: light  # changes the default class of all devices from switch to light
   devices:
     1000abcdefg:
-      device_class: light
+      device_class: light  # changes the default class of the device from switch to light
 ```
 
 Devices can be set manually, without connecting to Cloud Servers. But in this case, you need to know the `devicekey` for each device.
@@ -96,8 +110,7 @@ sonoff:
       device_class: light
     1000abcde1: # children's light (double switch, one light entity)
       device_class:
-      - device_class: light
-        channels: [1, 2]
+      - light: [1, 2]
     1000abcde2: # toilet light and fan (double switch)
       device_class: [light, fan]
     1000abcde3: # bedroom light and backlight (double switch)
@@ -106,8 +119,7 @@ sonoff:
       device_class:
       - light # zone 1 (channel 1)
       - light # zone 2 (channel 2)
-      - device_class: light # zone 3 (channels 3 and 4)
-        channels: [3, 4]
+      - light: [3, 4] # zone 3 (channels 3 and 4)
 ```
 
 Minimum config for devices only in DIY mode:
@@ -118,42 +130,48 @@ sonoff:
 
 ## Sonoff RF Bridge 433
 
-Although the component supports training, it is recommended to train buttons through the eWeLink application.
+**Video HOWTO from @KPeyanski**
 
-The component can both send RF signals and receive them, but only previously trained.
+Install from [HACS](https://hacs.xyz/), automation and event trigger:
+
+[![Component review from DrZzs](https://img.youtube.com/vi/QD1K7s01cak/0.jpg)](https://www.youtube.com/watch?v=QD1K7s01cak?t=284)
+
+Component will create only one entity per RF Bridge - `remote.sonoff_1000abcdefg`. Entity RF Buttons or RF Sensors are not created!
+
+You can receive signals from RF Buttons and RF Sensors through an event `sonoff.remote`. And send signals using the service `remote.send_command`.
+
+Although the component supports training, it is recommended to train RF Buttons through the eWeLink application.
 
 When a command is received, the event `sonoff.remote` is generated with a button number and response time (in UTC, sends the device).
 
 `command` - number of the button in the eWeLink application.
 
+Example for receive RF signal via [Automation](https://www.home-assistant.io/integrations/automation/):
 
 ```yaml
 automation:
-- alias: Test RF
+- alias: Receive RF Button1
   trigger:
     platform: event
     event_type: sonoff.remote
     event_data:
-      command: 0
+      name: Button1  # button/sensor name in eWeLink application
   action:
     service: homeassistant.toggle
-    entity_id: remote.sonoff_1000abcdefg
+    entity_id: switch.sonoff_1000abcdefg
+```
 
+Example for send RF signal via [Script](https://www.home-assistant.io/integrations/script/):
+
+```yaml
 script:
-  send_num1:
+  send_button1:
+    alias: Send RF Button1
     sequence:
     - service: remote.send_command
       data:
         entity_id: remote.sonoff_1000abcdefg
-        command: 1
-
-  send_num111:
-    sequence:
-    - service: remote.send_command
-      data:
-        entity_id: remote.sonoff_1000abcdefg
-        command: [1, 1, 1]
-        delay_secs: 1
+        command: Button1  # button name in eWeLink application
 ```
 
 ## Sonoff TH и Pow
@@ -179,7 +197,8 @@ sensor:
 - **reload** - *optional*  
   `always` - load device list every time HA starts  
   `once` - (default) download device list once
-- **device_class** - *optional*, overrides device type (default all **sonoff** devices are displayed as `switch`). May be a string or an array of strings (for multi-channel switches). Supports types: `light`, `fan`, `switch`, `remote` (only for *Sonoff RF Bridge 433*).
+- **default_class** - *optional*, default `switch`, overrides default device type of all devices
+- **device_class** - *optional*, overrides device type (default all **sonoff** devices are displayed as `default_class`). May be a string or an array of strings (for multi-channel switches). Supports types: `light`, `fan`, `switch`, `remote` (only for *Sonoff RF Bridge 433*).
 
 
 ## Work with Cloud Servers
@@ -212,7 +231,22 @@ The list will be loaded from the local file even if you remove `username` and `p
 
 ![Support HACS](hacs.png)
 
+## Common problems
+
+**Devices are not displayed**
+
+1. Currently only supported devices with firmware v3+
+2. Common problems with Multicast:
+   - two routers
+   - docker with port forwarding
+   - virtual machine with port forwarding
+   - virtualbox
+   - linux firewall
+   - linux network driver
+
 ## Component Debugging
+
+Add to your `configuration.yaml`:
 
 ```yaml
 logger:
@@ -221,9 +255,44 @@ logger:
     custom_components.sonoff: debug
 ```
 
+Only devices with firmware 3 and higher are supported.
+
+All unknown devices with command `switch` support will be added as `switch`.
+
+All other unknown devices will be added as `binary_sensor` (always `off`). The full state of the device is displayed in its attributes.
+
+The component adds the service `sonoff.send_command` to send low-level commands.
+
+Example service params to single switch:
+
+```yaml
+device: 1000123456
+command: switch
+switch: 'on'
+```
+
+Example service params to multi-channel switch:
+
+```yaml
+device: 1000123456
+command: switches
+switches: [{outlet: 0, switch: 'off'}]
+```
+
+Example service params to dimmer:
+
+```yaml
+device: 1000123456
+command: dimmable
+switch: 'on'
+brightness: 50
+mode: 0
+```
+
 ## Useful Links
 
+- https://github.com/peterbuga/HASS-sonoff-ewelink
+- https://github.com/beveradb/sonoff-lan-mode-homeassistant
 - https://github.com/mattsaxon/sonoff-lan-mode-homeassistant
 - https://blog.ipsumdomus.com/sonoff-switch-complete-hack-without-firmware-upgrade-1b2d6632c01
 - https://github.com/itead/Sonoff_Devices_DIY_Tools/blob/master/SONOFF%20DIY%20MODE%20Protocol%20Doc%20v1.4.md
-- https://github.com/peterbuga/HASS-sonoff-ewelink

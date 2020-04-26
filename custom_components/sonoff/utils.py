@@ -10,7 +10,7 @@ from base64 import b64decode
 from base64 import b64encode
 from typing import Optional
 
-import requests
+from aiohttp import ClientSession
 
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
@@ -19,6 +19,23 @@ from Crypto.Util.Padding import pad
 from Crypto.Util.Padding import unpad
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def init_zeroconf_singleton(hass):
+    """Generate only one Zeroconf. Component must be loaded before Zeroconf."""
+    from homeassistant.components import zeroconf
+    if isinstance(zeroconf.Zeroconf, type):
+        def zeroconf_singleton():
+            if 'zeroconf' not in hass.data:
+                from zeroconf import Zeroconf
+                _LOGGER.debug("Generate zeroconf singleton")
+                hass.data['zeroconf'] = Zeroconf()
+            else:
+                _LOGGER.debug("Use zeroconf singleton")
+            return hass.data['zeroconf']
+
+        _LOGGER.debug("Init zeroconf singleton")
+        zeroconf.Zeroconf = zeroconf_singleton
 
 
 def _params(**kwargs):
@@ -51,7 +68,7 @@ def save_cache(filename: str, data: dict):
         json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
 
 
-def load_devices(username: str, password: str):
+async def load_devices(username: str, password: str, session: ClientSession):
     """Load device list from ewelink servers."""
 
     # add a plus to the beginning of the phone number
@@ -66,9 +83,10 @@ def load_devices(username: str, password: str):
                        json.dumps(params).encode(),
                        digestmod=hashlib.sha256).digest()
     headers = {'Authorization': "Sign " + base64.b64encode(hex_dig).decode()}
-    r = requests.post('https://eu-api.coolkit.cc:8080/api/user/login',
-                      headers=headers, json=params)
-    resp = r.json()
+
+    r = await session.post('https://eu-api.coolkit.cc:8080/api/user/login',
+                           headers=headers, json=params)
+    resp = await r.json()
 
     if 'region' not in resp:
         info = 'email' if '@' in username else 'phone'
@@ -78,16 +96,17 @@ def load_devices(username: str, password: str):
     region = resp['region']
     if region != 'eu':
         _LOGGER.debug(f"Redirect to region: {region}")
-        r = requests.post(
+        r = await session.post(
             f"https://{region}-api.coolkit.cc:8080/api/user/login",
             headers=headers, json=params)
-        resp = r.json()
+        resp = await r.json()
 
     headers = {'Authorization': "Bearer " + resp['at']}
-    params = _params(apiKey=resp['user']['apikey'], lang='en')
-    r = requests.get(f"https://{region}-api.coolkit.cc:8080/api/user/device",
-                     headers=headers, params=params)
-    resp = r.json()
+    params = _params(apiKey=resp['user']['apikey'], lang='en', getTags=1)
+    r = await session.get(
+        f"https://{region}-api.coolkit.cc:8080/api/user/device",
+        headers=headers, params=params)
+    resp = await r.json()
 
     if resp['error'] == 0:
         return resp['devicelist']
@@ -136,48 +155,59 @@ def decrypt(payload: dict, devicekey: str):
         return None
 
 
-SWITCH = 'switch'
-SWITCH2 = ['switch', 'switch']
-SWITCH3 = ['switch', 'switch', 'switch']
-SWITCH4 = ['switch', 'switch', 'switch', 'switch']
-SWITCHX = ['switch']
+UIIDS = {}
+TYPES = {}
 
-UIIDS = {
-    1: SWITCH,
-    2: SWITCH2,
-    3: SWITCH3,
-    4: SWITCH4,
-    5: SWITCH,
-    6: SWITCH,
-    7: SWITCH2,
-    8: SWITCH3,
-    9: SWITCH4,
-    28: 'remote',  # Sonoff RF Brigde 433
-    29: SWITCH2,
-    30: SWITCH3,
-    31: SWITCH4,
-    44: 'light',  # Sonoff D1
-    77: SWITCHX,  # Sonoff Micro
-    78: SWITCHX,
-    81: SWITCH,
-    82: SWITCH2,
-    83: SWITCH3,
-    84: SWITCH4,
-    107: SWITCHX
-}
 
-TYPES = {
-    'plug': SWITCH,
-    'enhanced_plug': SWITCH,  # Sonoff Pow R2?
-    'th_plug': SWITCH,  # Sonoff TH?
-    'strip': SWITCH4,
-    'light': 'light',
-    'rf': 'remote'
-}
+def init_device_class(default_class: str = 'switch'):
+    switch1 = default_class
+    switch2 = [default_class, default_class]
+    switch3 = [default_class, default_class, default_class]
+    switch4 = [default_class, default_class, default_class, default_class]
+    switchx = [default_class]
+
+    UIIDS.update({
+        1: switch1,
+        2: switch2,
+        3: switch3,
+        4: switch4,
+        5: switch1,
+        6: switch1,
+        7: switch2,
+        8: switch3,
+        9: switch4,
+        28: 'remote',  # Sonoff RF Brigde 433
+        29: switch2,
+        30: switch3,
+        31: switch4,
+        34: ['light', {'fan': [2, 3, 4]}],  # Sonoff iFan02 and iFan03
+        44: 'light',  # Sonoff D1
+        77: switchx,  # Sonoff Micro
+        78: switchx,
+        81: switch1,
+        82: switch2,
+        83: switch3,
+        84: switch4,
+        107: switchx
+    })
+
+    TYPES.update({
+        'plug': switch1,  # Basic, Mini
+        'enhanced_plug': switch1,  # Sonoff Pow R2?
+        'th_plug': switch1,  # Sonoff TH?
+        'strip': switch4,  # 4CH Pro R2, Micro!, iFan02!
+        'light': 'light',  # D1
+        'rf': 'remote',  # RF Bridge 433
+        'fan_light': ['light', 'fan'],  # iFan03
+    })
 
 
 def guess_device_class(config: dict):
     """Get device_class from uiid (from eWeLink Servers) or from zeroconf type.
+
+    Sonoff iFan02 and iFan03 both have uiid 34. But different types (strip and
+    fan_light) and different local API for each type. Without uiid iFan02 will
+    be displayed as 4 switches.
     """
     uiid = config.get('uiid')
     type_ = config.get('type')

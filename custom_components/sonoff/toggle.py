@@ -31,13 +31,12 @@ class EWeLinkToggle(ToggleEntity):
         # Присваиваем имя устройства только на этом этапе, чтоб в `entity_id`
         # было "sonoff_{unique_id}". Если имя присвоить в конструкторе - в
         # `entity_id` попадёт имя в латинице.
-        self._name = self.device.name
+        self._name = self.device.name(self.channels)
 
     def _update(self, device: EWeLinkDevice):
         """Обновление от устройства.
 
         :param device: Устройство в котором произошло обновление
-        :param schedule_update: Оповещать HA о обновление
         """
         for k in ATTRS:
             if k in device.state:
@@ -78,8 +77,8 @@ class EWeLinkToggle(ToggleEntity):
     def is_on(self) -> bool:
         return self._is_on
 
-    def turn_on(self, **kwargs) -> None:
-        self.device.turn_on(self.channels)
+    async def async_turn_on(self, **kwargs) -> None:
+        await self.device.turn_on(self.channels)
 
-    def turn_off(self, **kwargs) -> None:
-        self.device.turn_off(self.channels)
+    async def async_turn_off(self, **kwargs) -> None:
+        await self.device.turn_off(self.channels)

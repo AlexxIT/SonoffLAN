@@ -2,7 +2,8 @@ from . import DOMAIN
 from .toggle import EWeLinkToggle
 
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
+async def async_setup_platform(hass, config, add_entities,
+                               discovery_info=None):
     if discovery_info is None:
         return
 
