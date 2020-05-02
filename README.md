@@ -225,6 +225,10 @@ The list will be loaded from the local file even if you remove `username` and `p
 
 [![Control Sonoff Devices with eWeLink firmware over LAN from Home Assistant](https://img.youtube.com/vi/X7PcYfDy57A/0.jpg)](https://www.youtube.com/watch?v=X7PcYfDy57A)
 
+Change **Name** or **Entity ID** of any device: 
+
+![](demo_rename.gif)
+
 ## HACS Support
 
 ![Support HACS](hacs.png)
@@ -241,6 +245,10 @@ The list will be loaded from the local file even if you remove `username` and `p
    - virtualbox
    - linux firewall
    - linux network driver
+
+**Devices unavailable after reboot**
+
+All devices **unavailable** after each Home Assistant restart. It does not depend on `reload` setting. Devices are automatically detected in the local network after each restart. Sometimes devices appear quickly. Sometimes after a few minutes. If this does not happen, there are some problems with the multicast / router.
 
 ## Component Debugging
 
