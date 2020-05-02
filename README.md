@@ -229,9 +229,9 @@ Change **Name** or **Entity ID** of any device:
 
 ![](demo_rename.gif)
 
-## HACS Support
+Install with [HACS](https://hacs.xyz/)
 
-![Support HACS](hacs.png)
+![](demo_hacs.gif)
 
 ## Common problems
 
