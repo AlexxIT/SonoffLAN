@@ -37,6 +37,7 @@ Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-h
 ## Tested Devices
 
 - [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html) fw 3.0.1
+- [Sonoff Basic R3](https://www.itead.cc/sonoff-basicr3-wifi-diy-smart-switch.html)
 - [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode) fw 3.3.0
 - [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity) fw 3.4.0
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html) fw 3.3.0
@@ -45,16 +46,19 @@ Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-h
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) fw 3.3.0, 3.4.0
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0, 3.5.0
 - [Sonoff Dual](https://www.itead.cc/sonoff-dual.html)
-- [Sonoff iFan02](https://www.itead.cc/ru/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control) fw 3.3.0
+- [Sonoff iFan02](https://www.itead.cc/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control) fw 3.3.0
 - [Sonoff iFan03](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) fw 3.4.0
 - [Sonoff S20](https://www.itead.cc/smart-socket.html)
 - [Sonoff S26](https://www.itead.cc/sonoff-s26-wifi-smart-plug.html)
 - [Sonoff S31](https://www.itead.cc/sonoff-s31.html) (show power consumption)
 - [Sonoff S55](https://www.itead.cc/sonoff-s55.html)
-- [Sonoff SV](https://www.itead.cc/ru/sonoff-sv.html) fw 3.0.1
+- [Sonoff SV](https://www.itead.cc/sonoff-sv.html) fw 3.0.1
+- [Sonoff TX](https://www.itead.cc/sonoff-tx-series-wifi-smart-wall-switches.html)
 - [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
+- [Sonoff Slampher R2](https://www.itead.cc/sonoff-slampher-r2.html)
 - [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
 - [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line) fw 3.3.0
+- [Smart Circuit Breaker](https://www.aliexpress.com/item/4000454408211.html)
 
 ## Config Examples
 
