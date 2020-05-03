@@ -193,6 +193,7 @@ def init_device_class(default_class: str = 'switch'):
 
     TYPES.update({
         'plug': switch1,  # Basic, Mini
+        'diy_plug': switch1,  # Mini in DIY mode
         'enhanced_plug': switch1,  # Sonoff Pow R2?
         'th_plug': switch1,  # Sonoff TH?
         'strip': switch4,  # 4CH Pro R2, Micro!, iFan02!
