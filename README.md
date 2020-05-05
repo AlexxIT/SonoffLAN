@@ -244,9 +244,12 @@ Install with [HACS](https://hacs.xyz/)
 1. Currently only supported devices with firmware v3+
 2. Common problems with Multicast:
    - two routers
-   - docker with port forwarding
-   - virtual machine with port forwarding
-   - virtualbox
+   - **docker** with port forwarding
+     - you must use: [--network host](https://docs.docker.com/network/network-tutorial-host/)
+     - hassio users are okay
+   - **virtual machine** with port forwarding
+     - you must use bridge virtual network mode (not NAT mode)
+   - Oracle VM VirtualBox
    - linux firewall
    - linux network driver
 
