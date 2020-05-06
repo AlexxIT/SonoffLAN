@@ -6,5 +6,7 @@
   "codeowners": [
     "AlexxIT"
   ],
-  "requirements": []
+  "requirements": [
+    "pycryptodome>=3.6.6"
+  ]
 }
