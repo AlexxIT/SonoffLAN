@@ -1,30 +1,37 @@
-# Sonoff LAN control from Home Assistant
+# Sonoff control from Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 [![Donate](https://img.shields.io/badge/donate-Coffee-yellow.svg)](https://www.buymeacoffee.com/AlexxIT)
 [![Donate](https://img.shields.io/badge/donate-Yandex-red.svg)](https://money.yandex.ru/to/41001428278477)
 
-- [Readme in Russian](https://github.com/AlexxIT/SonoffLAN/blob/master/README_ru.md)
+Home Assistant Custom Component for control **eWeLink** (Sonoff) devices.
 
-Home Assistant Custom Component for control **eWeLink** (Sonoff) devices over Local Network (LAN).
+By default all users get latest stable release: [1.10.4](https://github.com/AlexxIT/SonoffLAN/tree/v1.10.4)
 
-**Support only devices with firmware v3+**. LAN should support **Multicast** traffic.
+**OPEN BETA TEST BIG NEW VERSION** of component.  
+Can manage **both local and cloud control at the same time**!
 
-Supporting firmware v2 **in development** ([read more](https://github.com/AlexxIT/SonoffLAN/issues/31)). Unfortunately I do not have such devices.
+![](open_beta.png)
+
+If your internet breaks down - local management will continue to work.  
+If you have problems with multicast on the local network - cloud management will work.  
+If you want only local or only cloud control - this can also be configured.
+
+![](dimmer_d1.png)
 
 Pros:
 
-- work with original eWeLink/Sonoff firmware, no need to flash devices
-- work over local network (LAN), no Cloud Server dependency
+- work with original eWeLink / Sonoff firmware, no need to flash devices
+- work over Local Network and / or Cloud Server
 - work with devices without DIY-mode
 - work with devices in DIY-mode
 - support single and multi-channel devices
 - support TH and POW device attributes
 - support Sonoff RF Bridge 433 for receive and send commands
-- instant device state update with Multicast
-- (optional) load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
-- (optional) change device type (switch, light or fan)
-- (optional) set multi-channel device as one light with brightness control
+- instant device state update with Local Multicast or Cloud Websocket connection
+- load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
+- (optional) change device type (`switch`, `light` or `fan`)
+- (optional) set multi-channel device as single light with brightness control
 
 **Component review from DrZzs (HOWTO about HACS)**
 
@@ -34,7 +41,7 @@ There is another great component by [@peterbuga](https://github.com/peterbuga/HA
 
 Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant), [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.
 
-## Tested Devices
+## Tested Devices (LAN mode)
 
 - [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html) fw 3.0.1
 - [Sonoff Basic R3](https://www.itead.cc/sonoff-basicr3-wifi-diy-smart-switch.html)
@@ -59,10 +66,21 @@ Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-h
 - [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
 - [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line) fw 3.3.0
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000454408211.html)
+- [Smart Circuit Breaker](https://www.aliexpress.com/item/4000351300288.html)
 
 ## Config Examples
 
-Minimum config:
+#### Local and Cloud mode
+
+Recommended for general user.
+
+For devices **on the 3rd firmware version in the same local network with a working multicast**, it uses both local and cloud connections simultaneously.
+
+In other cases, it uses **only a cloud connection**:
+- devices on the 2nd firmware version
+- devices on another LAN / VLAN
+- users with problems setting up multicast traffic
+- when the local connection freezes (yes it happens)
 
 ```yaml
 sonoff:
@@ -78,20 +96,32 @@ sonoff:
   password: mypassword
 ```
 
-Advanced config:
+#### Cloud only mode
+
+Recommended for users with a bad router, which may freeze due to multicast traffic.
 
 ```yaml
 sonoff:
   username: mymail@gmail.com
   password: mypassword
-  reload: always  # update device list every time HA starts
-  default_class: light  # changes the default class of all devices from switch to light
-  devices:
-    1000abcdefg:
-      device_class: light  # changes the default class of the device from switch to light
+  mode: cloud
 ```
 
-Devices can be set manually, without connecting to Cloud Servers. But in this case, you need to know the `devicekey` for each device.
+#### Local mode with load device list from Cloud Servers
+
+Legacy mode. Only downloads a list of devices from Cloud Servers. Works with local protocol. Only works with devices on 3rd firmware.
+
+```yaml
+sonoff:
+  username: mymail@gmail.com
+  password: mypassword
+  mode: local
+  reload: always  # update device list every time HA starts
+```
+
+#### Local only mode (manual get devicekey)
+
+I don’t understand who needs it, but you never know. You must manually get devicekey for each device. Only works with devices on 3rd firmware.
 
 ```yaml
 sonoff:
@@ -100,34 +130,39 @@ sonoff:
       devicekey: f9765c85-463a-4623-9cbe-8d59266cb2e4
 ```
 
+#### Local only mode (DIY devices)
+
+Recommended for users who do not trust Cloud Servers for some reason. Only works with devices in DIY mode.
+
+```yaml
+sonoff:
+```
+
+#### Advanced config for ANY MODE
+
 Examples of using `device_class`:
 
 ```yaml
 sonoff:
   username: mymail@gmail.com
   password: mypassword
-  reload: once
+  default_class: light  # changes the default class of all devices from switch to light
   devices:
-    1000abcde0: # corridor light
+    1000abcde0:  # corridor light
       device_class: light
-    1000abcde1: # children's light (double switch, one light entity)
+      name: My Best Light  # yes, you can set name from yaml
+    1000abcde1:  # children's light (converts multi-channel device into single light entity)
       device_class:
       - light: [1, 2]
-    1000abcde2: # toilet light and fan (double switch)
+    1000abcde2:  # toilet light and fan (double switch)
       device_class: [light, fan]
-    1000abcde3: # bedroom light and backlight (double switch)
+    1000abcde3:  # bedroom light and backlight (double switch)
       device_class: [light, light]
-    1000abcde4: # hall three light zones Sonoff 4CH
+    1000abcde4:  # hall three light zones Sonoff 4CH
       device_class:
-      - light # zone 1 (channel 1)
-      - light # zone 2 (channel 2)
-      - light: [3, 4] # zone 3 (channels 3 and 4)
-```
-
-Minimum config for devices only in DIY mode:
-
-```yaml
-sonoff:
+      - light  # zone 1 (channel 1)
+      - light  # zone 2 (channel 2)
+      - light: [3, 4]  # zone 3 (channels 3 and 4)
 ```
 
 ## Sonoff RF Bridge 433
@@ -184,24 +219,15 @@ Temperature, humidity and other parameters of the devices are stored in their at
 sensor:
 - platform: template
   sensors:
-    temperature_purifier:
+    temperature_th:
       friendly_name: Temperature
       device_class: temperature
       value_template: "{{ state_attr('switch.sonoff_1000abcdefg', 'temperature') }}"
-    humidity_purifier:
+    humidity_th:
       friendly_name: Humidity
       device_class: humidity
       value_template: "{{ state_attr('switch.sonoff_1000abcdefg', 'humidity') }}"
 ```
-
-## Parameters:
-
-- **reload** - *optional*  
-  `always` - load device list every time HA starts  
-  `once` - (default) download device list once
-- **default_class** - *optional*, default `switch`, overrides default device type of all devices
-- **device_class** - *optional*, overrides device type (default all **sonoff** devices are displayed as `default_class`). May be a string or an array of strings (for multi-channel switches). Supports types: `light`, `fan`, `switch`, `remote` (only for *Sonoff RF Bridge 433*).
-
 
 ## Work with Cloud Servers
 
@@ -214,14 +240,6 @@ The list will be loaded only once. At the next start, the list will be loaded fr
 With `reload: always` in the config - the list will be loaded from servers at each start.
 
 The list will be loaded from the local file even if you remove `username` and `password` from the settings.
-
-## Getting devicekey manually
-
-1. Put the device in setup mode
-2. Connect to the Wi-Fi network `ITEAD-10000`, password` 12345678`
-3. Open in browser `http://10.10.7.1/device`
-4. Copy `deviceid` and `apikey` (this is `devicekey`)
-5. Connect to your Wi-Fi network and setup Sonoff via the eWeLink app
 
 ## Demo
 
@@ -237,7 +255,15 @@ Install with [HACS](https://hacs.xyz/)
 
 ![](demo_hacs.gif)
 
-## Common problems
+## Getting devicekey manually
+
+1. Put the device in setup mode
+2. Connect to the Wi-Fi network `ITEAD-10000`, password` 12345678`
+3. Open in browser `http://10.10.7.1/device`
+4. Copy `deviceid` and `apikey` (this is `devicekey`)
+5. Connect to your Wi-Fi network and setup Sonoff via the eWeLink app
+
+## Common problems in only LAN mode
 
 **Devices are not displayed**
 
@@ -268,8 +294,6 @@ logger:
     custom_components.sonoff: debug
 ```
 
-Only devices with firmware 3 and higher are supported.
-
 All unknown devices with command `switch` support will be added as `switch`.
 
 All other unknown devices will be added as `binary_sensor` (always `off`). The full state of the device is displayed in its attributes.
@@ -280,7 +304,6 @@ Example service params to single switch:
 
 ```yaml
 device: 1000123456
-command: switch
 switch: 'on'
 ```
 
@@ -288,7 +311,6 @@ Example service params to multi-channel switch:
 
 ```yaml
 device: 1000123456
-command: switches
 switches: [{outlet: 0, switch: 'off'}]
 ```
 
@@ -296,7 +318,7 @@ Example service params to dimmer:
 
 ```yaml
 device: 1000123456
-command: dimmable
+cmd: dimmable
 switch: 'on'
 brightness: 50
 mode: 0

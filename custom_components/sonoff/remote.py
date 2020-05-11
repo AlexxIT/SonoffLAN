@@ -1,3 +1,8 @@
+"""
+Firmware   | LAN type  | uiid | Product Model
+-----------|-----------|------|--------------
+PSF-BRA-GL | rf        | 28   | RFBridge (Sonoff RF Bridge)
+"""
 import asyncio
 import logging
 from typing import Optional
@@ -5,7 +10,8 @@ from typing import Optional
 from homeassistant.components.remote import RemoteDevice, ATTR_DELAY_SECS, \
     ATTR_COMMAND, SUPPORT_LEARN_COMMAND, DEFAULT_DELAY_SECS
 
-from . import DOMAIN, EWeLinkDevice
+from . import DOMAIN
+from .sonoff_main import EWeLinkRegistry, EWeLinkDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -16,22 +22,20 @@ async def async_setup_platform(hass, config, add_entities,
         return
 
     deviceid = discovery_info['deviceid']
-    device = hass.data[DOMAIN][deviceid]
-    add_entities([EWeLinkRemote(device)])
+    registry = hass.data[DOMAIN]
+    add_entities([EWeLinkRemote(registry, deviceid)])
 
 
-class EWeLinkRemote(RemoteDevice):
-    def __init__(self, device: EWeLinkDevice):
-        self.device = device
-        self._attrs = {}
-        self._name = None
+class EWeLinkRemote(RemoteDevice, EWeLinkDevice):
+    def __init__(self, registry: EWeLinkRegistry, deviceid: str):
+        self.registry = registry
+        self.deviceid = deviceid
         self._state = True
-
-        device.listen(self._update)
 
         # init button names
         self._buttons = {}
-        for remote in self.device.config.get('tags', {}).get('zyx_info', []):
+        device = registry.devices[deviceid]
+        for remote in device.get('tags', {}).get('zyx_info', []):
             buttons = remote['buttonName']
             if len(buttons) > 1:
                 for button in buttons:
@@ -41,13 +45,16 @@ class EWeLinkRemote(RemoteDevice):
                 self._buttons.update({k: remote['name']})
 
     async def async_added_to_hass(self) -> None:
-        # Присваиваем имя устройства только на этом этапе, чтоб в `entity_id`
-        # было "sonoff_{unique_id}". Если имя присвоить в конструкторе - в
-        # `entity_id` попадёт имя в латинице.
-        self._name = self.device.name()
+        self._init(force_refresh=False)
 
-    def _update(self, device: EWeLinkDevice):
-        for k, v in device.state.items():
+    def _update_handler(self, state: dict, attrs: dict):
+        """
+        Cloud States:
+        - {'cmd': 'trigger', 'rfTrig0': '2020-05-10T14:10:17.000Z'}
+        - {'cmd': 'transmit', 'rfChl': 3}
+        - {'cmd': 'capture', 'rfChl': 1},
+        """
+        for k, v in state.items():
             if k.startswith('rfTrig'):
                 channel = k[6:]
                 self._attrs = {'command': int(channel), 'ts': v,
@@ -55,21 +62,15 @@ class EWeLinkRemote(RemoteDevice):
                 self.hass.bus.fire('sonoff.remote', {
                     'entity_id': self.entity_id, **self._attrs})
 
-                if self.hass:
-                    self.schedule_update_ha_state()
-
-            elif k.startswith('rfChl'):
-                channel = int(k[5:])
-                _LOGGER.info(f"Learn command {channel}: {v}")
+                self.schedule_update_ha_state()
 
     @property
     def should_poll(self) -> bool:
-        # Устройство само присылает обновление своего состояния по Multicast.
         return False
 
     @property
     def unique_id(self) -> Optional[str]:
-        return self.device.deviceid
+        return self.deviceid
 
     @property
     def is_on(self) -> bool:
@@ -108,11 +109,15 @@ class EWeLinkRemote(RemoteDevice):
                 _LOGGER.error(f"Not found RF button for {command}")
                 return
 
-            await self.device.transmit(int(channel))
+            # cmd param for local and for cloud mode
+            await self.registry.send(self.deviceid, {
+                'cmd': 'transmit', 'rfChl': int(channel)})
 
     async def async_learn_command(self, **kwargs):
         if not self._state:
             return
 
         command = kwargs[ATTR_COMMAND]
-        await self.device.learn(int(command[0]))
+        # cmd param for local and for cloud mode
+        await self.registry.send(self.deviceid, {
+            'cmd': 'capture', 'rfChl': int(command[0])})

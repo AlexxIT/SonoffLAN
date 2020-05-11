@@ -4,6 +4,6 @@ send_command:
     device:
       description: Device ID to send command to.
       example: '1000123456'
-    command:
+    cmd:
       description: A single command to send.
       example: 'switch'

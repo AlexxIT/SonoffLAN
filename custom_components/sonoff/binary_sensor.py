@@ -1,8 +1,10 @@
-from typing import Optional
 import json
+from typing import Optional
+
 from homeassistant.components.binary_sensor import BinarySensorDevice
 
-from . import DOMAIN, EWeLinkDevice
+from . import DOMAIN
+from .sonoff_main import EWeLinkRegistry, EWeLinkDevice
 
 
 async def async_setup_platform(hass, config, add_entities,
@@ -11,29 +13,22 @@ async def async_setup_platform(hass, config, add_entities,
         return
 
     deviceid = discovery_info['deviceid']
-    device = hass.data[DOMAIN][deviceid]
-    add_entities([EWeLinkBinarySensor(device)])
+    registry = hass.data[DOMAIN]
+    add_entities([EWeLinkBinarySensor(registry, deviceid)])
 
 
-class EWeLinkBinarySensor(BinarySensorDevice):
-    def __init__(self, device: EWeLinkDevice):
-        self.device = device
-        self._attrs = {}
-        self._name = None
-
-        self._update(device)
-
-        device.listen(self._update)
+class EWeLinkBinarySensor(BinarySensorDevice, EWeLinkDevice):
+    def __init__(self, registry: EWeLinkRegistry, deviceid: str):
+        self.registry = registry
+        self.deviceid = deviceid
 
     async def async_added_to_hass(self) -> None:
-        self._name = self.device.name()
+        self._init()
 
-    def _update(self, device: EWeLinkDevice):
-        state = {k: json.dumps(v) for k, v in device.state.items()}
+    def _update_handler(self, state: dict, attrs: dict):
+        state = {k: json.dumps(v) for k, v in state.items()}
         self._attrs.update(state)
-
-        if self.hass:
-            self.schedule_update_ha_state()
+        self.schedule_update_ha_state()
 
     @property
     def should_poll(self) -> bool:
@@ -41,7 +36,7 @@ class EWeLinkBinarySensor(BinarySensorDevice):
 
     @property
     def unique_id(self) -> Optional[str]:
-        return self.device.deviceid
+        return self.deviceid
 
     @property
     def name(self) -> Optional[str]:
