@@ -106,7 +106,7 @@ class EWeLinkRegistry:
         if self.devices is None:
             self.devices = {}
 
-        await self._cloud.start([self._registry_handler])
+        await self._cloud.start([self._registry_handler], self.devices)
 
     async def local_start(self, handlers: List[Callable]):
         if self.devices is None:

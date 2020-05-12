@@ -18,13 +18,13 @@ RETRY_DELAYS = [0, 15, 30, 60, 150, 300]
 
 
 class EWeLinkCloud:
+    _devices: dict = None
+    _handlers = None
+    _ws = None
+
     _baseurl = 'https://eu-api.coolkit.cc:8080/'
     _apikey = None
     _token = None
-    _ws = None
-    _handlers = None
-
-    _ws_fails = 0
 
     _send_sequence = None
     _send_event = asyncio.Event()
@@ -75,8 +75,8 @@ class EWeLinkCloud:
         if 'deviceid' in data and 'params' in data:
             _LOGGER.debug(f"Cloud3 <= id: {data['deviceid']}, "
                           f"seq: {data.get('seq')} | {data['params']}")
-            if 'seq' not in data:
-                _LOGGER.debug(data)
+            # if 'seq' not in data:
+            #     _LOGGER.debug(data)
 
             for handler in self._handlers:
                 handler(data['deviceid'], data['params'], data.get('seq'))
@@ -90,10 +90,12 @@ class EWeLinkCloud:
                 self._send_event.set()
 
             # Force update device actual status
+            deviceid = data['deviceid']
             await self._ws.send_json({
                 'action': 'query',
-                'apikey': self._apikey,
-                'deviceid': data['deviceid'],
+                'apikey': self._devices[deviceid]['apikey'],
+                'selfApikey': self._apikey,
+                'deviceid': deviceid,
                 'params': [],
                 'userAgent': 'app',
                 'sequence': str(int(time.time() * 1000)),
@@ -103,7 +105,7 @@ class EWeLinkCloud:
         else:
             _LOGGER.debug(data)
 
-    async def _connect(self):
+    async def _connect(self, fails: int = 0):
         """Permanent connection loop to Cloud Servers."""
         resp = await self._send('post', 'dispatch/app', {'accept': 'ws'})
         url = f"wss://{resp['IP']}:{resp['port']}/api/ws"
@@ -111,7 +113,7 @@ class EWeLinkCloud:
         try:
             self._ws = await self.session.ws_connect(url, heartbeat=55,
                                                      ssl=False)
-            self._ws_fails = 0
+            fails = 0
 
             ts = time.time()
             payload = {
@@ -141,22 +143,22 @@ class EWeLinkCloud:
                     break
 
         except ClientConnectorError as e:
-            _LOGGER.error(f"Cloud connection error: {e}")
+            _LOGGER.error(f"Cloud WS Connection error: {e}")
 
         except Exception:
-            _LOGGER.exception(f"Cloud exception")
+            _LOGGER.exception(f"Cloud WS exception")
 
-        # else:
-        #     _LOGGER.warning("else")
+        else:
+            _LOGGER.debug("Cloud WS else")
 
-        delay = RETRY_DELAYS[self._ws_fails]
+        delay = RETRY_DELAYS[fails]
         _LOGGER.debug(f"Cloud WS retrying in {delay} seconds")
         await asyncio.sleep(delay)
 
-        if self._ws_fails + 1 < len(RETRY_DELAYS):
-            self._ws_fails += 1
+        if fails + 1 < len(RETRY_DELAYS):
+            fails += 1
 
-        asyncio.create_task(self._connect())
+        asyncio.create_task(self._connect(fails))
 
     async def login(self, username: str, password: str) -> bool:
         """Login to Cloud Servers."""
@@ -195,13 +197,11 @@ class EWeLinkCloud:
     def started(self) -> bool:
         return self._ws is not None
 
-    async def start(self, handlers: List[Callable]):
-        """Starts permanent connection to cloud servers.
-
-        :param update_handler: device feedback function
-        """
+    async def start(self, handlers: List[Callable], devices: dict = None):
         assert self._token, "Login first"
         self._handlers = handlers
+        self._devices = devices
+
         asyncio.create_task(self._connect())
 
     async def send(self, deviceid: str, data: dict, sequence: str):
@@ -211,10 +211,16 @@ class EWeLinkCloud:
         :param data: example `{'switch': 'on'}`
         :param sequence: 13-digit standard timestamp, to verify uniqueness
         """
+        device = self._devices[deviceid]
+        if 'apikey' not in device:
+            return
+
         payload = {
             'action': 'update',
             'deviceid': deviceid,
-            'apikey': self._apikey,
+            # device apikey for shared devices
+            'apikey': device['apikey'],
+            'selfApikey': self._apikey,
             'userAgent': 'app',
             'sequence': sequence,
             'ts': 0,
