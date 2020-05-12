@@ -160,6 +160,12 @@ class EWeLinkDevice:
     _is_on: bool = None
     _is_th_3_4_0: bool = False
 
+    def __init__(self, registry: EWeLinkRegistry, deviceid: str,
+                 channels: list = None):
+        self.registry = registry
+        self.deviceid = deviceid
+        self.channels = channels
+
     def _init(self, force_refresh: bool = True):
         device: dict = self.registry.devices[self.deviceid]
 

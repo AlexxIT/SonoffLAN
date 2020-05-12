@@ -12,8 +12,8 @@ from homeassistant.components.fan import FanEntity, SUPPORT_SET_SPEED, \
     SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH, SPEED_OFF
 
 from . import DOMAIN
+from .sonoff_main import EWeLinkDevice
 from .switch import EWeLinkToggle
-from .sonoff_main import EWeLinkRegistry, EWeLinkDevice
 
 IFAN02_CHANNELS = [2, 3, 4]
 IFAN02_STATES = {
@@ -43,10 +43,7 @@ async def async_setup_platform(hass, config, add_entities,
 
 
 class SonoffFanBase(FanEntity, EWeLinkDevice):
-    def __init__(self, registry: EWeLinkRegistry, deviceid: str):
-        self.registry = registry
-        self.deviceid = deviceid
-        self._speed = None
+    _speed = None
 
     async def async_added_to_hass(self) -> None:
         self._init()

@@ -4,7 +4,7 @@ from typing import Optional
 from homeassistant.components.binary_sensor import BinarySensorDevice
 
 from . import DOMAIN
-from .sonoff_main import EWeLinkRegistry, EWeLinkDevice
+from .sonoff_main import EWeLinkDevice
 
 
 async def async_setup_platform(hass, config, add_entities,
@@ -18,10 +18,6 @@ async def async_setup_platform(hass, config, add_entities,
 
 
 class EWeLinkBinarySensor(BinarySensorDevice, EWeLinkDevice):
-    def __init__(self, registry: EWeLinkRegistry, deviceid: str):
-        self.registry = registry
-        self.deviceid = deviceid
-
     async def async_added_to_hass(self) -> None:
         self._init()
 

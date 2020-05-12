@@ -13,7 +13,9 @@ from typing import Optional
 from homeassistant.helpers.entity import ToggleEntity
 
 from . import DOMAIN
-from .sonoff_main import EWeLinkRegistry, EWeLinkDevice
+from .sonoff_main import EWeLinkDevice
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_platform(hass, config, add_entities,
@@ -27,16 +29,7 @@ async def async_setup_platform(hass, config, add_entities,
     add_entities([EWeLinkToggle(registry, deviceid, channels)])
 
 
-_LOGGER = logging.getLogger(__name__)
-
-
 class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
-    def __init__(self, registry: EWeLinkRegistry, deviceid: str,
-                 channels: list = None):
-        self.registry = registry
-        self.deviceid = deviceid
-        self.channels = channels
-
     async def async_added_to_hass(self) -> None:
         self._init()
 

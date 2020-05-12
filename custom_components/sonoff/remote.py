@@ -27,10 +27,10 @@ async def async_setup_platform(hass, config, add_entities,
 
 
 class EWeLinkRemote(RemoteDevice, EWeLinkDevice):
+    _state = True
+
     def __init__(self, registry: EWeLinkRegistry, deviceid: str):
-        self.registry = registry
-        self.deviceid = deviceid
-        self._state = True
+        super().__init__(registry, deviceid)
 
         # init button names
         self._buttons = {}
