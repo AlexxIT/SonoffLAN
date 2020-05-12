@@ -6,7 +6,10 @@ PSF-BFB-GL | fan_light | 34   | iFan (Sonoff iFan03)
 """
 import logging
 
-from homeassistant.components.light import SUPPORT_BRIGHTNESS, ATTR_BRIGHTNESS
+from homeassistant.components.light import SUPPORT_BRIGHTNESS, \
+    ATTR_BRIGHTNESS, SUPPORT_COLOR, ATTR_HS_COLOR, \
+    SUPPORT_EFFECT, ATTR_EFFECT, ATTR_EFFECT_LIST
+from homeassistant.util import color
 
 from . import DOMAIN
 from .switch import EWeLinkToggle
@@ -28,6 +31,8 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([SonoffFan03Light(registry, deviceid)])
     elif device['type'] == 'light' or device.get('uiid') == 44:
         add_entities([SonoffD1(registry, deviceid)])
+    elif device.get('uiid') == 59:
+        add_entities([SonoffLED(registry, deviceid)])
     elif channels and len(channels) >= 2:
         add_entities([EWeLinkLightGroup(registry, deviceid, channels)])
     else:
@@ -91,6 +96,101 @@ class SonoffD1(EWeLinkToggle):
         # cmd param only for local mode, no need for cloud
         await self.registry.send(self.deviceid, {
             'cmd': 'dimmable', 'switch': 'on', 'brightness': br, 'mode': 0})
+
+
+LED_EFFECTS = [
+    "Colorful", "Colorful Gradient", "Colorful Breath", "DIY Gradient",
+    "DIY Pulse", "DIY Breath", "DIY Strobe", "RGB Gradient", "DIY Gradient",
+    "RGB Breath", "RGB Strobe"
+]
+
+
+class SonoffLED(EWeLinkToggle):
+    _brightness = 0
+    _hs_color = None
+    _mode = 0
+
+    def _update_handler(self, state: dict, attrs: dict):
+        self._attrs.update(attrs)
+
+        # if 'online' in state:
+        #     self._available = state['online']
+
+        if 'bright' in state:
+            # sonoff brightness from 1 to 100
+            self._brightness = max(round(state['bright'] * 2.55), 1)
+
+        if 'colorR' in state and 'colorG' in state and 'colorB':
+            self._hs_color = color.color_RGB_to_hs(
+                state['colorR'], state['colorG'], state['colorB'])
+
+        if 'mode' in state:
+            self._mode = state['mode'] - 1
+
+        if 'switch' in state:
+            self._is_on = state['switch'] == 'on'
+
+        self.schedule_update_ha_state()
+
+    @property
+    def brightness(self):
+        """Return the brightness of this light between 0..255."""
+        return self._brightness
+
+    @property
+    def hs_color(self):
+        """Return the hue and saturation color value [float, float]."""
+        return self._hs_color
+
+    @property
+    def effect_list(self):
+        """Return the list of supported effects."""
+        return LED_EFFECTS
+
+    @property
+    def effect(self):
+        """Return the current effect."""
+        return LED_EFFECTS[self._mode]
+
+    @property
+    def supported_features(self):
+        return SUPPORT_BRIGHTNESS | SUPPORT_COLOR | SUPPORT_EFFECT
+
+    @property
+    def state_attributes(self):
+        return {
+            **self._attrs,
+            ATTR_BRIGHTNESS: self.brightness,
+            ATTR_HS_COLOR: self._hs_color,
+            ATTR_EFFECT: self.effect
+        }
+
+    @property
+    def capability_attributes(self):
+        """Return capability attributes."""
+        return {ATTR_EFFECT_LIST: self.effect_list}
+
+    async def async_turn_on(self, **kwargs) -> None:
+        if ATTR_EFFECT in kwargs:
+            mode = LED_EFFECTS.index(kwargs[ATTR_EFFECT]) + 1
+            payload = {'switch': 'on', 'mode': mode}
+
+        elif ATTR_BRIGHTNESS in kwargs or ATTR_HS_COLOR in kwargs:
+            payload = {'mode': 1}
+
+            if ATTR_BRIGHTNESS in kwargs:
+                payload['bright'] = max(round(kwargs[ATTR_BRIGHTNESS] / 2.55),
+                                        1)
+
+            if ATTR_HS_COLOR in kwargs:
+                rgb = color.color_hs_to_RGB(*kwargs[ATTR_HS_COLOR])
+                payload.update({'colorR': rgb[0], 'colorG': rgb[1],
+                                'colorB': rgb[2], 'light_type': 1})
+
+        else:
+            payload = {'switch': 'on'}
+
+        await self.registry.send(self.deviceid, payload)
 
 
 class EWeLinkLightGroup(SonoffD1):

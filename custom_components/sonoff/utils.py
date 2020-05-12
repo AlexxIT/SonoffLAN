@@ -47,6 +47,7 @@ def init_device_class(default_class: str = 'switch'):
         31: switch4,
         34: ['light', {'fan': [2, 3, 4]}],  # Sonoff iFan02 and iFan03
         44: 'light',  # Sonoff D1
+        59: 'light',  # Sonoff LED (only cloud)
         77: switchx,  # Sonoff Micro
         78: switchx,
         81: switch1,
