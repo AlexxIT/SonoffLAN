@@ -57,7 +57,10 @@ class EWeLinkRegistry:
         :param data: example `{'switch': 'on'}`
         :param sequence: message serial number to verify uniqueness
         """
-        device = self.devices[deviceid]
+        device = self.devices.get(deviceid)
+        if not device:
+            _LOGGER.warning(f"Unknown deviceid: {deviceid}")
+            return
 
         # skip update with same sequence (from cloud and local or from local)
         if sequence:
