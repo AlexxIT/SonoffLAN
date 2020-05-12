@@ -68,11 +68,10 @@ class EWeLinkLocal:
     def started(self) -> bool:
         return self._zeroconf is not None
 
-    def start(self, handlers: List[Callable], devices: dict = None,
-              zeroconf: Zeroconf = None):
+    def start(self, handlers: List[Callable], devices: dict = None):
         self._handlers = handlers
         self._devices = devices or {}
-        self._zeroconf = zeroconf or Zeroconf()
+        self._zeroconf = Zeroconf()
         browser = ServiceBrowser(self._zeroconf, '_ewelink._tcp.local.',
                                  handlers=[self._zeroconf_handler])
         # for beautiful logs
@@ -142,7 +141,6 @@ class EWeLinkLocal:
     async def send(self, deviceid: str, data: dict, sequence: str, timeout=5):
         device: dict = self._devices[deviceid]
         if 'host' not in device:
-            _LOGGER.warning(f"Local4 => id: {deviceid} | Unknown IP address")
             return False
 
         # cmd for D1 and RF Bridge 433
