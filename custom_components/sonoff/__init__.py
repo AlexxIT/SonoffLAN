@@ -131,8 +131,9 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
     if mode in ('auto', 'cloud'):
         # immediately add all cloud devices
         for k, v in registry.devices.items():
-            v['params']['connection'] = 'cloud'
-            add_device(k, v['params'], None)
+            if 'params' in v:
+                v['params']['connection'] = 'cloud'
+                add_device(k, v['params'], None)
 
         await registry.cloud_start()
 
