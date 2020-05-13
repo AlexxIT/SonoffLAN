@@ -101,7 +101,7 @@ class SonoffD1(EWeLinkToggle):
 LED_EFFECTS = [
     "Colorful", "Colorful Gradient", "Colorful Breath", "DIY Gradient",
     "DIY Pulse", "DIY Breath", "DIY Strobe", "RGB Gradient", "DIY Gradient",
-    "RGB Breath", "RGB Strobe"
+    "RGB Breath", "RGB Strobe", "Music"
 ]
 
 
