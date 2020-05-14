@@ -8,8 +8,8 @@ Home Assistant Custom Component for control **eWeLink** (Sonoff) devices.
 
 By default all users get latest stable release: [1.10.4](https://github.com/AlexxIT/SonoffLAN/tree/v1.10.4)
 
-**OPEN BETA TEST BIG NEW VERSION** of component.  
-Can manage **both local and cloud control at the same time**!
+**OPEN BETA TEST BIG NEW VERSION** of component - [more details](https://github.com/AlexxIT/SonoffLAN/issues/99)  
+Can manage **both local and cloud control at the same time**!  
 
 ![](open_beta.png)
 
@@ -17,7 +17,7 @@ If your internet breaks down - local management will continue to work.
 If you have problems with multicast on the local network - cloud management will work.  
 If you want only local or only cloud control - this can also be configured.
 
-![](dimmer_d1.png)
+![](demo.png)
 
 Pros:
 
@@ -42,6 +42,8 @@ There is another great component by [@peterbuga](https://github.com/peterbuga/HA
 Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant), [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.
 
 ## Tested Devices (LAN mode)
+
+These devices work both on a local network and through the cloud.
 
 - [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html) fw 3.0.1
 - [Sonoff Basic R3](https://www.itead.cc/sonoff-basicr3-wifi-diy-smart-switch.html)
@@ -68,9 +70,28 @@ Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-h
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000454408211.html)
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000351300288.html)
 
+## Tested Devices (only Cloud mode)
+
+These devices only work through the cloud!
+
+- [Sonoff L1](https://www.itead.cc/sonoff-l1-smart-led-light-strip.html) (color, brightness, effects) fw 2.7.0
+- [Sonoff B1](https://www.itead.cc/sonoff-b1.html) fw 2.6.0
+- [King Art - King Q4 Cover](https://www.aliexpress.com/item/32956776611.html) (pause, position) fw 2.7.0
+
 ## Config Examples
 
-#### Local and Cloud mode
+Cloud mode **cannot work simultaneously** with the 3rd version eWeLink mobile application. You need:
+- eWeLink application of the 4th version (Android only)  
+- create a second account, share devices with it and use it in the component
+
+Cloud mode **cannot work simultaneously** with two copies of component (example main and test Home Assistant). You need:
+- create a second account, share devices with it and use it in the second Home Assistant
+
+Local only mode users fine.
+
+Local mode with load device list - break authorization in a mobile application only at the start of Home Assistant.
+
+### Local and Cloud mode
 
 Recommended for general user.
 
@@ -96,7 +117,7 @@ sonoff:
   password: mypassword
 ```
 
-#### Cloud only mode
+### Cloud only mode
 
 Recommended for users with a bad router, which may freeze due to multicast traffic.
 
@@ -107,7 +128,7 @@ sonoff:
   mode: cloud
 ```
 
-#### Local mode with load device list from Cloud Servers
+### Local mode with load device list from Cloud Servers
 
 Legacy mode. Only downloads a list of devices from Cloud Servers. Works with local protocol. Only works with devices on 3rd firmware.
 
@@ -119,7 +140,15 @@ sonoff:
   reload: always  # update device list every time HA starts
 ```
 
-#### Local only mode (manual get devicekey)
+Component loads list of devices from eWeLink Servers and save it in the file `/config/.sonoff.json` (hidden file).
+
+The list will be loaded only once. At the next start, the list will be loaded from the local file. When you have new **eWeLink** devices - manually delete the file and reboot the HA.
+
+With `reload: always` in the config - the list will be loaded from servers at each start.
+
+The list will be loaded from the local file even if you remove `username` and `password` from the settings.
+
+### Local only mode (manual get devicekey)
 
 I don’t understand who needs it, but you never know. You must manually get devicekey for each device. Only works with devices on 3rd firmware.
 
@@ -130,7 +159,7 @@ sonoff:
       devicekey: f9765c85-463a-4623-9cbe-8d59266cb2e4
 ```
 
-#### Local only mode (DIY devices)
+### Local only mode (DIY devices)
 
 Recommended for users who do not trust Cloud Servers for some reason. Only works with devices in DIY mode.
 
@@ -138,7 +167,7 @@ Recommended for users who do not trust Cloud Servers for some reason. Only works
 sonoff:
 ```
 
-#### Advanced config for ANY MODE
+### Advanced config for ANY MODE
 
 Examples of using `device_class`:
 
@@ -229,18 +258,6 @@ sensor:
       value_template: "{{ state_attr('switch.sonoff_1000abcdefg', 'humidity') }}"
 ```
 
-## Work with Cloud Servers
-
-With `username` and` password` in the config (optional) - component loads list of devices from eWeLink Servers and save it in the file `/config/.sonoff.json` (hidden file).
-
-The component does not make other requests to servers.
-
-The list will be loaded only once. At the next start, the list will be loaded from the local file. When you have new **eWeLink** devices - manually delete the file and reboot the HA.
-
-With `reload: always` in the config - the list will be loaded from servers at each start.
-
-The list will be loaded from the local file even if you remove `username` and `password` from the settings.
-
 ## Demo
 
 **Sonoff 4CH Pro R2**, configured as a single light source with brightness control.
@@ -265,9 +282,11 @@ Install with [HACS](https://hacs.xyz/)
 
 ## Common problems in only LAN mode
 
+Cloud users don't have these problems.
+
 **Devices are not displayed**
 
-1. Currently only supported devices with firmware v3+
+1. Only supported devices with firmware v3+
 2. Common problems with Multicast:
    - two routers
    - **docker** with port forwarding
