@@ -13,6 +13,13 @@ _LOGGER = logging.getLogger(__name__)
 
 ATTRS = ('connection', 'host', 'rssi', 'humidity', 'temperature', 'power',
          'current', 'voltage')
+
+# map cloud attrs to local attrs
+ATTRS_MAP = {
+    'currentTemperature': 'temperature',
+    'currentHumidity': 'humidity'
+}
+
 EMPTY_DICT = {}
 
 
@@ -31,6 +38,14 @@ def save_cache(filename: str, data: dict):
     """Save device list to file."""
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
+
+
+def get_attrs(state: dict) -> dict:
+    for k in ATTRS_MAP:
+        if k in state:
+            state[ATTRS_MAP[k]] = state.pop(k)
+
+    return {k: state[k] for k in ATTRS if k in state}
 
 
 class EWeLinkRegistry:
@@ -69,8 +84,7 @@ class EWeLinkRegistry:
             device['seq'] = sequence
 
         if 'handlers' in device:
-            attrs = {k: state[k] for k in ATTRS if k in state}
-
+            attrs = get_attrs(state)
             try:
                 for handler in device['handlers']:
                     handler(state, attrs)
@@ -200,7 +214,7 @@ class EWeLinkDevice:
 
         if force_refresh:
             state = device['params']
-            attrs = {k: state[k] for k in ATTRS if k in state}
+            attrs = get_attrs(state)
             self._update_handler(state, attrs)
 
     def _is_on_list(self, state: dict) -> List[bool]:
