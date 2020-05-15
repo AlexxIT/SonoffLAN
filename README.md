@@ -69,6 +69,7 @@ These devices work both on a local network and through the cloud.
 - [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line) fw 3.3.0
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000454408211.html)
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000351300288.html)
+- [EACHEN WiFi Smart Touch](https://ewelink.eachen.cc/product/eachen-single-live-wall-switch-us-ac-l123ewelink-app/) fw 3.3.0
 
 ## Tested Devices (only Cloud mode)
 
