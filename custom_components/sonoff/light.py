@@ -36,6 +36,8 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([SonoffLED(registry, deviceid)])
     elif device.get('uiid') == 22:
         add_entities([SonoffB1(registry, deviceid)])
+    elif device.get('uiid') == 36:
+        add_entities([SonoffDimmer(registry, deviceid)])
     elif channels and len(channels) >= 2:
         add_entities([EWeLinkLightGroup(registry, deviceid, channels)])
     else:
@@ -59,7 +61,6 @@ class SonoffFan03Light(EWeLinkToggle):
 
 
 class SonoffD1(EWeLinkToggle):
-    """Sonoff D1"""
     _brightness = 0
 
     def _update_handler(self, state: dict, attrs: dict):
@@ -99,6 +100,31 @@ class SonoffD1(EWeLinkToggle):
         # cmd param only for local mode, no need for cloud
         await self.registry.send(self.deviceid, {
             'cmd': 'dimmable', 'switch': 'on', 'brightness': br, 'mode': 0})
+
+
+class SonoffDimmer(SonoffD1):
+    def _update_handler(self, state: dict, attrs: dict):
+        self._attrs.update(attrs)
+
+        # if 'online' in state:
+        #     self._available = state['online']
+
+        if 'bright' in state:
+            # from 10 to 100 => 1 .. 255
+            br = round((state['bright'] - 10) / (100 - 10) * 255)
+            self._brightness = max(br, 1)
+
+        if 'switch' in state:
+            self._is_on = any(self._is_on_list(state))
+
+        self.schedule_update_ha_state()
+
+    async def async_turn_on(self, **kwargs) -> None:
+        if ATTR_BRIGHTNESS in kwargs:
+            self._brightness = kwargs[ATTR_BRIGHTNESS]
+
+        br = 10 + round(self._brightness / 255 * (100 - 10))
+        await self.registry.send(self.deviceid, {'switch': 'on', 'bright': br})
 
 
 LED_EFFECTS = [

@@ -41,13 +41,14 @@ def init_device_class(default_class: str = 'switch'):
         7: switch2,
         8: switch3,
         9: switch4,
-        11: 'cover',  # King Art - King Q4 Cover
-        22: 'light',  # Sonoff B1
+        11: 'cover',  # King Art - King Q4 Cover (only cloud)
+        22: 'light',  # Sonoff B1 (only cloud)
         28: 'remote',  # Sonoff RF Brigde 433
         29: switch2,
         30: switch3,
         31: switch4,
         34: ['light', {'fan': [2, 3, 4]}],  # Sonoff iFan02 and iFan03
+        36: 'light',  # KING-M4 (dimmer, only cloud)
         44: 'light',  # Sonoff D1
         59: 'light',  # Sonoff LED (only cloud)
         77: switchx,  # Sonoff Micro
