@@ -8,7 +8,7 @@ Home Assistant Custom Component for control **eWeLink** (Sonoff) devices.
 
 By default all users get latest stable release: [1.10.4](https://github.com/AlexxIT/SonoffLAN/tree/v1.10.4)
 
-**OPEN BETA TEST BIG NEW VERSION** of component - [more details](https://github.com/AlexxIT/SonoffLAN/issues/99)  
+**OPEN BETA TEST BIG NEW VERSION** of component - [read more](https://github.com/AlexxIT/SonoffLAN/issues/99)  
 Can manage **both local and cloud control at the same time**!  
 
 ![](open_beta.png)
@@ -26,8 +26,9 @@ Pros:
 - work with devices without DIY-mode
 - work with devices in DIY-mode
 - support single and multi-channel devices
-- support TH and POW device attributes
-- support Sonoff RF Bridge 433 for receive and send commands
+- support TH and POW device attributes ([read more](#sonoff-th-и-pow))
+- support Sonoff RF Bridge 433 for receive and send commands ([read more](#sonoff-rf-bridge-433))
+- support Sonoff GK-200MP2-B Camera ([read more](#sonoff-gk-200mp2-b-camera))
 - instant device state update with Local Multicast or Cloud Websocket connection
 - load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
 - (optional) change device type (`switch`, `light` or `fan`)
@@ -39,7 +40,8 @@ Pros:
 
 There is another great component by [@peterbuga](https://github.com/peterbuga/HASS-sonoff-ewelink), that works with cloud servers.
 
-Thanks to these people [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant), [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.
+Thanks to [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant) and [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.  
+Thanks to [@michthom](https://github.com/michthom) and [@EpicLPer](https://github.com/EpicLPer) for researching the local Sonoff Camera protocol.
 
 ## Tested Devices (LAN mode)
 
@@ -53,6 +55,7 @@ These devices work both on a local network and through the cloud.
 - [Sonoff Pow R2](https://www.itead.cc/sonoff-pow-r2.html) (show power consumption)
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html) fw 3.4.0
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) fw 3.3.0, 3.4.0
+- [Sonoff GK-200MP2-B](https://www.itead.cc/sonoff-gk-200mp2-b-wi-fi-wireless-ip-security-camera.html) (camera with PTZ)
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0, 3.5.0
 - [Sonoff Dual](https://www.itead.cc/sonoff-dual.html)
 - [Sonoff iFan02](https://www.itead.cc/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control) fw 3.3.0
@@ -79,6 +82,10 @@ These devices only work through the cloud!
 - [Sonoff B1](https://www.itead.cc/sonoff-b1.html) (color, brightness, color temp) fw 2.6.0
 - [King Art - King Q4 Cover](https://www.aliexpress.com/item/32956776611.html) (pause, position) fw 2.7.0
 - [KING-M4](https://www.aliexpress.com/item/33013358523.html) (brightness) fw 2.7.0
+
+## Install with HACS
+
+![](demo_hacs.gif)
 
 ## Config Examples
 
@@ -244,7 +251,9 @@ script:
 
 ## Sonoff TH и Pow
 
-Temperature, humidity and other parameters of the devices are stored in their attributes. They can be displayed through [Template](https://www.home-assistant.io/integrations/template/)-sensor.
+**Temperature and power sensors are not created automatically!**
+
+Temperature, humidity and other parameters of the devices are stored in their attributes. They can be displayed through [Template](https://www.home-assistant.io/integrations/template/) sensor.
 
 ```yaml
 sensor:
@@ -260,19 +269,39 @@ sensor:
       value_template: "{{ state_attr('switch.sonoff_1000abcdefg', 'humidity') }}"
 ```
 
+## Sonoff GK-200MP2-B Camera
+
+Currently only PTZ commands are supported. Camera entity is not created now.
+
+You can send `left`, `right`, `up`, `down` commands with `sonoff.send_command` service:
+
+```yaml
+script:
+  left:
+    sequence:
+      - service: sonoff.send_command
+        data:
+          device: 012345
+          cmd: left
+```
+
+`device` - this is the number from the camera ID `EWLK-012345-XXXXX`, exactly 6 digits (leading zeros - it is important).
+
+**Never ever tell anyone your camera ID!**
+
+*In development: camera entity with still image and stream support.*
+
 ## Demo
 
 **Sonoff 4CH Pro R2**, configured as a single light source with brightness control.
 
 [![Control Sonoff Devices with eWeLink firmware over LAN from Home Assistant](https://img.youtube.com/vi/X7PcYfDy57A/0.jpg)](https://www.youtube.com/watch?v=X7PcYfDy57A)
 
+[![Sonoff GK-200MP2-B Camera LAN Control](https://img.youtube.com/vi/TnFS7qWgKoo/0.jpg)](https://www.youtube.com/watch?v=TnFS7qWgKoo)
+
 Change **Name** or **Entity ID** of any device: 
 
 ![](demo_rename.gif)
-
-Install with [HACS](https://hacs.xyz/)
-
-![](demo_hacs.gif)
 
 ## Getting devicekey manually
 
@@ -350,5 +379,6 @@ mode: 0
 - https://github.com/peterbuga/HASS-sonoff-ewelink
 - https://github.com/beveradb/sonoff-lan-mode-homeassistant
 - https://github.com/mattsaxon/sonoff-lan-mode-homeassistant
+- https://github.com/EpicLPer/Sonoff_GK-200MP2-B_Dump
 - https://blog.ipsumdomus.com/sonoff-switch-complete-hack-without-firmware-upgrade-1b2d6632c01
 - https://github.com/itead/Sonoff_Devices_DIY_Tools/blob/master/SONOFF%20DIY%20MODE%20Protocol%20Doc%20v1.4.md
