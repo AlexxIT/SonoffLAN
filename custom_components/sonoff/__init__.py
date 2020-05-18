@@ -10,6 +10,7 @@ from homeassistant.helpers.typing import HomeAssistantType
 
 from . import utils
 from .sonoff_main import EWeLinkRegistry
+from .sonoff_camera import EWeLinkCameras
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -124,7 +125,15 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
     async def send_command(call: ServiceCall):
         data = dict(call.data)
         deviceid = str(data.pop('device'))
-        await registry.send(deviceid, data)
+
+        if len(deviceid) == 10:
+            await registry.send(deviceid, data)
+
+        elif len(deviceid) == 6:
+            await cameras.send(deviceid, data['cmd'])
+
+        else:
+            _LOGGER.error(f"Wrong deviceid {deviceid}")
 
     hass.services.async_register(DOMAIN, 'send_command', send_command)
 
@@ -140,6 +149,8 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
     if mode in ('auto', 'local'):
         # add devices only on first discovery
         await registry.local_start([add_device])
+
+    cameras = EWeLinkCameras()
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, registry.stop)
 
