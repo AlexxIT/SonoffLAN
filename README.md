@@ -43,7 +43,14 @@ There is another great component by [@peterbuga](https://github.com/peterbuga/HA
 Thanks to [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant) and [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.  
 Thanks to [@michthom](https://github.com/michthom) and [@EpicLPer](https://github.com/EpicLPer) for researching the local Sonoff Camera protocol.
 
-## Tested Devices (LAN mode)
+## Tested Devices (only LAN)
+
+Maybe other eWeLink cameras also work, I don’t know.
+
+- [Camera GK-100CD10B](https://www.gearbest.com/smart-home-controls/pp_009678072743.html) (camera with PTZ)
+- [Sonoff GK-200MP2-B](https://www.itead.cc/sonoff-gk-200mp2-b-wi-fi-wireless-ip-security-camera.html) (camera with PTZ)
+
+## Tested Devices (LAN and Cloud)
 
 These devices work both on a local network and through the cloud.
 
@@ -55,7 +62,6 @@ These devices work both on a local network and through the cloud.
 - [Sonoff Pow R2](https://www.itead.cc/sonoff-pow-r2.html) (show power consumption)
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html) fw 3.4.0
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) fw 3.3.0, 3.4.0
-- [Sonoff GK-200MP2-B](https://www.itead.cc/sonoff-gk-200mp2-b-wi-fi-wireless-ip-security-camera.html) (camera with PTZ)
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0, 3.5.0
 - [Sonoff Dual](https://www.itead.cc/sonoff-dual.html)
 - [Sonoff iFan02](https://www.itead.cc/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control) fw 3.3.0
@@ -74,7 +80,7 @@ These devices work both on a local network and through the cloud.
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000351300288.html)
 - [EACHEN WiFi Smart Touch](https://ewelink.eachen.cc/product/eachen-single-live-wall-switch-us-ac-l123ewelink-app/) fw 3.3.0
 
-## Tested Devices (only Cloud mode)
+## Tested Devices (only Cloud)
 
 These devices only work through the cloud!
 
@@ -211,7 +217,9 @@ Install from [HACS](https://hacs.xyz/), automation and event trigger:
 
 [![Component review from DrZzs](https://img.youtube.com/vi/QD1K7s01cak/0.jpg)](https://www.youtube.com/watch?v=QD1K7s01cak?t=284)
 
-Component will create only one entity per RF Bridge - `remote.sonoff_1000abcdefg`. Entity RF Buttons or RF Sensors are not created!
+**Entity RF Buttons or RF Sensors are not created automatically!**
+
+Component will create only one entity per RF Bridge - `remote.sonoff_1000abcdefg`.
 
 You can receive signals from RF Buttons and RF Sensors through an event `sonoff.remote`. And send signals using the service `remote.send_command`.
 
@@ -249,7 +257,7 @@ script:
         command: Button1  # button name in eWeLink application
 ```
 
-## Sonoff TH и Pow
+## Sonoff TH and Pow
 
 **Temperature and power sensors are not created automatically!**
 
