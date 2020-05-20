@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -57,6 +58,7 @@ def init_device_class(default_class: str = 'switch'):
         82: switch2,
         83: switch3,
         84: switch4,
+        102: 'binary_sensor',  # Door/Window sensor
         107: switchx
     })
 
@@ -82,3 +84,40 @@ def guess_device_class(config: dict):
     uiid = config.get('uiid')
     type_ = config.get('type')
     return UIIDS.get(uiid) or TYPES.get(type_)
+
+
+def parse_multichannel_class(device_class: list) -> List[dict]:
+    """Supported device_class formats:
+
+        device_class: [light, fan]  # version 1
+        device_class:  # version 2
+        - light  # zone 1 (channel 1)
+        - light  # zone 2 (channel 2)
+        - light: [3, 4]  # zone 3 (channels 3 and 4)
+        device_class:  # version 3 (legacy)
+        - light # zone 1 (channel 1)
+        - light # zone 2 (channel 2)
+        - device_class: light # zone 3 (channels 3 и 4)
+          channels: [3, 4]
+    """
+    entities = []
+
+    # read multichannel device_class
+    for i, component in enumerate(device_class, 1):
+        # read device with several channels
+        if isinstance(component, dict):
+            if 'device_class' in component:
+                # backward compatibility
+                channels = component['channels']
+                component = component['device_class']
+            else:
+                component, channels = list(component.items())[0]
+
+            if isinstance(channels, int):
+                channels = [channels]
+        else:
+            channels = [i]
+
+        entities.append({'component': component, 'channels': channels})
+
+    return entities

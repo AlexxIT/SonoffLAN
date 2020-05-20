@@ -32,6 +32,7 @@ Pros:
 - instant device state update with Local Multicast or Cloud Websocket connection
 - load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
 - (optional) change device type (`switch`, `light` or `fan`)
+- (optional) change device type for binary sensors (`door`, `window`, etc.)
 - (optional) set multi-channel device as single light with brightness control
 
 **Component review from DrZzs (HOWTO about HACS)**
@@ -78,7 +79,7 @@ These devices work both on a local network and through the cloud.
 - [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line) fw 3.3.0
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000454408211.html)
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000351300288.html)
-- [EACHEN WiFi Smart Touch](https://ewelink.eachen.cc/product/eachen-single-live-wall-switch-us-ac-l123ewelink-app/) fw 3.3.0
+- [Eachen WiFi Smart Touch](https://ewelink.eachen.cc/product/eachen-single-live-wall-switch-us-ac-l123ewelink-app/) fw 3.3.0
 
 ## Tested Devices (only Cloud)
 
@@ -88,6 +89,7 @@ These devices only work through the cloud!
 - [Sonoff B1](https://www.itead.cc/sonoff-b1.html) (color, brightness, color temp) fw 2.6.0
 - [King Art - King Q4 Cover](https://www.aliexpress.com/item/32956776611.html) (pause, position) fw 2.7.0
 - [KING-M4](https://www.aliexpress.com/item/33013358523.html) (brightness) fw 2.7.0
+- [Eachen WiFi Door/Window Sensor](https://ewelink.eachen.cc/product/eachen-wifi-smart-door-window-sensor-wdw-ewelink/)
 
 ## Install with HACS
 
@@ -194,7 +196,7 @@ sonoff:
   devices:
     1000abcde0:  # corridor light
       device_class: light
-      name: My Best Light  # yes, you can set name from yaml
+      name: My Best Light  # you can set name from yaml
     1000abcde1:  # children's light (converts multi-channel device into single light entity)
       device_class:
       - light: [1, 2]
@@ -207,6 +209,8 @@ sonoff:
       - light  # zone 1 (channel 1)
       - light  # zone 2 (channel 2)
       - light: [3, 4]  # zone 3 (channels 3 and 4)
+    1000abcde5:
+      device_class: window  # support all Binary Sensor device_class types
 ```
 
 ## Sonoff RF Bridge 433

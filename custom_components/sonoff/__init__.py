@@ -1,6 +1,7 @@
 import logging
 
 import voluptuous as vol
+from homeassistant.components.binary_sensor import DEVICE_CLASSES
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_DEVICES, \
     CONF_NAME, CONF_DEVICE_CLASS, EVENT_HOMEASSISTANT_STOP, CONF_MODE
 from homeassistant.core import ServiceCall
@@ -9,8 +10,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import HomeAssistantType
 
 from . import utils
-from .sonoff_main import EWeLinkRegistry
 from .sonoff_camera import EWeLinkCameras
+from .sonoff_main import EWeLinkRegistry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -18,6 +19,9 @@ DOMAIN = 'sonoff'
 
 CONF_RELOAD = 'reload'
 CONF_DEFAULT_CLASS = 'default_class'
+
+# copy all binary device_class without light
+BINARY_DEVICE = [p for p in DEVICE_CLASSES if p != 'light']
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
@@ -98,29 +102,17 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
         if isinstance(device_class, str):
             # read single device_class
             info = {'deviceid': deviceid, 'channels': None}
+            if device_class in BINARY_DEVICE:
+                device_class = 'binary_sensor'
             hass.async_create_task(discovery.async_load_platform(
                 hass, device_class, DOMAIN, info, hass_config))
 
         else:
             # read multichannel device_class
-            for i, component in enumerate(device_class, 1):
-                # read device with several channels
-                if isinstance(component, dict):
-                    if 'device_class' in component:
-                        # backward compatibility
-                        channels = component['channels']
-                        component = component['device_class']
-                    else:
-                        component, channels = list(component.items())[0]
-
-                    if isinstance(channels, int):
-                        channels = [channels]
-                else:
-                    channels = [i]
-
-                info = {'deviceid': deviceid, 'channels': channels}
+            for info in utils.parse_multichannel_class(device_class):
+                info['deviceid'] = deviceid
                 hass.async_create_task(discovery.async_load_platform(
-                    hass, component, DOMAIN, info, hass_config))
+                    hass, info.pop('component'), DOMAIN, info, hass_config))
 
     async def send_command(call: ServiceCall):
         data = dict(call.data)
