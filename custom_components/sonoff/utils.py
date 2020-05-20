@@ -43,6 +43,7 @@ def init_device_class(default_class: str = 'switch'):
         8: switch3,
         9: switch4,
         11: 'cover',  # King Art - King Q4 Cover (only cloud)
+        18: 'sensor',  # Sonoff SC
         22: 'light',  # Sonoff B1 (only cloud)
         28: 'remote',  # Sonoff RF Brigde 433
         29: switch2,
