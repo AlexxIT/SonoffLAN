@@ -169,8 +169,10 @@ class EWeLinkLocal:
 
             _LOGGER.warning(f"Local4 => id: {deviceid} | {resp}")
 
-        except:
+        except TimeoutError:
             _LOGGER.warning(f"Local4 => id: {deviceid} | "
                             f"Send timeout {timeout}")
+        except:
+            _LOGGER.exception(f"Local4 => id: {deviceid} | {command}")
 
         return False

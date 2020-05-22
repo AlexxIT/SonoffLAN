@@ -11,7 +11,8 @@ from typing import Optional, List
 from homeassistant.components.fan import FanEntity, SUPPORT_SET_SPEED, \
     SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH, SPEED_OFF
 
-from . import DOMAIN
+# noinspection PyUnresolvedReferences
+from . import DOMAIN, SCAN_INTERVAL
 from .sonoff_main import EWeLinkDevice
 from .switch import EWeLinkToggle
 

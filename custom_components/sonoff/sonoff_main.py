@@ -183,7 +183,7 @@ class EWeLinkDevice:
         self.deviceid = deviceid
         self.channels = channels
 
-    def _init(self, force_refresh: bool = True):
+    def _init(self, force_refresh: bool = True) -> dict:
         device: dict = self.registry.devices[self.deviceid]
 
         try:
@@ -216,6 +216,8 @@ class EWeLinkDevice:
             state = device['params']
             attrs = get_attrs(state)
             self._update_handler(state, attrs)
+
+        return device
 
     def _is_on_list(self, state: dict) -> List[bool]:
         if self.channels:

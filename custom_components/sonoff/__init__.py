@@ -1,9 +1,11 @@
 import logging
+from datetime import timedelta
 
 import voluptuous as vol
 from homeassistant.components.binary_sensor import DEVICE_CLASSES
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_DEVICES, \
-    CONF_NAME, CONF_DEVICE_CLASS, EVENT_HOMEASSISTANT_STOP, CONF_MODE
+    CONF_NAME, CONF_DEVICE_CLASS, EVENT_HOMEASSISTANT_STOP, CONF_MODE, \
+    CONF_SCAN_INTERVAL, CONF_FORCE_UPDATE
 from homeassistant.core import ServiceCall
 from homeassistant.helpers import config_validation as cv, discovery
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -17,8 +19,12 @@ _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = 'sonoff'
 
+# https://github.com/AlexxIT/SonoffLAN/issues/14
+SCAN_INTERVAL = timedelta(minutes=5)
+
 CONF_RELOAD = 'reload'
 CONF_DEFAULT_CLASS = 'default_class'
+CONF_DEVICEKEY = 'devicekey'
 
 # copy all binary device_class without light
 BINARY_DEVICE = [p for p in DEVICE_CLASSES if p != 'light']
@@ -30,11 +36,13 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_MODE, default='auto'): cv.string,
         vol.Optional(CONF_RELOAD, default='once'): cv.string,
         vol.Optional(CONF_DEFAULT_CLASS, default='switch'): cv.string,
+        vol.Optional(CONF_SCAN_INTERVAL): cv.time_period,
         vol.Optional(CONF_DEVICES): {
             cv.string: vol.Schema({
                 vol.Optional(CONF_NAME): cv.string,
                 vol.Optional(CONF_DEVICE_CLASS): vol.Any(str, list),
-                vol.Optional('devicekey'): cv.string,
+                vol.Optional(CONF_DEVICEKEY): cv.string,
+                vol.Optional(CONF_FORCE_UPDATE): cv.boolean
             }, extra=vol.ALLOW_EXTRA),
         },
     }, extra=vol.ALLOW_EXTRA),
@@ -86,7 +94,7 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
         else:
             device['handlers'] = []
 
-        device_class = device.get('device_class')
+        device_class = device.get(CONF_DEVICE_CLASS)
         if not device_class:
             device_class = utils.guess_device_class(device)
 
@@ -128,6 +136,10 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
             _LOGGER.error(f"Wrong deviceid {deviceid}")
 
     hass.services.async_register(DOMAIN, 'send_command', send_command)
+
+    if CONF_SCAN_INTERVAL in config:
+        global SCAN_INTERVAL
+        SCAN_INTERVAL = config[CONF_SCAN_INTERVAL]
 
     if mode in ('auto', 'cloud'):
         # immediately add all cloud devices

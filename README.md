@@ -185,9 +185,7 @@ Recommended for users who do not trust Cloud Servers for some reason. Only works
 sonoff:
 ```
 
-### Advanced config for ANY MODE
-
-Examples of using `device_class`:
+### Custom device_class for ANY MODE
 
 ```yaml
 sonoff:
@@ -212,6 +210,24 @@ sonoff:
       - light: [3, 4]  # zone 3 (channels 3 and 4)
     1000abcde5:
       device_class: window  # support all Binary Sensor device_class types
+```
+
+### Refresh interval for TH and POW
+
+You can config forced updating of TH and POW attributes ([read more](https://github.com/AlexxIT/SonoffLAN/issues/14)).
+
+```yaml
+sonoff:
+  username: mymail@gmail.com
+  password: mypassword
+  scan_interval: '00:05:00'  # (optional) default 5 minutes
+  devices:
+    1000abcde0:
+      name: Sonoff TH
+      force_update: True
+    1000abcde1:
+      name: Sonoff Pow
+      force_update: True
 ```
 
 ## Sonoff RF Bridge 433
@@ -395,3 +411,5 @@ mode: 0
 - https://github.com/EpicLPer/Sonoff_GK-200MP2-B_Dump
 - https://blog.ipsumdomus.com/sonoff-switch-complete-hack-without-firmware-upgrade-1b2d6632c01
 - https://github.com/itead/Sonoff_Devices_DIY_Tools/blob/master/SONOFF%20DIY%20MODE%20Protocol%20Doc%20v1.4.md
+- [SONOFF DIY MODE API PROTOCOL](http://developers.sonoff.tech/sonoff-diy-mode-api-protocol.html)
+- [No Tasmota And EWeLink Cloud To Control The SONOFF Device? YES!](https://sonoff.tech/product-tutorials/diy-mode-to-control-the-sonoff-device)

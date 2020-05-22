@@ -12,7 +12,8 @@ from typing import Optional
 
 from homeassistant.helpers.entity import ToggleEntity
 
-from . import DOMAIN
+# noinspection PyUnresolvedReferences
+from . import DOMAIN, CONF_FORCE_UPDATE, SCAN_INTERVAL
 from .sonoff_main import EWeLinkDevice
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,8 +31,11 @@ async def async_setup_platform(hass, config, add_entities,
 
 
 class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
+    _should_poll = None
+
     async def async_added_to_hass(self) -> None:
-        self._init()
+        device = self._init()
+        self._should_poll = device.pop(CONF_FORCE_UPDATE, False)
 
     def _update_handler(self, state: dict, attrs: dict):
         self._attrs.update(attrs)
@@ -48,7 +52,7 @@ class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
     @property
     def should_poll(self) -> bool:
         # The device itself sends an update of its status
-        return False
+        return self._should_poll
 
     @property
     def unique_id(self) -> Optional[str]:
@@ -83,3 +87,17 @@ class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
 
     async def async_turn_off(self, **kwargs) -> None:
         await self._turn_off()
+
+    async def async_update(self):
+        """Auto refresh device state.
+
+        Called from: `EntityPlatform._update_entity_states`
+
+        https://github.com/AlexxIT/SonoffLAN/issues/14
+        """
+        _LOGGER.debug(f"Refresh device state {self.deviceid}")
+
+        if self._is_on:
+            await self.async_turn_on()
+        else:
+            await self.async_turn_off()

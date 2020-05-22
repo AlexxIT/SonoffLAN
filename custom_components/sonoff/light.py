@@ -12,7 +12,8 @@ from homeassistant.components.light import SUPPORT_BRIGHTNESS, \
     ATTR_COLOR_TEMP, ATTR_MIN_MIREDS, ATTR_MAX_MIREDS
 from homeassistant.util import color
 
-from . import DOMAIN
+# noinspection PyUnresolvedReferences
+from . import DOMAIN, SCAN_INTERVAL
 from .switch import EWeLinkToggle
 
 _LOGGER = logging.getLogger(__name__)
