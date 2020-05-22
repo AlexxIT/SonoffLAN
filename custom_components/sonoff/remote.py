@@ -7,11 +7,12 @@ import asyncio
 import logging
 from typing import Optional
 
-from homeassistant.components.remote import RemoteDevice, ATTR_DELAY_SECS, \
-    ATTR_COMMAND, SUPPORT_LEARN_COMMAND, DEFAULT_DELAY_SECS
+from homeassistant.components.remote import ATTR_DELAY_SECS, ATTR_COMMAND, \
+    SUPPORT_LEARN_COMMAND, DEFAULT_DELAY_SECS
 
 from . import DOMAIN
 from .sonoff_main import EWeLinkRegistry, EWeLinkDevice
+from .utils import RemoteEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ async def async_setup_platform(hass, config, add_entities,
     add_entities([EWeLinkRemote(registry, deviceid)])
 
 
-class EWeLinkRemote(RemoteDevice, EWeLinkDevice):
+class EWeLinkRemote(RemoteEntity, EWeLinkDevice):
     _state = True
 
     def __init__(self, registry: EWeLinkRegistry, deviceid: str):

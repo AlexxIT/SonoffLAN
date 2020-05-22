@@ -1,11 +1,11 @@
 import json
 from typing import Optional
 
-from homeassistant.components.binary_sensor import BinarySensorDevice, \
-    DEVICE_CLASS_DOOR
+from homeassistant.components.binary_sensor import DEVICE_CLASS_DOOR
 
 from . import DOMAIN
 from .sonoff_main import EWeLinkDevice
+from .utils import BinarySensorEntity
 
 
 async def async_setup_platform(hass, config, add_entities,
@@ -22,7 +22,7 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([EWeLinkBinarySensor(registry, deviceid)])
 
 
-class EWeLinkBinarySensor(BinarySensorDevice, EWeLinkDevice):
+class EWeLinkBinarySensor(BinarySensorEntity, EWeLinkDevice):
     async def async_added_to_hass(self) -> None:
         self._init()
 

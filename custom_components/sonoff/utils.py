@@ -1,6 +1,18 @@
 import logging
 from typing import List
 
+# support old Home Assistant version
+try:
+    from homeassistant.components.binary_sensor import BinarySensorEntity
+except:
+    from homeassistant.components.binary_sensor import \
+        BinarySensorDevice as BinarySensorEntity
+
+try:
+    from homeassistant.components.remote import RemoteEntity
+except:
+    from homeassistant.components.remote import RemoteDevice as RemoteEntity
+
 _LOGGER = logging.getLogger(__name__)
 
 
