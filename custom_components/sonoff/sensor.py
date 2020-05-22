@@ -1,7 +1,7 @@
 from typing import Optional
 
 from homeassistant.const import DEVICE_CLASS_TEMPERATURE, TEMP_CELSIUS, \
-    DEVICE_CLASS_HUMIDITY, DEVICE_CLASS_ILLUMINANCE, UNIT_PERCENTAGE
+    DEVICE_CLASS_HUMIDITY, DEVICE_CLASS_ILLUMINANCE
 from homeassistant.helpers.entity import Entity
 
 from . import DOMAIN, EWeLinkRegistry
@@ -9,7 +9,8 @@ from .sonoff_main import EWeLinkDevice
 
 SONOFF_SC = {
     'temperature': [DEVICE_CLASS_TEMPERATURE, TEMP_CELSIUS, None],
-    'humidity': [DEVICE_CLASS_HUMIDITY, UNIT_PERCENTAGE, None],
+    # UNIT_PERCENTAGE is not on old versions
+    'humidity': [DEVICE_CLASS_HUMIDITY, "%", None],
     'dusty': [None, None, 'mdi:cloud'],
     'light': [DEVICE_CLASS_ILLUMINANCE, None, None],
     'noise': [None, None, 'mdi:bell-ring']
