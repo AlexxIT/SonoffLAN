@@ -1,3 +1,4 @@
+import asyncio
 import ipaddress
 import json
 import logging
@@ -169,7 +170,7 @@ class EWeLinkLocal:
 
             _LOGGER.warning(f"Local4 => id: {deviceid} | {resp}")
 
-        except TimeoutError:
+        except asyncio.TimeoutError:
             _LOGGER.warning(f"Local4 => id: {deviceid} | "
                             f"Send timeout {timeout}")
         except:
