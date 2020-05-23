@@ -102,8 +102,8 @@ class EWeLinkLocal:
             if devicekey == 'skip':
                 return
             if not devicekey:
-                _LOGGER.warning(f"{deviceid} <= Local{state_change.value} | "
-                                f"No devicekey for device")
+                _LOGGER.info(f"{deviceid} <= Local{state_change.value} | "
+                             f"No devicekey for device")
                 # skip device next time
                 device['devicekey'] = 'skip'
                 return
