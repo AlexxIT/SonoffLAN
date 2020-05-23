@@ -5,7 +5,7 @@ import voluptuous as vol
 from homeassistant.components.binary_sensor import DEVICE_CLASSES
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_DEVICES, \
     CONF_NAME, CONF_DEVICE_CLASS, EVENT_HOMEASSISTANT_STOP, CONF_MODE, \
-    CONF_SCAN_INTERVAL, CONF_FORCE_UPDATE
+    CONF_SCAN_INTERVAL, CONF_FORCE_UPDATE, CONF_EXCLUDE
 from homeassistant.core import ServiceCall
 from homeassistant.helpers import config_validation as cv, discovery
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -105,6 +105,10 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
             device['handlers'] = []
 
         device_class = device.get(CONF_DEVICE_CLASS)
+        # ignore device if user wants
+        if device_class == CONF_EXCLUDE:
+            return
+
         if not device_class:
             device_class = utils.guess_device_class(device)
 
@@ -120,16 +124,14 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
         uiid = device.get('uiid', '-')
         _LOGGER.debug(f"{deviceid} Init {uiid:4} | {dict(state)}")
 
-        if isinstance(device_class, str):
-            # read single device_class
-            info = {'deviceid': deviceid, 'channels': None}
+        if isinstance(device_class, str):  # read single device_class
             if device_class in BINARY_DEVICE:
                 device_class = 'binary_sensor'
+            info = {'deviceid': deviceid, 'channels': None}
             hass.async_create_task(discovery.async_load_platform(
                 hass, device_class, DOMAIN, info, hass_config))
 
-        else:
-            # read multichannel device_class
+        else:  # read multichannel device_class
             for info in utils.parse_multichannel_class(device_class):
                 info['deviceid'] = deviceid
                 hass.async_create_task(discovery.async_load_platform(
