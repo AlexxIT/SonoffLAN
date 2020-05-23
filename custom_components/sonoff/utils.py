@@ -1,8 +1,14 @@
 import logging
+import re
+import uuid
+from datetime import datetime
 from typing import List
 
-# support old Home Assistant version
-try:
+from aiohttp import web
+from homeassistant.components.http import HomeAssistantView
+from homeassistant.helpers.typing import HomeAssistantType
+
+try:  # support old Home Assistant version
     from homeassistant.components.binary_sensor import BinarySensorEntity
 except:
     from homeassistant.components.binary_sensor import \
@@ -134,3 +140,48 @@ def parse_multichannel_class(device_class: list) -> List[dict]:
         entities.append({'component': component, 'channels': channels})
 
     return entities
+
+
+# \w = [a-zA-Z0-9_]
+RE_DEVICEID = re.compile(r"^[a-z0-9]{10}\b")
+RE_PRIVATE = re.compile(r"'([\w-]{36,}|[A-F0-9:]{17})'")
+NOTIFY_TEXT = (
+    '<a href="{}" target="_blank">Open Log<a> | '
+    '[New Issue on GitHub](https://github.com/AlexxIT/SonoffLAN/issues/new) | '
+    '[sonofflan@gmail.com](mailto:sonofflan@gmail.com)')
+
+
+class SonoffDebug(logging.Handler, HomeAssistantView):
+    name = "sonoff_debug"
+    requires_auth = False
+
+    text = ''
+
+    def __init__(self, hass: HomeAssistantType, devices):
+        super().__init__()
+
+        self.devices = devices if isinstance(devices, list) else None
+
+        # random url because without authorization!!!
+        self.url = f"/{uuid.uuid4()}"
+
+        hass.http.register_view(self)
+        hass.components.persistent_notification.async_create(
+            NOTIFY_TEXT.format(self.url), title="Sonoff Debug")
+
+    def handle(self, rec: logging.LogRecord) -> None:
+        # filter devices from list
+        if self.devices:
+            m = RE_DEVICEID.match(rec.msg)
+            if m and m[0] not in self.devices:
+                return
+
+        dt = datetime.fromtimestamp(rec.created).strftime("%Y-%m-%d %H:%M:%S")
+        module = 'main' if rec.module == '__init__' else rec.module
+        # remove private data
+        msg = RE_PRIVATE.sub("'...'", str(rec.msg))
+        self.text += f"{dt}  {rec.levelname:7}  {module:12}  {msg}\n"
+
+    async def get(self, request):
+        return web.Response(text=f"<pre>{self.text}</pre>",
+                            content_type="text/html")

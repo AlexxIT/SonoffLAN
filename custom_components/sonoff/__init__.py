@@ -22,9 +22,10 @@ DOMAIN = 'sonoff'
 # https://github.com/AlexxIT/SonoffLAN/issues/14
 SCAN_INTERVAL = timedelta(minutes=5)
 
-CONF_RELOAD = 'reload'
+CONF_DEBUG = 'debug'
 CONF_DEFAULT_CLASS = 'default_class'
 CONF_DEVICEKEY = 'devicekey'
+CONF_RELOAD = 'reload'
 
 # copy all binary device_class without light
 BINARY_DEVICE = [p for p in DEVICE_CLASSES if p != 'light']
@@ -37,6 +38,7 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_RELOAD, default='once'): cv.string,
         vol.Optional(CONF_DEFAULT_CLASS, default='switch'): cv.string,
         vol.Optional(CONF_SCAN_INTERVAL): cv.time_period,
+        vol.Optional(CONF_DEBUG): vol.Any(bool, list),
         vol.Optional(CONF_DEVICES): {
             cv.string: vol.Schema({
                 vol.Optional(CONF_NAME): cv.string,
@@ -50,12 +52,20 @@ CONFIG_SCHEMA = vol.Schema({
 
 
 async def async_setup(hass: HomeAssistantType, hass_config: dict):
-    config = hass_config[DOMAIN]
-
-    mode = config[CONF_MODE]
-
     session = async_get_clientsession(hass)
     hass.data[DOMAIN] = registry = EWeLinkRegistry(session)
+
+    config = hass_config[DOMAIN]
+
+    # init debug if needed
+    if CONF_DEBUG in config:
+        debug = utils.SonoffDebug(hass, config[CONF_DEBUG])
+        _LOGGER.addHandler(debug)
+
+    # main init phase
+    mode = config[CONF_MODE]
+
+    _LOGGER.debug(f"Init {mode} mode")
 
     cachefile = hass.config.path('.sonoff.json')
     registry.cache_load_devices(cachefile)
@@ -85,7 +95,7 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
     default_class = config[CONF_DEFAULT_CLASS]
     utils.init_device_class(default_class)
 
-    def add_device(deviceid: str, state: dict, sequence: str):
+    def add_device(deviceid: str, state: dict, *args):
         device = registry.devices[deviceid]
 
         # device with handlers already added
@@ -106,6 +116,9 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
                 device_class = [default_class] * 4
             else:
                 device_class = 'binary_sensor'
+
+        uiid = device.get('uiid', '-')
+        _LOGGER.debug(f"{deviceid} Init {uiid:4} | {dict(state)}")
 
         if isinstance(device_class, str):
             # read single device_class

@@ -146,6 +146,7 @@ class EWeLinkRegistry:
 
         connection = 'error'
 
+        # TODO: big timeout for only local device!
         if self._local.started and self._cloud.started:
             # try to send a command locally (wait no more than a second)
             if await self._local.send(deviceid, params, sequence, 1):

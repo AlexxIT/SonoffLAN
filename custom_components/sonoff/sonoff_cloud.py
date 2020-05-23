@@ -72,17 +72,16 @@ class EWeLinkCloud:
         return await r.json()
 
     async def _process_msg(self, data: dict):
-        if 'deviceid' in data and 'params' in data:
-            _LOGGER.debug(f"Cloud3 <= id: {data['deviceid']}, "
-                          f"seq: {data.get('seq')} | {data['params']}")
-            # if 'seq' not in data:
-            #     _LOGGER.debug(data)
+        deviceid = data.get('deviceid')
+        if deviceid and 'params' in data:
+            state = data['params']
+            _LOGGER.debug(f"{deviceid} <= Cloud3 | {state}")
 
             for handler in self._handlers:
-                handler(data['deviceid'], data['params'], data.get('seq'))
+                handler(deviceid, state, data.get('seq'))
 
-        elif 'deviceid' in data:
-            _LOGGER.debug(f"Cloud0 => id: {data['deviceid']} | Force update")
+        elif deviceid:
+            _LOGGER.debug(f"{deviceid} => Cloud0 | Force update")
 
             # respond for `'action': 'update'`
             if data['sequence'] == self._send_sequence:
@@ -90,7 +89,6 @@ class EWeLinkCloud:
                 self._send_event.set()
 
             # Force update device actual status
-            deviceid = data['deviceid']
             await self._ws.send_json({
                 'action': 'query',
                 'apikey': self._devices[deviceid]['apikey'],
@@ -103,7 +101,7 @@ class EWeLinkCloud:
             })
 
         else:
-            _LOGGER.debug(data)
+            _LOGGER.debug(f"Cloud msg: {data}")
 
     async def _connect(self, fails: int = 0):
         """Permanent connection loop to Cloud Servers."""
@@ -161,7 +159,7 @@ class EWeLinkCloud:
         asyncio.create_task(self._connect(fails))
 
     async def login(self, username: str, password: str) -> bool:
-        """Login to Cloud Servers."""
+        _LOGGER.debug("Login to Cloud Servers")
 
         # add a plus to the beginning of the phone number
         if '@' not in username and not username.startswith('+'):
@@ -187,9 +185,8 @@ class EWeLinkCloud:
         return True
 
     async def load_devices(self) -> Optional[list]:
-        """Load device list from Cloud Servers."""
+        _LOGGER.debug("Load device list from Cloud Servers")
         assert self._token, "Login first"
-        _LOGGER.debug("Load device list from eWeLink servers")
         resp = await self._send('get', 'api/user/device', {'getTags': 1})
         return resp['devicelist'] if resp['error'] == 0 else None
 
@@ -226,7 +223,7 @@ class EWeLinkCloud:
             'ts': 0,
             'params': data
         }
-        _LOGGER.debug(f"Cloud4 => id: {deviceid} | {data}")
+        _LOGGER.debug(f"{deviceid} => Cloud4 | {data}")
         await self._ws.send_json(payload)
 
         # wait for response with same sequence

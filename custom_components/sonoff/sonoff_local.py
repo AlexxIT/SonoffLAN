@@ -83,9 +83,8 @@ class EWeLinkLocal:
 
     def _zeroconf_handler(self, zeroconf: Zeroconf, service_type: str,
                           name: str, state_change: ServiceStateChange):
-        """Стандартная функция ServiceBrowser."""
         if state_change == ServiceStateChange.Removed:
-            _LOGGER.debug(f"Local2 <= {name}")
+            _LOGGER.debug(f"{name[8:18]} <= Local2 | Zeroconf Removed")
             # TODO: handle removed
             return
 
@@ -103,7 +102,8 @@ class EWeLinkLocal:
             if devicekey == 'skip':
                 return
             if not devicekey:
-                _LOGGER.warning(f"No devicekey for device {deviceid}")
+                _LOGGER.warning(f"{deviceid} <= Local{state_change.value} | "
+                                f"No devicekey for device")
                 # skip device next time
                 device['devicekey'] = 'skip'
                 return
@@ -118,8 +118,7 @@ class EWeLinkLocal:
 
         state = json.loads(data)
 
-        _LOGGER.debug(f"Local{state_change.value} <= id: {properties['id']}, "
-                      f"seq: {properties.get('seq')} | {state}")
+        _LOGGER.debug(f"{deviceid} <= Local{state_change.value} | {state}")
 
         host = str(ipaddress.ip_address(info.addresses[0]))
         # update every time device host change (alsow first time)
@@ -158,7 +157,7 @@ class EWeLinkLocal:
         if 'devicekey' in device:
             payload = encrypt(payload, device['devicekey'])
 
-        _LOGGER.debug(f"Local4 => id: {deviceid} | {data}")
+        _LOGGER.debug(f"{deviceid} => Local4 | {data}")
 
         try:
             r = await self.session.post(
@@ -168,12 +167,11 @@ class EWeLinkLocal:
             if resp['error'] == 0:
                 return True
 
-            _LOGGER.warning(f"Local4 => id: {deviceid} | {resp}")
+            _LOGGER.warning(f"{deviceid} => Local4 | {resp}")
 
         except asyncio.TimeoutError:
-            _LOGGER.warning(f"Local4 => id: {deviceid} | "
-                            f"Send timeout {timeout}")
+            _LOGGER.debug(f"{deviceid} => Local4 | Send timeout {timeout}")
         except:
-            _LOGGER.exception(f"Local4 => id: {deviceid} | {command}")
+            _LOGGER.exception(f"{deviceid} => Local4 | {command}")
 
         return False
