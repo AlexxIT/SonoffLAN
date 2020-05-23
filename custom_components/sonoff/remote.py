@@ -74,6 +74,10 @@ class EWeLinkRemote(RemoteEntity, EWeLinkDevice):
         return self.deviceid
 
     @property
+    def name(self):
+        return self._name
+
+    @property
     def is_on(self) -> bool:
         return self._state
 
