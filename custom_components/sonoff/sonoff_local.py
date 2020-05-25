@@ -147,17 +147,27 @@ class EWeLinkLocal:
 
     async def check_offline(self, deviceid: str):
         """Try to get response from device after received Zeroconf Removed."""
+        log = f"{deviceid} => Local4"
+        device = self._devices[deviceid]
+        if device.get('check_offline') or device['host'] is None:
+            _LOGGER.debug(f"{log} | Skip parallel checks")
+            return
+
+        device['check_offline'] = True
         sequence = str(int(time.time() * 1000))
+
         for i in range(1, 4, 1):
-            _LOGGER.debug(f"{deviceid} => Local4 | Ping try {i}")
+            _LOGGER.debug(f"{log} | Check offline with timeout {20 * i}s")
+
             conn = await self.send(deviceid, {'cmd': 'info'}, sequence, 20 * i)
             if conn == 'online':
-                _LOGGER.debug(f"{deviceid} => Local4 | Welcome back!")
+                device['check_offline'] = False
+                _LOGGER.debug(f"{log} | Welcome back!")
                 return
 
-        _LOGGER.debug(f"{deviceid} => Local4 | Device offline")
+        _LOGGER.debug(f"{log} | Device offline")
 
-        device = self._devices[deviceid]
+        device['check_offline'] = False
         device['host'] = None
 
         for handler in self._handlers:

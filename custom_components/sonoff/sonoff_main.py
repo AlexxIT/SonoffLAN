@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -160,9 +161,15 @@ class EWeLinkRegistry:
             # otherwise send a command through the cloud
             if state['local'] != 'online':
                 state['cloud'] = await self._cloud.send(deviceid, params, seq)
+                if state['cloud'] != 'online':
+                    coro = self._local.check_offline(deviceid)
+                    asyncio.create_task(coro)
 
         elif can_local:
             state['local'] = await self._local.send(deviceid, params, seq, 5)
+            if state['local'] != 'online':
+                coro = self._local.check_offline(deviceid)
+                asyncio.create_task(coro)
 
         elif can_cloud:
             state['cloud'] = await self._cloud.send(deviceid, params, seq)
