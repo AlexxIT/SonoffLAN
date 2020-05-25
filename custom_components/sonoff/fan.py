@@ -34,8 +34,9 @@ async def async_setup_platform(hass, config, add_entities,
     channels = discovery_info['channels']
     registry = hass.data[DOMAIN]
     device = registry.devices[deviceid]
+    uiid = device.get('uiid')
     # iFan02 and iFan03 have the same uiid!
-    if device['type'] == 'fan_light' or device.get('productModel') == 'iFan':
+    if uiid == 'fan_light' or device.get('productModel') == 'iFan':
         add_entities([SonoffFan03(registry, deviceid)])
     elif channels == IFAN02_CHANNELS:
         add_entities([SonoffFan02(registry, deviceid)])
@@ -63,16 +64,21 @@ class SonoffFanBase(FanEntity, EWeLinkDevice):
         return self._name
 
     @property
+    def available(self) -> bool:
+        device: dict = self.registry.devices[self.deviceid]
+        return device['available']
+
+    @property
+    def supported_features(self):
+        return SUPPORT_SET_SPEED
+
+    @property
     def speed(self) -> Optional[str]:
         return self._speed
 
     @property
     def speed_list(self) -> list:
         return [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
-
-    @property
-    def supported_features(self):
-        return SUPPORT_SET_SPEED
 
 
 class SonoffFan02(SonoffFanBase):

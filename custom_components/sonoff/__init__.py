@@ -60,12 +60,13 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
     # init debug if needed
     if CONF_DEBUG in config:
         debug = utils.SonoffDebug(hass, config[CONF_DEBUG])
+        _LOGGER.setLevel(logging.DEBUG)
         _LOGGER.addHandler(debug)
 
     # main init phase
     mode = config[CONF_MODE]
 
-    _LOGGER.debug(f"Init {mode} mode")
+    _LOGGER.debug(f"{mode.upper()} mode start")
 
     cachefile = hass.config.path('.sonoff.json')
     registry.cache_load_devices(cachefile)
@@ -109,6 +110,19 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
         if device_class == CONF_EXCLUDE:
             return
 
+        # TODO: right place?
+        device['available'] = device.get('online') or device.get('host')
+
+        # collect info for logs
+        device['extra'] = utils.get_device_info(device)
+
+        # TODO: fix remove camera info from logs
+        state.pop('partnerDevice', None)
+
+        info = {'uiid': device['uiid'], 'extra': device['extra'],
+                'params': state}
+        _LOGGER.debug(f"{deviceid} == Init   | {info}")
+
         if not device_class:
             device_class = utils.guess_device_class(device)
 
@@ -120,9 +134,6 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
                 device_class = [default_class] * 4
             else:
                 device_class = 'binary_sensor'
-
-        uiid = device.get('uiid', '-')
-        _LOGGER.debug(f"{deviceid} Init {uiid:4} | {dict(state)}")
 
         if isinstance(device_class, str):  # read single device_class
             if device_class in BINARY_DEVICE:
@@ -138,6 +149,10 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
                     hass, info.pop('component'), DOMAIN, info, hass_config))
 
     async def send_command(call: ServiceCall):
+        """Service for send raw command to device.
+
+        :param call: `device` - required param, all other params - optional
+        """
         data = dict(call.data)
         deviceid = str(data.pop('device'))
 
@@ -158,10 +173,12 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
 
     if mode in ('auto', 'cloud'):
         # immediately add all cloud devices
-        for k, v in registry.devices.items():
-            if 'params' in v:
-                v['params']['connection'] = 'cloud'
-                add_device(k, v['params'], None)
+        for deviceid, device in registry.devices.items():
+            if 'params' not in device:
+                continue
+            conn = 'online' if device['online'] else 'offline'
+            device['params']['cloud'] = conn
+            add_device(deviceid, device['params'], None)
 
         await registry.cloud_start()
 
@@ -169,6 +186,7 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
         # add devices only on first discovery
         await registry.local_start([add_device])
 
+    # cameras starts only on first command to it
     cameras = EWeLinkCameras()
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, registry.stop)

@@ -11,7 +11,7 @@ from .sonoff_local import EWeLinkLocal
 
 _LOGGER = logging.getLogger(__name__)
 
-ATTRS = ('connection', 'host', 'rssi', 'humidity', 'temperature', 'power',
+ATTRS = ('local', 'cloud', 'rssi', 'humidity', 'temperature', 'power',
          'current', 'voltage', 'battery')
 
 # map cloud attrs to local attrs
@@ -51,12 +51,11 @@ def get_attrs(state: dict) -> dict:
 class EWeLinkRegistry:
     """
     device:
-      deviceid: str
       params: dict, init state
-      connection: str, connection type (local, cloud, error)
-      host: str, local IP
-      uiid: int, cloud type
-      type: str, local type (strip, plug, light, rf)
+      uiid: Union[int, str], cloud or local type (strip, plug, light, rf)
+      extra: dict, device manufacturer and model
+      online: bool, cloud online state
+      host: str, local IP (local online state)
       handlers: list, update handlers
     """
     devices: Optional[dict] = None
@@ -69,10 +68,10 @@ class EWeLinkRegistry:
         """Feedback from local and cloud connections
 
         :param deviceid: example `1000abcdefg`
-        :param data: example `{'switch': 'on'}`
+        :param state: example `{'switch': 'on'}`
         :param sequence: message serial number to verify uniqueness
         """
-        device = self.devices.get(deviceid)
+        device: dict = self.devices.get(deviceid)
         if not device:
             _LOGGER.warning(f"Unknown deviceid: {deviceid}")
             return
@@ -84,6 +83,9 @@ class EWeLinkRegistry:
             device['seq'] = sequence
 
         if 'handlers' in device:
+            # TODO: right place?
+            device['available'] = device.get('online') or device.get('host')
+
             attrs = get_attrs(state)
             try:
                 for handler in device['handlers']:
@@ -142,37 +144,40 @@ class EWeLinkRegistry:
 
     async def send(self, deviceid: str, params: dict):
         """Send command to device."""
-        sequence = str(int(time.time() * 1000))
+        seq = str(int(time.time() * 1000))
 
-        connection = 'error'
+        device: dict = self.devices[deviceid]
+        can_local = self._local.started and device.get('host')
+        can_cloud = self._cloud.started and device.get('online')
+
+        state = {}
 
         # TODO: big timeout for only local device!
-        if self._local.started and self._cloud.started:
+        if can_local and can_cloud:
             # try to send a command locally (wait no more than a second)
-            if await self._local.send(deviceid, params, sequence, 1):
-                connection = 'local'
+            state['local'] = await self._local.send(deviceid, params, seq, 1)
+
             # otherwise send a command through the cloud
-            elif await self._cloud.send(deviceid, params, sequence):
-                connection = 'cloud'
+            if state['local'] != 'online':
+                state['cloud'] = await self._cloud.send(deviceid, params, seq)
 
-        elif self._local.started:
-            if await self._local.send(deviceid, params, sequence, 5):
-                connection = 'local'
+        elif can_local:
+            state['local'] = await self._local.send(deviceid, params, seq, 5)
 
-        elif self._cloud.started:
-            if await self._cloud.send(deviceid, params, sequence):
-                connection = 'cloud'
+        elif can_cloud:
+            state['cloud'] = await self._cloud.send(deviceid, params, seq)
 
-        # update device attrs
-        for handler in self.devices[deviceid]['handlers']:
-            handler(EMPTY_DICT, {'connection': connection})
+        else:
+            return
+
+            # update device attrs
+        self._registry_handler(deviceid, state, None)
 
 
 class EWeLinkDevice:
     registry: EWeLinkRegistry = None
     deviceid: str = None
     channels: list = None
-    _available: bool = True
     _attrs: dict = None
     _name: str = None
     _is_on: bool = None
@@ -187,20 +192,10 @@ class EWeLinkDevice:
     def _init(self, force_refresh: bool = True) -> dict:
         device: dict = self.registry.devices[self.deviceid]
 
-        try:
-            # https://developers.home-assistant.io/docs/device_registry_index/
-            self._attrs = {
-                'manufacturer': device['brandName'],
-                'model': device['productModel'],
-                'sw_version': f"{device['extra']['extra']['model']} "
-                              f"v{device['params']['fwVersion']}"
-            }
-        except:
-            self._attrs = {}
-
         # Присваиваем имя устройства только на этом этапе, чтоб в `entity_id`
         # было "sonoff_{unique_id}". Если имя присвоить в конструкторе - в
         # `entity_id` попадёт имя в латинице.
+        # TODO: fix init name
         if self.channels and len(self.channels) == 1:
             ch = str(self.channels[0] - 1)
             self._name = device.get('tags', {}).get('ck_channel_name', {}). \
@@ -208,15 +203,17 @@ class EWeLinkDevice:
         else:
             self._name = device.get('name')
 
-        self._is_th_3_4_0 = 'mainSwitch' in device['params']
+        state = device['params']
+
+        self._attrs = device['extra'] or {}
+        self._is_th_3_4_0 = 'mainSwitch' in state
+
+        if force_refresh:
+            attrs = get_attrs(state)
+            self._update_handler(state, attrs)
 
         # init update_handler
         device['handlers'].append(self._update_handler)
-
-        if force_refresh:
-            state = device['params']
-            attrs = get_attrs(state)
-            self._update_handler(state, attrs)
 
         return device
 

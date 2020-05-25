@@ -15,9 +15,41 @@ from aiohttp import ClientSession, WSMsgType, ClientConnectorError
 _LOGGER = logging.getLogger(__name__)
 
 RETRY_DELAYS = [0, 15, 30, 60, 150, 300]
+DATA_ERROR = {
+    0: 'online',
+    503: 'offline',
+    504: 'timeout'
+}
 
 
-class EWeLinkCloud:
+class ResponseFuture:
+    """Class wait right sequences in response messages."""
+    _waiters = {}
+
+    async def _set_response(self, data: dict):
+        sequence = data.get('sequence')
+        if sequence in self._waiters:
+            err = data['error']
+            result = DATA_ERROR[err] if err in DATA_ERROR else f"E#{err}"
+            # set future result
+            self._waiters[sequence].set_result(result)
+
+    async def _wait_response(self, sequence: str, timeout: int = 5):
+        self._waiters[sequence] = asyncio.get_event_loop().create_future()
+
+        try:
+            # limit future wait time
+            await asyncio.wait_for(self._waiters[sequence], timeout)
+        except asyncio.TimeoutError:
+            # remove future from waiters
+            self._waiters.pop(sequence)
+            return 'timeout'
+
+        # remove future from waiters and return result
+        return self._waiters.pop(sequence).result()
+
+
+class EWeLinkCloud(ResponseFuture):
     _devices: dict = None
     _handlers = None
     _ws = None
@@ -25,10 +57,6 @@ class EWeLinkCloud:
     _baseurl = 'https://eu-api.coolkit.cc:8080/'
     _apikey = None
     _token = None
-
-    _send_sequence = None
-    _send_event = asyncio.Event()
-    _send_result = False
 
     def __init__(self, session: ClientSession):
         self.session = session
@@ -71,35 +99,50 @@ class EWeLinkCloud:
 
         return await r.json()
 
-    async def _process_msg(self, data: dict):
+    async def _process_ws_msg(self, data: dict):
+        """Process WebSocket message."""
+        await self._set_response(data)
+
         deviceid = data.get('deviceid')
-        if deviceid and 'params' in data:
-            state = data['params']
-            _LOGGER.debug(f"{deviceid} <= Cloud3 | {state}")
+        # if msg about device
+        if deviceid:
+            _LOGGER.debug(f"{deviceid} <= Cloud3 | {data}")
+            device = self._devices[deviceid]
 
-            for handler in self._handlers:
-                handler(deviceid, state, data.get('seq'))
+            # if msg with device params
+            if 'params' in data:
+                state = data['params']
 
-        elif deviceid:
-            _LOGGER.debug(f"{deviceid} => Cloud0 | Force update")
+                # deal with online/offline state
+                if state.get('online') is False:
+                    device['online'] = False
+                    state['cloud'] = 'offline'
+                elif device['online'] is False:
+                    device['online'] = True
+                    state['cloud'] = 'online'
 
-            # respond for `'action': 'update'`
-            if data['sequence'] == self._send_sequence:
-                self._send_result = data['error'] == 0
-                self._send_event.set()
+                for handler in self._handlers:
+                    handler(deviceid, state, data.get('seq'))
 
-            # Force update device actual status
-            await self._ws.send_json({
-                'action': 'query',
-                'apikey': self._devices[deviceid]['apikey'],
-                'selfApikey': self._apikey,
-                'deviceid': deviceid,
-                'params': [],
-                'userAgent': 'app',
-                'sequence': str(int(time.time() * 1000)),
-                'ts': 0
-            })
+            # response on our action update
+            elif data['error'] == 0:
+                # Force update device actual status
+                sequence = str(int(time.time() * 1000))
+                _LOGGER.debug(f"{deviceid} => Cloud5 | "
+                              f"Force update sequence: {sequence}")
 
+                await self._ws.send_json({
+                    'action': 'query',
+                    'apikey': device['apikey'],
+                    'selfApikey': self._apikey,
+                    'deviceid': deviceid,
+                    'params': [],
+                    'userAgent': 'app',
+                    'sequence': sequence,
+                    'ts': 0
+                })
+
+        # all other msg
         else:
             _LOGGER.debug(f"Cloud msg: {data}")
 
@@ -130,7 +173,7 @@ class EWeLinkCloud:
             async for msg in self._ws:
                 if msg.type == WSMsgType.TEXT:
                     resp = json.loads(msg.data)
-                    await self._process_msg(resp)
+                    await self._process_ws_msg(resp)
 
                 elif msg.type == WSMsgType.CLOSED:
                     _LOGGER.debug(f"Cloud WS Closed: {msg.data}")
@@ -159,8 +202,6 @@ class EWeLinkCloud:
         asyncio.create_task(self._connect(fails))
 
     async def login(self, username: str, password: str) -> bool:
-        _LOGGER.debug("Login to Cloud Servers")
-
         # add a plus to the beginning of the phone number
         if '@' not in username and not username.startswith('+'):
             username = f"+{username}"
@@ -185,10 +226,15 @@ class EWeLinkCloud:
         return True
 
     async def load_devices(self) -> Optional[list]:
-        _LOGGER.debug("Load device list from Cloud Servers")
         assert self._token, "Login first"
         resp = await self._send('get', 'api/user/device', {'getTags': 1})
-        return resp['devicelist'] if resp['error'] == 0 else None
+        if resp['error'] == 0:
+            num = len(resp['devicelist'])
+            _LOGGER.debug(f"{num} devices loaded from the Cloud Server")
+            return resp['devicelist']
+        else:
+            _LOGGER.warning(f"Can't load devices: {resp}")
+            return None
 
     @property
     def started(self) -> bool:
@@ -208,16 +254,12 @@ class EWeLinkCloud:
         :param data: example `{'switch': 'on'}`
         :param sequence: 13-digit standard timestamp, to verify uniqueness
         """
-        device = self._devices[deviceid]
-        if 'apikey' not in device:
-            return
-
         payload = {
             'action': 'update',
-            'deviceid': deviceid,
             # device apikey for shared devices
-            'apikey': device['apikey'],
+            'apikey': self._devices[deviceid]['apikey'],
             'selfApikey': self._apikey,
+            'deviceid': deviceid,
             'userAgent': 'app',
             'sequence': sequence,
             'ts': 0,
@@ -227,12 +269,4 @@ class EWeLinkCloud:
         await self._ws.send_json(payload)
 
         # wait for response with same sequence
-        self._send_sequence = sequence
-        self._send_event.clear()
-
-        try:
-            await asyncio.wait_for(self._send_event.wait(), 5)
-        except asyncio.TimeoutError:
-            return False
-
-        return self._send_result
+        return await self._wait_response(sequence)

@@ -5,14 +5,13 @@ PSF-BRA-GL | rf        | 28   | RFBridge (Sonoff RF Bridge)
 """
 import asyncio
 import logging
-from typing import Optional
 
 from homeassistant.components.remote import ATTR_DELAY_SECS, ATTR_COMMAND, \
     SUPPORT_LEARN_COMMAND, DEFAULT_DELAY_SECS
 
 from . import DOMAIN
-from .sonoff_main import EWeLinkRegistry, EWeLinkDevice
-from .utils import RemoteEntity
+from .sonoff_main import EWeLinkRegistry
+from .switch import EWeLinkToggle
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,8 +26,8 @@ async def async_setup_platform(hass, config, add_entities,
     add_entities([EWeLinkRemote(registry, deviceid)])
 
 
-class EWeLinkRemote(RemoteEntity, EWeLinkDevice):
-    _state = True
+class EWeLinkRemote(EWeLinkToggle):
+    _is_on = True
 
     def __init__(self, registry: EWeLinkRegistry, deviceid: str):
         super().__init__(registry, deviceid)
@@ -55,9 +54,13 @@ class EWeLinkRemote(RemoteEntity, EWeLinkDevice):
         - {'cmd': 'transmit', 'rfChl': 3}
         - {'cmd': 'capture', 'rfChl': 1},
         """
+        if not self._is_on:
+            return
+
         for k, v in state.items():
             if k.startswith('rfTrig'):
                 channel = k[6:]
+                # TODO: show default device attrs
                 self._attrs = {'command': int(channel), 'ts': v,
                                'name': self._buttons.get(channel)}
                 self.hass.bus.fire('sonoff.remote', {
@@ -66,39 +69,19 @@ class EWeLinkRemote(RemoteEntity, EWeLinkDevice):
                 self.schedule_update_ha_state()
 
     @property
-    def should_poll(self) -> bool:
-        return False
-
-    @property
-    def unique_id(self) -> Optional[str]:
-        return self.deviceid
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def is_on(self) -> bool:
-        return self._state
-
-    @property
     def supported_features(self):
         return SUPPORT_LEARN_COMMAND
 
-    @property
-    def state_attributes(self):
-        return self._attrs
-
     async def async_turn_on(self, **kwargs):
-        self._state = True
+        self._is_on = True
         self.schedule_update_ha_state()
 
     async def async_turn_off(self, **kwargs):
-        self._state = False
+        self._is_on = False
         self.schedule_update_ha_state()
 
     async def async_send_command(self, command, **kwargs):
-        if not self._state:
+        if not self._is_on:
             return
 
         delay = kwargs.get(ATTR_DELAY_SECS, DEFAULT_DELAY_SECS)
@@ -119,7 +102,7 @@ class EWeLinkRemote(RemoteEntity, EWeLinkDevice):
                 'cmd': 'transmit', 'rfChl': int(channel)})
 
     async def async_learn_command(self, **kwargs):
-        if not self._state:
+        if not self._is_on:
             return
 
         command = kwargs[ATTR_COMMAND]

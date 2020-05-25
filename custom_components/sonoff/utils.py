@@ -14,11 +14,6 @@ except:
     from homeassistant.components.binary_sensor import \
         BinarySensorDevice as BinarySensorEntity
 
-try:
-    from homeassistant.components.remote import RemoteEntity
-except:
-    from homeassistant.components.remote import RemoteDevice as RemoteEntity
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -40,7 +35,6 @@ def init_zeroconf_singleton(hass):
 
 
 UIIDS = {}
-TYPES = {}
 
 
 def init_device_class(default_class: str = 'switch'):
@@ -51,6 +45,7 @@ def init_device_class(default_class: str = 'switch'):
     switchx = [default_class]
 
     UIIDS.update({
+        # list cloud uiids
         1: switch1,
         2: switch2,
         3: switch3,
@@ -78,10 +73,8 @@ def init_device_class(default_class: str = 'switch'):
         83: switch3,
         84: switch4,
         102: 'binary_sensor',  # Door/Window sensor
-        107: switchx
-    })
-
-    TYPES.update({
+        107: switchx,
+        # list local types
         'plug': switch1,  # Basic, Mini
         'diy_plug': switch1,  # Mini in DIY mode
         'enhanced_plug': switch1,  # Sonoff Pow R2?
@@ -101,8 +94,20 @@ def guess_device_class(config: dict):
     be displayed as 4 switches.
     """
     uiid = config.get('uiid')
-    type_ = config.get('type')
-    return UIIDS.get(uiid) or TYPES.get(type_)
+    return UIIDS.get(uiid)
+
+
+def get_device_info(config: dict):
+    try:
+        # https://developers.home-assistant.io/docs/device_registry_index/
+        return {
+            'manufacturer': config['brandName'],
+            'model': config['productModel'],
+            'sw_version': f"{config['extra']['extra']['model']} "
+                          f"v{config['params'].get('fwVersion', '???')}"
+        }
+    except:
+        return None
 
 
 def parse_multichannel_class(device_class: list) -> List[dict]:
@@ -142,13 +147,19 @@ def parse_multichannel_class(device_class: list) -> List[dict]:
     return entities
 
 
-# \w = [a-zA-Z0-9_]
 RE_DEVICEID = re.compile(r"^[a-z0-9]{10}\b")
-RE_PRIVATE = re.compile(r"'([\w-]{36,}|[A-F0-9:]{17})'")
+# remove uiid, MAC, IP
+RE_PRIVATE = re.compile(
+    r"'([a-zA-Z0-9_-]{36,}|[A-F0-9:]{17}|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|"
+    r"EWLK-\d{6}-[A-Z]{5})'")
 NOTIFY_TEXT = (
     '<a href="{}" target="_blank">Open Log<a> | '
     '[New Issue on GitHub](https://github.com/AlexxIT/SonoffLAN/issues/new) | '
     '[sonofflan@gmail.com](mailto:sonofflan@gmail.com)')
+
+HTML = ('<!DOCTYPE html><html><head><title>Sonoff Debug</title>'
+        '<meta http-equiv="refresh" content="%s"></head>'
+        '<body><pre>%s</pre></body></html>')
 
 
 class SonoffDebug(logging.Handler, HomeAssistantView):
@@ -179,9 +190,12 @@ class SonoffDebug(logging.Handler, HomeAssistantView):
         dt = datetime.fromtimestamp(rec.created).strftime("%Y-%m-%d %H:%M:%S")
         module = 'main' if rec.module == '__init__' else rec.module
         # remove private data
+        # TODO: fix single IP address
         msg = RE_PRIVATE.sub("'...'", str(rec.msg))
         self.text += f"{dt}  {rec.levelname:7}  {module:12}  {msg}\n"
 
     async def get(self, request):
-        return web.Response(text=f"<pre>{self.text}</pre>",
+        refresh = request.query_string
+        refresh = int(refresh) if refresh.isdecimal() else ''
+        return web.Response(text=HTML % (refresh, self.text),
                             content_type="text/html")

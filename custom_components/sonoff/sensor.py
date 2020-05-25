@@ -62,12 +62,17 @@ class SonoffSC(EWeLinkDevice, Entity):
         return self._name
 
     @property
+    def state(self) -> str:
+        return self._state
+
+    @property
     def state_attributes(self):
         return self._attrs
 
     @property
     def available(self) -> bool:
-        return self._available
+        device: dict = self.registry.devices[self.deviceid]
+        return device['available']
 
     @property
     def device_class(self):
@@ -80,7 +85,3 @@ class SonoffSC(EWeLinkDevice, Entity):
     @property
     def icon(self):
         return SONOFF_SC[self._attr][2]
-
-    @property
-    def state(self) -> str:
-        return self._state

@@ -2,15 +2,16 @@ import asyncio
 import ipaddress
 import json
 import logging
+import time
 from base64 import b64encode, b64decode
 from typing import Callable, List
-
-from aiohttp import ClientSession
 
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
+from aiohttp import ClientSession, ClientOSError
+
 from zeroconf import ServiceBrowser, Zeroconf, ServiceStateChange
 
 _LOGGER = logging.getLogger(__name__)
@@ -64,6 +65,7 @@ class EWeLinkLocal:
 
     def __init__(self, session: ClientSession):
         self.session = session
+        self.loop = asyncio.get_event_loop()
 
     @property
     def started(self) -> bool:
@@ -84,8 +86,13 @@ class EWeLinkLocal:
     def _zeroconf_handler(self, zeroconf: Zeroconf, service_type: str,
                           name: str, state_change: ServiceStateChange):
         if state_change == ServiceStateChange.Removed:
-            _LOGGER.debug(f"{name[8:18]} <= Local2 | Zeroconf Removed")
-            # TODO: handle removed
+            # TTL of record 5 minutes
+            deviceid = name[8:18]
+            # _LOGGER.debug(f"{deviceid} <= Local2 | Zeroconf Removed Event")
+            # check if device added
+            if 'handlers' in self._devices[deviceid]:
+                coro = self.check_offline(deviceid)
+                self.loop.create_task(coro)
             return
 
         info = zeroconf.get_service_info(service_type, name)
@@ -124,29 +131,44 @@ class EWeLinkLocal:
         # update every time device host change (alsow first time)
         if device.get('host') != host:
             # state connection for attrs update
-            state['connection'] = 'local'
-            # device host for local connection, state host for attrs update
-            device['host'] = state['host'] = host
-            # override device type with: strip, plug, light, rf
-            device['type'] = properties['type']
+            state['local'] = 'online'
+            # device host for local connection
+            device['host'] = host
             # update or set device init state
             if 'params' in device:
                 device['params'].update(state)
             else:
                 device['params'] = state
+                # set uiid with: strip, plug, light, rf
+                device['uiid'] = properties['type']
 
         for handler in self._handlers:
             handler(deviceid, state, properties.get('seq'))
 
+    async def check_offline(self, deviceid: str):
+        """Try to get response from device after received Zeroconf Removed."""
+        sequence = str(int(time.time() * 1000))
+        for i in range(1, 4, 1):
+            _LOGGER.debug(f"{deviceid} => Local4 | Ping try {i}")
+            conn = await self.send(deviceid, {'cmd': 'info'}, sequence, 20 * i)
+            if conn == 'online':
+                _LOGGER.debug(f"{deviceid} => Local4 | Welcome back!")
+                return
+
+        _LOGGER.debug(f"{deviceid} => Local4 | Device offline")
+
+        device = self._devices[deviceid]
+        device['host'] = None
+
+        for handler in self._handlers:
+            handler(deviceid, {'local': 'offline'}, None)
+
     async def send(self, deviceid: str, data: dict, sequence: str, timeout=5):
         device: dict = self._devices[deviceid]
-        if 'host' not in device:
-            return False
 
         # cmd for D1 and RF Bridge 433
         command = data.get('cmd') or next(iter(data))
 
-        # TODO: check `seq` param
         payload = {
             'sequence': sequence,
             'deviceid': deviceid,
@@ -157,21 +179,28 @@ class EWeLinkLocal:
         if 'devicekey' in device:
             payload = encrypt(payload, device['devicekey'])
 
-        _LOGGER.debug(f"{deviceid} => Local4 | {data}")
+        log = f"{deviceid} => Local4 | {data}"
 
         try:
             r = await self.session.post(
                 f"http://{device['host']}:8081/zeroconf/{command}",
                 json=payload, timeout=timeout)
             resp = await r.json()
-            if resp['error'] == 0:
-                return True
-
-            _LOGGER.warning(f"{deviceid} => Local4 | {resp}")
+            err = resp['error']
+            # no problem with any response from device for info command
+            if err == 0 or command == 'info':
+                _LOGGER.debug(f"{log} <= {resp}")
+                return 'online'
+            else:
+                _LOGGER.warning(f"{log} <= {resp}")
+                return f"E#{err}"
 
         except asyncio.TimeoutError:
-            _LOGGER.debug(f"{deviceid} => Local4 | Send timeout {timeout}")
+            _LOGGER.debug(f"{log} !! Timeout {timeout}")
+            return 'timeout'
+        except ClientOSError as e:
+            _LOGGER.warning(f"{log} !! {e}")
+            return 'E#COS'
         except:
-            _LOGGER.exception(f"{deviceid} => Local4 | {command}")
-
-        return False
+            _LOGGER.exception(log)
+            return 'E#???'

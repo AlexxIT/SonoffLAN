@@ -44,12 +44,12 @@ class EWeLinkBinarySensor(BinarySensorEntity, EWeLinkDevice):
         return self._name
 
     @property
-    def supported_features(self):
-        return 0
-
-    @property
     def state_attributes(self):
         return self._attrs
+
+    @property
+    def supported_features(self):
+        return 0
 
     @property
     def is_on(self):
@@ -72,6 +72,11 @@ class DoorWindowSensor(EWeLinkBinarySensor):
             self._is_on = state['switch'] == 'on'
 
         self.schedule_update_ha_state()
+
+    @property
+    def available(self) -> bool:
+        device: dict = self.registry.devices[self.deviceid]
+        return device['available']
 
     @property
     def device_class(self):

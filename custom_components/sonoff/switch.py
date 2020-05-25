@@ -43,10 +43,6 @@ class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
                 attrs.get('humidity') == 0):
             self._attrs.update(attrs)
 
-        # TODO: handle online
-        # if 'online' in state:
-        #     self._available = state['online']
-
         if 'switch' in state or 'switches' in state:
             self._is_on = any(self._is_on_list(state))
 
@@ -70,16 +66,17 @@ class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
         return self._name
 
     @property
-    def supported_features(self):
-        return 0
-
-    @property
     def state_attributes(self):
         return self._attrs
 
     @property
     def available(self) -> bool:
-        return self._available
+        device: dict = self.registry.devices[self.deviceid]
+        return device['available']
+
+    @property
+    def supported_features(self):
+        return 0
 
     @property
     def is_on(self) -> bool:

@@ -29,15 +29,16 @@ async def async_setup_platform(hass, config, add_entities,
     registry = hass.data[DOMAIN]
     device = registry.devices[deviceid]
 
-    if device['type'] == 'fan_light' or device.get('productModel') == 'iFan':
+    uiid = device.get('uiid')
+    if uiid == 'fan_light' or device.get('productModel') == 'iFan':
         add_entities([SonoffFan03Light(registry, deviceid)])
-    elif device['type'] == 'light' or device.get('uiid') == 44:
+    elif uiid == 'light' or uiid == 44:
         add_entities([SonoffD1(registry, deviceid)])
-    elif device.get('uiid') == 59:
+    elif uiid == 59:
         add_entities([SonoffLED(registry, deviceid)])
-    elif device.get('uiid') == 22:
+    elif uiid == 22:
         add_entities([SonoffB1(registry, deviceid)])
-    elif device.get('uiid') == 36:
+    elif uiid == 36:
         add_entities([SonoffDimmer(registry, deviceid)])
     elif channels and len(channels) >= 2:
         add_entities([EWeLinkLightGroup(registry, deviceid, channels)])
@@ -67,14 +68,11 @@ class SonoffD1(EWeLinkToggle):
     def _update_handler(self, state: dict, attrs: dict):
         self._attrs.update(attrs)
 
-        # if 'online' in state:
-        #     self._available = state['online']
-
         if 'brightness' in state:
             self._brightness = max(round(state['brightness'] * 2.55), 1)
 
         if 'switch' in state:
-            self._is_on = any(self._is_on_list(state))
+            self._is_on = state['switch'] == 'on'
 
         self.schedule_update_ha_state()
 
@@ -116,7 +114,7 @@ class SonoffDimmer(SonoffD1):
             self._brightness = max(br, 1)
 
         if 'switch' in state:
-            self._is_on = any(self._is_on_list(state))
+            self._is_on = state['switch'] == 'on'
 
         self.schedule_update_ha_state()
 

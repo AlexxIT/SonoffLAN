@@ -83,6 +83,11 @@ class EWeLinkCover(CoverDevice, EWeLinkDevice):
         }
 
     @property
+    def available(self) -> bool:
+        device: dict = self.registry.devices[self.deviceid]
+        return device['available']
+
+    @property
     def current_cover_position(self):
         return self._position
 
