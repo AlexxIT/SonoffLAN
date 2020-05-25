@@ -22,18 +22,17 @@ If you want only local or only cloud control - this can also be configured.
 Pros:
 
 - work with original eWeLink / Sonoff firmware, no need to flash devices
-- work over Local Network and / or Cloud Server
+- work over Local Network and / or Cloud Server ([read more](#local-and-cloud-mode))
 - work with devices without DIY-mode
-- work with devices in DIY-mode
+- work with devices in DIY-mode ([read more](#local-only-mode-diy-devices))
 - support single and multi-channel devices
-- support TH and POW device attributes ([read more](#sonoff-th-и-pow))
+- support TH and POW device attributes ([read more](#sonoff-th-and-pow))
 - support Sonoff RF Bridge 433 for receive and send commands ([read more](#sonoff-rf-bridge-433))
 - support Sonoff GK-200MP2-B Camera ([read more](#sonoff-gk-200mp2-b-camera))
 - instant device state update with Local Multicast or Cloud Websocket connection
 - load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
 - (optional) change device type (`switch`, `light` or `fan`)
-- (optional) change device type for binary sensors (`door`, `window`, etc.)
-- (optional) set multi-channel device as single light with brightness control
+- (optional) config force refresh interval for TH and POW
 
 **Component review from DrZzs (HOWTO about HACS)**
 
@@ -187,29 +186,79 @@ sonoff:
 
 ### Custom device_class for ANY MODE
 
+You can convert all switches into light by default:
+
 ```yaml
 sonoff:
-  username: mymail@gmail.com
-  password: mypassword
-  default_class: light  # changes the default class of all devices from switch to light
+  default_class: light  # (optional), default switch
+```
+
+You can convert specific switches into lights or fans:
+
+```yaml
+sonoff:
   devices:
-    1000abcde0:  # corridor light
+    1000abcde0:
       device_class: light
-      name: My Best Light  # you can set name from yaml
-    1000abcde1:  # children's light (converts multi-channel device into single light entity)
-      device_class:
-      - light: [1, 2]
-    1000abcde2:  # toilet light and fan (double switch)
+      name: Sonoff Basic
+    1000abcde1:
+      device_class: fan
+      name: Sonoff Mini
+```
+
+You can convert multi-channel devices (e.g. Sonoff T1 2C):
+
+```yaml
+sonoff:
+  devices:
+    1000abcde2:
       device_class: [light, fan]
-    1000abcde3:  # bedroom light and backlight (double switch)
+      name: Sonoff T1 2C
+    1000abcde3:
       device_class: [light, light]
-    1000abcde4:  # hall three light zones Sonoff 4CH
+      name: MiniTiger 2CH
+```
+
+You can convert multi-channel device (e.g. Sonoff T1 3C) into single light with brightness control:
+
+```yaml
+sonoff:
+  devices:
+    1000abcde4:
       device_class:
-      - light  # zone 1 (channel 1)
-      - light  # zone 2 (channel 2)
-      - light: [3, 4]  # zone 3 (channels 3 and 4)
+        - light: [1, 2, 3]
+      name: Sonoff T1 3C
+```
+
+You can control multiple light zones with single multi-channel device (e.g. Sonoff 4CH Pow):
+
+```yaml
+sonoff:
+  devices:
     1000abcde5:
-      device_class: window  # support all Binary Sensor device_class types
+      device_class:
+        - light  # zone 1 (channel 1)
+        - light  # zone 2 (channel 2)
+        - light: [3, 4]  # zone 3 (channels 3 and 4)
+      name: Sonoff 4CH Pow
+```
+
+You can change `device_class` for Door Sensor:
+
+```yaml
+sonoff:
+  devices:
+    1000abcde6:
+      device_class: window
+```
+
+You can skip importing any cloud devices:
+
+```yaml
+sonoff:
+  devices:
+    1000abcde7:
+      device_class: exclude
 ```
 
 ### Refresh interval for TH and POW
@@ -362,15 +411,24 @@ Cloud users don't have these problems.
 
 All devices **unavailable** after each Home Assistant restart. It does not depend on `reload` setting. Devices are automatically detected in the local network after each restart. Sometimes devices appear quickly. Sometimes after a few minutes. If this does not happen, there are some problems with the multicast / router.
 
-## Component Debugging
+## Component Debug Mode
 
-Add to your `configuration.yaml`:
+Component support debug mode. Config for debug all devices:
 
 ```yaml
-logger:
-  default: info
-  logs:
-    custom_components.sonoff: debug
+sonoff:
+  username: mymail@gmail.com
+  password: mypassword
+  debug: True
+```
+
+Config for debug specific devices:
+
+```yaml
+sonoff:
+  username: mymail@gmail.com
+  password: mypassword
+  debug: [1000abcde0, 1000abcde1, 1000abcde2]
 ```
 
 All unknown devices with command `switch` support will be added as `switch`.
