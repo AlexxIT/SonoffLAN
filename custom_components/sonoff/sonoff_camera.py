@@ -73,12 +73,6 @@ class EWeLinkCameras(Thread):
     def __init__(self):
         super().__init__(name="Sonoff_CAM", daemon=True)
 
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        # TODO: random port
-        self.sock.bind(('', 50000))
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-
     def datagram_received(self, data: bytes, addr: tuple):
         # _LOGGER.debug(f"<= {addr[0]:15} {data[:80].hex()}")
 
@@ -130,13 +124,21 @@ class EWeLinkCameras(Thread):
         # _LOGGER.debug(f"=> {device.addr[0]:15} {data[:60].hex()}")
         self.sock.sendto(data, device.addr)
 
+    def start(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.sock.bind(('', 0))
+
+        super().start()
+
     async def send(self, deviceid: str, command: str):
         device = self.devices.get(deviceid)
 
         if not device or time.time() - device.last_time > 9:
             # start Thread if first time
             if not self.is_alive():
-                super().start()
+                self.start()
 
             if not device:
                 # create new device, we want wait for it
