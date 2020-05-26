@@ -438,6 +438,12 @@ sonoff:
   debug: True  # you will get HA notification with a link to the logs page
 ```
 
+The link to the logs is always random. You can filter multiple devices in the logs and enable auto refresh (in seconds).
+
+```
+http://192.168.1.123:8123/c4e99cfc-0c83-4a39-b7f0-278b0e719bd1?q=1000abcde1|1000abcde2&r=2
+```
+
 All unknown devices with command `switch` support will be added as `switch`.
 
 All other unknown devices will be added as `binary_sensor` (always `off`). The full state of the device is displayed in its attributes.

@@ -168,7 +168,7 @@ RE_PRIVATE = re.compile(
     r"'([a-zA-Z0-9_-]{36,}|[A-F0-9:]{17}|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|"
     r"EWLK-\d{6}-[A-Z]{5})'")
 NOTIFY_TEXT = (
-    '<a href="{}" target="_blank">Open Log<a> | '
+    '<a href="%s" target="_blank">Open Log<a> | '
     '[New Issue on GitHub](https://github.com/AlexxIT/SonoffLAN/issues/new) | '
     '[sonofflan@gmail.com](mailto:sonofflan@gmail.com)')
 
@@ -183,25 +183,17 @@ class SonoffDebug(logging.Handler, HomeAssistantView):
 
     text = ''
 
-    def __init__(self, hass: HomeAssistantType, devices):
+    def __init__(self, hass: HomeAssistantType):
         super().__init__()
-
-        self.devices = devices if isinstance(devices, list) else None
 
         # random url because without authorization!!!
         self.url = f"/{uuid.uuid4()}"
 
         hass.http.register_view(self)
         hass.components.persistent_notification.async_create(
-            NOTIFY_TEXT.format(self.url), title="Sonoff Debug")
+            NOTIFY_TEXT % self.url, title="Sonoff Debug")
 
     def handle(self, rec: logging.LogRecord) -> None:
-        # filter devices from list
-        if self.devices:
-            m = RE_DEVICEID.match(rec.msg)
-            if m and m[0] not in self.devices:
-                return
-
         dt = datetime.fromtimestamp(rec.created).strftime("%Y-%m-%d %H:%M:%S")
         module = 'main' if rec.module == '__init__' else rec.module
         # remove private data
@@ -209,8 +201,18 @@ class SonoffDebug(logging.Handler, HomeAssistantView):
         msg = RE_PRIVATE.sub("'...'", str(rec.msg))
         self.text += f"{dt}  {rec.levelname:7}  {module:12}  {msg}\n"
 
-    async def get(self, request):
-        refresh = request.query_string
-        refresh = int(refresh) if refresh.isdecimal() else ''
-        return web.Response(text=HTML % (refresh, self.text),
+    async def get(self, request: web.Request):
+        reload = request.query.get('r', '')
+
+        if 'q' in request.query:
+            try:
+                reg = re.compile(fr"({request.query['q']})", re.IGNORECASE)
+                body = '\n'.join([p for p in self.text.split('\n')
+                                  if reg.search(p)])
+            except:
+                return web.Response(status=500)
+        else:
+            body = None
+
+        return web.Response(text=HTML % (reload, body or self.text),
                             content_type="text/html")
