@@ -16,6 +16,8 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 - support refresh interval for Sonoff TH and Sonoff POW ([read more](#refresh-interval-for-th-and-pow))
 - added new debug mode for troubleshooting ([read more](#component-debug-mode))
 
+**Breaking changes 2.0:** by default, both local and cloud modes will start working together. If you do not want this - enable the `mode: local` setting. But I recommend using the new mode, it works great.
+
 If your internet breaks down - local management will continue to work.  
 If you have problems with multicast on the local network - cloud management will work.  
 If you want only local or only cloud control - this can also be configured.
@@ -39,7 +41,7 @@ Pros:
 
 **Component review from DrZzs (HOWTO about HACS)**
 
-[![Component review from DrZzs](https://img.youtube.com/vi/DsTqOlrQQ1k/0.jpg)](https://www.youtube.com/watch?v=DsTqOlrQQ1k)
+[![Sonoffs can work with Home Assistant without changing the Firmware!](https://img.youtube.com/vi/DsTqOlrQQ1k/0.jpg)](https://www.youtube.com/watch?v=DsTqOlrQQ1k)
 
 There is another great component by [@peterbuga](https://github.com/peterbuga/HASS-sonoff-ewelink), that works with cloud servers.
 
@@ -99,7 +101,15 @@ These devices only work through the cloud!
 
 ## Install with HACS
 
+Latest [HACS](https://hacs.xyz/) require HA 0.110.0 or newer:
+
+![](demo_hacs1.gif)
+
+Old HACS:
+
 ![](demo_hacs.gif)
+
+Or manually copy `sonoff` folder from [latest release](https://github.com/AlexxIT/SonoffLAN/releases/latest) to `custom_components` folder in your config folder.
 
 ## Config Examples
 
@@ -289,9 +299,9 @@ sonoff:
 
 **Video HOWTO from @KPeyanski**
 
-Install from [HACS](https://hacs.xyz/), automation and event trigger:
+HOWTO about: install from HACS, automation and event trigger:
 
-[![Component review from DrZzs](https://img.youtube.com/vi/QD1K7s01cak/0.jpg)](https://www.youtube.com/watch?v=QD1K7s01cak?t=284)
+[![Automatic Calls and Messages from Home Assistant, Sonoff RF Bridge and Smoke Detectors](https://img.youtube.com/vi/QD1K7s01cak/0.jpg)](https://www.youtube.com/watch?v=QD1K7s01cak?t=284)
 
 **Entity RF Buttons or RF Sensors are not created automatically!**
 
