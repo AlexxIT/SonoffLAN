@@ -50,12 +50,14 @@ def init_device_class(default_class: str = 'switch'):
         2: switch2,
         3: switch3,
         4: switch4,
-        5: switch1,
+        5: switch1,  # Sonoff Pow
         6: switch1,
-        7: switch2,
-        8: switch3,
+        7: switch2,  # Sonoff T1 2C
+        8: switch3,  # Sonoff T1 3C
         9: switch4,
         11: 'cover',  # King Art - King Q4 Cover (only cloud)
+        # 14 Sonoff Basic
+        # 15 Sonoff TH16
         18: 'sensor',  # Sonoff SC
         22: 'light',  # Sonoff B1 (only cloud)
         28: 'remote',  # Sonoff RF Brigde 433
@@ -72,7 +74,7 @@ def init_device_class(default_class: str = 'switch'):
         82: switch2,
         83: switch3,
         84: switch4,
-        102: 'binary_sensor',  # Door/Window sensor
+        102: 'binary_sensor',  # Sonoff DW2 Door/Window sensor
         107: switchx,
         # list local types
         'plug': switch1,  # Basic, Mini
