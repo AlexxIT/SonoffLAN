@@ -10,16 +10,22 @@ import logging
 import time
 from typing import Optional, Callable, List
 
-from aiohttp import ClientSession, WSMsgType, ClientConnectorError
+from aiohttp import ClientSession, WSMsgType, ClientConnectorError, \
+    WSMessage, ClientWebSocketResponse
 
 _LOGGER = logging.getLogger(__name__)
 
-RETRY_DELAYS = [0, 15, 30, 60, 150, 300]
+RETRY_DELAYS = [0, 15, 60, 5 * 60, 15 * 60, 60 * 60]
+FAST_DELAY = RETRY_DELAYS.index(5 * 60)
 DATA_ERROR = {
     0: 'online',
     503: 'offline',
     504: 'timeout'
 }
+
+CLOUD_ERROR = (
+    "Cloud mode cannot work simultaneously with two copies of component. "
+    "Read more: https://github.com/AlexxIT/SonoffLAN#config-examples")
 
 
 class ResponseFuture:
@@ -52,7 +58,7 @@ class ResponseFuture:
 class EWeLinkCloud(ResponseFuture):
     _devices: dict = None
     _handlers = None
-    _ws = None
+    _ws: Optional[ClientWebSocketResponse] = None
 
     _baseurl = 'https://eu-api.coolkit.cc:8080/'
     _apikey = None
@@ -149,48 +155,54 @@ class EWeLinkCloud(ResponseFuture):
     async def _connect(self, fails: int = 0):
         """Permanent connection loop to Cloud Servers."""
         resp = await self._send('post', 'dispatch/app', {'accept': 'ws'})
-        url = f"wss://{resp['IP']}:{resp['port']}/api/ws"
+        if resp:
+            try:
+                url = f"wss://{resp['IP']}:{resp['port']}/api/ws"
+                self._ws = await self.session.ws_connect(
+                    url, heartbeat=55, ssl=False)
 
-        try:
-            self._ws = await self.session.ws_connect(url, heartbeat=55,
-                                                     ssl=False)
-            fails = 0
+                ts = time.time()
+                payload = {
+                    'action': 'userOnline',
+                    'at': self._token,
+                    'apikey': self._apikey,
+                    'userAgent': 'app',
+                    'appid': 'oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq',
+                    'nonce': str(int(ts / 100)),
+                    'ts': int(ts),
+                    'version': 8,
+                    'sequence': str(int(ts * 1000))
+                }
+                await self._ws.send_json(payload)
 
-            ts = time.time()
-            payload = {
-                'action': 'userOnline',
-                'at': self._token,
-                'apikey': self._apikey,
-                'userAgent': 'app',
-                'appid': 'oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq',
-                'nonce': str(int(ts / 100)),
-                'ts': int(ts),
-                'version': 8,
-                'sequence': str(int(ts * 1000))
-            }
-            await self._ws.send_json(payload)
+                msg: WSMessage = await self._ws.receive()
+                _LOGGER.debug(f"Cloud init: {json.loads(msg.data)}")
 
-            async for msg in self._ws:
-                if msg.type == WSMsgType.TEXT:
-                    resp = json.loads(msg.data)
-                    await self._process_ws_msg(resp)
+                async for msg in self._ws:
+                    fails = 0
 
-                elif msg.type == WSMsgType.CLOSED:
-                    _LOGGER.debug(f"Cloud WS Closed: {msg.data}")
-                    break
+                    if msg.type == WSMsgType.TEXT:
+                        resp = json.loads(msg.data)
+                        await self._process_ws_msg(resp)
 
-                elif msg.type == WSMsgType.ERROR:
-                    _LOGGER.debug(f"Cloud WS Error: {msg.data}")
-                    break
+                    elif msg.type == WSMsgType.CLOSED:
+                        _LOGGER.debug(f"Cloud WS Closed: {msg.data}")
+                        break
 
-        except ClientConnectorError as e:
-            _LOGGER.error(f"Cloud WS Connection error: {e}")
+                    elif msg.type == WSMsgType.ERROR:
+                        _LOGGER.debug(f"Cloud WS Error: {msg.data}")
+                        break
 
-        except Exception:
-            _LOGGER.exception(f"Cloud WS exception")
+                # can't run two WS on same account in same time
+                if time.time() - ts < 10 and fails < FAST_DELAY:
+                    _LOGGER.error(CLOUD_ERROR)
+                    fails = FAST_DELAY
 
-        else:
-            _LOGGER.debug("Cloud WS else")
+            except ClientConnectorError as e:
+                _LOGGER.error(f"Cloud WS Connection error: {e}")
+
+            except Exception:
+                _LOGGER.exception(f"Cloud WS exception")
 
         delay = RETRY_DELAYS[fails]
         _LOGGER.debug(f"Cloud WS retrying in {delay} seconds")
@@ -238,7 +250,7 @@ class EWeLinkCloud(ResponseFuture):
 
     @property
     def started(self) -> bool:
-        return self._ws is not None
+        return self._ws and not self._ws.closed
 
     async def start(self, handlers: List[Callable], devices: dict = None):
         assert self._token, "Login first"

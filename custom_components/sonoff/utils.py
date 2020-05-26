@@ -147,6 +147,19 @@ def parse_multichannel_class(device_class: list) -> List[dict]:
     return entities
 
 
+def handle_cloud_error(hass: HomeAssistantType):
+    """Show persistent notification if cloud error occurs."""
+    from .sonoff_cloud import _LOGGER, CLOUD_ERROR
+
+    class CloudError(logging.Handler):
+        def handle(self, rec: logging.LogRecord) -> None:
+            if rec.msg == CLOUD_ERROR:
+                hass.components.persistent_notification.async_create(
+                    rec.msg, title="Sonoff Warning")
+
+    _LOGGER.addHandler(CloudError())
+
+
 RE_DEVICEID = re.compile(r"^[a-z0-9]{10}\b")
 # remove uiid, MAC, IP
 RE_PRIVATE = re.compile(
