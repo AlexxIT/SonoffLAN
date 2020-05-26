@@ -86,6 +86,7 @@ class EWeLinkLocal:
     def _zeroconf_handler(self, zeroconf: Zeroconf, service_type: str,
                           name: str, state_change: ServiceStateChange):
         if state_change == ServiceStateChange.Removed:
+            _LOGGER.debug(f"Zeroconf Removed: {name}")
             # TTL of record 5 minutes
             deviceid = name[8:18]
             # _LOGGER.debug(f"{deviceid} <= Local2 | Zeroconf Removed Event")
