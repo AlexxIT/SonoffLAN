@@ -73,7 +73,7 @@ class EWeLinkLocal:
 
     def start(self, handlers: List[Callable], devices: dict = None):
         self._handlers = handlers
-        self._devices = devices or {}
+        self._devices = devices
         self._zeroconf = Zeroconf()
         browser = ServiceBrowser(self._zeroconf, '_ewelink._tcp.local.',
                                  handlers=[self._zeroconf_handler])
