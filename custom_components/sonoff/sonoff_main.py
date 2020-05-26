@@ -153,7 +153,6 @@ class EWeLinkRegistry:
 
         state = {}
 
-        # TODO: big timeout for only local device!
         if can_local and can_cloud:
             # try to send a command locally (wait no more than a second)
             state['local'] = await self._local.send(deviceid, params, seq, 1)
@@ -177,7 +176,7 @@ class EWeLinkRegistry:
         else:
             return
 
-            # update device attrs
+        # update device attrs
         self._registry_handler(deviceid, state, None)
 
 

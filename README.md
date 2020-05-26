@@ -4,14 +4,17 @@
 [![Donate](https://img.shields.io/badge/donate-Coffee-yellow.svg)](https://www.buymeacoffee.com/AlexxIT)
 [![Donate](https://img.shields.io/badge/donate-Yandex-red.svg)](https://money.yandex.ru/to/41001428278477)
 
-Home Assistant Custom Component for control **eWeLink** (Sonoff) devices.
+Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devices with [eWeLink](https://www.ewelink.cc/en/) (original) firmware over LAN and/or Cloud.
 
-By default all users get latest stable release: [1.10.4](https://github.com/AlexxIT/SonoffLAN/tree/v1.10.4)
+**New features in version 2.0:**
 
-**OPEN BETA TEST BIG NEW VERSION** of component - [read more](https://github.com/AlexxIT/SonoffLAN/issues/99)  
-Can manage **both local and cloud control at the same time**!  
-
-![](open_beta.png)
+- can manage **both local and cloud control at the same time**!
+- support old devices wih 2.7 firmware (only cloud connection)
+- support new device types: color lights, sensors, covers
+- support eWeLink cameras with PTZ ([read more](#sonoff-gk-200mp2-b-camera))
+- support unavailable device state for both local and cloud connection 
+- support refresh interval for Sonoff TH and Sonoff POW ([read more](#refresh-interval-for-th-and-pow))
+- added new debug mode for troubleshooting ([read more](#component-debug-mode))
 
 If your internet breaks down - local management will continue to work.  
 If you have problems with multicast on the local network - cloud management will work.  
@@ -31,8 +34,8 @@ Pros:
 - support Sonoff GK-200MP2-B Camera ([read more](#sonoff-gk-200mp2-b-camera))
 - instant device state update with Local Multicast or Cloud Websocket connection
 - load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
-- (optional) change device type (`switch`, `light` or `fan`)
-- (optional) config force refresh interval for TH and POW
+- (optional) change device type from `switch` to `light` ([read more](#custom-device_class-for-any-mode))
+- (optional) config force refresh interval for TH and POW ([read more](#refresh-interval-for-th-and-pow))
 
 **Component review from DrZzs (HOWTO about HACS)**
 
@@ -71,6 +74,7 @@ These devices work both on a local network and through the cloud.
 - [Sonoff S31](https://www.itead.cc/sonoff-s31.html) (show power consumption)
 - [Sonoff S55](https://www.itead.cc/sonoff-s55.html)
 - [Sonoff SV](https://www.itead.cc/sonoff-sv.html) fw 3.0.1
+- [Sonoff T1](https://www.itead.cc/sonoff-t1.html)
 - [Sonoff TX](https://www.itead.cc/sonoff-tx-series-wifi-smart-wall-switches.html)
 - [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
 - [Sonoff Slampher R2](https://www.itead.cc/sonoff-slampher-r2.html)
@@ -78,6 +82,8 @@ These devices work both on a local network and through the cloud.
 - [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line) fw 3.3.0
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000454408211.html)
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000351300288.html)
+- [Smart Circuit Breaker](https://www.aliexpress.com/item/4000077475264.html)
+- [Smart Timer Switch](https://www.aliexpress.com/item/4000189016383.html)
 - [Eachen WiFi Smart Touch](https://ewelink.eachen.cc/product/eachen-single-live-wall-switch-us-ac-l123ewelink-app/) fw 3.3.0
 
 ## Tested Devices (only Cloud)
@@ -184,7 +190,7 @@ Recommended for users who do not trust Cloud Servers for some reason. Only works
 sonoff:
 ```
 
-### Custom device_class for ANY MODE
+### Custom device_class for any mode
 
 You can convert all switches into light by default:
 
@@ -413,22 +419,13 @@ All devices **unavailable** after each Home Assistant restart. It does not depen
 
 ## Component Debug Mode
 
-Component support debug mode. Config for debug all devices:
+Component support debug mode ([demo](https://youtu.be/Lt5fT4N5Pm8)):
 
 ```yaml
 sonoff:
   username: mymail@gmail.com
   password: mypassword
-  debug: True
-```
-
-Config for debug specific devices:
-
-```yaml
-sonoff:
-  username: mymail@gmail.com
-  password: mypassword
-  debug: [1000abcde0, 1000abcde1, 1000abcde2]
+  debug: True  # you will get HA notification with a link to the logs page
 ```
 
 All unknown devices with command `switch` support will be added as `switch`.
