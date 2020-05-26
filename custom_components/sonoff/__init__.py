@@ -171,7 +171,7 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
         global SCAN_INTERVAL
         SCAN_INTERVAL = config[CONF_SCAN_INTERVAL]
 
-    if mode in ('auto', 'cloud'):
+    if mode in ('auto', 'cloud') and has_credentials:
         utils.handle_cloud_error(hass)
 
         # immediately add all cloud devices
