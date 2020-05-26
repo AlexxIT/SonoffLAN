@@ -156,14 +156,20 @@ class EWeLinkLocal:
         device['check_offline'] = True
         sequence = str(int(time.time() * 1000))
 
-        for i in range(1, 4, 1):
-            _LOGGER.debug(f"{log} | Check offline with timeout {20 * i}s")
+        for t in range(20, 61, 20):
+            _LOGGER.debug(f"{log} | Check offline with timeout {t}s")
 
-            conn = await self.send(deviceid, {'cmd': 'info'}, sequence, 20 * i)
+            t0 = time.time()
+
+            conn = await self.send(deviceid, {'cmd': 'info'}, sequence, t)
             if conn == 'online':
                 device['check_offline'] = False
                 _LOGGER.debug(f"{log} | Welcome back!")
                 return
+
+            if t < 60 and conn != 'timeout':
+                # sometimes need to wait more
+                await asyncio.sleep(t - time.time() + t0)
 
         _LOGGER.debug(f"{log} | Device offline")
 
