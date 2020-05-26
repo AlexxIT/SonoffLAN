@@ -95,6 +95,7 @@ These devices only work through the cloud!
 - [Sonoff L1](https://www.itead.cc/sonoff-l1-smart-led-light-strip.html) (color, brightness, effects) fw 2.7.0
 - [Sonoff B1](https://www.itead.cc/sonoff-b1.html) (color, brightness, color temp) fw 2.6.0
 - [Sonoff SC](https://www.itead.cc/sonoff-sc.html) (five sensors) fw 2.7.0
+- [Sonoff DW2](https://www.itead.cc/sonoff-dw2.html)
 - [King Art - King Q4 Cover](https://www.aliexpress.com/item/32956776611.html) (pause, position) fw 2.7.0
 - [KING-M4](https://www.aliexpress.com/item/33013358523.html) (brightness) fw 2.7.0
 - [Eachen WiFi Door/Window Sensor](https://ewelink.eachen.cc/product/eachen-wifi-smart-door-window-sensor-wdw-ewelink/)
@@ -327,7 +328,7 @@ automation:
       name: Button1  # button/sensor name in eWeLink application
   action:
     service: homeassistant.toggle
-    entity_id: switch.sonoff_1000abcdefg
+    entity_id: switch.sonoff_1000abcdef
 ```
 
 Example for send RF signal via [Script](https://www.home-assistant.io/integrations/script/):
@@ -339,7 +340,7 @@ script:
     sequence:
     - service: remote.send_command
       data:
-        entity_id: remote.sonoff_1000abcdefg
+        entity_id: remote.sonoff_1000abcdef
         command: Button1  # button name in eWeLink application
 ```
 
@@ -356,11 +357,11 @@ sensor:
     temperature_th:
       friendly_name: Temperature
       device_class: temperature
-      value_template: "{{ state_attr('switch.sonoff_1000abcdefg', 'temperature') }}"
+      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'temperature') }}"
     humidity_th:
       friendly_name: Humidity
       device_class: humidity
-      value_template: "{{ state_attr('switch.sonoff_1000abcdefg', 'humidity') }}"
+      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'humidity') }}"
 ```
 
 ## Sonoff GK-200MP2-B Camera
