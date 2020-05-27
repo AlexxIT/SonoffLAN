@@ -54,20 +54,28 @@ class EWeLinkRemote(EWeLinkToggle):
         - {'cmd': 'transmit', 'rfChl': 3}
         - {'cmd': 'capture', 'rfChl': 1},
         """
-        if 'sledOnline' in state:
-            self._sled_online = state['sledOnline']
-
         if not self._is_on:
             return
 
+        self._attrs.update(attrs)
+
+        if 'sledOnline' in state:
+            self._sled_online = state['sledOnline']
+
         for k, v in state.items():
             if k.startswith('rfTrig'):
+                if v == self._attrs.get('ts'):
+                    # skip same cmd from local and cloud
+                    return
+
                 channel = k[6:]
-                # TODO: show default device attrs
-                self._attrs = {'command': int(channel), 'ts': v,
-                               'name': self._buttons.get(channel)}
-                self.hass.bus.fire('sonoff.remote', {
-                    'entity_id': self.entity_id, **self._attrs})
+                data = {'command': int(channel), 'ts': v,
+                        'name': self._buttons.get(channel)}
+                self._attrs.update(data)
+
+                data['entity_id'] = self.entity_id
+                _LOGGER.debug(f"Fire event sonoff.remote: {data}")
+                self.hass.bus.fire('sonoff.remote', data)
 
                 self.schedule_update_ha_state()
 
