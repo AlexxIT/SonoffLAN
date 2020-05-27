@@ -54,6 +54,9 @@ class EWeLinkRemote(EWeLinkToggle):
         - {'cmd': 'transmit', 'rfChl': 3}
         - {'cmd': 'capture', 'rfChl': 1},
         """
+        if 'sledOnline' in state:
+            self._sled_online = state['sledOnline']
+
         if not self._is_on:
             return
 

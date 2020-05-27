@@ -53,6 +53,9 @@ class SonoffFan03Light(EWeLinkToggle):
         if 'light' in state:
             self._is_on = state['light'] == 'on'
 
+        if 'sledOnline' in state:
+            self._sled_online = state['sledOnline']
+
         self.schedule_update_ha_state()
 
     async def async_turn_on(self, **kwargs) -> None:
@@ -365,6 +368,9 @@ class EWeLinkLightGroup(SonoffD1):
                 self._is_on = True
             else:
                 self._is_on = False
+
+        if 'sledOnline' in state:
+            self._sled_online = state['sledOnline']
 
         self.schedule_update_ha_state()
 

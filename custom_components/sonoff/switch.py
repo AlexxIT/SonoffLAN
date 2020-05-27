@@ -31,7 +31,9 @@ async def async_setup_platform(hass, config, add_entities,
 
 
 class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
+    """Toggle can force update device with sledonline command."""
     _should_poll = None
+    _sled_online = None
 
     async def async_added_to_hass(self) -> None:
         device = self._init()
@@ -45,6 +47,9 @@ class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
 
         if 'switch' in state or 'switches' in state:
             self._is_on = any(self._is_on_list(state))
+
+        if 'sledOnline' in state:
+            self._sled_online = state['sledOnline']
 
         self.schedule_update_ha_state()
 
@@ -96,8 +101,7 @@ class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
         https://github.com/AlexxIT/SonoffLAN/issues/14
         """
         _LOGGER.debug(f"Refresh device state {self.deviceid}")
-
-        if self._is_on:
-            await self.async_turn_on()
-        else:
-            await self.async_turn_off()
+        params = {'sledonline': self._sled_online} \
+            if self._sled_online is not None else \
+            {'cmd': 'signal_strength'}
+        await self.registry.send(self.deviceid, params)
