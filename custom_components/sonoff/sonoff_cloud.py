@@ -28,7 +28,7 @@ CLOUD_ERROR = (
     "Read more: https://github.com/AlexxIT/SonoffLAN#config-examples")
 
 
-class ResponseFuture:
+class ResponseWaiter:
     """Class wait right sequences in response messages."""
     _waiters = {}
 
@@ -55,8 +55,8 @@ class ResponseFuture:
         return self._waiters.pop(sequence).result()
 
 
-class EWeLinkCloud(ResponseFuture):
-    _devices: dict = None
+class EWeLinkCloud(ResponseWaiter):
+    devices: dict = None
     _handlers = None
     _ws: Optional[ClientWebSocketResponse] = None
 
@@ -113,7 +113,8 @@ class EWeLinkCloud(ResponseFuture):
         # if msg about device
         if deviceid:
             _LOGGER.debug(f"{deviceid} <= Cloud3 | {data}")
-            device = self._devices[deviceid]
+
+            device = self.devices[deviceid]
 
             # if msg with device params
             if 'params' in data:
@@ -255,7 +256,7 @@ class EWeLinkCloud(ResponseFuture):
     async def start(self, handlers: List[Callable], devices: dict = None):
         assert self._token, "Login first"
         self._handlers = handlers
-        self._devices = devices
+        self.devices = devices
 
         asyncio.create_task(self._connect())
 
@@ -269,7 +270,7 @@ class EWeLinkCloud(ResponseFuture):
         payload = {
             'action': 'update',
             # device apikey for shared devices
-            'apikey': self._devices[deviceid]['apikey'],
+            'apikey': self.devices[deviceid]['apikey'],
             'selfApikey': self._apikey,
             'deviceid': deviceid,
             'userAgent': 'app',
@@ -282,3 +283,28 @@ class EWeLinkCloud(ResponseFuture):
 
         # wait for response with same sequence
         return await self._wait_response(sequence)
+
+
+class ConsumptionHelper:
+    def __init__(self, cloud: EWeLinkCloud):
+        self.cloud = cloud
+        self._cloud_process_ws_msg = cloud._process_ws_msg
+        cloud._process_ws_msg = self._process_ws_msg
+
+    async def _process_ws_msg(self, data: dict):
+        if 'config' in data and 'hundredDaysKwhData' in data['config']:
+            kwh = data['config']['hundredDaysKwhData']
+            kwh = [int(kwh[i:i + 6]) for i in range(0, 600, 6)]
+            data['params'] = {'consumption': kwh}
+
+        await self._cloud_process_ws_msg(data)
+
+    async def update(self):
+        if not self.cloud.started:
+            return
+
+        for device in self.cloud.devices.values():
+            if 'params' in device and 'hundredDaysKwh' in device['params']:
+                sequence = str(int(time.time() * 1000))
+                await self.cloud.send(device['deviceid'], {
+                    'hundredDaysKwh': 'get'}, sequence)

@@ -13,7 +13,7 @@ from .sonoff_local import EWeLinkLocal
 _LOGGER = logging.getLogger(__name__)
 
 ATTRS = ('local', 'cloud', 'rssi', 'humidity', 'temperature', 'power',
-         'current', 'voltage', 'battery')
+         'current', 'voltage', 'battery', 'consumption')
 
 # map cloud attrs to local attrs
 ATTRS_MAP = {
@@ -62,8 +62,8 @@ class EWeLinkRegistry:
     devices: Optional[dict] = None
 
     def __init__(self, session: ClientSession):
-        self._cloud = EWeLinkCloud(session)
-        self._local = EWeLinkLocal(session)
+        self.cloud = EWeLinkCloud(session)
+        self.local = EWeLinkLocal(session)
 
     def _registry_handler(self, deviceid: str, state: dict, sequence: str):
         """Feedback from local and cloud connections
@@ -111,11 +111,11 @@ class EWeLinkRegistry:
         self.devices = load_cache(cachefile)
 
     async def cloud_login(self, username: str, password: str):
-        return await self._cloud.login(username, password)
+        return await self.cloud.login(username, password)
 
     async def cloud_load_devices(self, cachefile: str = None):
         """Load devices list from Cloud Servers."""
-        newdevices = await self._cloud.load_devices()
+        newdevices = await self.cloud.load_devices()
         if newdevices is not None:
             newdevices = {p['deviceid']: p for p in newdevices}
             if cachefile:
@@ -126,7 +126,7 @@ class EWeLinkRegistry:
         if self.devices is None:
             self.devices = {}
 
-        await self._cloud.start([self._registry_handler], self.devices)
+        await self.cloud.start([self._registry_handler], self.devices)
 
     async def local_start(self, handlers: List[Callable]):
         if self.devices is None:
@@ -137,7 +137,7 @@ class EWeLinkRegistry:
         else:
             handlers = [self._registry_handler]
 
-        self._local.start(handlers, self.devices)
+        self.local.start(handlers, self.devices)
 
     async def stop(self):
         # TODO: do something
@@ -148,30 +148,30 @@ class EWeLinkRegistry:
         seq = str(int(time.time() * 1000))
 
         device: dict = self.devices[deviceid]
-        can_local = self._local.started and device.get('host')
-        can_cloud = self._cloud.started and device.get('online')
+        can_local = self.local.started and device.get('host')
+        can_cloud = self.cloud.started and device.get('online')
 
         state = {}
 
         if can_local and can_cloud:
             # try to send a command locally (wait no more than a second)
-            state['local'] = await self._local.send(deviceid, params, seq, 1)
+            state['local'] = await self.local.send(deviceid, params, seq, 1)
 
             # otherwise send a command through the cloud
             if state['local'] != 'online':
-                state['cloud'] = await self._cloud.send(deviceid, params, seq)
+                state['cloud'] = await self.cloud.send(deviceid, params, seq)
                 if state['cloud'] != 'online':
-                    coro = self._local.check_offline(deviceid)
+                    coro = self.local.check_offline(deviceid)
                     asyncio.create_task(coro)
 
         elif can_local:
-            state['local'] = await self._local.send(deviceid, params, seq, 5)
+            state['local'] = await self.local.send(deviceid, params, seq, 5)
             if state['local'] != 'online':
-                coro = self._local.check_offline(deviceid)
+                coro = self.local.check_offline(deviceid)
                 asyncio.create_task(coro)
 
         elif can_cloud:
-            state['cloud'] = await self._cloud.send(deviceid, params, seq)
+            state['cloud'] = await self.cloud.send(deviceid, params, seq)
 
         else:
             return

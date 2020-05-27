@@ -13,7 +13,7 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 - support new device types: color lights, sensors, covers
 - support eWeLink cameras with PTZ ([read more](#sonoff-gk-200mp2-b-camera))
 - support unavailable device state for both local and cloud connection 
-- support refresh interval for Sonoff TH and Sonoff POW ([read more](#refresh-interval-for-th-and-pow))
+- support refresh interval for Sonoff TH and Sonoff Pow ([read more](#refresh-interval-for-th-and-pow))
 - added new debug mode for troubleshooting ([read more](#component-debug-mode))
 
 **Breaking changes 2.0:** by default, both local and cloud modes will start working together. If you do not want this - enable the `mode: local` setting. But I recommend using the new mode, it works great.
@@ -31,13 +31,13 @@ Pros:
 - work with devices without DIY-mode
 - work with devices in DIY-mode ([read more](#local-only-mode-diy-devices))
 - support single and multi-channel devices
-- support TH and POW device attributes ([read more](#sonoff-th-and-pow))
+- support TH and Pow device attributes ([read more](#sonoff-th-and-pow))
 - support Sonoff RF Bridge 433 for receive and send commands ([read more](#sonoff-rf-bridge-433))
 - support Sonoff GK-200MP2-B Camera ([read more](#sonoff-gk-200mp2-b-camera))
 - instant device state update with Local Multicast or Cloud Websocket connection
 - load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
 - (optional) change device type from `switch` to `light` ([read more](#custom-device_class-for-any-mode))
-- (optional) config force refresh interval for TH and POW ([read more](#refresh-interval-for-th-and-pow))
+- (optional) config force refresh interval for TH and Pow ([read more](#refresh-interval-for-th-and-pow))
 
 **Component review from DrZzs (HOWTO about HACS)**
 
@@ -278,9 +278,9 @@ sonoff:
       device_class: exclude
 ```
 
-### Refresh interval for TH and POW
+### Refresh interval for TH and Pow
 
-You can config forced updating of TH and POW attributes ([read more](https://github.com/AlexxIT/SonoffLAN/issues/14)).
+You can config forced updating of TH and Pow attributes ([read more](https://github.com/AlexxIT/SonoffLAN/issues/14)).
 
 ```yaml
 sonoff:
@@ -294,6 +294,17 @@ sonoff:
     1000abcde1:
       name: Sonoff Pow
       force_update: True
+```
+
+## Sonoff Pow Power Consumption
+
+For update power consumption of all your Pow devices you can call `sonoff.update_consumption` service.
+
+The device attributes will display data for the last 100 days. The first element is today's data. It's up to you how often to call updates and what to do with this data later.
+
+```jinja2
+Today consumpion: {{ state_attr('switch.sonoff_1000abcdef', 'consumption')[0] }}
+10 days consumpion: {{ state_attr('switch.sonoff_1000abcdef', 'consumption')[:10]|sum }}
 ```
 
 ## Sonoff RF Bridge 433

@@ -13,6 +13,7 @@ from homeassistant.helpers.typing import HomeAssistantType
 
 from . import utils
 from .sonoff_camera import EWeLinkCameras
+from .sonoff_cloud import ConsumptionHelper
 from .sonoff_main import EWeLinkRegistry
 
 _LOGGER = logging.getLogger(__name__)
@@ -170,6 +171,15 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
             _LOGGER.error(f"Wrong deviceid {deviceid}")
 
     hass.services.async_register(DOMAIN, 'send_command', send_command)
+
+    async def update_consumption(call: ServiceCall):
+        if not hasattr(registry, 'consumption'):
+            _LOGGER.debug("Create ConsumptionHelper")
+            registry.consumption = ConsumptionHelper(registry.cloud)
+        await registry.consumption.update()
+
+    hass.services.async_register(DOMAIN, 'update_consumption',
+                                 update_consumption)
 
     if CONF_SCAN_INTERVAL in config:
         global SCAN_INTERVAL
