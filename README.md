@@ -346,24 +346,47 @@ Although the component supports training, it is recommended to train RF Buttons 
 
 When a command is received, the event `sonoff.remote` is generated with a button number and response time (in UTC, sends the device).
 
-`command` - number of the button in the eWeLink application.
+The last command received can be seen in the Bridge attributes:
 
-Example for receive RF signal via [Automation](https://www.home-assistant.io/integrations/automation/):
+![](demo_bridge.png)
+
+**Example for receive all RF signal**
 
 ```yaml
 automation:
-- alias: Receive RF Button1
+- alias: Sonoff RF Receive
   trigger:
     platform: event
-    event_type: sonoff.remote
+    event_type: sonoff.remote  # this is NOT entity_id, don't change it!
+  action:
+    service: persistent_notification.create
+    data_template:
+      title: Sonoff RF Receive
+      message: |-
+        Name: {{ trigger.event.data.name }}
+        Command: {{ trigger.event.data.command }}
+        Time: {{ trigger.event.data.ts }}
+```
+
+**Example of reaction to the selected button**
+
+Instead of a `name: Button1`, you can use `command: 0` number of the button in the eWeLink application (starts from zero).
+
+```yaml
+automation:
+- alias: Receive Button1
+  trigger:
+    platform: event
+    event_type: sonoff.remote  # this is NOT entity_id, don't change it!
     event_data:
       name: Button1  # button/sensor name in eWeLink application
   action:
-    service: homeassistant.toggle
-    entity_id: switch.sonoff_1000abcdef
+    service: persistent_notification.create
+    data:
+      message: My Remote button pressed
 ```
 
-Example for send RF signal via [Script](https://www.home-assistant.io/integrations/script/):
+**Example for send RF signal**
 
 ```yaml
 script:
