@@ -374,14 +374,32 @@ Temperature, humidity and other parameters of the devices are stored in their at
 sensor:
 - platform: template
   sensors:
-    temperature_th:
-      friendly_name: Temperature
+    th_temperature:
+      friendly_name: Sonoff TH Temperature
       device_class: temperature
+      unit_of_measurement: °C
       value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'temperature') }}"
-    humidity_th:
-      friendly_name: Humidity
+    th_humidity:
+      friendly_name: Sonoff TH Humidity
       device_class: humidity
+      unit_of_measurement: '%'
       value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'humidity') }}"
+
+- platform: template
+  sensors:
+    pow2_power:
+      friendly_name: Sonoff Pow Power
+      device_class: power
+      unit_of_measurement: W
+      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'power') }}"
+    pow2_voltage:
+      friendly_name: Sonoff Pow Voltage
+      unit_of_measurement: V
+      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'voltage') }}"
+    pow2_current:
+      friendly_name: Sonoff Pow Current
+      unit_of_measurement: A
+      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'current') }}"
 ```
 
 ## Sonoff GK-200MP2-B Camera
