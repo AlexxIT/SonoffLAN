@@ -9,12 +9,26 @@ from typing import Callable, List
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
-from Crypto.Util.Padding import pad, unpad
 from aiohttp import ClientSession, ClientOSError
 
 from zeroconf import ServiceBrowser, Zeroconf, ServiceStateChange
 
 _LOGGER = logging.getLogger(__name__)
+
+
+# some venv users don't have Crypto.Util.Padding
+# I don't know why pycryptodome is not installed on their systems
+# https://github.com/AlexxIT/SonoffLAN/issues/129
+
+def pad(data_to_pad: bytes, block_size: int):
+    padding_len = block_size - len(data_to_pad) % block_size
+    padding = bytes([padding_len]) * padding_len
+    return data_to_pad + padding
+
+
+def unpad(padded_data: bytes, block_size: int):
+    padding_len = padded_data[-1]
+    return padded_data[:-padding_len]
 
 
 def encrypt(payload: dict, devicekey: str):
