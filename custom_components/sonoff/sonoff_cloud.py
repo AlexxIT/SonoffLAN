@@ -67,7 +67,8 @@ class EWeLinkCloud(ResponseWaiter):
     def __init__(self, session: ClientSession):
         self.session = session
 
-    async def _send(self, mode: str, api: str, payload: dict) -> dict:
+    async def _api(self, mode: str, api: str, payload: dict) \
+            -> Optional[dict]:
         """Send API request to Cloud Server.
 
         :param mode: `get`, `post` or `login`
@@ -84,26 +85,29 @@ class EWeLinkCloud(ResponseWaiter):
         })
 
         if mode == 'post':
-            headers = {'Authorization': "Bearer " + self._token}
-            r = await self.session.post(self._baseurl + api, json=payload,
-                                        headers=headers)
+            auth = "Bearer " + self._token
+            coro = self.session.post(self._baseurl + api, json=payload,
+                                     headers={'Authorization': auth})
+        elif mode == 'get':
+            auth = "Bearer " + self._token
+            coro = self.session.get(self._baseurl + api, params=payload,
+                                    headers={'Authorization': auth})
         elif mode == 'login':
             hex_dig = hmac.new(b'6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM',
                                json.dumps(payload).encode(),
                                digestmod=hashlib.sha256).digest()
-            headers = {
-                'Authorization': "Sign " + base64.b64encode(hex_dig).decode()
-            }
-            r = await self.session.post(self._baseurl + api, json=payload,
-                                        headers=headers)
-        elif mode == 'get':
-            headers = {'Authorization': "Bearer " + self._token}
-            r = await self.session.get(self._baseurl + api, params=payload,
-                                       headers=headers)
+            auth = "Sign " + base64.b64encode(hex_dig).decode()
+            coro = self.session.post(self._baseurl + api, json=payload,
+                                     headers={'Authorization': auth})
         else:
             raise NotImplemented
 
-        return await r.json()
+        try:
+            r = await coro
+            return await r.json()
+        except:
+            _LOGGER.exception("Coolkit API")
+            return None
 
     async def _process_ws_msg(self, data: dict):
         """Process WebSocket message."""
@@ -155,7 +159,7 @@ class EWeLinkCloud(ResponseWaiter):
 
     async def _connect(self, fails: int = 0):
         """Permanent connection loop to Cloud Servers."""
-        resp = await self._send('post', 'dispatch/app', {'accept': 'ws'})
+        resp = await self._api('post', 'dispatch/app', {'accept': 'ws'})
         if resp:
             try:
                 url = f"wss://{resp['IP']}:{resp['port']}/api/ws"
@@ -221,7 +225,7 @@ class EWeLinkCloud(ResponseWaiter):
 
         pname = 'email' if '@' in username else 'phoneNumber'
         payload = {pname: username, 'password': password}
-        resp = await self._send('login', 'api/user/login', payload)
+        resp = await self._api('login', 'api/user/login', payload)
 
         if 'region' not in resp:
             _LOGGER.error(f"Login error: {resp}")
@@ -231,7 +235,7 @@ class EWeLinkCloud(ResponseWaiter):
         if region != 'eu':
             self._baseurl = self._baseurl.replace('eu', region)
             _LOGGER.debug(f"Redirect to region: {region}")
-            resp = await self._send('login', 'api/user/login', payload)
+            resp = await self._api('login', 'api/user/login', payload)
 
         self._apikey = resp['user']['apikey']
         self._token = resp['at']
@@ -240,7 +244,7 @@ class EWeLinkCloud(ResponseWaiter):
 
     async def load_devices(self) -> Optional[list]:
         assert self._token, "Login first"
-        resp = await self._send('get', 'api/user/device', {'getTags': 1})
+        resp = await self._api('get', 'api/user/device', {'getTags': 1})
         if resp['error'] == 0:
             num = len(resp['devicelist'])
             _LOGGER.debug(f"{num} devices loaded from the Cloud Server")
