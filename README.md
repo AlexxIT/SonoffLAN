@@ -81,6 +81,7 @@ These devices work both on a local network and through the cloud.
 - [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
 - [Sonoff Slampher R2](https://www.itead.cc/sonoff-slampher-r2.html)
 - [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
+- [Sonoff RE5V1C](https://www.itead.cc/sonoff-re5v1c.html)
 - [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line) fw 3.3.0
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000454408211.html)
 - [Smart Circuit Breaker](https://www.aliexpress.com/item/4000351300288.html)
