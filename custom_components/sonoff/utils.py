@@ -165,8 +165,8 @@ def handle_cloud_error(hass: HomeAssistantType):
 RE_DEVICEID = re.compile(r"^[a-z0-9]{10}\b")
 # remove uiid, MAC, IP
 RE_PRIVATE = re.compile(
-    r"'([a-zA-Z0-9_-]{36,}|[A-F0-9:]{17}|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|"
-    r"EWLK-\d{6}-[A-Z]{5})'")
+    r"\b([a-zA-Z0-9_-]{36,}|[A-F0-9:]{17}|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|"
+    r"EWLK-\d{6}-[A-Z]{5})\b")
 NOTIFY_TEXT = (
     '<a href="%s" target="_blank">Open Log<a> | '
     '[New Issue on GitHub](https://github.com/AlexxIT/SonoffLAN/issues/new) | '
@@ -198,7 +198,7 @@ class SonoffDebug(logging.Handler, HomeAssistantView):
         module = 'main' if rec.module == '__init__' else rec.module
         # remove private data
         # TODO: fix single IP address
-        msg = RE_PRIVATE.sub("'...'", str(rec.msg))
+        msg = RE_PRIVATE.sub("...", str(rec.msg))
         self.text += f"{dt}  {rec.levelname:7}  {module:12}  {msg}\n"
 
     async def get(self, request: web.Request):
