@@ -65,7 +65,8 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
         _LOGGER.addHandler(debug)
 
         info = await hass.helpers.system_info.async_get_system_info()
-        del info['installation_type'], info['timezone']
+        info.pop('installation_type', None)  # fix HA v0.109.6
+        info.pop('timezone')
         _LOGGER.debug(f"SysInfo: {info}")
 
     # main init phase
