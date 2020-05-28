@@ -152,6 +152,19 @@ sonoff:
   password: mypassword
 ```
 
+If you have Sonoff Pow or Sonoff TH, you might want to use this kind of config:
+
+```yaml
+sonoff:
+  username: mymail@gmail.com
+  password: mypassword
+  force_update: [temperature, power]
+  scan_interval: '00:05:00'  # (optional) default 5 minutes
+  sensors: [temperature, humidity, power, current, voltage]
+```
+
+Read below what it means.
+
 ### Cloud only mode
 
 Recommended for users with a bad router, which may freeze due to multicast traffic.
@@ -283,10 +296,20 @@ sonoff:
 
 You can config forced updating of TH and Pow attributes ([read more](https://github.com/AlexxIT/SonoffLAN/issues/14)).
 
+**Forse update device by attribute**
+
+It is not necessary to list all the attributes of each device (e.g. `temperature` and `humidity`). Only one is enough.
+
 ```yaml
 sonoff:
-  username: mymail@gmail.com
-  password: mypassword
+  force_update: [temperature, power]
+  scan_interval: '00:05:00'  # (optional) default 5 minutes
+```
+
+**Forse update device by deviceid**
+
+```yaml
+sonoff:
   scan_interval: '00:05:00'  # (optional) default 5 minutes
   devices:
     1000abcde0:
@@ -295,6 +318,16 @@ sonoff:
     1000abcde1:
       name: Sonoff Pow
       force_update: True
+```
+
+### Sensors from device attributes
+
+Temperature and power sensors are not created by default!  
+You can list all the attributes you want to see as sensors.
+
+```yaml
+sonoff:
+  sensors: [temperature, humidity, power, current, voltage, rssi]
 ```
 
 ## Sonoff RF Bridge 433
@@ -363,44 +396,6 @@ sensor:
       friendly_name: 10 days consumpion
       unit_of_measurement: kWh
       value_template: "{% set p=state_attr('switch.sonoff_1000abcdef', 'consumption') %}{{ p[:10]|sum if p }}"
-```
-
-## Sonoff TH and Pow
-
-**Temperature and power sensors are not created automatically!**
-
-Temperature, humidity and other parameters of the devices are stored in their attributes. They can be displayed through [Template](https://www.home-assistant.io/integrations/template/) sensor.
-
-```yaml
-sensor:
-- platform: template
-  sensors:
-    th_temperature:
-      friendly_name: Sonoff TH Temperature
-      device_class: temperature
-      unit_of_measurement: °C
-      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'temperature') }}"
-    th_humidity:
-      friendly_name: Sonoff TH Humidity
-      device_class: humidity
-      unit_of_measurement: '%'
-      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'humidity') }}"
-
-- platform: template
-  sensors:
-    pow2_power:
-      friendly_name: Sonoff Pow Power
-      device_class: power
-      unit_of_measurement: W
-      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'power') }}"
-    pow2_voltage:
-      friendly_name: Sonoff Pow Voltage
-      unit_of_measurement: V
-      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'voltage') }}"
-    pow2_current:
-      friendly_name: Sonoff Pow Current
-      unit_of_measurement: A
-      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'current') }}"
 ```
 
 ## Sonoff GK-200MP2-B Camera
