@@ -39,9 +39,9 @@ Pros:
 - (optional) change device type from `switch` to `light` ([read more](#custom-device_class-for-any-mode))
 - (optional) config force refresh interval for TH and Pow ([read more](#refresh-interval-for-th-and-pow))
 
-**Component review from DrZzs (HOWTO about HACS)**
+**Component review from DrZzs**
 
-[![Sonoffs can work with Home Assistant without changing the Firmware!](https://img.youtube.com/vi/DsTqOlrQQ1k/0.jpg)](https://www.youtube.com/watch?v=DsTqOlrQQ1k)
+[![Sonoffs can work with Home Assistant without changing the Firmware!](https://img.youtube.com/vi/DsTqOlrQQ1k/mqdefault.jpg)](https://www.youtube.com/watch?v=DsTqOlrQQ1k)
 
 There is another great component by [@peterbuga](https://github.com/peterbuga/HASS-sonoff-ewelink), that works with cloud servers.
 
@@ -296,24 +296,11 @@ sonoff:
       force_update: True
 ```
 
-## Sonoff Pow Power Consumption
-
-For update power consumption of all your Pow devices you can call `sonoff.update_consumption` service.
-
-The device attributes will display data for the last 100 days. The first element is today's data. It's up to you how often to call updates and what to do with this data later.
-
-```jinja2
-Today consumpion: {{ state_attr('switch.sonoff_1000abcdef', 'consumption')[0] }}
-10 days consumpion: {{ state_attr('switch.sonoff_1000abcdef', 'consumption')[:10]|sum }}
-```
-
 ## Sonoff RF Bridge 433
 
 **Video HOWTO from @KPeyanski**
 
-HOWTO about: install from HACS, automation and event trigger:
-
-[![Automatic Calls and Messages from Home Assistant, Sonoff RF Bridge and Smoke Detectors](https://img.youtube.com/vi/QD1K7s01cak/0.jpg)](https://www.youtube.com/watch?v=QD1K7s01cak?t=284)
+[![Automatic Calls and Messages from Home Assistant, Sonoff RF Bridge and Smoke Detectors](https://img.youtube.com/vi/QD1K7s01cak/mqdefault.jpg)](https://www.youtube.com/watch?v=QD1K7s01cak?t=284)
 
 **Entity RF Buttons or RF Sensors are not created automatically!**
 
@@ -353,6 +340,28 @@ script:
       data:
         entity_id: remote.sonoff_1000abcdef
         command: Button1  # button name in eWeLink application
+```
+
+## Sonoff Pow Power Consumption
+
+For update power consumption of all your Pow devices you can call `sonoff.update_consumption` service.
+
+The device attributes will display data for the last 100 days. The first element is today's data. It's up to you how often to call updates and what to do with this data later.
+
+Remember, without calling the service, there will be no values. Use automation.
+
+```yaml
+sensor:
+- platform: template
+  sensors:
+    today_consumption:
+      friendly_name: Today consumpion
+      unit_of_measurement: kWh
+      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'consumption').0 }}"
+    ten_days_consumption:
+      friendly_name: 10 days consumpion
+      unit_of_measurement: kWh
+      value_template: "{% set p=state_attr('switch.sonoff_1000abcdef', 'consumption') %}{{ p[:10]|sum if p }}"
 ```
 
 ## Sonoff TH and Pow
@@ -401,9 +410,7 @@ script:
 
 **Sonoff 4CH Pro R2**, configured as a single light source with brightness control.
 
-[![Control Sonoff Devices with eWeLink firmware over LAN from Home Assistant](https://img.youtube.com/vi/X7PcYfDy57A/0.jpg)](https://www.youtube.com/watch?v=X7PcYfDy57A)
-
-[![Sonoff GK-200MP2-B Camera LAN Control](https://img.youtube.com/vi/TnFS7qWgKoo/0.jpg)](https://www.youtube.com/watch?v=TnFS7qWgKoo)
+[![Control Sonoff Devices with eWeLink firmware over LAN from Home Assistant](https://img.youtube.com/vi/X7PcYfDy57A/mqdefault.jpg)](https://www.youtube.com/watch?v=X7PcYfDy57A) [![Sonoff GK-200MP2-B Camera LAN Control](https://img.youtube.com/vi/TnFS7qWgKoo/mqdefault.jpg)](https://www.youtube.com/watch?v=TnFS7qWgKoo)
 
 Change **Name** or **Entity ID** of any device: 
 
@@ -441,7 +448,9 @@ All devices **unavailable** after each Home Assistant restart. It does not depen
 
 ## Component Debug Mode
 
-Component support debug mode ([demo](https://youtu.be/Lt5fT4N5Pm8)):
+Component support debug mode. Shows only component logs and removes all private data automatically. The link to the logs is always random.
+
+[![Control Sonoff Devices with eWeLink firmware over LAN from Home Assistant](https://img.youtube.com/vi/Lt5fT4N5Pm8/mqdefault.jpg)](https://www.youtube.com/watch?v=Lt5fT4N5Pm8)
 
 ```yaml
 sonoff:
@@ -450,7 +459,7 @@ sonoff:
   debug: True  # you will get HA notification with a link to the logs page
 ```
 
-The link to the logs is always random. You can filter multiple devices in the logs and enable auto refresh (in seconds).
+You can filter multiple devices in the logs and enable auto refresh (in seconds).
 
 ```
 http://192.168.1.123:8123/c4e99cfc-0c83-4a39-b7f0-278b0e719bd1?q=1000abcde1|1000abcde2&r=2
