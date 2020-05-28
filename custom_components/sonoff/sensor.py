@@ -1,20 +1,27 @@
 from typing import Optional
 
-from homeassistant.const import DEVICE_CLASS_TEMPERATURE, TEMP_CELSIUS, \
-    DEVICE_CLASS_HUMIDITY, DEVICE_CLASS_ILLUMINANCE
+from homeassistant.const import DEVICE_CLASS_TEMPERATURE, \
+    DEVICE_CLASS_HUMIDITY, DEVICE_CLASS_ILLUMINANCE, DEVICE_CLASS_POWER, \
+    DEVICE_CLASS_SIGNAL_STRENGTH
 from homeassistant.helpers.entity import Entity
 
 from . import DOMAIN, EWeLinkRegistry
 from .sonoff_main import EWeLinkDevice
 
-SONOFF_SC = {
-    'temperature': [DEVICE_CLASS_TEMPERATURE, TEMP_CELSIUS, None],
+SENSORS = {
+    'temperature': [DEVICE_CLASS_TEMPERATURE, '°C', None],
     # UNIT_PERCENTAGE is not on old versions
-    'humidity': [DEVICE_CLASS_HUMIDITY, "%", None],
+    'humidity': [DEVICE_CLASS_HUMIDITY, '%', None],
     'dusty': [None, None, 'mdi:cloud'],
     'light': [DEVICE_CLASS_ILLUMINANCE, None, None],
-    'noise': [None, None, 'mdi:bell-ring']
+    'noise': [None, None, 'mdi:bell-ring'],
+    'power': [DEVICE_CLASS_POWER, 'W', None],
+    'current': [DEVICE_CLASS_POWER, 'A', None],
+    'voltage': [DEVICE_CLASS_POWER, 'V', None],
+    'rssi': [DEVICE_CLASS_SIGNAL_STRENGTH, 'dBm', None]
 }
+
+SONOFF_SC = {'temperature', 'humidity', 'dusty', 'light', 'noise'}
 
 
 async def async_setup_platform(hass, config, add_entities,
@@ -24,13 +31,19 @@ async def async_setup_platform(hass, config, add_entities,
 
     deviceid = discovery_info['deviceid']
     registry = hass.data[DOMAIN]
+
+    if 'attribute' in discovery_info:
+        add_entities([EWeLinkSensor(registry, deviceid,
+                                    discovery_info['attribute'])])
+        return
+
     device = registry.devices[deviceid]
     if device.get('uiid') == 18:
-        add_entities([SonoffSC(registry, deviceid, attr)
+        add_entities([EWeLinkSensor(registry, deviceid, attr)
                       for attr in SONOFF_SC])
 
 
-class SonoffSC(EWeLinkDevice, Entity):
+class EWeLinkSensor(EWeLinkDevice, Entity):
     _state = None
 
     def __init__(self, registry: EWeLinkRegistry, deviceid: str, attr: str):
@@ -76,12 +89,12 @@ class SonoffSC(EWeLinkDevice, Entity):
 
     @property
     def device_class(self):
-        return SONOFF_SC[self._attr][0]
+        return SENSORS[self._attr][0] if self._attr in SENSORS else None
 
     @property
     def unit_of_measurement(self):
-        return SONOFF_SC[self._attr][1]
+        return SENSORS[self._attr][1] if self._attr in SENSORS else None
 
     @property
     def icon(self):
-        return SONOFF_SC[self._attr][2]
+        return SENSORS[self._attr][2] if self._attr in SENSORS else None

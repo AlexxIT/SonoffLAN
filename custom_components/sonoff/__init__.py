@@ -5,7 +5,7 @@ import voluptuous as vol
 from homeassistant.components.binary_sensor import DEVICE_CLASSES
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_DEVICES, \
     CONF_NAME, CONF_DEVICE_CLASS, EVENT_HOMEASSISTANT_STOP, CONF_MODE, \
-    CONF_SCAN_INTERVAL, CONF_FORCE_UPDATE, CONF_EXCLUDE
+    CONF_SCAN_INTERVAL, CONF_FORCE_UPDATE, CONF_EXCLUDE, CONF_SENSORS
 from homeassistant.core import ServiceCall
 from homeassistant.helpers import config_validation as cv, discovery
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -40,6 +40,7 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_DEFAULT_CLASS, default='switch'): cv.string,
         vol.Optional(CONF_SCAN_INTERVAL): cv.time_period,
         vol.Optional(CONF_FORCE_UPDATE): cv.ensure_list,
+        vol.Optional(CONF_SENSORS): cv.ensure_list,
         vol.Optional(CONF_DEBUG, default=False): cv.boolean,
         vol.Optional(CONF_DEVICES): {
             cv.string: vol.Schema({
@@ -110,6 +111,12 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
     else:
         force_update = None
 
+    if CONF_SENSORS in config:
+        sensors = config[CONF_SENSORS]
+        _LOGGER.debug(f"Init auto sensors for: {sensors}")
+    else:
+        sensors = []
+
     def add_device(deviceid: str, state: dict, *args):
         device = registry.devices[deviceid]
 
@@ -165,6 +172,12 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
                 info['deviceid'] = deviceid
                 hass.async_create_task(discovery.async_load_platform(
                     hass, info.pop('component'), DOMAIN, info, hass_config))
+
+        for attribute in sensors:
+            if attribute in state:
+                info = {'deviceid': deviceid, 'attribute': attribute}
+                hass.async_create_task(discovery.async_load_platform(
+                    hass, 'sensor', DOMAIN, info, hass_config))
 
     async def send_command(call: ServiceCall):
         """Service for send raw command to device.
