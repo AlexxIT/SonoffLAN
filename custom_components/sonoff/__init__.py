@@ -39,6 +39,7 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_RELOAD, default='once'): cv.string,
         vol.Optional(CONF_DEFAULT_CLASS, default='switch'): cv.string,
         vol.Optional(CONF_SCAN_INTERVAL): cv.time_period,
+        vol.Optional(CONF_FORCE_UPDATE): cv.ensure_list,
         vol.Optional(CONF_DEBUG, default=False): cv.boolean,
         vol.Optional(CONF_DEVICES): {
             cv.string: vol.Schema({
@@ -102,6 +103,13 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
     default_class = config[CONF_DEFAULT_CLASS]
     utils.init_device_class(default_class)
 
+    # List of attributes that invoke force_update
+    if CONF_FORCE_UPDATE in config:
+        force_update = set(config[CONF_FORCE_UPDATE])
+        _LOGGER.debug(f"Init force_update for attributes: {force_update}")
+    else:
+        force_update = None
+
     def add_device(deviceid: str, state: dict, *args):
         device = registry.devices[deviceid]
 
@@ -124,6 +132,10 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
 
         # TODO: fix remove camera info from logs
         state.pop('partnerDevice', None)
+
+        # set device force_update if needed
+        if force_update and force_update & state.keys():
+            device[CONF_FORCE_UPDATE] = True
 
         info = {'uiid': device['uiid'], 'extra': device['extra'],
                 'params': state}
