@@ -293,8 +293,10 @@ class ConsumptionHelper:
 
     async def _process_ws_msg(self, data: dict):
         if 'config' in data and 'hundredDaysKwhData' in data['config']:
+            # 000002 000207 000003 000002 000201 000008 000003 000006...
             kwh = data['config']['hundredDaysKwhData']
-            kwh = [int(kwh[i:i + 6]) for i in range(0, 600, 6)]
+            kwh = [float(kwh[i + 1] + kwh[i + 3] + kwh[i + 5]) * 0.01
+                   for i in range(0, len(kwh), 6)]
             data['params'] = {'consumption': kwh}
 
         await self._cloud_process_ws_msg(data)
