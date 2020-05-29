@@ -336,6 +336,8 @@ sonoff:
 
 [![Automatic Calls and Messages from Home Assistant, Sonoff RF Bridge and Smoke Detectors](https://img.youtube.com/vi/QD1K7s01cak/mqdefault.jpg)](https://www.youtube.com/watch?v=QD1K7s01cak?t=284)
 
+Video HOWTO from me in [Demo](#demo) section.
+
 **Entity RF Buttons or RF Sensors are not created automatically!**
 
 Component will create only one entity per RF Bridge - `remote.sonoff_1000abcdefg`.
@@ -445,7 +447,13 @@ script:
 
 ## Demo
 
-**Sonoff 4CH Pro R2**, configured as a single light source with brightness control.
+Check other videos on my [YouTube](https://www.youtube.com/channel/UCZBHkRXfFOFVxj2qOhnoMJw) channel.
+
+**Sonoff RF Bridge automation via Node-RED**
+
+[![Sonoff RF Bridge automation via SonoffLAN, Home Assistan and Node-RED](https://img.youtube.com/vi/DhYIjEOtZ_I/mqdefault.jpg)](https://www.youtube.com/watch?v=DhYIjEOtZ_I)
+
+**Control Sonoff 4CH Pow R2 from HomeKit**
 
 [![Control Sonoff Devices with eWeLink firmware over LAN from Home Assistant](https://img.youtube.com/vi/X7PcYfDy57A/mqdefault.jpg)](https://www.youtube.com/watch?v=X7PcYfDy57A) [![Sonoff GK-200MP2-B Camera LAN Control](https://img.youtube.com/vi/TnFS7qWgKoo/mqdefault.jpg)](https://www.youtube.com/watch?v=TnFS7qWgKoo)
 
