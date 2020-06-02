@@ -1,12 +1,12 @@
 import logging
 from typing import Optional
 
-from homeassistant.components.cover import CoverDevice, ATTR_POSITION, \
-    ATTR_CURRENT_POSITION
+from homeassistant.components.cover import ATTR_POSITION, ATTR_CURRENT_POSITION
 from homeassistant.const import STATE_OPENING, STATE_CLOSING
 
 from . import DOMAIN
 from .sonoff_main import EWeLinkDevice
+from .utils import CoverEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ async def async_setup_platform(hass, config, add_entities,
     add_entities([EWeLinkCover(registry, deviceid)])
 
 
-class EWeLinkCover(CoverDevice, EWeLinkDevice):
+class EWeLinkCover(CoverEntity, EWeLinkDevice):
     """King Art - King Q4 Cover
     switch=on - open
     switch=off - close

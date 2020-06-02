@@ -14,6 +14,11 @@ except:
     from homeassistant.components.binary_sensor import \
         BinarySensorDevice as BinarySensorEntity
 
+try:  # support old Home Assistant version
+    from homeassistant.components.cover import CoverEntity
+except:
+    from homeassistant.components.cover import CoverDevice as CoverEntity
+
 _LOGGER = logging.getLogger(__name__)
 
 
