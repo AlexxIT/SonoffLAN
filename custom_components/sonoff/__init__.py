@@ -14,7 +14,7 @@ from homeassistant.helpers.typing import HomeAssistantType
 from . import utils
 from .sonoff_camera import EWeLinkCameras
 from .sonoff_cloud import ConsumptionHelper
-from .sonoff_main import EWeLinkRegistry
+from .sonoff_main import EWeLinkRegistry, get_attrs
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -142,13 +142,16 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
         # TODO: fix remove camera info from logs
         state.pop('partnerDevice', None)
 
-        # set device force_update if needed
-        if force_update and force_update & state.keys():
-            device[CONF_FORCE_UPDATE] = True
-
         info = {'uiid': device['uiid'], 'extra': device['extra'],
                 'params': state}
         _LOGGER.debug(f"{deviceid} == Init   | {info}")
+
+        # fix cloud attrs like currentTemperature and currentHumidity
+        get_attrs(state)
+
+        # set device force_update if needed
+        if force_update and force_update & state.keys():
+            device[CONF_FORCE_UPDATE] = True
 
         if not device_class:
             device_class = utils.guess_device_class(device)

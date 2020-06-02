@@ -32,13 +32,17 @@ async def async_setup_platform(hass, config, add_entities,
     deviceid = discovery_info['deviceid']
     registry = hass.data[DOMAIN]
 
-    if 'attribute' in discovery_info:
-        add_entities([EWeLinkSensor(registry, deviceid,
-                                    discovery_info['attribute'])])
+    attr = discovery_info.get('attribute')
+    device = registry.devices[deviceid]
+
+    if attr in SONOFF_SC and device.get('uiid') == 18:
+        # skip duplicate attribute
         return
 
-    device = registry.devices[deviceid]
-    if device.get('uiid') == 18:
+    if attr:
+        add_entities([EWeLinkSensor(registry, deviceid, attr)])
+
+    elif device.get('uiid') == 18:
         add_entities([EWeLinkSensor(registry, deviceid, attr)
                       for attr in SONOFF_SC])
 
