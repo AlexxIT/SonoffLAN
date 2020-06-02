@@ -447,7 +447,7 @@ script:
 
 ## Demo
 
-Check other videos on my [YouTube](https://www.youtube.com/channel/UCZBHkRXfFOFVxj2qOhnoMJw) channel.
+Check other videos on my [YouTube](https://www.youtube.com/c/AlexxIT) channel.
 
 **Sonoff RF Bridge automation via Node-RED**
 
