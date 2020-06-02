@@ -227,7 +227,7 @@ class EWeLinkCloud(ResponseWaiter):
         payload = {pname: username, 'password': password}
         resp = await self._api('login', 'api/user/login', payload)
 
-        if 'region' not in resp:
+        if resp is None or 'region' not in resp:
             _LOGGER.error(f"Login error: {resp}")
             return False
 

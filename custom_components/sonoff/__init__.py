@@ -92,6 +92,8 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
 
         else:
             _LOGGER.warning("Can't connect to eWeLink Cloud")
+            # don't start the cloud below
+            has_credentials = False
 
     elif mode == 'cloud':
         _LOGGER.error("For cloud mode login / password required")
