@@ -206,6 +206,15 @@ class EWeLinkCloud(ResponseWaiter):
             except ClientConnectorError as e:
                 _LOGGER.error(f"Cloud WS Connection error: {e}")
 
+            except (asyncio.CancelledError, RuntimeError) as e:
+                if isinstance(e, RuntimeError):
+                    assert e.args[0] == 'Session is closed', e.args
+
+                _LOGGER.debug(f"Cancel WS Connection: {e}")
+                if not self._ws.closed:
+                    await self._ws.close()
+                return
+
             except Exception:
                 _LOGGER.exception(f"Cloud WS exception")
 
