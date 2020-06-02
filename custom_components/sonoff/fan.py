@@ -39,7 +39,8 @@ async def async_setup_platform(hass, config, add_entities,
     if uiid == 'fan_light' or device.get('productModel') == 'iFan':
         add_entities([SonoffFan03(registry, deviceid)])
     elif channels == IFAN02_CHANNELS:
-        add_entities([SonoffFan02(registry, deviceid)])
+        # only channel 2 is used for switching
+        add_entities([SonoffFan02(registry, deviceid, [2])])
     else:
         add_entities([EWeLinkToggle(registry, deviceid, channels)])
 
@@ -82,9 +83,6 @@ class SonoffFanBase(FanEntity, EWeLinkDevice):
 
 
 class SonoffFan02(SonoffFanBase):
-    # only channel 2 is used for switching
-    channels = [2]
-
     def _is_on_list(self, state: dict) -> List[bool]:
         switches = state['switches']
         return [
