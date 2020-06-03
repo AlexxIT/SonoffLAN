@@ -97,12 +97,12 @@ class EWeLinkLocal:
     def stop(self, *args):
         self._zeroconf.close()
 
-    def _zeroconf_handler(self, zeroconf: Zeroconf, ztype: str, zname: str,
-                          zstate: ServiceStateChange):
-        if zstate == ServiceStateChange.Removed:
-            _LOGGER.debug(f"Zeroconf Removed: {zname}")
+    def _zeroconf_handler(self, zeroconf: Zeroconf, service_type: str,
+                          name: str, state_change: ServiceStateChange):
+        if state_change == ServiceStateChange.Removed:
+            _LOGGER.debug(f"Zeroconf Removed: {name}")
             # TTL of record 5 minutes
-            deviceid = zname[8:18]
+            deviceid = name[8:18]
             # _LOGGER.debug(f"{deviceid} <= Local2 | Zeroconf Removed Event")
             # check if device added
             if 'handlers' in self._devices[deviceid]:
@@ -110,7 +110,7 @@ class EWeLinkLocal:
                 self.loop.create_task(coro)
             return
 
-        info = zeroconf.get_service_info(ztype, zname)
+        info = zeroconf.get_service_info(service_type, name)
         properties = {
             k.decode(): v.decode() if isinstance(v, bytes) else v
             for k, v in info.properties.items()
@@ -119,13 +119,14 @@ class EWeLinkLocal:
         deviceid = properties['id']
         device = self._devices.setdefault(deviceid, {})
 
+        log = f"{deviceid} <= Local{state_change.value}"
+
         if properties.get('encrypt'):
             devicekey = device.get('devicekey')
             if devicekey == 'skip':
                 return
             if not devicekey:
-                _LOGGER.info(f"{deviceid} <= Local{zstate.value} | "
-                             f"No devicekey for device")
+                _LOGGER.info(f"{log} | No devicekey for device")
                 # skip device next time
                 device['devicekey'] = 'skip'
                 return
@@ -141,7 +142,7 @@ class EWeLinkLocal:
         state = json.loads(data)
         seq = properties.get('seq')
 
-        _LOGGER.debug(f"{deviceid} <= Local{zstate.value} | {state} | {seq}")
+        _LOGGER.debug(f"{log} | {state} | {seq}")
 
         host = str(ipaddress.ip_address(info.addresses[0]))
         # update every time device host change (alsow first time)
