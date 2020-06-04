@@ -245,6 +245,8 @@ class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
                 if time.time() - ts < 10 and fails < FAST_DELAY:
                     _LOGGER.error(CLOUD_ERROR)
                     fails = FAST_DELAY
+                else:
+                    fails = 0
 
             except ClientConnectorError as e:
                 _LOGGER.error(f"Cloud WS Connection error: {e}")
