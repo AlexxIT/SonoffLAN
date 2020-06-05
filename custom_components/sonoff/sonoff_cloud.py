@@ -47,8 +47,9 @@ class ResponseWaiter:
             # limit future wait time
             await asyncio.wait_for(self._waiters[sequence], timeout)
         except asyncio.TimeoutError:
-            # remove future from waiters
-            self._waiters.pop(sequence)
+            # remove future from waiters, in very rare cases, we can send two
+            # commands with the same sequence
+            self._waiters.pop(sequence, None)
             return 'timeout'
 
         # remove future from waiters and return result
@@ -291,7 +292,7 @@ class EWeLinkCloud(ResponseWaiter):
             'ts': 0,
             'params': data
         }
-        _LOGGER.debug(f"{deviceid} => Cloud4 | {data}")
+        _LOGGER.debug(f"{deviceid} => Cloud4 | {data} | {sequence}")
         await self._ws.send_json(payload)
 
         # wait for response with same sequence
