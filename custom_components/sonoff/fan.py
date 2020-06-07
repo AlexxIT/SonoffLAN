@@ -84,7 +84,8 @@ class SonoffFanBase(FanEntity, EWeLinkDevice):
 
 class SonoffFan02(SonoffFanBase):
     def _is_on_list(self, state: dict) -> List[bool]:
-        switches = state['switches']
+        # https://github.com/AlexxIT/SonoffLAN/issues/146
+        switches = sorted(state['switches'], key=lambda i: i['outlet'])
         return [
             switches[channel - 1]['switch'] == 'on'
             for channel in IFAN02_CHANNELS

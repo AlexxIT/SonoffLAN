@@ -246,10 +246,12 @@ class EWeLinkDevice:
 
     def _is_on_list(self, state: dict) -> List[bool]:
         if self.channels:
-            switches = state['switches']
+            # very rarely channels can be reversed
+            # https://github.com/AlexxIT/SonoffLAN/issues/146
             return [
-                switches[channel - 1]['switch'] == 'on'
-                for channel in self.channels
+                switch['switch'] == 'on'
+                for switch in state['switches']
+                if switch['outlet'] + 1 in self.channels
             ]
         else:
             return [state['switch'] == 'on']
