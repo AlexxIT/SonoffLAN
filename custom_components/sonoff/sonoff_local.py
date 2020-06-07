@@ -144,6 +144,10 @@ class EWeLinkLocal:
 
         _LOGGER.debug(f"{log} | {state} | {seq}")
 
+        # TH bug in local mode https://github.com/AlexxIT/SonoffLAN/issues/110
+        if state.get('temperature') == 0 and state.get('humidity') == 0:
+            del state['temperature'], state['humidity']
+
         host = str(ipaddress.ip_address(info.addresses[0]))
         # update every time device host change (alsow first time)
         if device.get('host') != host:

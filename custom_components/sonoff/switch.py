@@ -40,10 +40,7 @@ class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
         self._should_poll = device.pop(CONF_FORCE_UPDATE, False)
 
     def _update_handler(self, state: dict, attrs: dict):
-        # TH bug in local mode https://github.com/AlexxIT/SonoffLAN/issues/110
-        if not (self._is_th_3_4_0 and attrs.get('temperature') == 0 and
-                attrs.get('humidity') == 0):
-            self._attrs.update(attrs)
+        self._attrs.update(attrs)
 
         if 'switch' in state or 'switches' in state:
             self._is_on = any(self._is_on_list(state))
