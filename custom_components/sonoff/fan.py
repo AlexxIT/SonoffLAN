@@ -36,9 +36,7 @@ async def async_setup_platform(hass, config, add_entities,
     device = registry.devices[deviceid]
     uiid = device.get('uiid')
     # iFan02 and iFan03 have the same uiid!
-    if uiid == 'fan_light' or device.get('productModel') == 'iFan':
-        add_entities([SonoffFan03(registry, deviceid)])
-    elif channels == IFAN02_CHANNELS:
+    if uiid == 34 or uiid == 'fan_light':
         # only channel 2 is used for switching
         add_entities([SonoffFan02(registry, deviceid, [2])])
     else:
@@ -94,7 +92,7 @@ class SonoffFan02(SonoffFanBase):
     def _update_handler(self, state: dict, attrs: dict):
         self._attrs.update(attrs)
 
-        if state and 'switches' in state:
+        if 'switches' in state:
             mask = self._is_on_list(state)
             if mask[0]:
                 if not mask[1] and not mask[2]:
@@ -122,30 +120,3 @@ class SonoffFan02(SonoffFanBase):
 
     async def async_turn_off(self, **kwargs) -> None:
         await self._turn_off()
-
-
-class SonoffFan03(SonoffFanBase):
-    def _update_handler(self, state: dict, attrs: dict):
-        self._attrs.update(attrs)
-
-        if 'fan' in state:
-            if state['fan'] == 'on':
-                speed = state.get('speed', 1)
-                self._speed = self.speed_list[speed]
-            else:
-                self._speed = SPEED_OFF
-
-        self.schedule_update_ha_state()
-
-    async def async_set_speed(self, speed: str) -> None:
-        speed = self.speed_list.index(speed)
-        await self.registry.send(self.deviceid, {'fan': 'on', 'speed': speed})
-
-    async def async_turn_on(self, speed: Optional[str] = None, **kwargs):
-        if speed:
-            await self.async_set_speed(speed)
-        else:
-            await self.registry.send(self.deviceid, {'fan': 'on'})
-
-    async def async_turn_off(self, **kwargs) -> None:
-        await self.registry.send(self.deviceid, {'fan': 'off'})

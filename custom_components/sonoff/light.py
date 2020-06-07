@@ -30,9 +30,7 @@ async def async_setup_platform(hass, config, add_entities,
     device = registry.devices[deviceid]
 
     uiid = device.get('uiid')
-    if uiid == 'fan_light' or device.get('productModel') == 'iFan':
-        add_entities([SonoffFan03Light(registry, deviceid)])
-    elif uiid == 'light' or uiid == 44:
+    if uiid == 44 or uiid == 'light':
         add_entities([SonoffD1(registry, deviceid)])
     elif uiid == 59:
         add_entities([SonoffLED(registry, deviceid)])
@@ -44,25 +42,6 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([EWeLinkLightGroup(registry, deviceid, channels)])
     else:
         add_entities([EWeLinkToggle(registry, deviceid, channels)])
-
-
-class SonoffFan03Light(EWeLinkToggle):
-    def _update_handler(self, state: dict, attrs: dict):
-        self._attrs.update(attrs)
-
-        if 'light' in state:
-            self._is_on = state['light'] == 'on'
-
-        if 'sledOnline' in state:
-            self._sled_online = state['sledOnline']
-
-        self.schedule_update_ha_state()
-
-    async def async_turn_on(self, **kwargs) -> None:
-        await self.registry.send(self.deviceid, {'light': 'on'})
-
-    async def async_turn_off(self, **kwargs) -> None:
-        await self.registry.send(self.deviceid, {'light': 'off'})
 
 
 class SonoffD1(EWeLinkToggle):

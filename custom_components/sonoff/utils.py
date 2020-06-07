@@ -89,7 +89,7 @@ def init_device_class(default_class: str = 'switch'):
         'strip': switch4,  # 4CH Pro R2, Micro!, iFan02!
         'light': 'light',  # D1
         'rf': 'remote',  # RF Bridge 433
-        'fan_light': ['light', 'fan'],  # iFan03
+        'fan_light': ['light', {'fan': [2, 3, 4]}],  # iFan03
     })
 
 
