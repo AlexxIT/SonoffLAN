@@ -86,6 +86,11 @@ class EWeLinkRegistry:
                 return
             device['seq'] = sequence
 
+        # check when cloud offline first time
+        if state.get('cloud') == 'offline' and device.get('host'):
+            coro = self.local.check_offline(deviceid)
+            asyncio.create_task(coro)
+
         if 'handlers' in device:
             # TODO: right place?
             device['available'] = device.get('online') or device.get('host')
