@@ -3,6 +3,7 @@ Firmware   | LAN type  | uiid | Product Model
 -----------|-----------|------|--------------
 PSF-BLD-GL | light     | 44   | D1 (Sonoff D1)
 PSF-BFB-GL | fan_light | 34   | iFan (Sonoff iFan03)
+PSF-B67-GL | light     | 32   | IW101 (Sonoff IW101)
 """
 import logging
 
@@ -32,6 +33,8 @@ async def async_setup_platform(hass, config, add_entities,
     uiid = device.get('uiid')
     if uiid == 44 or uiid == 'light':
         add_entities([SonoffD1(registry, deviceid)])
+    elif uiid == 32:
+        add_entities([SonoffIW101(registry, deviceid)])
     elif uiid == 59:
         add_entities([SonoffLED(registry, deviceid)])
     elif uiid == 22:
@@ -43,6 +46,23 @@ async def async_setup_platform(hass, config, add_entities,
     else:
         add_entities([EWeLinkToggle(registry, deviceid, channels)])
 
+class SonoffIW101(EWeLinkToggle):
+    def _update_handler(self, state: dict, attrs: dict):
+        self._attrs.update(attrs)
+
+        if 'switch' in state:
+            self._is_on = state['switch'] == 'on'
+
+        if 'sledOnline' in state:
+            self._sled_online = state['sledOnline']
+
+        self.schedule_update_ha_state()
+
+    async def async_turn_on(self, **kwargs) -> None:
+        await self.registry.send(self.deviceid, {'switch': 'on'})
+
+    async def async_turn_off(self, **kwargs) -> None:
+        await self.registry.send(self.deviceid, {'switch': 'off'})
 
 class SonoffD1(EWeLinkToggle):
     _brightness = 0
