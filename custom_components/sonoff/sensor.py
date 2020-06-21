@@ -61,8 +61,10 @@ class EWeLinkSensor(EWeLinkDevice, Entity):
             self._name += f" {self._attr.capitalize()}"
 
     def _update_handler(self, state: dict, attrs: dict):
-        if self._attr in state:
-            self._state = state[self._attr]
+        if self._attr not in state:
+            return
+
+        self._state = state[self._attr]
 
         self.schedule_update_ha_state()
 
