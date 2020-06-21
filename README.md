@@ -61,7 +61,7 @@ These devices work both on a local network and through the cloud.
 
 - [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html) fw 3.0.1
 - [Sonoff Basic R3](https://www.itead.cc/sonoff-basicr3-wifi-diy-smart-switch.html)
-- [Sonoff RFR3] (https://www.itead.cc/sonoff-rfr3.html)
+- [Sonoff RFR3](https://www.itead.cc/sonoff-rfr3.html)
 - [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode) fw 3.3.0
 - [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity) fw 3.4.0
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html) fw 3.3.0
