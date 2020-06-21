@@ -14,6 +14,7 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 - support eWeLink cameras with PTZ ([read more](#sonoff-gk-200mp2-b-camera))
 - support unavailable device state for both local and cloud connection 
 - support refresh interval for Sonoff TH and Sonoff Pow ([read more](#refresh-interval-for-th-and-pow))
+- support sensors for Sonoff RF Bridge 433 ([read more](#rf-bridge-sensors))
 - added new debug mode for troubleshooting ([read more](#component-debug-mode))
 
 **Breaking changes 2.0:** by default, both local and cloud modes will start working together. If you do not want this - enable the `mode: local` setting. But I recommend using the new mode, it works great.
@@ -338,7 +339,36 @@ sonoff:
 
 Video HOWTO from me in [Demo](#demo) section.
 
-**Entity RF Buttons or RF Sensors are not created automatically!**
+### RF Bridge Sensors
+
+You can config sensors for your RF Bridge.
+
+The PIR sensor sends a signal if it detects motion. The door / window sensor sends a signal when open. You can set the time after which the sensor goes into off state. Default 120 seconds.
+
+If you has door sensor with two states (for open and for closed state) like [this one](https://www.banggood.com/10Pcs-GS-WDS07-Wireless-Door-Magnetic-Strip-433MHz-for-Security-Alarm-Home-System-p-1597356.html?cur_warehouse=CN), you can config `payload_off` as in the example below. Also disable the timeout if you do not need it in this case (with `timeout: 0` option).
+
+You can use any `device_class` that is supported in [Binary Sensor](https://www.home-assistant.io/integrations/binary_sensor/).
+
+```yaml
+sonoff:
+  rfbridge:
+    PIR sensor:  # button/sensor name in eWeLink application
+      device_class: motion  # e.g. door, motion, window
+      timeout: 60  # optional (default 120), timeout in seconds for auto turn off
+    Door sensor:
+      name: Door Sensor with one state  # optional, you can change sensor name
+      device_class: door
+      timeout: 5
+    turn_on:
+      name: Door Sensor with two states
+      device_class: door
+      timeout: 0
+      payload_off: turn_off  # button/sensor name in eWeLink application
+    Button1:
+      timeout: 1
+```
+
+### RF Bridge Commands and Events
 
 Component will create only one entity per RF Bridge - `remote.sonoff_1000abcdefg`.
 
