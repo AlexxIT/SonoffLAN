@@ -30,6 +30,9 @@ CONF_DEVICEKEY = 'devicekey'
 CONF_RELOAD = 'reload'
 CONF_RFBRIDGE = 'rfbridge'
 
+CONF_MODES = ['auto', 'cloud', 'local']
+CONF_RELOADS = ['once', 'always']
+
 # copy all binary device_class without light
 BINARY_DEVICE = [p for p in DEVICE_CLASSES if p != 'light']
 
@@ -37,8 +40,8 @@ CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
         vol.Optional(CONF_USERNAME): cv.string,
         vol.Optional(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_MODE, default='auto'): cv.string,
-        vol.Optional(CONF_RELOAD, default='once'): cv.string,
+        vol.Optional(CONF_MODE, default='auto'): vol.In(CONF_MODES),
+        vol.Optional(CONF_RELOAD, default='once'): vol.In(CONF_RELOADS),
         vol.Optional(CONF_DEFAULT_CLASS, default='switch'): cv.string,
         vol.Optional(CONF_SCAN_INTERVAL): cv.time_period,
         vol.Optional(CONF_FORCE_UPDATE): cv.ensure_list,
