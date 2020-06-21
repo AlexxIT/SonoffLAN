@@ -35,6 +35,7 @@ class ResponseWaiter:
     async def _set_response(self, data: dict):
         sequence = data.get('sequence')
         if sequence in self._waiters:
+            assert 'error' in data, data
             err = data['error']
             result = DATA_ERROR[err] if err in DATA_ERROR else f"E#{err}"
             # set future result
@@ -132,6 +133,13 @@ class EWeLinkCloud(ResponseWaiter):
                 elif device['online'] is False:
                     device['online'] = True
                     state['cloud'] = 'online'
+
+                # TODO: fix when Sonoff TH arrives to me
+                # https://github.com/AlexxIT/SonoffLAN/issues/110
+                if state.get('currentTemperature') == 'unavailable':
+                    del state['currentTemperature']
+                if state.get('currentHumidity') == 'unavailable':
+                    del state['currentHumidity']
 
                 for handler in self._handlers:
                     handler(deviceid, state, data.get('seq'))
