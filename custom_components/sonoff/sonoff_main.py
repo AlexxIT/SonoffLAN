@@ -238,7 +238,9 @@ class EWeLinkDevice:
         state = device['params']
 
         self._attrs = device['extra'] or {}
-        self._is_th_3_4_0 = 'mainSwitch' in state
+        # don't know if deviceType only in Sonoff TH
+        # https://github.com/AlexxIT/SonoffLAN/issues/158
+        self._is_th_3_4_0 = 'deviceType' in state
 
         if force_refresh:
             attrs = get_attrs(state)
