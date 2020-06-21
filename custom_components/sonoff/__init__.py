@@ -5,7 +5,8 @@ import voluptuous as vol
 from homeassistant.components.binary_sensor import DEVICE_CLASSES
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_DEVICES, \
     CONF_NAME, CONF_DEVICE_CLASS, EVENT_HOMEASSISTANT_STOP, CONF_MODE, \
-    CONF_SCAN_INTERVAL, CONF_FORCE_UPDATE, CONF_EXCLUDE, CONF_SENSORS
+    CONF_SCAN_INTERVAL, CONF_FORCE_UPDATE, CONF_EXCLUDE, CONF_SENSORS, \
+    CONF_TIMEOUT, CONF_PAYLOAD_OFF
 from homeassistant.core import ServiceCall
 from homeassistant.helpers import config_validation as cv, discovery
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -27,6 +28,7 @@ CONF_DEBUG = 'debug'
 CONF_DEFAULT_CLASS = 'default_class'
 CONF_DEVICEKEY = 'devicekey'
 CONF_RELOAD = 'reload'
+CONF_RFBRIDGE = 'rfbridge'
 
 # copy all binary device_class without light
 BINARY_DEVICE = [p for p in DEVICE_CLASSES if p != 'light']
@@ -42,6 +44,14 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_FORCE_UPDATE): cv.ensure_list,
         vol.Optional(CONF_SENSORS): cv.ensure_list,
         vol.Optional(CONF_DEBUG, default=False): cv.boolean,
+        vol.Optional(CONF_RFBRIDGE): {
+            cv.string: vol.Schema({
+                vol.Optional(CONF_NAME): cv.string,
+                vol.Optional(CONF_DEVICE_CLASS): cv.string,
+                vol.Optional(CONF_TIMEOUT, default=120): cv.positive_int,
+                vol.Optional(CONF_PAYLOAD_OFF): cv.string
+            }, extra=vol.ALLOW_EXTRA),
+        },
         vol.Optional(CONF_DEVICES): {
             cv.string: vol.Schema({
                 vol.Optional(CONF_NAME): cv.string,
@@ -235,6 +245,13 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
 
     # cameras starts only on first command to it
     cameras = EWeLinkCameras()
+
+    # create binary sensors for RF Bridge
+    if CONF_RFBRIDGE in config:
+        for k, v in config[CONF_RFBRIDGE].items():
+            v['trigger'] = k
+            hass.async_create_task(discovery.async_load_platform(
+                hass, 'binary_sensor', DOMAIN, v, hass_config))
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, registry.stop)
 
