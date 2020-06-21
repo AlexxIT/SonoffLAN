@@ -244,7 +244,7 @@ class EWeLinkLocal:
     async def send(self, deviceid: str, data: dict, sequence: str, timeout=5):
         device: dict = self._devices[deviceid]
 
-        if device['uiid'] == 'fan_light':
+        if device['uiid'] == 'fan_light' and 'switches' in data:
             data = ifan02to03(data)
 
         # cmd for D1 and RF Bridge 433
