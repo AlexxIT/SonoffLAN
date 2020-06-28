@@ -13,7 +13,7 @@ from .sonoff_local import EWeLinkLocal
 _LOGGER = logging.getLogger(__name__)
 
 ATTRS = ('local', 'cloud', 'rssi', 'humidity', 'temperature', 'power',
-         'current', 'voltage', 'battery', 'consumption')
+         'current', 'voltage', 'battery', 'consumption', 'water')
 
 # map cloud attrs to local attrs
 ATTRS_MAP = {

@@ -65,6 +65,7 @@ def init_device_class(default_class: str = 'switch'):
         # 15 Sonoff TH16
         18: 'sensor',  # Sonoff SC
         22: 'light',  # Sonoff B1 (only cloud)
+        25: ['fan', 'light'],  # Diffuser
         28: 'remote',  # Sonoff RF Brigde 433
         29: switch2,
         30: switch3,

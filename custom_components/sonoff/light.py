@@ -38,6 +38,8 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([SonoffB1(registry, deviceid)])
     elif uiid == 36:
         add_entities([SonoffDimmer(registry, deviceid)])
+    elif uiid == 25:
+        add_entities([SonoffDiffuserLight(registry, deviceid)])
     elif channels and len(channels) >= 2:
         add_entities([EWeLinkLightGroup(registry, deviceid, channels)])
     else:
@@ -371,3 +373,102 @@ class EWeLinkLightGroup(SonoffD1):
             for i, channel in enumerate(self.channels)
         }
         await self._turn_bulk(channels)
+
+
+DIFFUSER_EFFECTS = ["Color Light", "RGB Color", "Night Light"]
+
+
+class SonoffDiffuserLight(EWeLinkToggle):
+    _brightness = 0
+    _hs_color = None
+    _mode = 0
+
+    def _update_handler(self, state: dict, attrs: dict):
+        self._attrs.update(attrs)
+
+        if 'lightbright' in state:
+            # brightness from 0 to 100
+            self._brightness = max(round(state['lightbright'] * 2.55), 1)
+
+        if 'lightmode' in state:
+            self._mode = state['lightmode']
+
+        if 'lightRcolor' in state:
+            self._hs_color = color.color_RGB_to_hs(
+                state['lightRcolor'], state['lightGcolor'],
+                state['lightBcolor'])
+
+        if 'lightswitch' in state:
+            self._is_on = state['lightswitch'] == 1
+
+        self.schedule_update_ha_state()
+
+    @property
+    def brightness(self):
+        """Return the brightness of this light between 0..255."""
+        return self._brightness
+
+    @property
+    def hs_color(self):
+        """Return the hue and saturation color value [float, float]."""
+        return self._hs_color
+
+    @property
+    def effect_list(self):
+        """Return the list of supported effects."""
+        return DIFFUSER_EFFECTS
+
+    @property
+    def effect(self):
+        """Return the current effect."""
+        return DIFFUSER_EFFECTS[self._mode - 1]
+
+    @property
+    def supported_features(self):
+        if self._mode == 1:
+            return SUPPORT_EFFECT
+        elif self._mode == 2:
+            return SUPPORT_BRIGHTNESS | SUPPORT_COLOR | SUPPORT_EFFECT
+        elif self._mode == 3:
+            return SUPPORT_BRIGHTNESS | SUPPORT_EFFECT
+
+    @property
+    def state_attributes(self):
+        return {
+            **self._attrs,
+            ATTR_BRIGHTNESS: self.brightness,
+            ATTR_HS_COLOR: self._hs_color,
+            ATTR_EFFECT: self.effect
+        }
+
+    @property
+    def capability_attributes(self):
+        """Return capability attributes."""
+        return {ATTR_EFFECT_LIST: self.effect_list}
+
+    async def async_turn_off(self, **kwargs) -> None:
+        await self.registry.send(self.deviceid, {'lightswitch': 0})
+
+    async def async_turn_on(self, **kwargs) -> None:
+        payload = {}
+
+        if ATTR_EFFECT in kwargs:
+            mode = DIFFUSER_EFFECTS.index(kwargs[ATTR_EFFECT]) + 1
+            payload['lightmode'] = mode
+
+            if mode == 2 and ATTR_HS_COLOR not in kwargs:
+                kwargs[ATTR_HS_COLOR] = self._hs_color
+
+        if ATTR_BRIGHTNESS in kwargs:
+            br = max(round(kwargs[ATTR_BRIGHTNESS] / 2.55), 1)
+            payload['lightbright'] = br
+
+        if ATTR_HS_COLOR in kwargs:
+            rgb = color.color_hs_to_RGB(*kwargs[ATTR_HS_COLOR])
+            payload.update({'lightmode': 2, 'lightRcolor': rgb[0],
+                            'lightGcolor': rgb[1], 'lightBcolor': rgb[2]})
+
+        if not kwargs:
+            payload['lightswitch'] = 1
+
+        await self.registry.send(self.deviceid, payload)
