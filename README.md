@@ -101,6 +101,7 @@ These devices only work through the cloud!
 - [King Art - King Q4 Cover](https://www.aliexpress.com/item/32956776611.html) (pause, position) fw 2.7.0
 - [KING-M4](https://www.aliexpress.com/item/33013358523.html) (brightness) fw 2.7.0
 - [Eachen WiFi Door/Window Sensor](https://ewelink.eachen.cc/product/eachen-wifi-smart-door-window-sensor-wdw-ewelink/)
+- [Essential Oils Diffuser](https://www.amazon.co.uk/dp/B07WF7MQ17) (fan and color light) fw 2.9.0
 
 ## Install with HACS
 
