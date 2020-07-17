@@ -69,7 +69,7 @@ def init_device_class(default_class: str = 'switch'):
         29: switch2,
         30: switch3,
         31: switch4,
-        32: 'light', # Sonoff IW101
+        32: 'light',  # Sonoff IW101
         34: ['light', {'fan': [2, 3, 4]}],  # Sonoff iFan02 and iFan03
         36: 'light',  # KING-M4 (dimmer, only cloud)
         44: 'light',  # Sonoff D1
