@@ -493,7 +493,7 @@ script:
     sequence:
       - service: sonoff.send_command
         data:
-          device: 012345
+          device: '012345'  # use quotes, this is important
           cmd: left
 ```
 
