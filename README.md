@@ -298,7 +298,7 @@ sonoff:
 
 You can config forced updating of TH and Pow attributes ([read more](https://github.com/AlexxIT/SonoffLAN/issues/14)).
 
-**Forse update device by attribute**
+**Force update device by attribute**
 
 It is not necessary to list all the attributes of each device (e.g. `temperature` and `humidity`). Only one is enough.
 
@@ -308,7 +308,7 @@ sonoff:
   scan_interval: '00:05:00'  # (optional) default 5 minutes
 ```
 
-**Forse update device by deviceid**
+**Force update device by deviceid**
 
 ```yaml
 sonoff:
