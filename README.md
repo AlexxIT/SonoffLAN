@@ -350,23 +350,49 @@ If you has door sensor with two states (for open and for closed state) like [thi
 
 You can use any `device_class` that is supported in [Binary Sensor](https://www.home-assistant.io/integrations/binary_sensor/).
 
+**PIR Sensor**
+
 ```yaml
 sonoff:
   rfbridge:
-    PIR sensor:  # button/sensor name in eWeLink application
-      device_class: motion  # e.g. door, motion, window
+    PIR Sensor 1:  # sensor name in eWeLink application
+      device_class: motion
       timeout: 60  # optional (default 120), timeout in seconds for auto turn off
-    Door sensor:
-      name: Door Sensor with one state  # optional, you can change sensor name
+    PIR Sensor 2:  # sensor name in eWeLink application
+      device_class: motion
+      timeout: 60  # optional (default 120), timeout in seconds for auto turn off
+```
+
+**Single State Sensor**
+
+```yaml
+sonoff:
+  rfbridge:
+    Door Sensor 1:  # sensor name in eWeLink application
+      name: Door Sensor # optional, you can change sensor name
+      device_class: door  # e.g. door, window
+      timeout: 5
+    Door Sensor 2:
+      name: Door Sensor
       device_class: door
       timeout: 5
-    turn_on:
-      name: Door Sensor with two states
-      device_class: door
+```
+
+**Dual State Sensor**
+
+```yaml
+sonoff:
+  rfbridge:
+    Button1:  # button name in eWeLink application (open signal)
+      name: Window Sensor  # optional, you can change sensor name
+      device_class: window  # e.g. door, window
+      timeout: 0  # disable auto close timeout
+      payload_off: Button2  # button name in eWeLink application (close signal)
+    Button3:
+      name: Window Sensor
+      device_class: window
       timeout: 0
-      payload_off: turn_off  # button/sensor name in eWeLink application
-    Button1:
-      timeout: 1
+      payload_off: Button4
 ```
 
 ### RF Bridge Commands and Events
