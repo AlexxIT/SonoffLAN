@@ -74,6 +74,7 @@ def init_device_class(default_class: str = 'switch'):
         34: ['light', {'fan': [2, 3, 4]}],  # Sonoff iFan02 and iFan03
         36: 'light',  # KING-M4 (dimmer, only cloud)
         44: 'light',  # Sonoff D1
+        57: 'light',  # Mosquito Killer Lamp
         59: 'light',  # Sonoff LED (only cloud)
         77: switchx,  # Sonoff Micro
         78: switchx,
@@ -82,6 +83,7 @@ def init_device_class(default_class: str = 'switch'):
         83: switch3,
         84: switch4,
         102: 'binary_sensor',  # Sonoff DW2 Door/Window sensor
+        104: 'light',  # RGB+CCT color bulb
         107: switchx,
         # list local types
         'plug': switch1,  # Basic, Mini

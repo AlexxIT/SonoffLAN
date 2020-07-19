@@ -40,6 +40,10 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([SonoffDimmer(registry, deviceid)])
     elif uiid == 25:
         add_entities([SonoffDiffuserLight(registry, deviceid)])
+    elif uiid == 57:
+        add_entities([Sonoff57(registry, deviceid)])
+    elif uiid == 104:
+        add_entities([Sonoff104(registry, deviceid)])
     elif channels and len(channels) >= 2:
         add_entities([EWeLinkLightGroup(registry, deviceid, channels)])
     else:
@@ -470,5 +474,177 @@ class SonoffDiffuserLight(EWeLinkToggle):
 
         if not kwargs:
             payload['lightswitch'] = 1
+
+        await self.registry.send(self.deviceid, payload)
+
+
+class Sonoff57(SonoffD1):
+    def _update_handler(self, state: dict, attrs: dict):
+        self._attrs.update(attrs)
+
+        if 'channel0' in state:
+            # from 25 to 255 => 1 .. 255
+            br = int(state['channel0'])
+            self._brightness = \
+                round(1.0 + (br - 25.0) / (255.0 - 25.0) * 254.0)
+
+        if 'state' in state:
+            self._is_on = state['state'] == 'on'
+
+        self.schedule_update_ha_state()
+
+    async def async_turn_on(self, **kwargs) -> None:
+        payload = {'state': 'on'}
+
+        if ATTR_BRIGHTNESS in kwargs:
+            br = kwargs[ATTR_BRIGHTNESS]
+            payload['channel0'] = \
+                str(round(25.0 + (br - 1.0) * (255.0 - 25.0) / 254.0))
+
+        await self.registry.send(self.deviceid, payload)
+
+    async def async_turn_off(self, **kwargs) -> None:
+        await self.registry.send(self.deviceid, {'state': 'off'})
+
+
+SONOFF104_MODES = {
+    'color': 'Color',
+    'white': 'White',
+    'bright': 'Bright',
+    'goodNight': 'Sleep',
+    'read': 'Reading',
+    'nightLight': 'Night',
+    'party': 'Party',
+    'leisure': 'Relax',
+    'soft': 'Soft',
+    'colorful': 'Vivid'
+}
+
+
+class Sonoff104(EWeLinkToggle):
+    _brightness = None
+    _hs_color = None
+    _mode = None
+    _temp = None
+
+    def _update_handler(self, state: dict, attrs: dict):
+        self._attrs.update(attrs)
+
+        if 'switch' in state:
+            self._is_on = state['switch'] == 'on'
+
+        if 'ltype' in state:
+            self._mode = state['ltype']
+
+            state = state[self._mode]
+
+            if 'br' in state:
+                # 1..100 => 1..255
+                br = state['br']
+                self._brightness = \
+                    round(1.0 + (br - 1.0) / (100.0 - 1.0) * 254.0)
+
+            if 'ct' in state:
+                # 0..255 => 500..153
+                ct = state['ct']
+                self._temp = round(500.0 - ct / 255.0 * (500.0 - 153.0))
+                self._hs_color = None
+
+            if 'r' in state or 'g' in state or 'b' in state:
+                self._hs_color = color.color_RGB_to_hs(
+                    state.get('r', 0),
+                    state.get('g', 0),
+                    state.get('b', 0)
+                )
+                self._temp = None
+
+        self.schedule_update_ha_state()
+
+    @property
+    def brightness(self):
+        """Return the brightness of this light between 0..255."""
+        return self._brightness
+
+    @property
+    def hs_color(self):
+        """Return the hue and saturation color value [float, float]."""
+        return self._hs_color
+
+    @property
+    def color_temp(self):
+        """Return the CT color value in mireds."""
+        return self._temp
+
+    @property
+    def effect_list(self):
+        """Return the list of supported effects."""
+        return list(SONOFF104_MODES.values())
+
+    @property
+    def effect(self):
+        """Return the current effect."""
+        return SONOFF104_MODES[self._mode]
+
+    @property
+    def supported_features(self):
+        if self._mode == 'color':
+            return SUPPORT_BRIGHTNESS | SUPPORT_COLOR | SUPPORT_EFFECT
+        elif self._mode == 'white':
+            return SUPPORT_BRIGHTNESS | SUPPORT_COLOR_TEMP | SUPPORT_EFFECT
+        else:
+            return SUPPORT_EFFECT
+
+    @property
+    def capability_attributes(self):
+        return {
+            ATTR_EFFECT_LIST: self.effect_list,
+            ATTR_MIN_MIREDS: 153,
+            ATTR_MAX_MIREDS: 500
+        }
+
+    @property
+    def state_attributes(self):
+        return {
+            **self._attrs,
+            ATTR_BRIGHTNESS: self.brightness,
+            ATTR_HS_COLOR: self._hs_color,
+            ATTR_COLOR_TEMP: self._temp,
+            ATTR_EFFECT: self.effect
+        }
+
+    async def async_turn_on(self, **kwargs) -> None:
+        payload = {'switch': 'on'}
+
+        if ATTR_EFFECT in kwargs:
+            mode = next(k for k, v in SONOFF104_MODES.items()
+                        if v == kwargs[ATTR_EFFECT])
+            payload['ltype'] = mode
+        else:
+            mode = self._mode
+
+        if mode == 'color' and (ATTR_BRIGHTNESS in kwargs or
+                                ATTR_HS_COLOR in kwargs):
+            br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
+            hs = kwargs.get(ATTR_HS_COLOR) or self._hs_color or (0, 0)
+            rgb = color.color_hs_to_RGB(*hs)
+
+            payload['ltype'] = mode
+            payload[mode] = {
+                'br': int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0)),
+                'r': rgb[0],
+                'g': rgb[1],
+                'b': rgb[2],
+            }
+
+        if mode == 'white' and (ATTR_BRIGHTNESS in kwargs or
+                                ATTR_COLOR_TEMP in kwargs):
+            br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
+            ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or 153
+
+            payload['ltype'] = mode
+            payload[mode] = {
+                'br': int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0)),
+                'ct': int(round((500.0 - ct) / (500.0 - 153.0) * 255.0))
+            }
 
         await self.registry.send(self.deviceid, payload)
