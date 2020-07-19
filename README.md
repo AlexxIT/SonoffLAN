@@ -103,6 +103,8 @@ These devices only work through the cloud!
 - [KING-M4](https://www.aliexpress.com/item/33013358523.html) (brightness) fw 2.7.0
 - [Eachen WiFi Door/Window Sensor](https://ewelink.eachen.cc/product/eachen-wifi-smart-door-window-sensor-wdw-ewelink/)
 - [Essential Oils Diffuser](https://www.amazon.co.uk/dp/B07WF7MQ17) (fan and color light) fw 2.9.0
+- [Smart USB Mosquito Killer](https://www.aliexpress.com/item/33037963105.html)
+- [Smart Bulb RGB+CCT](https://www.aliexpress.com/item/4000764330397.html)
 
 ## Install with HACS
 
