@@ -107,8 +107,8 @@ class EWeLinkCloud(ResponseWaiter):
         try:
             r = await coro
             return await r.json()
-        except:
-            _LOGGER.exception("Coolkit API")
+        except Exception as e:
+            _LOGGER.exception(f"Coolkit API error: {e}")
             return None
 
     async def _process_ws_msg(self, data: dict):
@@ -224,8 +224,8 @@ class EWeLinkCloud(ResponseWaiter):
                     await self._ws.close()
                 return
 
-            except Exception:
-                _LOGGER.exception(f"Cloud WS exception")
+            except Exception as e:
+                _LOGGER.exception(f"Cloud WS exception: {e}")
 
         delay = RETRY_DELAYS[fails]
         _LOGGER.debug(f"Cloud WS retrying in {delay} seconds")
