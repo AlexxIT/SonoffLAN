@@ -6,6 +6,33 @@
 
 Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devices with [eWeLink](https://www.ewelink.cc/en/) (original) firmware over LAN and/or Cloud.
 
+## Table of Contents
+
+- [Main Info](#main-info)
+- [Tested Devices](#tested-devices)
+- [Install with HACS](#install-with-hacs)
+- [Config Examples](#config-examples)
+  - [Local and Cloud mode](#local-and-cloud-mode)
+  - [Cloud only mode](#cloud-only-mode)
+  - [Local mode with load config from Cloud](#local-mode-with-load-config-from-cloud)
+  - [Local only mode (manual get devicekey)](#local-only-mode-manual-get-devicekey)
+  - [Local only mode (DIY devices)](#local-only-mode-diy-devices)
+  - [Custom device_class for any mode](#custom-device_class-for-any-mode)
+  - [Refresh interval for TH and Pow](#refresh-interval-for-th-and-pow)
+  - [Sensors from device attributes](#sensors-from-device-attributes)
+- [Sonoff RF Bridge 433](#sonoff-rf-bridge-433)
+  - [RF Bridge Sensors](#rf-bridge-sensors)
+  - [RF Bridge Commands and Events](#rf-bridge-commands-and-events)
+- [Sonoff Pow Power Consumption](#sonoff-pow-power-consumption)
+- [Sonoff GK-200MP2-B Camera](#sonoff-gk-200mp2-b-camera)
+- [Demo](#demo)
+- [Getting devicekey manually](#getting-devicekey-manually)
+- [Common problems in only LAN mode](#common-problems-in-only-lan-mode)
+- [Component Debug Mode](#component-debug-mode)
+- [Useful Links](#useful-links)
+
+## Main Info
+
 **New features in version 2.0:**
 
 - can manage **both local and cloud control at the same time**!
@@ -50,14 +77,16 @@ There is another great component by [@peterbuga](https://github.com/peterbuga/HA
 Thanks to [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant) and [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.  
 Thanks to [@michthom](https://github.com/michthom) and [@EpicLPer](https://github.com/EpicLPer) for researching the local Sonoff Camera protocol.
 
-## Tested Devices (only LAN)
+## Tested Devices
+
+**Tested (only LAN)**
 
 Maybe other eWeLink cameras also work, I don’t know.
 
 - [Camera GK-100CD10B](https://www.gearbest.com/smart-home-controls/pp_009678072743.html) (camera with PTZ)
 - [Sonoff GK-200MP2-B](https://www.itead.cc/sonoff-gk-200mp2-b-wi-fi-wireless-ip-security-camera.html) (camera with PTZ)
 
-## Tested Devices (LAN and Cloud)
+**Tested (LAN and Cloud)**
 
 These devices work both on a local network and through the cloud.
 
@@ -92,7 +121,7 @@ These devices work both on a local network and through the cloud.
 - [Smart Timer Switch](https://www.aliexpress.com/item/4000189016383.html)
 - [Eachen WiFi Smart Touch](https://ewelink.eachen.cc/product/eachen-single-live-wall-switch-us-ac-l123ewelink-app/) fw 3.3.0
 
-## Tested Devices (only Cloud)
+**Tested (only Cloud)**
 
 These devices only work through the cloud!
 
@@ -107,7 +136,7 @@ These devices only work through the cloud!
 - [Smart USB Mosquito Killer](https://www.aliexpress.com/item/33037963105.html)
 - [Smart Bulb RGB+CCT](https://www.aliexpress.com/item/4000764330397.html)
 
-## Tested ZigBee Devices (only Cloud)
+**Tested ZigBee (only Cloud)**
 
 - [Sonoff ZigBee Bridge](https://www.itead.cc/sonoff-zbbridge.html) - turn on for pairing mode
 - SONOFF SNZB-01 - Zigbee Wireless Switch
@@ -190,7 +219,7 @@ sonoff:
   mode: cloud
 ```
 
-### Local mode with load device list from Cloud Servers
+### Local mode with load config from Cloud
 
 Legacy mode. Only downloads a list of devices from Cloud Servers. Works with local protocol. Only works with devices on 3rd firmware.
 
