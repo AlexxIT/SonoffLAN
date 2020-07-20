@@ -23,6 +23,8 @@ SENSORS = {
 
 SONOFF_SC = {'temperature', 'humidity', 'dusty', 'light', 'noise'}
 
+GLOBAL_ATTRS = ('local', 'cloud', 'rssi', 'battery')
+
 
 async def async_setup_platform(hass, config, add_entities,
                                discovery_info=None):
@@ -33,18 +35,22 @@ async def async_setup_platform(hass, config, add_entities,
     registry = hass.data[DOMAIN]
 
     attr = discovery_info.get('attribute')
-    device = registry.devices[deviceid]
+    uiid = registry.devices[deviceid].get('uiid')
 
-    if attr in SONOFF_SC and device.get('uiid') == 18:
-        # skip duplicate attribute
+    # skip duplicate attribute
+    if uiid in (18, 1770) and attr in SONOFF_SC:
         return
 
-    if attr:
+    elif attr:
         add_entities([EWeLinkSensor(registry, deviceid, attr)])
 
-    elif device.get('uiid') == 18:
+    elif uiid == 18:
         add_entities([EWeLinkSensor(registry, deviceid, attr)
                       for attr in SONOFF_SC])
+
+    elif uiid == 1770:
+        add_entities([EWeLinkSensor(registry, deviceid, 'temperature'),
+                      EWeLinkSensor(registry, deviceid, 'humidity')])
 
 
 class EWeLinkSensor(EWeLinkDevice, Entity):
@@ -61,6 +67,8 @@ class EWeLinkSensor(EWeLinkDevice, Entity):
             self._name += f" {self._attr.capitalize()}"
 
     def _update_handler(self, state: dict, attrs: dict):
+        self._attrs.update({k: attrs[k] for k in GLOBAL_ATTRS if k in attrs})
+
         if self._attr not in state:
             return
 

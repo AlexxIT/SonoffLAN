@@ -75,6 +75,7 @@ def init_device_class(default_class: str = 'switch'):
         44: 'light',  # Sonoff D1
         57: 'light',  # Mosquito Killer Lamp
         59: 'light',  # Sonoff LED (only cloud)
+        66: switch1,  # ZigBee Bridge
         77: switchx,  # Sonoff Micro
         78: switchx,
         81: switch1,
@@ -84,6 +85,11 @@ def init_device_class(default_class: str = 'switch'):
         102: 'binary_sensor',  # Sonoff DW2 Door/Window sensor
         104: 'light',  # RGB+CCT color bulb
         107: switchx,
+        1000: 'binary_sensor',  # zigbee_ON_OFF_SWITCH_1000
+        1256: 'light',  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
+        1770: 'sensor',  # ZCL_HA_DEVICEID_TEMPERATURE_SENSOR
+        2026: 'binary_sensor',  # ZIGBEE_MOBILE_SENSOR
+        3026: 'binary_sensor',  # ZIGBEE_DOOR_AND_WINDOW_SENSOR
         # list local types
         'plug': switch1,  # Basic, Mini
         'diy_plug': switch1,  # Mini in DIY mode
@@ -110,11 +116,18 @@ def guess_device_class(config: dict):
 def get_device_info(config: dict):
     try:
         # https://developers.home-assistant.io/docs/device_registry_index/
+        sw = config['extra']['extra']['model']
+        # zigbee device
+        if sw == 'NON-OTA-GL':
+            return None
+
+        if 'fwVersion' in config['params']:
+            sw += f" v{config['params']['fwVersion']}"
+
         return {
             'manufacturer': config['brandName'],
             'model': config['productModel'],
-            'sw_version': f"{config['extra']['extra']['model']} "
-                          f"v{config['params'].get('fwVersion', '???')}"
+            'sw_version': sw
         }
     except:
         return None
