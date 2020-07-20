@@ -1,4 +1,4 @@
-# Sonoff control from Home Assistant
+# Control Sonoff Devices from Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 [![Donate](https://img.shields.io/badge/donate-Coffee-yellow.svg)](https://www.buymeacoffee.com/AlexxIT)
@@ -15,6 +15,7 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 - support unavailable device state for both local and cloud connection 
 - support refresh interval for Sonoff TH and Sonoff Pow ([read more](#refresh-interval-for-th-and-pow))
 - support sensors for Sonoff RF Bridge 433 ([read more](#rf-bridge-sensors))
+- support ZigBee Bridge and Devices
 - added new debug mode for troubleshooting ([read more](#component-debug-mode))
 
 **Breaking changes 2.0:** by default, both local and cloud modes will start working together. If you do not want this - enable the `mode: local` setting. But I recommend using the new mode, it works great.
@@ -105,6 +106,14 @@ These devices only work through the cloud!
 - [Essential Oils Diffuser](https://www.amazon.co.uk/dp/B07WF7MQ17) (fan and color light) fw 2.9.0
 - [Smart USB Mosquito Killer](https://www.aliexpress.com/item/33037963105.html)
 - [Smart Bulb RGB+CCT](https://www.aliexpress.com/item/4000764330397.html)
+
+## Tested ZigBee Devices (only Cloud)
+
+- [Sonoff ZigBee Bridge](https://www.itead.cc/sonoff-zbbridge.html) - turn on for pairing mode
+- SONOFF SNZB-01 - Zigbee Wireless Switch
+- SONOFF SNZB-02 - ZigBee Temperature and Humidity Sensor
+- SONOFF SNZB-03 - ZigBee Motion Sensor
+- SONOFF SNZB-04 - ZigBee Wireless door/window sensor
 
 ## Install with HACS
 
