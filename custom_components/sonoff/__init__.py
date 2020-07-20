@@ -127,10 +127,10 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
         force_update = None
 
     if CONF_SENSORS in config:
-        sensors = config[CONF_SENSORS]
-        _LOGGER.debug(f"Init auto sensors for: {sensors}")
+        auto_sensors = config[CONF_SENSORS]
+        _LOGGER.debug(f"Init auto sensors for: {auto_sensors}")
     else:
-        sensors = []
+        auto_sensors = []
 
     def add_device(deviceid: str, state: dict, *args):
         device = registry.devices[deviceid]
@@ -191,7 +191,7 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
                 hass.async_create_task(discovery.async_load_platform(
                     hass, info.pop('component'), DOMAIN, info, hass_config))
 
-        for attribute in sensors:
+        for attribute in auto_sensors:
             if attribute in state:
                 info = {'deviceid': deviceid, 'attribute': attribute}
                 hass.async_create_task(discovery.async_load_platform(
