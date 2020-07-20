@@ -33,9 +33,9 @@ async def async_setup_platform(hass, config, add_entities,
     deviceid = discovery_info['deviceid']
     channels = discovery_info['channels']
     registry = hass.data[DOMAIN]
-    device = registry.devices[deviceid]
-    uiid = device.get('uiid')
+
     # iFan02 and iFan03 have the same uiid!
+    uiid = registry.devices[deviceid].get('uiid')
     if uiid == 34 or uiid == 'fan_light':
         # only channel 2 is used for switching
         add_entities([SonoffFan02(registry, deviceid, [2])])

@@ -27,9 +27,8 @@ async def async_setup_platform(hass, config, add_entities,
     deviceid = discovery_info['deviceid']
     channels = discovery_info['channels']
     registry = hass.data[DOMAIN]
-    device = registry.devices[deviceid]
 
-    uiid = device.get('uiid')
+    uiid = registry.devices[deviceid].get('uiid')
     if uiid == 44 or uiid == 'light':
         add_entities([SonoffD1(registry, deviceid)])
     elif uiid == 59:
