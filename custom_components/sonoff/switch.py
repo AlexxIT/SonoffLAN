@@ -103,10 +103,7 @@ class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
         https://github.com/AlexxIT/SonoffLAN/issues/14
         """
         _LOGGER.debug(f"Refresh device state {self.deviceid}")
-        params = {'sledonline': self._sled_online} \
-            if self._sled_online is not None else \
-            {'cmd': 'signal_strength'}
-        await self.registry.send(self.deviceid, params)
+        await self.registry.send(self.deviceid, {'_query': self._sled_online})
 
 
 class ZigBeeBridge(EWeLinkToggle):

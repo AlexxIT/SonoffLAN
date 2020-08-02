@@ -22,21 +22,14 @@ except:
 _LOGGER = logging.getLogger(__name__)
 
 
-def init_zeroconf_singleton(hass):
-    """Generate only one Zeroconf. Component must be loaded before Zeroconf."""
-    from homeassistant.components import zeroconf
-    if isinstance(zeroconf.Zeroconf, type):
-        def zeroconf_singleton():
-            if 'zeroconf' not in hass.data:
-                from zeroconf import Zeroconf
-                _LOGGER.debug("Generate zeroconf singleton")
-                hass.data['zeroconf'] = Zeroconf()
-            else:
-                _LOGGER.debug("Use zeroconf singleton")
-            return hass.data['zeroconf']
-
-        _LOGGER.debug("Init zeroconf singleton")
-        zeroconf.Zeroconf = zeroconf_singleton
+async def get_zeroconf_singleton(hass: HomeAssistantType):
+    try:
+        # Home Assistant 0.110.0 and above
+        from homeassistant.components.zeroconf import async_get_instance
+        return await async_get_instance(hass)
+    except:
+        from zeroconf import Zeroconf
+        return Zeroconf()
 
 
 UIIDS = {}

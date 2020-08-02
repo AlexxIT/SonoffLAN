@@ -114,7 +114,10 @@ def ifan02to03(payload: dict) -> dict:
 class EWeLinkLocal:
     _devices: dict = None
     _handlers = None
-    _zeroconf = None
+    browser = None
+
+    # cut temperature for sync to cloud API
+    sync_temperature = False
 
     def __init__(self, session: ClientSession):
         self.session = session
@@ -122,19 +125,19 @@ class EWeLinkLocal:
 
     @property
     def started(self) -> bool:
-        return self._zeroconf is not None
+        return self.browser is not None
 
-    def start(self, handlers: List[Callable], devices: dict = None):
+    def start(self, handlers: List[Callable], devices: dict, zeroconf):
         self._handlers = handlers
         self._devices = devices
-        self._zeroconf = Zeroconf()
-        browser = ServiceBrowser(self._zeroconf, '_ewelink._tcp.local.',
-                                 handlers=[self._zeroconf_handler])
+        self.browser = ServiceBrowser(zeroconf, '_ewelink._tcp.local.',
+                                      handlers=[self._zeroconf_handler])
         # for beautiful logs
-        browser.name = 'Sonoff_LAN'
+        self.browser.name = 'Sonoff_LAN'
 
     def stop(self, *args):
-        self._zeroconf.close()
+        self.browser.cancel()
+        self.browser.zc.close()
 
     def _zeroconf_handler(self, zeroconf: Zeroconf, service_type: str,
                           name: str, state_change: ServiceStateChange):
@@ -186,6 +189,10 @@ class EWeLinkLocal:
         # TH bug in local mode https://github.com/AlexxIT/SonoffLAN/issues/110
         if state.get('temperature') == 0 and state.get('humidity') == 0:
             del state['temperature'], state['humidity']
+
+        elif 'temperature' in state and self.sync_temperature:
+            # cloud API send only one decimal (not round)
+            state['temperature'] = int(state['temperature'] * 10) / 10.0
 
         if properties['type'] == 'fan_light':
             state = ifan03to02(state)
@@ -245,6 +252,11 @@ class EWeLinkLocal:
 
     async def send(self, deviceid: str, data: dict, sequence: str, timeout=5):
         device: dict = self._devices[deviceid]
+
+        if '_query' in data:
+            data = {'cmd': 'signal_strength'} \
+                if data['_query'] is None else \
+                {'sledonline': data['_query']}
 
         if device['uiid'] == 'fan_light' and 'switches' in data:
             data = ifan02to03(data)

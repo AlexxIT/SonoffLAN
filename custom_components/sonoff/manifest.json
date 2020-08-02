@@ -2,7 +2,9 @@
   "domain": "sonoff",
   "name": "Sonoff",
   "documentation": "https://github.com/AlexxIT/SonoffLAN",
-  "dependencies": [],
+  "dependencies": [
+    "zeroconf"
+  ],
   "codeowners": [
     "AlexxIT"
   ],
