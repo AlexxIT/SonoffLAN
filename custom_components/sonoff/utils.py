@@ -78,7 +78,7 @@ def init_device_class(default_class: str = 'switch'):
         102: 'binary_sensor',  # Sonoff DW2 Door/Window sensor
         104: 'light',  # RGB+CCT color bulb
         107: switchx,
-        1000: 'binary_sensor',  # zigbee_ON_OFF_SWITCH_1000
+        1000: 'sensor',  # zigbee_ON_OFF_SWITCH_1000
         1256: 'light',  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
         1770: 'sensor',  # ZCL_HA_DEVICEID_TEMPERATURE_SENSOR
         2026: 'binary_sensor',  # ZIGBEE_MOBILE_SENSOR

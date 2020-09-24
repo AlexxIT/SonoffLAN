@@ -29,8 +29,6 @@ async def async_setup_platform(hass, config, add_entities,
     uiid = registry.devices[deviceid].get('uiid')
     if uiid == 102:
         add_entities([WiFiDoorWindowSensor(registry, deviceid)])
-    elif uiid == 1000:
-        add_entities([ZigBeeSwitchSensor(registry, deviceid)])
     elif uiid == 2026:
         add_entities([ZigBeeMotionSensor(registry, deviceid)])
     elif uiid == 3026:
@@ -109,21 +107,6 @@ class ZigBeeDoorWindowSensor(WiFiDoorWindowSensor):
             self._is_on = (state['lock'] == 1)
 
         self.schedule_update_ha_state()
-
-
-class ZigBeeSwitchSensor(EWeLinkBinarySensor):
-    def _update_handler(self, state: dict, attrs: dict):
-        self._attrs.update(attrs)
-
-        if 'key' in state:
-            self._is_on = (state['key'] == 1)
-
-        self.schedule_update_ha_state()
-
-    @property
-    def available(self) -> bool:
-        device: dict = self.registry.devices[self.deviceid]
-        return device['available']
 
 
 class ZigBeeMotionSensor(EWeLinkBinarySensor):

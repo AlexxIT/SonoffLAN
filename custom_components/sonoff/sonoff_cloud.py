@@ -279,7 +279,7 @@ class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
         payload = {pname: username, 'password': password}
         resp = await self._api('login', 'api/user/login', payload)
 
-        if resp.get('error') == 406:
+        if resp is None or resp.get('error') == 406:
             self.init_app_v4()
             resp = await self._api('login', 'api/user/login', payload)
 

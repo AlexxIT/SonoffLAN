@@ -1,3 +1,4 @@
+import time
 from typing import Optional
 
 from homeassistant.const import DEVICE_CLASS_TEMPERATURE, \
@@ -47,6 +48,9 @@ async def async_setup_platform(hass, config, add_entities,
     elif uiid == 18:
         add_entities([EWeLinkSensor(registry, deviceid, attr)
                       for attr in SONOFF_SC])
+
+    elif uiid == 1000:
+        add_entities([ZigBeeButtonSensor(registry, deviceid)])
 
     elif uiid == 1770:
         add_entities([EWeLinkSensor(registry, deviceid, 'temperature'),
@@ -112,3 +116,50 @@ class EWeLinkSensor(EWeLinkDevice, Entity):
     @property
     def icon(self):
         return SENSORS[self._attr][2] if self._attr in SENSORS else None
+
+
+BUTTON_STATES = ['single', 'double', 'hold']
+
+
+class ZigBeeButtonSensor(EWeLinkDevice, Entity):
+    _state = ''
+
+    async def async_added_to_hass(self) -> None:
+        # don't call update at startup
+        self._init(force_refresh=False)
+
+    def _update_handler(self, state: dict, attrs: dict):
+        self._attrs.update(attrs)
+
+        if 'key' in state:
+            self._state = BUTTON_STATES[state['key']]
+            self.async_write_ha_state()
+            time.sleep(.5)
+            self._state = ''
+
+        self.schedule_update_ha_state()
+
+    @property
+    def should_poll(self) -> bool:
+        return False
+
+    @property
+    def unique_id(self) -> Optional[str]:
+        return self.deviceid
+
+    @property
+    def name(self) -> Optional[str]:
+        return self._name
+
+    @property
+    def state(self) -> str:
+        return self._state
+
+    @property
+    def state_attributes(self):
+        return self._attrs
+
+    @property
+    def available(self) -> bool:
+        device: dict = self.registry.devices[self.deviceid]
+        return device['available']
