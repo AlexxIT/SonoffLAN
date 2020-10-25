@@ -175,7 +175,7 @@ class EWeLinkLocal:
 
             data = decrypt(properties, devicekey)
             # Fix Sonoff RF Bridge sintax bug
-            if data.startswith(b'{"rf'):
+            if data and data.startswith(b'{"rf'):
                 data = data.replace(b'"="', b'":"')
         else:
             data = ''.join([properties[f'data{i}'] for i in range(1, 4, 1)
