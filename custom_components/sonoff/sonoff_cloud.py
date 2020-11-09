@@ -86,14 +86,8 @@ class ResponseWaiter:
 
 
 class EWeLinkApp:
-    # App v3
     appid = 'oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq'
     appsecret = '6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM'
-
-    def init_app_v4(self):
-        _LOGGER.debug("Init app v4")
-        self.appid = 'Uw83EKZFxdif7XFXEsrpduz5YyjP7nTl'
-        self.appsecret = 'mXLOjea0woSMvK9gw7Fjsy7YlFO4iSu6'
 
 
 class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
@@ -146,7 +140,7 @@ class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
         try:
             r = await coro
             return await r.json()
-        except Exception as e:
+        except (Exception, RuntimeError) as e:
             _LOGGER.exception(f"Coolkit API error: {e}")
             return None
 
@@ -278,10 +272,6 @@ class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
         pname = 'email' if '@' in username else 'phoneNumber'
         payload = {pname: username, 'password': password}
         resp = await self._api('login', 'api/user/login', payload)
-
-        if resp is None or resp.get('error') == 406:
-            self.init_app_v4()
-            resp = await self._api('login', 'api/user/login', payload)
 
         if resp is None or 'region' not in resp:
             _LOGGER.error(f"Login error: {resp}")
