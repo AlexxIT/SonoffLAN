@@ -9,7 +9,7 @@ from typing import Callable, List
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
-from aiohttp import ClientSession, ClientOSError
+from aiohttp import ClientSession, ClientOSError, ServerDisconnectedError
 
 from zeroconf import ServiceBrowser, Zeroconf, ServiceStateChange
 
@@ -293,7 +293,7 @@ class EWeLinkLocal:
         except asyncio.TimeoutError:
             _LOGGER.debug(f"{log} !! Timeout {timeout}")
             return 'timeout'
-        except ClientOSError as e:
+        except (ClientOSError, ServerDisconnectedError) as e:
             _LOGGER.debug(f"{log} !! {e.args}")
             return 'E#COS'
         except:
