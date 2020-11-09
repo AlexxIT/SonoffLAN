@@ -135,7 +135,7 @@ class EWeLinkRegistry:
 
         self.local.start(handlers, self.devices, zeroconf)
 
-    async def stop(self):
+    async def stop(self, *args):
         # TODO: do something
         pass
 
