@@ -20,7 +20,8 @@ FAST_DELAY = RETRY_DELAYS.index(5 * 60)
 DATA_ERROR = {
     0: 'online',
     503: 'offline',
-    504: 'timeout'
+    504: 'timeout',
+    None: 'unknown'
 }
 
 CLOUD_ERROR = (
@@ -63,8 +64,8 @@ class ResponseWaiter:
     async def _set_response(self, data: dict):
         sequence = data.get('sequence')
         if sequence in self._waiters:
-            assert 'error' in data, data
-            err = data['error']
+            # sometimes the error doesn't exists
+            err = data.get('error')
             result = DATA_ERROR[err] if err in DATA_ERROR else f"E#{err}"
             # set future result
             self._waiters[sequence].set_result(result)
