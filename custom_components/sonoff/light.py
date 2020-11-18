@@ -41,6 +41,8 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([SonoffDiffuserLight(registry, deviceid)])
     elif uiid == 57:
         add_entities([Sonoff57(registry, deviceid)])
+    elif uiid == 103:
+        add_entities([Sonoff103(registry, deviceid)])
     elif uiid == 104:
         add_entities([Sonoff104(registry, deviceid)])
     elif channels and len(channels) >= 2:
@@ -504,6 +506,170 @@ class Sonoff57(SonoffD1):
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.registry.send(self.deviceid, {'state': 'off'})
+
+
+SONOFF103_EFFECTS = {
+    'none': 'Custom',
+    'nightLight': 'Night',
+    'read': 'Reading',
+    'bright': 'Bright',
+    'computer': 'Work',
+}
+
+class Sonoff103(EWeLinkToggle):
+# ToDo:
+#   Dont know how to get the "productModel", there are multiple bulbs models with uiid 103. They dont have the same color temperature range.
+#   Model "FS-1" looks to be 2200-6500 Kelvin
+#   Model "B02-F-A60"  is 2200K-6500K
+#   Model "B02-F-ST64" is 1800K-5000K
+
+    _ColorKelvinWarmest = 2200
+    _ColorKelvinColdest = 6500
+    _ColorMiredsWarmest = 1000000/_ColorKelvinWarmest
+    _ColorMiredsColdest = 1000000/_ColorKelvinColdest
+    
+    _scene_nightLight_br = None
+    _scene_nightLight_ct = None
+
+    _scene_read_br = None
+    _scene_read_ct = None
+
+    _scene_bright_br = None
+    _scene_bright_ct = None
+
+    _scene_computer_br = None
+    _scene_computer_ct = None
+
+    _brightness = 0.0
+    _colortemp = 0.0
+    
+    _effect = None
+
+
+    def _update_handler(self, state: dict, attrs: dict):
+        self._attrs.update(attrs)
+
+        if 'switch' in state:
+            self._is_on = state['switch'] == 'on'
+        
+        if 'bright' in state:
+            self._scene_bright_br = state['bright']['br']
+            self._scene_bright_ct = state['bright']['ct']
+
+        if 'read' in state:
+            self._scene_read_br = state['read']['br']
+            self._scene_read_ct = state['read']['ct']
+
+        if 'computer' in state:
+            self._scene_computer_br = state['computer']['br']
+            self._scene_computer_ct = state['computer']['ct']
+
+        if 'nightLight' in state:
+            self._scene_nightLight_br = state['nightLight']['br']
+            self._scene_nightLight_ct = state['nightLight']['ct']
+
+        if 'effect' in state:
+            if state['effect'] in SONOFF103_EFFECTS.keys(): 
+                self._effect = state['effect']
+
+        if 'white' in state:
+            # only update brigthness-slider if brightness has changed, as the indicator might jump a bit because of round(). the bulb use percent HASS use 1...255 (1..100 => 1..255)
+            if round(self._brightness) != round((state['white']['br']*2.55)):
+                self._brightness = state['white']['br'] * 2.55
+
+            # only update brigthness-slider if brightness has changed, as the indicator might jump a bit because of round(). the bulb use 0...255, HASS use Mireds (0..255 => Mireds)
+            if round(self._colortemp) != round(self._ColorMiredsWarmest - state['white']['ct'] / 255.0 * (self._ColorMiredsWarmest - self._ColorMiredsColdest)):
+                self._colortemp = self._ColorMiredsWarmest - state['white']['ct'] / 255.0 * (self._ColorMiredsWarmest - self._ColorMiredsColdest)
+
+
+        self.schedule_update_ha_state()
+
+    @property
+    def brightness(self):
+        """Return the brightness of this light between 0..255."""
+        return self._brightness
+
+    @property
+    def color_temp(self):
+        """Return the CT color value in mireds."""
+        return self._colortemp
+
+    @property
+    def effect_list(self):
+        """Return the list of supported effects."""
+        return list(SONOFF103_EFFECTS.values())
+
+    @property
+    def effect(self):
+        """Return the current effect."""
+        return SONOFF103_EFFECTS[self._effect]
+
+    @property
+    def supported_features(self):
+        return SUPPORT_BRIGHTNESS | SUPPORT_COLOR_TEMP | SUPPORT_EFFECT
+
+    @property
+    def capability_attributes(self):
+        return {
+            ATTR_EFFECT_LIST: self.effect_list,
+            ATTR_MIN_MIREDS: round(self._ColorMiredsColdest), 
+            ATTR_MAX_MIREDS: round(self._ColorMiredsWarmest)
+        }
+
+    @property
+    def state_attributes(self):
+        return {
+            **self._attrs,
+            ATTR_BRIGHTNESS: self.brightness,
+            ATTR_COLOR_TEMP: self.color_temp,
+            ATTR_EFFECT: self.effect
+        }
+
+    async def async_turn_on(self, **kwargs) -> None:
+        payload = {'switch': 'on'}
+
+        if ATTR_EFFECT in kwargs:
+            _LOGGER.debug("Yes ATTR_EFFECT in kwargs: ATTR_EFFECT=" + str(kwargs[ATTR_EFFECT]) + " kwargs="+ str(kwargs) )
+            payload = {}
+
+            if kwargs[ATTR_EFFECT] in SONOFF103_EFFECTS.values(): 
+
+                mode = payload['effect'] = next(k for k, v in SONOFF103_EFFECTS.items() if v == kwargs[ATTR_EFFECT])
+
+                if mode == 'nightLight':
+                    payload['white'] = {
+                        'br': self._scene_nightLight_br,
+                        'ct': self._scene_nightLight_ct
+                    }
+                elif mode == 'read':
+                    payload['white'] = {
+                        'br': self._scene_read_br,
+                        'ct': self._scene_read_ct
+                    }
+                elif mode == 'bright':
+                    payload['white'] = {
+                        'br': self._scene_bright_br,
+                        'ct': self._scene_bright_ct
+                    }
+                elif mode == 'computer':
+                    payload['white'] = {
+                        'br': self._scene_computer_br,
+                        'ct': self._scene_computer_ct
+                    }
+
+        else:
+            payload = {}
+            payload['effect'] = 'none'
+
+            br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
+            ct = kwargs.get(ATTR_COLOR_TEMP) or self._colortemp or self._ColorMiredsColdest
+
+            payload['white'] = {
+                'br': round(br/2.55),
+                'ct': round((self._ColorMiredsWarmest - ct) / (self._ColorMiredsWarmest - self._ColorMiredsColdest) * 255.0)
+            }
+
+        await self.registry.send(self.deviceid, payload)
 
 
 SONOFF104_MODES = {
