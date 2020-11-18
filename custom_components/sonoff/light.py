@@ -629,7 +629,6 @@ class Sonoff103(EWeLinkToggle):
         payload = {'switch': 'on'}
 
         if ATTR_EFFECT in kwargs:
-            _LOGGER.debug("Yes ATTR_EFFECT in kwargs: ATTR_EFFECT=" + str(kwargs[ATTR_EFFECT]) + " kwargs="+ str(kwargs) )
             payload = {}
 
             if kwargs[ATTR_EFFECT] in SONOFF103_EFFECTS.values(): 
