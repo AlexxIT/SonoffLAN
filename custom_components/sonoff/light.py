@@ -512,8 +512,8 @@ SONOFF103_EFFECTS = {
     'none': 'Custom',
     'nightLight': 'Night',
     'read': 'Reading',
-    'bright': 'Bright',
     'computer': 'Work',
+    'bright': 'Bright'
 }
 
 class Sonoff103(EWeLinkToggle):
@@ -527,18 +527,6 @@ class Sonoff103(EWeLinkToggle):
     _ColorKelvinColdest = 6500
     _ColorMiredsWarmest = 1000000/_ColorKelvinWarmest
     _ColorMiredsColdest = 1000000/_ColorKelvinColdest
-    
-    _scene_nightLight_br = None
-    _scene_nightLight_ct = None
-
-    _scene_read_br = None
-    _scene_read_ct = None
-
-    _scene_bright_br = None
-    _scene_bright_ct = None
-
-    _scene_computer_br = None
-    _scene_computer_ct = None
 
     _brightness = 0.0
     _colortemp = 0.0
@@ -551,22 +539,6 @@ class Sonoff103(EWeLinkToggle):
 
         if 'switch' in state:
             self._is_on = state['switch'] == 'on'
-        
-        if 'bright' in state:
-            self._scene_bright_br = state['bright']['br']
-            self._scene_bright_ct = state['bright']['ct']
-
-        if 'read' in state:
-            self._scene_read_br = state['read']['br']
-            self._scene_read_ct = state['read']['ct']
-
-        if 'computer' in state:
-            self._scene_computer_br = state['computer']['br']
-            self._scene_computer_ct = state['computer']['ct']
-
-        if 'nightLight' in state:
-            self._scene_nightLight_br = state['nightLight']['br']
-            self._scene_nightLight_ct = state['nightLight']['ct']
 
         if 'effect' in state:
             if state['effect'] in SONOFF103_EFFECTS.keys(): 
@@ -637,23 +609,23 @@ class Sonoff103(EWeLinkToggle):
 
                 if mode == 'nightLight':
                     payload['white'] = {
-                        'br': self._scene_nightLight_br,
-                        'ct': self._scene_nightLight_ct
+                        'br': 5,
+                        'ct': 0
                     }
                 elif mode == 'read':
                     payload['white'] = {
-                        'br': self._scene_read_br,
-                        'ct': self._scene_read_ct
-                    }
-                elif mode == 'bright':
-                    payload['white'] = {
-                        'br': self._scene_bright_br,
-                        'ct': self._scene_bright_ct
+                        'br': 50,
+                        'ct': 0
                     }
                 elif mode == 'computer':
                     payload['white'] = {
-                        'br': self._scene_computer_br,
-                        'ct': self._scene_computer_ct
+                        'br': 20,
+                        'ct': 255
+                    }
+                elif mode == 'bright':
+                    payload['white'] = {
+                        'br': 100,
+                        'ct': 255
                     }
 
         else:
