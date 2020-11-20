@@ -507,9 +507,8 @@ class Sonoff57(SonoffD1):
     async def async_turn_off(self, **kwargs) -> None:
         await self.registry.send(self.deviceid, {'state': 'off'})
 
-
-SONOFF103_EFFECTS = {
-    'none': 'Custom',
+SONOFF103_MODES = {
+    'white': 'Custom',
     'nightLight': 'Night',
     'read': 'Reading',
     'computer': 'Work',
@@ -524,16 +523,15 @@ class Sonoff103(EWeLinkToggle):
 #   Model "B02-F-ST64" is 1800K-5000K
 #   Model "QMS-2C-CW"  is 2700k-6500K
 
+
     _ColorKelvinWarmest = 2200
     _ColorKelvinColdest = 6500
-    _ColorMiredsWarmest = 1000000/_ColorKelvinWarmest
-    _ColorMiredsColdest = 1000000/_ColorKelvinColdest
+    _ColorMiredsWarmest = 1000000/_ColorKelvinWarmest # 2200K = 454,545454545 Mireds
+    _ColorMiredsColdest = 1000000/_ColorKelvinColdest # 6500k = 153,846153846 Mireds
 
-    _brightness = 0.0
-    _colortemp = 0.0
-    
-    _effect = 'none'
-
+    _brightness = None
+    _mode = None
+    _temp = None
 
     def _update_handler(self, state: dict, attrs: dict):
         self._attrs.update(attrs)
@@ -541,19 +539,21 @@ class Sonoff103(EWeLinkToggle):
         if 'switch' in state:
             self._is_on = state['switch'] == 'on'
 
-        if 'effect' in state:
-            if state['effect'] in SONOFF103_EFFECTS.keys(): 
-                self._effect = state['effect']
+        if 'ltype' in state:
+            self._mode = state['ltype']
 
-        if 'white' in state:
-            # only update brigthness-slider if brightness has changed, as the indicator might jump a bit because of round(). the bulb use percent HASS use 1...255 (1..100 => 1..255)
-            if round(self._brightness) != round((state['white']['br']*2.55)):
-                self._brightness = state['white']['br'] * 2.55
+            state = state[self._mode]
 
-            # only update brigthness-slider if brightness has changed, as the indicator might jump a bit because of round(). the bulb use 0...255, HASS use Mireds (0..255 => Mireds)
-            if round(self._colortemp) != round(self._ColorMiredsWarmest - state['white']['ct'] / 255.0 * (self._ColorMiredsWarmest - self._ColorMiredsColdest)):
-                self._colortemp = self._ColorMiredsWarmest - state['white']['ct'] / 255.0 * (self._ColorMiredsWarmest - self._ColorMiredsColdest)
+            if 'br' in state:
+                # 1..100 => 1..255
+                br = state['br']
+                self._brightness = \
+                    round(1.0 + (br - 1.0) / (100.0 - 1.0) * 254.0)
 
+            if 'ct' in state:
+                # 0..255 => Mireds..
+                ct = state['ct']
+                self._temp = round(self._ColorMiredsWarmest - ct / 255.0 * (self._ColorMiredsWarmest - self._ColorMiredsColdest))
 
         self.schedule_update_ha_state()
 
@@ -565,27 +565,30 @@ class Sonoff103(EWeLinkToggle):
     @property
     def color_temp(self):
         """Return the CT color value in mireds."""
-        return self._colortemp
+        return self._temp
 
     @property
     def effect_list(self):
         """Return the list of supported effects."""
-        return list(SONOFF103_EFFECTS.values())
+        return list(SONOFF103_MODES.values())
 
     @property
     def effect(self):
         """Return the current effect."""
-        return SONOFF103_EFFECTS[self._effect]
+        return SONOFF103_MODES[self._mode]
 
     @property
     def supported_features(self):
-        return SUPPORT_BRIGHTNESS | SUPPORT_COLOR_TEMP | SUPPORT_EFFECT
+        if self._is_on:
+            return SUPPORT_BRIGHTNESS | SUPPORT_COLOR_TEMP | SUPPORT_EFFECT
+        else:
+            return SUPPORT_EFFECT
 
     @property
     def capability_attributes(self):
         return {
             ATTR_EFFECT_LIST: self.effect_list,
-            ATTR_MIN_MIREDS: round(self._ColorMiredsColdest), 
+            ATTR_MIN_MIREDS: round(self._ColorMiredsColdest),
             ATTR_MAX_MIREDS: round(self._ColorMiredsWarmest)
         }
 
@@ -594,53 +597,59 @@ class Sonoff103(EWeLinkToggle):
         return {
             **self._attrs,
             ATTR_BRIGHTNESS: self.brightness,
-            ATTR_COLOR_TEMP: self.color_temp,
+            ATTR_COLOR_TEMP: self._temp,
             ATTR_EFFECT: self.effect
         }
 
     async def async_turn_on(self, **kwargs) -> None:
-        payload = {'switch': 'on'}
 
-        if ATTR_EFFECT in kwargs:
-            payload = {}
+        if self._is_on:
 
-            if kwargs[ATTR_EFFECT] in SONOFF103_EFFECTS.values(): 
-
-                mode = payload['effect'] = next(k for k, v in SONOFF103_EFFECTS.items() if v == kwargs[ATTR_EFFECT])
+            if ATTR_EFFECT in kwargs:
+                mode = next(k for k, v in SONOFF103_MODES.items()
+                            if v == kwargs[ATTR_EFFECT])
 
                 if mode == 'nightLight':
-                    payload['white'] = {
-                        'br': 5,
-                        'ct': 0
-                    }
+                    br = 5
+                    ct = 0
                 elif mode == 'read':
-                    payload['white'] = {
-                        'br': 50,
-                        'ct': 0
-                    }
+                    br = 50
+                    ct = 0
                 elif mode == 'computer':
-                    payload['white'] = {
-                        'br': 20,
-                        'ct': 255
-                    }
+                    br = 20
+                    ct = 255
                 elif mode == 'bright':
-                    payload['white'] = {
-                        'br': 100,
-                        'ct': 255
-                    }
+                    br = 100
+                    ct = 255
+                elif mode == 'white':
+                    br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
+                    br = int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0))
 
-        else:
+                    ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or self._ColorMiredsColdest
+                    ct = int(round((self._ColorMiredsWarmest - ct) / (self._ColorMiredsWarmest - self._ColorMiredsColdest) * 255.0))
+
+            elif (ATTR_BRIGHTNESS in kwargs or ATTR_COLOR_TEMP in kwargs):
+
+                mode = 'white'
+
+                br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
+                br = int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0))
+
+                ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or self._ColorMiredsColdest
+                ct = int(round((self._ColorMiredsWarmest - ct) / (self._ColorMiredsWarmest - self._ColorMiredsColdest) * 255.0))
+
             payload = {}
-            payload['effect'] = 'none'
+            payload['ltype'] = mode
 
-            br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
-            ct = kwargs.get(ATTR_COLOR_TEMP) or self._colortemp or self._ColorMiredsColdest
-
-            payload['white'] = {
-                'br': round(br/2.55),
-                'ct': round((self._ColorMiredsWarmest - ct) / (self._ColorMiredsWarmest - self._ColorMiredsColdest) * 255.0)
+            payload[mode] = {
+                'br': br,
+                'ct': ct
             }
 
+        else:
+            # Note that bulb flickers and fails if "switch : on" is send together with brightness and colortemp
+            payload = {'switch': 'on'}
+            
         await self.registry.send(self.deviceid, payload)
 
 
