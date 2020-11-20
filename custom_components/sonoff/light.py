@@ -519,9 +519,10 @@ SONOFF103_EFFECTS = {
 class Sonoff103(EWeLinkToggle):
 # ToDo:
 #   Dont know how to get the "productModel", there are multiple bulbs models with uiid 103. They dont have the same color temperature range.
-#   Model "FS-1" looks to be 2200-6500 Kelvin
+#   Model "FS-1" might be 2200k-6500K
 #   Model "B02-F-A60"  is 2200K-6500K
 #   Model "B02-F-ST64" is 1800K-5000K
+#   Model "QMS-2C-CW"  is 2700k-6500K
 
     _ColorKelvinWarmest = 2200
     _ColorKelvinColdest = 6500
