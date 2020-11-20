@@ -531,7 +531,7 @@ class Sonoff103(EWeLinkToggle):
     _brightness = 0.0
     _colortemp = 0.0
     
-    _effect = None
+    _effect = 'none'
 
 
     def _update_handler(self, state: dict, attrs: dict):
