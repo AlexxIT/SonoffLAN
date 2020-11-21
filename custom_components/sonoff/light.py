@@ -579,10 +579,7 @@ class Sonoff103(EWeLinkToggle):
 
     @property
     def supported_features(self):
-        if self._is_on:
-            return SUPPORT_BRIGHTNESS | SUPPORT_COLOR_TEMP | SUPPORT_EFFECT
-        else:
-            return SUPPORT_EFFECT
+        return SUPPORT_BRIGHTNESS | SUPPORT_COLOR_TEMP | SUPPORT_EFFECT
 
     @property
     def capability_attributes(self):
@@ -603,53 +600,42 @@ class Sonoff103(EWeLinkToggle):
 
     async def async_turn_on(self, **kwargs) -> None:
 
-        if self._is_on:
+        mode = self._mode
 
-            if ATTR_EFFECT in kwargs:
-                mode = next(k for k, v in SONOFF103_MODES.items()
-                            if v == kwargs[ATTR_EFFECT])
+        br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
+        br = int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0))
 
-                if mode == 'nightLight':
-                    br = 5
-                    ct = 0
-                elif mode == 'read':
-                    br = 50
-                    ct = 0
-                elif mode == 'computer':
-                    br = 20
-                    ct = 255
-                elif mode == 'bright':
-                    br = 100
-                    ct = 255
-                elif mode == 'white':
-                    br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
-                    br = int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0))
+        ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or self._ColorMiredsColdest
+        ct = int(round((self._ColorMiredsWarmest - ct) / (self._ColorMiredsWarmest - self._ColorMiredsColdest) * 255.0))
 
-                    ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or self._ColorMiredsColdest
-                    ct = int(round((self._ColorMiredsWarmest - ct) / (self._ColorMiredsWarmest - self._ColorMiredsColdest) * 255.0))
+        if (ATTR_BRIGHTNESS in kwargs or ATTR_COLOR_TEMP in kwargs):
+            mode = 'white'
 
-            elif (ATTR_BRIGHTNESS in kwargs or ATTR_COLOR_TEMP in kwargs):
+        elif ATTR_EFFECT in kwargs:
+            mode = next(k for k, v in SONOFF103_MODES.items()
+                        if v == kwargs[ATTR_EFFECT])
 
-                mode = 'white'
+            if mode == 'nightLight':
+                br = 5
+                ct = 0
+            elif mode == 'read':
+                br = 50
+                ct = 0
+            elif mode == 'computer':
+                br = 20
+                ct = 255
+            elif mode == 'bright':
+                br = 100
+                ct = 255
 
-                br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
-                br = int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0))
+        payload = {}
+        payload['ltype'] = mode
 
-                ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or self._ColorMiredsColdest
-                ct = int(round((self._ColorMiredsWarmest - ct) / (self._ColorMiredsWarmest - self._ColorMiredsColdest) * 255.0))
+        payload[mode] = {
+            'br': br,
+            'ct': ct
+        }
 
-            payload = {}
-            payload['ltype'] = mode
-
-            payload[mode] = {
-                'br': br,
-                'ct': ct
-            }
-
-        else:
-            # Note that bulb flickers and fails if "switch : on" is send together with brightness and colortemp
-            payload = {'switch': 'on'}
-            
         await self.registry.send(self.deviceid, payload)
 
 
