@@ -3,6 +3,7 @@ import ipaddress
 import json
 import logging
 import time
+from asyncio.exceptions import CancelledError
 from base64 import b64encode, b64decode
 from typing import Callable, List
 
@@ -293,7 +294,7 @@ class EWeLinkLocal:
         except asyncio.TimeoutError:
             _LOGGER.debug(f"{log} !! Timeout {timeout}")
             return 'timeout'
-        except (ClientOSError, ServerDisconnectedError) as e:
+        except (ClientOSError, ServerDisconnectedError, CancelledError) as e:
             _LOGGER.debug(f"{log} !! {e.args}")
             return 'E#COS'
         except:
