@@ -7,7 +7,7 @@ PSF-BFB-GL | fan_light | 34   | iFan (Sonoff iFan03)
 import logging
 
 from homeassistant.components.light import SUPPORT_BRIGHTNESS, \
-    ATTR_BRIGHTNESS, SUPPORT_COLOR, ATTR_HS_COLOR, \
+    ATTR_BRIGHTNESS, ATTR_BRIGHTNESS_PCT, SUPPORT_COLOR, ATTR_HS_COLOR, SUPPORT_TRANSITION, \
     SUPPORT_EFFECT, ATTR_EFFECT, ATTR_EFFECT_LIST, SUPPORT_COLOR_TEMP, \
     ATTR_COLOR_TEMP, ATTR_MIN_MIREDS, ATTR_MAX_MIREDS
 from homeassistant.util import color
@@ -337,7 +337,6 @@ class EWeLinkLightGroup(SonoffD1):
     """Differs from the usual switch by brightness adjustment. Is logical
     use only for two or more channels. Able to remember brightness on moment
     off.
-
     The sequence of channels is important. The first channels will be turned on
     at low brightness.
     """
@@ -523,11 +522,10 @@ class Sonoff103(EWeLinkToggle):
 #   Model "B02-F-ST64" is 1800K-5000K
 #   Model "QMS-2C-CW"  is 2700k-6500K
 
-
     _ColorKelvinWarmest = 2200
     _ColorKelvinColdest = 6500
-    _ColorMiredsWarmest = 1000000/_ColorKelvinWarmest # 2200K = 454,545454545 Mireds
-    _ColorMiredsColdest = 1000000/_ColorKelvinColdest # 6500k = 153,846153846 Mireds
+    _ColorMiredsWarmest = 1000000/_ColorKelvinWarmest # @ 2200K = 454,545454545 Mireds
+    _ColorMiredsColdest = 1000000/_ColorKelvinColdest # @ 6500k = 153,846153846 Mireds
 
     _brightness = None
     _mode = None
@@ -541,7 +539,6 @@ class Sonoff103(EWeLinkToggle):
 
         if 'ltype' in state:
             self._mode = state['ltype']
-
             state = state[self._mode]
 
             if 'br' in state:
@@ -568,14 +565,19 @@ class Sonoff103(EWeLinkToggle):
         return self._temp
 
     @property
-    def effect_list(self):
-        """Return the list of supported effects."""
-        return list(SONOFF103_MODES.values())
-
-    @property
     def effect(self):
         """Return the current effect."""
         return SONOFF103_MODES[self._mode]
+
+    @property
+    def effect_list(self):
+        """Return the list of supported effects."""
+        return list(SONOFF103_MODES.values())
+        
+    @property
+    def is_on(self):
+        """Returns if the light entity is on or not."""
+        return self._is_on
 
     @property
     def supported_features(self):
@@ -630,7 +632,6 @@ class Sonoff103(EWeLinkToggle):
 
         payload = {}
         payload['ltype'] = mode
-
         payload[mode] = {
             'br': br,
             'ct': ct
