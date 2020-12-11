@@ -3,7 +3,7 @@ import ipaddress
 import json
 import logging
 import time
-from asyncio.exceptions import CancelledError
+from asyncio import CancelledError
 from base64 import b64encode, b64decode
 from typing import Callable, List
 
