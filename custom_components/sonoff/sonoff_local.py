@@ -182,7 +182,11 @@ class EWeLinkLocal:
             data = ''.join([properties[f'data{i}'] for i in range(1, 4, 1)
                             if f'data{i}' in properties])
 
-        state = json.loads(data)
+        try:
+            state = json.loads(data)
+        except:
+            _LOGGER.debug(f"{log} !! Wrong JSON data: {data}")
+            return
         seq = properties.get('seq')
 
         _LOGGER.debug(f"{log} | {state} | {seq}")
