@@ -5,6 +5,7 @@ PSF-BLD-GL | light     | 44   | D1 (Sonoff D1)
 PSF-BFB-GL | fan_light | 34   | iFan (Sonoff iFan03)
 """
 import logging
+import asyncio
 
 from homeassistant.components.light import SUPPORT_BRIGHTNESS, \
     ATTR_BRIGHTNESS, SUPPORT_COLOR, ATTR_HS_COLOR, \
@@ -519,6 +520,18 @@ SONOFF104_MODES = {
     'colorful': 'Vivid'
 }
 
+# Taken straight from the debug mode and the eWeLink app
+SONOFF104_MODE_PAYLOADS = {
+    'bright': {'r': 255, 'g': 255, 'b': 255, 'br': 100},
+    'goodNight': {'r': 254, 'g': 254, 'b': 126, 'br': 25},
+    'read': {'r': 255, 'g': 255, 'b': 255, 'br': 60},
+    'nightLight': {'r': 255, 'g': 242, 'b': 226, 'br': 5},
+    'party': {'r': 254, 'g': 132, 'b': 0, 'br': 45,'tf': 1, 'sp': 1},
+    'leisure': {'r': 0, 'g': 40, 'b': 254, 'br': 55, 'tf': 1, 'sp': 1},
+    'soft': {'r': 38, 'g': 254, 'b': 0, 'br': 20, 'tf': 1, 'sp': 1},
+    'colorful': {'r': 255, 'g': 0, 'b': 0, 'br': 100, 'tf': 1, 'sp': 1},
+}
+
 
 class Sonoff104(EWeLinkToggle):
     _brightness = None
@@ -612,17 +625,18 @@ class Sonoff104(EWeLinkToggle):
         }
 
     async def async_turn_on(self, **kwargs) -> None:
-        payload = {'switch': 'on'}
+        payload = {}
 
         if ATTR_EFFECT in kwargs:
             mode = next(k for k, v in SONOFF104_MODES.items()
                         if v == kwargs[ATTR_EFFECT])
             payload['ltype'] = mode
+            if mode in SONOFF104_MODE_PAYLOADS:
+                payload.update({mode: SONOFF104_MODE_PAYLOADS[mode]})
         else:
             mode = self._mode
 
-        if mode == 'color' and (ATTR_BRIGHTNESS in kwargs or
-                                ATTR_HS_COLOR in kwargs):
+        if mode == 'color':
             br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
             hs = kwargs.get(ATTR_HS_COLOR) or self._hs_color or (0, 0)
             rgb = color.color_hs_to_RGB(*hs)
@@ -635,8 +649,7 @@ class Sonoff104(EWeLinkToggle):
                 'b': rgb[2],
             }
 
-        if mode == 'white' and (ATTR_BRIGHTNESS in kwargs or
-                                ATTR_COLOR_TEMP in kwargs):
+        if mode == 'white':
             br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
             ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or 153
 
@@ -645,5 +658,7 @@ class Sonoff104(EWeLinkToggle):
                 'br': int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0)),
                 'ct': int(round((500.0 - ct) / (500.0 - 153.0) * 255.0))
             }
-
+        if not self._is_on:
+            await self.registry.send(self.deviceid, {'switch': 'on'});
+            await asyncio.sleep(0.1)
         await self.registry.send(self.deviceid, payload)
