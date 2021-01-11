@@ -577,7 +577,7 @@ Cloud users don't have these problems.
 2. Common problems with Multicast:
    - two routers
    - **docker** with port forwarding
-     - you must use: [--network host](https://docs.docker.com/network/network-tutorial-host/)
+     - The devices publish their services through mDNS (See http://developers.sonoff.tech/sonoff-diy-mode-api-protocol.html#Device-mDNS-Service-Info-Publish-Process). For this to wourk through docker, you must use the `host` mode for the network! (See https://docs.docker.com/network/network-tutorial-host)
      - hassio users are okay
    - **virtual machine** with port forwarding
      - you must use bridge virtual network mode (not NAT mode)
