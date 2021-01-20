@@ -30,6 +30,8 @@ async def async_setup_platform(hass, config, add_entities,
     registry = hass.data[DOMAIN]
 
     uiid = registry.devices[deviceid].get('uiid')
+    model = registry.devices[deviceid].get('productModel')
+
     if uiid == 44 or uiid == 'light':
         add_entities([SonoffD1(registry, deviceid)])
     elif uiid == 59:
@@ -43,7 +45,10 @@ async def async_setup_platform(hass, config, add_entities,
     elif uiid == 57:
         add_entities([Sonoff57(registry, deviceid)])
     elif uiid == 104:
-        add_entities([Sonoff104(registry, deviceid)])
+        if model.startswith('B05'):
+            add_entities([SonoffB05(registry, deviceid)])
+        else:
+            add_entities([Sonoff104(registry, deviceid)])
     elif channels and len(channels) >= 2:
         add_entities([EWeLinkLightGroup(registry, deviceid, channels)])
     else:
@@ -507,33 +512,22 @@ class Sonoff57(SonoffD1):
         await self.registry.send(self.deviceid, {'state': 'off'})
 
 
-SONOFF104_MODES = {
-    'color': 'Color',
-    'white': 'White',
-    'bright': 'Bright',
-    'goodNight': 'Sleep',
-    'read': 'Reading',
-    'nightLight': 'Night',
-    'party': 'Party',
-    'leisure': 'Relax',
-    'soft': 'Soft',
-    'colorful': 'Vivid'
-}
-
-# Taken straight from the debug mode and the eWeLink app
-SONOFF104_MODE_PAYLOADS = {
-    'bright': {'r': 255, 'g': 255, 'b': 255, 'br': 100},
-    'goodNight': {'r': 254, 'g': 254, 'b': 126, 'br': 25},
-    'read': {'r': 255, 'g': 255, 'b': 255, 'br': 60},
-    'nightLight': {'r': 255, 'g': 242, 'b': 226, 'br': 5},
-    'party': {'r': 254, 'g': 132, 'b': 0, 'br': 45,'tf': 1, 'sp': 1},
-    'leisure': {'r': 0, 'g': 40, 'b': 254, 'br': 55, 'tf': 1, 'sp': 1},
-    'soft': {'r': 38, 'g': 254, 'b': 0, 'br': 20, 'tf': 1, 'sp': 1},
-    'colorful': {'r': 255, 'g': 0, 'b': 0, 'br': 100, 'tf': 1, 'sp': 1},
-}
 
 
 class Sonoff104(EWeLinkToggle):
+    _MODES = {
+        'color': 'Color',
+        'white': 'White',
+        'bright': 'Bright',
+        'goodNight': 'Sleep',
+        'read': 'Reading',
+        'nightLight': 'Night',
+        'party': 'Party',
+        'leisure': 'Relax',
+        'soft': 'Soft',
+        'colorful': 'Vivid'
+    }
+
     _brightness = None
     _hs_color = None
     _mode = None
@@ -590,12 +584,12 @@ class Sonoff104(EWeLinkToggle):
     @property
     def effect_list(self):
         """Return the list of supported effects."""
-        return list(SONOFF104_MODES.values())
+        return list(self._MODES.values())
 
     @property
     def effect(self):
         """Return the current effect."""
-        return SONOFF104_MODES[self._mode]
+        return self._MODES[self._mode]
 
     @property
     def supported_features(self):
@@ -625,14 +619,65 @@ class Sonoff104(EWeLinkToggle):
         }
 
     async def async_turn_on(self, **kwargs) -> None:
+        payload = {'switch': 'on'}
+
+        if ATTR_EFFECT in kwargs:
+            mode = next(k for k, v in self._MODES.items()
+                        if v == kwargs[ATTR_EFFECT])
+            payload['ltype'] = mode
+        else:
+            mode = self._mode
+
+        if mode == 'color' and (ATTR_BRIGHTNESS in kwargs or
+                                ATTR_HS_COLOR in kwargs):
+            br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
+            hs = kwargs.get(ATTR_HS_COLOR) or self._hs_color or (0, 0)
+            rgb = color.color_hs_to_RGB(*hs)
+
+            payload['ltype'] = mode
+            payload[mode] = {
+                'br': int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0)),
+                'r': rgb[0],
+                'g': rgb[1],
+                'b': rgb[2],
+            }
+
+        if mode == 'white' and (ATTR_BRIGHTNESS in kwargs or
+                                ATTR_COLOR_TEMP in kwargs):
+            br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
+            ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or 153
+
+            payload['ltype'] = mode
+            payload[mode] = {
+                'br': int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0)),
+                'ct': int(round((500.0 - ct) / (500.0 - 153.0) * 255.0))
+            }
+        await self.registry.send(self.deviceid, payload)
+
+
+
+class SonoffB05(Sonoff104):
+    # Taken straight from the debug mode and the eWeLink app
+    _MODE_PAYLOADS = {
+        'bright': {'r': 255, 'g': 255, 'b': 255, 'br': 100},
+        'goodNight': {'r': 254, 'g': 254, 'b': 126, 'br': 25},
+        'read': {'r': 255, 'g': 255, 'b': 255, 'br': 60},
+        'nightLight': {'r': 255, 'g': 242, 'b': 226, 'br': 5},
+        'party': {'r': 254, 'g': 132, 'b': 0, 'br': 45,'tf': 1, 'sp': 1},
+        'leisure': {'r': 0, 'g': 40, 'b': 254, 'br': 55, 'tf': 1, 'sp': 1},
+        'soft': {'r': 38, 'g': 254, 'b': 0, 'br': 20, 'tf': 1, 'sp': 1},
+        'colorful': {'r': 255, 'g': 0, 'b': 0, 'br': 100, 'tf': 1, 'sp': 1},
+    }
+
+    async def async_turn_on(self, **kwargs) -> None:
         payload = {}
 
         if ATTR_EFFECT in kwargs:
-            mode = next(k for k, v in SONOFF104_MODES.items()
+            mode = next(k for k, v in self._MODES.items()
                         if v == kwargs[ATTR_EFFECT])
             payload['ltype'] = mode
-            if mode in SONOFF104_MODE_PAYLOADS:
-                payload.update({mode: SONOFF104_MODE_PAYLOADS[mode]})
+            if mode in self._MODE_PAYLOADS:
+                payload.update({mode: self._MODE_PAYLOADS[mode]})
         else:
             mode = self._mode
 
@@ -662,3 +707,5 @@ class Sonoff104(EWeLinkToggle):
             await self.registry.send(self.deviceid, {'switch': 'on'});
             await asyncio.sleep(0.1)
         await self.registry.send(self.deviceid, payload)
+
+
