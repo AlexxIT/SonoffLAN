@@ -345,11 +345,17 @@ class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
             'ts': 0,
             'params': data
         }
-        _LOGGER.debug(f"{deviceid} => Cloud4 | {data} | {sequence}")
-        await self._ws.send_json(payload)
+        log = f"{deviceid} => Cloud4 | {data} | {sequence}"
+        _LOGGER.debug(log)
+        try:
+            await self._ws.send_json(payload)
 
-        # wait for response with same sequence
-        return await self._wait_response(sequence)
+            # wait for response with same sequence
+            return await self._wait_response(sequence)
+
+        except:
+            _LOGGER.exception(log)
+            return 'E#???'
 
 
 class CloudPowHelper:
