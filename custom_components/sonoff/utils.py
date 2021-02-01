@@ -180,7 +180,8 @@ RE_DEVICEID = re.compile(r"^[a-z0-9]{10}\b")
 # remove uiid, MAC, IP
 RE_PRIVATE = re.compile(
     r"\b([a-zA-Z0-9_-]{36,}|[A-F0-9:]{17}|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|"
-    r"EWLK-\d{6}-[A-Z]{5})\b")
+    r"EWLK-\d{6}-[A-Z]{5})\b|"
+    r"(?<=ssid\': \')[A-Za-z0-9!#$%&()*+,.\/:;<=>?@\[\] ^_`{|}~-]{1,32}")
 NOTIFY_TEXT = (
     '<a href="%s" target="_blank">Open Log<a> | '
     '[New Issue on GitHub](https://github.com/AlexxIT/SonoffLAN/issues/new) | '
