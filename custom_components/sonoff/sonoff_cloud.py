@@ -99,6 +99,7 @@ class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
     _baseurl = 'https://eu-api.coolkit.cc:8080/'
     _apikey = None
     _token = None
+    _last_ts = 0
 
     def __init__(self, session: ClientSession):
         self.session = session
@@ -325,10 +326,15 @@ class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
         """
 
         # protect cloud from DDoS (it can break connection)
-        while sequence in self._waiters or sequence is None:
+        while time.time() - self._last_ts < 0.1:
+            _LOGGER.debug("Protect cloud from DDoS")
             await asyncio.sleep(0.1)
-            sequence = str(int(time.time() * 1000))
-        self._waiters[sequence] = None
+            sequence = None
+
+        self._last_ts = time.time()
+
+        if sequence is None:
+            sequence = str(int(self._last_ts * 1000))
 
         payload = {
             'action': 'query',
