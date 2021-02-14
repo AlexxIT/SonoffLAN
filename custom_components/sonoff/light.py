@@ -571,7 +571,7 @@ class SonoffB05(EWeLinkToggle):
                 )
                 self._temp = None
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def brightness(self):
@@ -650,7 +650,7 @@ class SonoffB05(EWeLinkToggle):
                 'b': rgb[2],
             }
 
-        if mode == 'white':
+        elif mode == 'white':
             br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
             ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or 153
 
@@ -663,5 +663,4 @@ class SonoffB05(EWeLinkToggle):
         if not self._is_on:
             await self.registry.send(self.deviceid, {'switch': 'on'})
 
-        if payload:
-            await self.registry.send(self.deviceid, payload)
+        await self.registry.send(self.deviceid, payload)
