@@ -219,22 +219,27 @@ class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
                 await self._ws.send_json(payload)
 
                 msg: WSMessage = await self._ws.receive()
-                _LOGGER.debug(f"Cloud init: {json.loads(msg.data)}")
+                resp = json.loads(msg.data)
+                if resp['error'] == 0:
+                    _LOGGER.debug(f"Cloud init: {resp}")
 
-                fails = 0
+                    fails = 0
 
-                async for msg in self._ws:
-                    if msg.type == WSMsgType.TEXT:
-                        resp = json.loads(msg.data)
-                        await self._process_ws_msg(resp)
+                    async for msg in self._ws:
+                        if msg.type == WSMsgType.TEXT:
+                            resp = json.loads(msg.data)
+                            await self._process_ws_msg(resp)
 
-                    elif msg.type == WSMsgType.CLOSED:
-                        _LOGGER.debug(f"Cloud WS Closed: {msg.data}")
-                        break
+                        elif msg.type == WSMsgType.CLOSED:
+                            _LOGGER.debug(f"Cloud WS Closed: {msg.data}")
+                            break
 
-                    elif msg.type == WSMsgType.ERROR:
-                        _LOGGER.debug(f"Cloud WS Error: {msg.data}")
-                        break
+                        elif msg.type == WSMsgType.ERROR:
+                            _LOGGER.debug(f"Cloud WS Error: {msg.data}")
+                            break
+
+                else:
+                    _LOGGER.debug(f"Cloud error: {resp}")
 
                 # can't run two WS on same account in same time
                 if time.time() - ts < 10 and fails < FAST_DELAY:
