@@ -79,6 +79,7 @@ def init_device_class(default_class: str = 'switch'):
         103: 'light',  # CCT bulb
         104: 'light',  # RGB+CCT color bulb
         107: switchx,
+        126: switch2,  # DUALR3
         1000: 'sensor',  # zigbee_ON_OFF_SWITCH_1000
         1256: 'light',  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
         1770: 'sensor',  # ZCL_HA_DEVICEID_TEMPERATURE_SENSOR
