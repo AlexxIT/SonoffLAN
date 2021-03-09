@@ -42,7 +42,11 @@ async def async_setup_platform(hass, config, add_entities,
     elif uiid == 25:
         add_entities([SonoffDiffuserFan(registry, deviceid)])
     else:
-        add_entities([EWeLinkToggle(registry, deviceid, channels)])
+        add_entities([SonoffSimpleFan(registry, deviceid, channels)])
+
+
+class SonoffSimpleFan(EWeLinkToggle, FanEntity):
+    pass
 
 
 class SonoffFanBase(FanEntity, EWeLinkDevice):
