@@ -530,8 +530,9 @@ class Sonoff103(EWeLinkToggle):
     _mode = None
     _temp = None
 
-    _min_mireds = None
-    _max_mireds = None
+    # FS-1, B02-F-A60 and other
+    _min_mireds = int(1000000 / 6500)
+    _max_mireds = int(1000000 / 2200)
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
@@ -544,9 +545,6 @@ class Sonoff103(EWeLinkToggle):
         elif model == 'QMS-2C-CW':
             self._min_mireds = int(1000000 / 6500)
             self._max_mireds = int(1000000 / 2700)
-        else:  # FS-1, B02-F-A60 and other
-            self._min_mireds = int(1000000 / 6500)
-            self._max_mireds = int(1000000 / 2200)
 
     def _update_handler(self, state: dict, attrs: dict):
         self._attrs.update(attrs)
