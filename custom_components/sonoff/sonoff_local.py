@@ -154,6 +154,11 @@ class EWeLinkLocal:
             return
 
         info = zeroconf.get_service_info(service_type, name)
+        if not info:
+            # https://github.com/AlexxIT/SonoffLAN/issues/399#issuecomment-793914228
+            _LOGGER.warning(f"Wrong zeroconf message: {service_type}, {name}")
+            return
+
         properties = {
             k.decode(): v.decode() if isinstance(v, bytes) else v
             for k, v in info.properties.items()
