@@ -617,14 +617,11 @@ class Sonoff103(EWeLinkToggle):
         }
 
     async def async_turn_on(self, **kwargs) -> None:
-        payload = {}
-
-        if ATTR_EFFECT in kwargs:
+        if ATTR_BRIGHTNESS in kwargs or ATTR_COLOR_TEMP in kwargs:
+            mode = 'white'
+        elif ATTR_EFFECT in kwargs:
             mode = next(k for k, v in SONOFF103_MODES.items()
                         if v == kwargs[ATTR_EFFECT])
-            payload['ltype'] = mode
-            if mode in SONOFF103_MODE_PAYLOADS:
-                payload.update({mode: SONOFF103_MODE_PAYLOADS[mode]})
         else:
             mode = self._mode
 
@@ -632,12 +629,15 @@ class Sonoff103(EWeLinkToggle):
             br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
             ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or 153
 
-            payload['ltype'] = mode
-            payload[mode] = {
+            payload = {
                 'br': int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0)),
                 'ct': int(round((self._max_mireds - ct) /
                                 (self._max_mireds - self._min_mireds) * 255.0))
             }
+        else:
+            payload = SONOFF103_MODE_PAYLOADS[mode]
+
+        payload = {'ltype': mode, mode: payload}
 
         await self.registry.send(self.deviceid, payload)
 
