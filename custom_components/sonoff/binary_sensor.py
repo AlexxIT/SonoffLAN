@@ -113,10 +113,9 @@ class ZigBeeMotionSensor(EWeLinkBinarySensor):
     def _update_handler(self, state: dict, attrs: dict):
         self._attrs.update(attrs)
 
-        # this intend to prevents that motion detection stay locked if zigbee turn unavailable (occurs with some frequency)
         if 'motion' in state:
             self._is_on = (state['motion'] == 1)
-        else:
+        else: # this intend to prevents that motion detection stay locked if zigbee turn unavailable (occurs with some frequency)
             self._is_on = False
 
         self.schedule_update_ha_state()
