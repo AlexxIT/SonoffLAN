@@ -121,7 +121,13 @@ class ZigBeeMotionSensor(EWeLinkBinarySensor):
     @property
     def available(self) -> bool:
         device: dict = self.registry.devices[self.deviceid]
-        return device['available']
+        _is_available = device['available']
+
+        if not _is_available: # this intend to prevents that motion detection stay locked if zigbee turn unavailable (occurs with some frequency)
+            self._is_on = False
+            self.schedule_update_ha_state()
+
+        return _is_available
 
     @property
     def device_class(self):
