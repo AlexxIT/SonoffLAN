@@ -71,7 +71,7 @@ def init_device_class(default_class: str = 'switch'):
         66: switch1,  # ZigBee Bridge
         77: switchx,  # Sonoff Micro
         78: switchx,
-        81: switch1,
+        81: switchx,
         82: switch2,
         83: switch3,
         84: switch4,
