@@ -70,9 +70,15 @@ class EWeLinkRegistry:
 
         # skip update with same sequence (from cloud and local or from local)
         if sequence:
-            if device.get('seq') == sequence:
+            sequence = int(sequence)
+            ts = time.time()
+            # skip same and lower sequence in last 10 seconds
+            if ('seq' in device and ts - device['seq_ts'] < 10 and
+                    sequence <= device['seq']):
+                _LOGGER.debug("Skip update with same sequence")
                 return
             device['seq'] = sequence
+            device['seq_ts'] = ts
 
         # check when cloud offline first time
         if state.get('cloud') == 'offline' and device.get('host'):
