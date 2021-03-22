@@ -12,6 +12,7 @@ from typing import Optional, Callable, List
 
 from aiohttp import ClientSession, WSMsgType, ClientConnectorError, \
     WSMessage, ClientWebSocketResponse
+from homeassistant.const import ATTR_BATTERY_LEVEL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,6 +44,10 @@ def fix_attrs(deviceid: str, state: dict):
             state['temperature'] = float(state['currentTemperature'])
         if 'currentHumidity' in state:
             state['humidity'] = float(state['currentHumidity'])
+
+        # battery_level is common name for battery attribute
+        if 'battery' in state:
+            state[ATTR_BATTERY_LEVEL] = state['battery']
 
         for k in ('power', 'voltage', 'current'):
             if k in state:

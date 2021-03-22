@@ -6,6 +6,7 @@ import time
 from typing import Optional, List, Callable
 
 from aiohttp import ClientSession
+from homeassistant.const import ATTR_BATTERY_LEVEL
 
 from .sonoff_cloud import EWeLinkCloud
 from .sonoff_local import EWeLinkLocal
@@ -13,7 +14,7 @@ from .sonoff_local import EWeLinkLocal
 _LOGGER = logging.getLogger(__name__)
 
 ATTRS = ('local', 'cloud', 'rssi', 'humidity', 'temperature', 'power',
-         'current', 'voltage', 'battery', 'consumption', 'water')
+         'current', 'voltage', 'consumption', 'water', ATTR_BATTERY_LEVEL)
 
 
 def load_cache(filename: str):
