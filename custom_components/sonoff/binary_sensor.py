@@ -115,6 +115,10 @@ class ZigBeeMotionSensor(EWeLinkBinarySensor):
 
         if 'motion' in state:
             self._is_on = (state['motion'] == 1)
+        else:
+            # this intend to prevents that motion detection stay locked if
+            # zigbee turn unavailable (occurs with some frequency)
+            self._is_on = False
 
         self.schedule_update_ha_state()
 
