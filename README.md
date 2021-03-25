@@ -114,6 +114,7 @@ These devices work both on a local network and through the cloud.
 - [Sonoff T1](https://www.itead.cc/sonoff-t1.html)
 - [Sonoff TX](https://www.itead.cc/sonoff-tx-series-wifi-smart-wall-switches.html)
 - [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
+- [Sonoff IW100/IW101](https://www.itead.cc/sonoff-iw100-iw101.html)
 - [Sonoff Slampher R2](https://www.itead.cc/sonoff-slampher-r2.html)
 - [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
 - [Sonoff RE5V1C](https://www.itead.cc/sonoff-re5v1c.html)
