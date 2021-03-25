@@ -565,7 +565,7 @@ class Sonoff103(EWeLinkToggle):
             if 'ct' in state:
                 # 0..255 => Mireds..
                 ct = state['ct']
-                self._temp = round(self._min_mireds - ct / 255.0 *
+                self._temp = round(self._max_mireds - ct / 255.0 *
                                    (self._max_mireds - self._min_mireds))
 
         self.async_write_ha_state()
