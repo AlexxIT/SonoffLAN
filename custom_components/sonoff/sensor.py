@@ -3,7 +3,7 @@ from typing import Optional
 
 from homeassistant.const import DEVICE_CLASS_TEMPERATURE, \
     DEVICE_CLASS_HUMIDITY, DEVICE_CLASS_ILLUMINANCE, DEVICE_CLASS_POWER, \
-    DEVICE_CLASS_SIGNAL_STRENGTH
+    DEVICE_CLASS_SIGNAL_STRENGTH, ATTR_BATTERY_LEVEL
 from homeassistant.helpers.entity import Entity
 
 from . import DOMAIN, EWeLinkRegistry
@@ -24,7 +24,7 @@ SENSORS = {
 
 SONOFF_SC = {'temperature', 'humidity', 'dusty', 'light', 'noise'}
 
-GLOBAL_ATTRS = ('local', 'cloud', 'rssi', 'battery')
+GLOBAL_ATTRS = ('local', 'cloud', 'rssi', ATTR_BATTERY_LEVEL)
 
 
 async def async_setup_platform(hass, config, add_entities,
