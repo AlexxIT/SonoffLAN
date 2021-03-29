@@ -565,6 +565,7 @@ class Sonoff103(EWeLinkToggle):
             if 'ct' in state:
                 # 0..255 => Mireds..
                 ct = state['ct']
+                ct = min(255, max(0,ct))
                 self._temp = round(self._max_mireds - ct / 255.0 *
                                    (self._max_mireds - self._min_mireds))
 
@@ -589,11 +590,6 @@ class Sonoff103(EWeLinkToggle):
     def effect_list(self):
         """Return the list of supported effects."""
         return list(SONOFF103_MODES.values())
-
-    @property
-    def is_on(self):
-        """Returns if the light entity is on or not."""
-        return self._is_on
 
     @property
     def supported_features(self):
@@ -628,7 +624,8 @@ class Sonoff103(EWeLinkToggle):
         if mode == 'white':
             br = kwargs.get(ATTR_BRIGHTNESS) or self._brightness or 1
             ct = kwargs.get(ATTR_COLOR_TEMP) or self._temp or 153
-
+            # Adjust to the dynamic range of the device.
+            ct = min(self._max_mireds, max(self._min_mireds,ct))
             payload = {
                 'br': int(round((br - 1.0) * (100.0 - 1.0) / 254.0 + 1.0)),
                 'ct': int(round((self._max_mireds - ct) /
@@ -638,7 +635,8 @@ class Sonoff103(EWeLinkToggle):
             payload = SONOFF103_MODE_PAYLOADS[mode]
 
         payload = {'ltype': mode, mode: payload}
-
+        if not self._is_on:
+            await self.registry.send(self.deviceid, {'switch': 'on'})
         await self.registry.send(self.deviceid, payload)
 
 
