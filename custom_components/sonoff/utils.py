@@ -75,6 +75,7 @@ def init_device_class(default_class: str = 'switch'):
         82: switch2,
         83: switch3,
         84: switch4,
+        98: 'remote',  # SA-026 door bell
         102: 'binary_sensor',  # Sonoff DW2 Door/Window sensor
         103: 'light',  # Sonoff B02 CCT bulb
         104: 'light',  # Sonoff B05 RGB+CCT color bulb
