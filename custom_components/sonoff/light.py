@@ -7,9 +7,9 @@ PSF-BFB-GL | fan_light | 34   | iFan (Sonoff iFan03)
 import logging
 
 from homeassistant.components.light import SUPPORT_BRIGHTNESS, \
-    ATTR_BRIGHTNESS, SUPPORT_COLOR, ATTR_HS_COLOR, \
-    SUPPORT_EFFECT, ATTR_EFFECT, ATTR_EFFECT_LIST, SUPPORT_COLOR_TEMP, \
-    ATTR_COLOR_TEMP, ATTR_MIN_MIREDS, ATTR_MAX_MIREDS
+    ATTR_BRIGHTNESS, SUPPORT_COLOR, ATTR_HS_COLOR, SUPPORT_EFFECT, \
+    ATTR_EFFECT, ATTR_EFFECT_LIST, SUPPORT_COLOR_TEMP, \
+    ATTR_COLOR_TEMP, ATTR_MIN_MIREDS, ATTR_MAX_MIREDS, LightEntity
 from homeassistant.util import color
 
 # noinspection PyUnresolvedReferences
@@ -50,10 +50,14 @@ async def async_setup_platform(hass, config, add_entities,
     elif channels and len(channels) >= 2:
         add_entities([EWeLinkLightGroup(registry, deviceid, channels)])
     else:
-        add_entities([EWeLinkToggle(registry, deviceid, channels)])
+        add_entities([EWeLinkLight(registry, deviceid, channels)])
 
 
-class SonoffD1(EWeLinkToggle):
+class EWeLinkLight(EWeLinkToggle, LightEntity):
+    pass
+
+
+class SonoffD1(EWeLinkLight):
     _brightness = 0
 
     def _update_handler(self, state: dict, attrs: dict):
@@ -124,7 +128,7 @@ LED_EFFECTS = [
 ]
 
 
-class SonoffLED(EWeLinkToggle):
+class SonoffLED(EWeLinkLight):
     _brightness = 0
     _hs_color = None
     _mode = 0
@@ -212,7 +216,7 @@ class SonoffLED(EWeLinkToggle):
         await self.registry.send(self.deviceid, payload)
 
 
-class SonoffB1(EWeLinkToggle):
+class SonoffB1(EWeLinkLight):
     _brightness = None
     _hs_color = None
     _temp = None
@@ -384,7 +388,7 @@ class EWeLinkLightGroup(SonoffD1):
 DIFFUSER_EFFECTS = ["Color Light", "RGB Color", "Night Light"]
 
 
-class SonoffDiffuserLight(EWeLinkToggle):
+class SonoffDiffuserLight(EWeLinkLight):
     _brightness = 0
     _hs_color = None
     _mode = 0
@@ -525,7 +529,7 @@ SONOFF103_MODE_PAYLOADS = {
 }
 
 
-class Sonoff103(EWeLinkToggle):
+class Sonoff103(EWeLinkLight):
     _brightness = None
     _mode = None
     _temp = None
@@ -667,7 +671,7 @@ B05_MODE_PAYLOADS = {
 }
 
 
-class SonoffB05(EWeLinkToggle):
+class SonoffB05(EWeLinkLight):
     _brightness = None
     _hs_color = None
     _mode = None

@@ -1,2 +1,6 @@
 
 __pycache__/
+
+.homeassistant/
+
+.idea/
