@@ -106,6 +106,9 @@ def guess_device_class(config: dict):
     be displayed as 4 switches.
     """
     uiid = config.get('uiid')
+    # DualR3 in cover mode
+    if uiid == 126 and config.get('params', {}).get('workMode') == 2:
+        return 'cover'
     return UIIDS.get(uiid)
 
 

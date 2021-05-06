@@ -18,7 +18,11 @@ async def async_setup_platform(hass, config, add_entities,
 
     deviceid = discovery_info['deviceid']
     registry = hass.data[DOMAIN]
-    add_entities([EWeLinkCover(registry, deviceid)])
+    uiid = registry.devices[deviceid].get('uiid')
+    if uiid == 126:
+        add_entities([DualR3Cover(registry, deviceid)])
+    else:
+        add_entities([EWeLinkCover(registry, deviceid)])
 
 
 class EWeLinkCover(CoverEntity, EWeLinkDevice):
@@ -125,3 +129,31 @@ class EWeLinkCover(CoverEntity, EWeLinkDevice):
     async def async_stop_cover(self, **kwargs):
         self._action = None
         await self.registry.send(self.deviceid, {'switch': 'pause'})
+
+
+ACTIONS = [None, STATE_OPENING, STATE_CLOSING]
+
+
+class DualR3Cover(EWeLinkCover):
+    def _update_handler(self, state: dict, attrs: dict):
+        self._attrs.update(attrs)
+        if 'currLocation' in state:
+            # 0 - closed, 100 - opened
+            self._position = state['currLocation']
+        if 'motorTurn' in state:
+            self._action = ACTIONS[state['motorTurn']]
+
+        self.schedule_update_ha_state()
+
+    async def async_open_cover(self, **kwargs):
+        await self.registry.send(self.deviceid, {'motorTurn': 1})
+
+    async def async_close_cover(self, **kwargs):
+        await self.registry.send(self.deviceid, {'motorTurn': 2})
+
+    async def async_set_cover_position(self, **kwargs):
+        position = kwargs.get(ATTR_POSITION)
+        await self.registry.send(self.deviceid, {'location': position})
+
+    async def async_stop_cover(self, **kwargs):
+        await self.registry.send(self.deviceid, {'motorTurn': 0})
