@@ -1,11 +1,10 @@
 import logging
-from typing import Optional
 
-from homeassistant.components.cover import ATTR_POSITION, ATTR_CURRENT_POSITION
+from homeassistant.components.cover import ATTR_POSITION
 from homeassistant.const import STATE_OPENING, STATE_CLOSING
 
 from . import DOMAIN
-from .sonoff_main import EWeLinkDevice
+from .sonoff_main import EWeLinkEntity
 from .utils import CoverEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,7 +24,7 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([EWeLinkCover(registry, deviceid)])
 
 
-class EWeLinkCover(CoverEntity, EWeLinkDevice):
+class EWeLinkCover(EWeLinkEntity, CoverEntity):
     """King Art - King Q4 Cover
     switch=on - open
     switch=off - close
@@ -33,9 +32,6 @@ class EWeLinkCover(CoverEntity, EWeLinkDevice):
     """
     _position = None
     _action = None
-
-    async def async_added_to_hass(self) -> None:
-        self._init()
 
     def _update_handler(self, state: dict, attrs: dict):
         self._attrs.update(attrs)
@@ -66,30 +62,6 @@ class EWeLinkCover(CoverEntity, EWeLinkDevice):
                 self._action = None
 
         self.schedule_update_ha_state()
-
-    @property
-    def should_poll(self) -> bool:
-        return False
-
-    @property
-    def unique_id(self) -> Optional[str]:
-        return self.deviceid
-
-    @property
-    def name(self) -> Optional[str]:
-        return self._name
-
-    @property
-    def state_attributes(self):
-        return {
-            **self._attrs,
-            ATTR_CURRENT_POSITION: self.current_cover_position
-        }
-
-    @property
-    def available(self) -> bool:
-        device: dict = self.registry.devices[self.deviceid]
-        return device['available']
 
     @property
     def current_cover_position(self):

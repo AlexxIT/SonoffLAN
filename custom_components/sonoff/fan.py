@@ -9,11 +9,11 @@ https://github.com/AlexxIT/SonoffLAN/issues/30
 from typing import Optional, List
 
 from homeassistant.components.fan import FanEntity, SUPPORT_SET_SPEED, \
-    SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH, SPEED_OFF, ATTR_SPEED
+    SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH, SPEED_OFF
 
 # noinspection PyUnresolvedReferences
 from . import DOMAIN, SCAN_INTERVAL
-from .sonoff_main import EWeLinkDevice
+from .sonoff_main import EWeLinkEntity
 from .switch import EWeLinkToggle
 
 IFAN02_CHANNELS = [2, 3, 4]
@@ -49,29 +49,8 @@ class SonoffSimpleFan(EWeLinkToggle, FanEntity):
     pass
 
 
-class SonoffFanBase(FanEntity, EWeLinkDevice):
+class SonoffFanBase(EWeLinkEntity, FanEntity):
     _speed = None
-
-    async def async_added_to_hass(self) -> None:
-        self._init()
-
-    @property
-    def should_poll(self) -> bool:
-        # The device itself sends an update of its status
-        return False
-
-    @property
-    def unique_id(self) -> Optional[str]:
-        return self.deviceid
-
-    @property
-    def name(self) -> Optional[str]:
-        return self._name
-
-    @property
-    def available(self) -> bool:
-        device: dict = self.registry.devices[self.deviceid]
-        return device['available']
 
     @property
     def supported_features(self):
@@ -84,13 +63,6 @@ class SonoffFanBase(FanEntity, EWeLinkDevice):
     @property
     def speed_list(self) -> list:
         return [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
-
-    @property
-    def state_attributes(self) -> dict:
-        return {
-            **self._attrs,
-            ATTR_SPEED: self.speed
-        }
 
 
 class SonoffFan02(SonoffFanBase):

@@ -8,8 +8,8 @@ import logging
 
 from homeassistant.components.light import SUPPORT_BRIGHTNESS, \
     ATTR_BRIGHTNESS, SUPPORT_COLOR, ATTR_HS_COLOR, SUPPORT_EFFECT, \
-    ATTR_EFFECT, ATTR_EFFECT_LIST, SUPPORT_COLOR_TEMP, \
-    ATTR_COLOR_TEMP, ATTR_MIN_MIREDS, ATTR_MAX_MIREDS, LightEntity
+    ATTR_EFFECT, SUPPORT_COLOR_TEMP, \
+    ATTR_COLOR_TEMP, LightEntity
 from homeassistant.util import color
 
 # noinspection PyUnresolvedReferences
@@ -78,13 +78,6 @@ class SonoffD1(EWeLinkLight):
     @property
     def supported_features(self):
         return SUPPORT_BRIGHTNESS
-
-    @property
-    def state_attributes(self):
-        return {
-            **self._attrs,
-            ATTR_BRIGHTNESS: self.brightness
-        }
 
     async def async_turn_on(self, **kwargs) -> None:
         if ATTR_BRIGHTNESS in kwargs:
@@ -179,20 +172,6 @@ class SonoffLED(EWeLinkLight):
     def supported_features(self):
         return SUPPORT_BRIGHTNESS | SUPPORT_COLOR | SUPPORT_EFFECT
 
-    @property
-    def state_attributes(self):
-        return {
-            **self._attrs,
-            ATTR_BRIGHTNESS: self.brightness,
-            ATTR_HS_COLOR: self._hs_color,
-            ATTR_EFFECT: self.effect
-        }
-
-    @property
-    def capability_attributes(self):
-        """Return capability attributes."""
-        return {ATTR_EFFECT_LIST: self.effect_list}
-
     async def async_turn_on(self, **kwargs) -> None:
         if ATTR_EFFECT in kwargs:
             mode = LED_EFFECTS.index(kwargs[ATTR_EFFECT]) + 1
@@ -280,20 +259,12 @@ class SonoffB1(EWeLinkLight):
         return SUPPORT_BRIGHTNESS | SUPPORT_COLOR | SUPPORT_COLOR_TEMP
 
     @property
-    def capability_attributes(self):
-        return {
-            ATTR_MIN_MIREDS: 1,
-            ATTR_MAX_MIREDS: 3
-        }
+    def min_mireds(self):
+        return 1
 
     @property
-    def state_attributes(self):
-        return {
-            **self._attrs,
-            ATTR_BRIGHTNESS: self.brightness,
-            ATTR_HS_COLOR: self._hs_color,
-            ATTR_COLOR_TEMP: self._temp
-        }
+    def max_mireds(self):
+        return 3
 
     async def async_turn_on(self, **kwargs) -> None:
         if ATTR_COLOR_TEMP in kwargs or ATTR_BRIGHTNESS in kwargs:
@@ -441,20 +412,7 @@ class SonoffDiffuserLight(EWeLinkLight):
             return SUPPORT_BRIGHTNESS | SUPPORT_COLOR | SUPPORT_EFFECT
         elif self._mode == 3:
             return SUPPORT_BRIGHTNESS | SUPPORT_EFFECT
-
-    @property
-    def state_attributes(self):
-        return {
-            **self._attrs,
-            ATTR_BRIGHTNESS: self.brightness,
-            ATTR_HS_COLOR: self._hs_color,
-            ATTR_EFFECT: self.effect
-        }
-
-    @property
-    def capability_attributes(self):
-        """Return capability attributes."""
-        return {ATTR_EFFECT_LIST: self.effect_list}
+        return 0
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.registry.send(self.deviceid, {'lightswitch': 0})
@@ -599,21 +557,12 @@ class Sonoff103(EWeLinkLight):
         return SUPPORT_BRIGHTNESS | SUPPORT_COLOR_TEMP | SUPPORT_EFFECT
 
     @property
-    def capability_attributes(self):
-        return {
-            ATTR_EFFECT_LIST: self.effect_list,
-            ATTR_MIN_MIREDS: round(self._min_mireds),
-            ATTR_MAX_MIREDS: round(self._max_mireds)
-        }
+    def min_mireds(self):
+        return round(self._min_mireds)
 
     @property
-    def state_attributes(self):
-        return {
-            **self._attrs,
-            ATTR_BRIGHTNESS: self.brightness,
-            ATTR_COLOR_TEMP: self._temp,
-            ATTR_EFFECT: self.effect
-        }
+    def max_mireds(self):
+        return round(self._max_mireds)
 
     async def async_turn_on(self, **kwargs) -> None:
         if ATTR_BRIGHTNESS in kwargs or ATTR_COLOR_TEMP in kwargs:
@@ -745,22 +694,12 @@ class SonoffB05(EWeLinkLight):
             return SUPPORT_EFFECT
 
     @property
-    def capability_attributes(self):
-        return {
-            ATTR_EFFECT_LIST: self.effect_list,
-            ATTR_MIN_MIREDS: 153,
-            ATTR_MAX_MIREDS: 500
-        }
+    def min_mireds(self):
+        return 153
 
     @property
-    def state_attributes(self):
-        return {
-            **self._attrs,
-            ATTR_BRIGHTNESS: self.brightness,
-            ATTR_HS_COLOR: self._hs_color,
-            ATTR_COLOR_TEMP: self._temp,
-            ATTR_EFFECT: self.effect
-        }
+    def max_mireds(self):
+        return 500
 
     async def async_turn_on(self, **kwargs) -> None:
         payload = {}

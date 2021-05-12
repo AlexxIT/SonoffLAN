@@ -14,7 +14,7 @@ from homeassistant.helpers.entity import ToggleEntity
 
 # noinspection PyUnresolvedReferences
 from . import DOMAIN, CONF_FORCE_UPDATE, SCAN_INTERVAL
-from .sonoff_main import EWeLinkDevice
+from .sonoff_main import EWeLinkEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([EWeLinkToggle(registry, deviceid, channels)])
 
 
-class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
+class EWeLinkToggle(EWeLinkEntity, ToggleEntity):
     """Toggle can force update device with sledonline command."""
     _should_poll = None
     _sled_online = None
@@ -67,23 +67,6 @@ class EWeLinkToggle(ToggleEntity, EWeLinkDevice):
             return f'{self.deviceid}_{chid}'
         else:
             return self.deviceid
-
-    @property
-    def name(self) -> Optional[str]:
-        return self._name
-
-    @property
-    def state_attributes(self):
-        return self._attrs
-
-    @property
-    def available(self) -> bool:
-        device: dict = self.registry.devices[self.deviceid]
-        return device['available']
-
-    @property
-    def supported_features(self):
-        return 0
 
     @property
     def is_on(self) -> bool:

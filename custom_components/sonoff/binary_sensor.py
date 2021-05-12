@@ -1,5 +1,4 @@
 import json
-from typing import Optional
 
 from homeassistant.components.binary_sensor import DEVICE_CLASS_DOOR, \
     DEVICE_CLASS_MOTION
@@ -9,7 +8,7 @@ from homeassistant.core import Event
 from homeassistant.helpers.event import async_call_later
 
 from . import DOMAIN
-from .sonoff_main import EWeLinkDevice
+from .sonoff_main import EWeLinkEntity
 from .utils import BinarySensorEntity
 
 
@@ -37,34 +36,11 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([EWeLinkBinarySensor(registry, deviceid)])
 
 
-class EWeLinkBinarySensor(BinarySensorEntity, EWeLinkDevice):
-    async def async_added_to_hass(self) -> None:
-        self._init()
-
+class EWeLinkBinarySensor(EWeLinkEntity, BinarySensorEntity):
     def _update_handler(self, state: dict, attrs: dict):
         state = {k: json.dumps(v) for k, v in state.items()}
         self._attrs.update(state)
         self.schedule_update_ha_state()
-
-    @property
-    def should_poll(self) -> bool:
-        return False
-
-    @property
-    def unique_id(self) -> Optional[str]:
-        return self.deviceid
-
-    @property
-    def name(self) -> Optional[str]:
-        return self._name
-
-    @property
-    def state_attributes(self):
-        return self._attrs
-
-    @property
-    def supported_features(self):
-        return 0
 
     @property
     def is_on(self):
@@ -87,11 +63,6 @@ class WiFiDoorWindowSensor(EWeLinkBinarySensor):
             self._is_on = state['switch'] == 'on'
 
         self.schedule_update_ha_state()
-
-    @property
-    def available(self) -> bool:
-        device: dict = self.registry.devices[self.deviceid]
-        return device['available']
 
     @property
     def device_class(self):
@@ -121,11 +92,6 @@ class ZigBeeMotionSensor(EWeLinkBinarySensor):
             self._is_on = False
 
         self.schedule_update_ha_state()
-
-    @property
-    def available(self) -> bool:
-        device: dict = self.registry.devices[self.deviceid]
-        return device['available']
 
     @property
     def device_class(self):
@@ -172,14 +138,6 @@ class RFBridgeSensor(BinarySensorEntity):
         self._unsub_turn_off = None
         self._is_on = False
         self.async_write_ha_state()
-
-    @property
-    def should_poll(self) -> bool:
-        return False
-
-    @property
-    def name(self) -> Optional[str]:
-        return self._name
 
     @property
     def is_on(self):

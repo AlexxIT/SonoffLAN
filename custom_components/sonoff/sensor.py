@@ -7,7 +7,7 @@ from homeassistant.const import DEVICE_CLASS_TEMPERATURE, \
 from homeassistant.helpers.entity import Entity
 
 from . import DOMAIN, EWeLinkRegistry
-from .sonoff_main import EWeLinkDevice
+from .sonoff_main import EWeLinkEntity
 
 SENSORS = {
     'temperature': [DEVICE_CLASS_TEMPERATURE, '°C', None],
@@ -57,7 +57,7 @@ async def async_setup_platform(hass, config, add_entities,
                       EWeLinkSensor(registry, deviceid, 'humidity')])
 
 
-class EWeLinkSensor(EWeLinkDevice, Entity):
+class EWeLinkSensor(EWeLinkEntity, Entity):
     _state = None
 
     def __init__(self, registry: EWeLinkRegistry, deviceid: str, attr: str):
@@ -81,29 +81,12 @@ class EWeLinkSensor(EWeLinkDevice, Entity):
         self.schedule_update_ha_state()
 
     @property
-    def should_poll(self) -> bool:
-        return False
-
-    @property
     def unique_id(self) -> Optional[str]:
         return f"{self.deviceid}_{self._attr}"
 
     @property
-    def name(self) -> Optional[str]:
-        return self._name
-
-    @property
     def state(self) -> str:
         return self._state
-
-    @property
-    def state_attributes(self):
-        return self._attrs
-
-    @property
-    def available(self) -> bool:
-        device: dict = self.registry.devices[self.deviceid]
-        return device['available']
 
     @property
     def device_class(self):
@@ -121,7 +104,7 @@ class EWeLinkSensor(EWeLinkDevice, Entity):
 BUTTON_STATES = ['single', 'double', 'hold']
 
 
-class ZigBeeButtonSensor(EWeLinkDevice, Entity):
+class ZigBeeButtonSensor(EWeLinkEntity, Entity):
     _state = ''
 
     async def async_added_to_hass(self) -> None:
@@ -140,26 +123,5 @@ class ZigBeeButtonSensor(EWeLinkDevice, Entity):
         self.schedule_update_ha_state()
 
     @property
-    def should_poll(self) -> bool:
-        return False
-
-    @property
-    def unique_id(self) -> Optional[str]:
-        return self.deviceid
-
-    @property
-    def name(self) -> Optional[str]:
-        return self._name
-
-    @property
     def state(self) -> str:
         return self._state
-
-    @property
-    def state_attributes(self):
-        return self._attrs
-
-    @property
-    def available(self) -> bool:
-        device: dict = self.registry.devices[self.deviceid]
-        return device['available']
