@@ -3,15 +3,9 @@
   "name": "Sonoff",
   "documentation": "https://github.com/AlexxIT/SonoffLAN",
   "issue_tracker": "https://github.com/AlexxIT/SonoffLAN/issues",
-  "dependencies": [
-    "http",
-    "zeroconf"
-  ],
-  "codeowners": [
-    "@AlexxIT"
-  ],
-  "requirements": [
-    "pycryptodome>=3.6.6"
-  ],
-  "version": "v2.4.3"
+  "codeowners": ["@AlexxIT"],
+  "dependencies": ["http", "zeroconf"],
+  "requirements": ["pycryptodome>=3.6.6"],
+  "version": "v2.4.3",
+  "iot_class": "local_push"
 }
