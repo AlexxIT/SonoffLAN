@@ -298,8 +298,12 @@ class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
             _LOGGER.debug(f"Redirect to region: {region}")
             resp = await self._api('login', 'api/user/login', payload)
 
-        self._apikey = resp['user']['apikey']
-        self._token = resp['at']
+        try:
+            self._apikey = resp['user']['apikey']
+            self._token = resp['at']
+        except:
+            _LOGGER.error(f"Login error: {resp}, region: {region}")
+            return False
 
         return True
 
