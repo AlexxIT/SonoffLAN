@@ -140,6 +140,14 @@ class RFBridgeSensor(BinarySensorEntity):
         self.async_write_ha_state()
 
     @property
+    def should_poll(self):
+        return False
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
     def is_on(self):
         return self._is_on
 
