@@ -12,6 +12,7 @@ from homeassistant.components.remote import ATTR_DELAY_SECS, ATTR_COMMAND, \
 from . import DOMAIN
 from .sonoff_main import EWeLinkRegistry
 from .switch import EWeLinkToggle
+from .utils import RemoteEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ async def async_setup_platform(hass, config, add_entities,
     add_entities([EWeLinkRemote(registry, deviceid)])
 
 
-class EWeLinkRemote(EWeLinkToggle):
+class EWeLinkRemote(EWeLinkToggle, RemoteEntity):
     _is_on = True
 
     def __init__(self, registry: EWeLinkRegistry, deviceid: str):

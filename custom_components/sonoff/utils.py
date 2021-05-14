@@ -19,6 +19,11 @@ try:  # support old Home Assistant version
 except:
     from homeassistant.components.cover import CoverDevice as CoverEntity
 
+try:  # support old Home Assistant version
+    from homeassistant.components.remote import RemoteEntity
+except:
+    from homeassistant.components.remote import RemoteDevice as RemoteEntity
+
 _LOGGER = logging.getLogger(__name__)
 
 
