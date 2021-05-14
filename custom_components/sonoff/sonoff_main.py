@@ -322,10 +322,6 @@ class EWeLinkEntity(EWeLinkBase):
         device: dict = self.registry.devices[self.deviceid]
         return device['available']
 
-    @property
-    def supported_features(self):
-        return 0
-
     async def async_added_to_hass(self):
         self._init()
 

@@ -46,7 +46,9 @@ async def async_setup_platform(hass, config, add_entities,
 
 
 class SonoffSimpleFan(EWeLinkToggle, FanEntity):
-    pass
+    @property
+    def supported_features(self):
+        return 0
 
 
 class SonoffFanBase(EWeLinkEntity, FanEntity):
