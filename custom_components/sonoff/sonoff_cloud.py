@@ -52,6 +52,15 @@ def fix_attrs(deviceid: str, state: dict):
         for k in ('power', 'voltage', 'current'):
             if k in state:
                 state[k] = float(state[k])
+        
+        for k in ('current_01', 'voltage_01', 'actPow_01', 'apparentPow_01','reactPow_01'):
+            if k in state:
+                state[k] =round((float(state[k]))*0.01 , 2)
+        
+        for k in ('current_00', 'voltage_00', 'actPow_00', 'apparentPow_00','reactPow_00'):
+                                    if k in state:
+                                        state[k] =round((float(state[k]))*0.01 , 2)
+        
 
         # zigbee device
         if deviceid.startswith('a4'):
