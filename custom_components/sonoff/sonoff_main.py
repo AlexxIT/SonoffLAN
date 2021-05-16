@@ -14,7 +14,7 @@ from .sonoff_local import EWeLinkLocal
 
 _LOGGER = logging.getLogger(__name__)
 
-ATTRS = ('local', 'cloud', 'rssi', 'humidity', 'temperature', 'power',
+ATTRS = ('local', 'cloud', 'rssi', 'humidity', 'temperature', 'power','actPow_00','voltage_00','current_00',
          'current', 'voltage', 'consumption', 'water', ATTR_BATTERY_LEVEL)
 
 
@@ -94,6 +94,18 @@ class EWeLinkRegistry:
             attrs = get_attrs(state)
             try:
                 for handler in device['handlers']:
+                    if (device.get('uiid') == 126):
+                        _LOGGER.debug(f"DualR3 found, patching values")
+                        if (state.get('voltage_00') >= 300 ):
+                            _LOGGER.debug(f"Patching values")
+                            for k in ('current_00', 'voltage_00', 'actPow_00', 'apparentPow_00','reactPow_00','current_01', 'voltage_01', 'actPow_01', 'apparentPow_01','reactPow_01'):
+                                if k in state:
+                                    state[k] =round((float(state[k]))*0.01 , 2)
+                                    _LOGGER.debug(f"new State: {state} State[k] {state[k]}")
+                        else:
+                            _LOGGER.debug(f"DualR3 found, values already patched")
+
+                    _LOGGER.debug(f"Debug Handler {handler} Deviceid: {deviceid}, State {state}, Device {device.get('uiid')}")
                     handler(state, attrs)
             except Exception as e:
                 _LOGGER.exception(f"Registry update error: {e}")

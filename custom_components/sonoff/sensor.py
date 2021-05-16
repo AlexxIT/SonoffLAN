@@ -17,8 +17,18 @@ SENSORS = {
     'light': [DEVICE_CLASS_ILLUMINANCE, None, None],
     'noise': [None, None, 'mdi:bell-ring'],
     'power': [DEVICE_CLASS_POWER, 'W', None],
+    'actPow_00': [DEVICE_CLASS_POWER, 'W', None],
+    'reactPow_00': [DEVICE_CLASS_POWER, 'VAR', None],
+    'apparentPow_00': [DEVICE_CLASS_POWER, 'VA', None],
+    'actPow_01': [DEVICE_CLASS_POWER, 'W', None],
+    'reactPow_01': [DEVICE_CLASS_POWER, 'VAR', None],
+    'apparentPow_01': [DEVICE_CLASS_POWER, 'VA', None],
     'current': [DEVICE_CLASS_POWER, 'A', None],
+    'current_00': [DEVICE_CLASS_POWER, 'A', None],
+    'current_01': [DEVICE_CLASS_POWER, 'A', None],
     'voltage': [DEVICE_CLASS_POWER, 'V', None],
+    'voltage_00': [DEVICE_CLASS_POWER, 'V', None],
+    'voltage_01': [DEVICE_CLASS_POWER, 'V', None],
     'rssi': [DEVICE_CLASS_SIGNAL_STRENGTH, 'dBm', None]
 }
 
