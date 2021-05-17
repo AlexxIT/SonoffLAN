@@ -4,3 +4,4 @@ __pycache__/
 .homeassistant/
 
 .idea/
+.DS_Store
