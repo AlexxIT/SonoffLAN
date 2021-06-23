@@ -194,9 +194,15 @@ class EWeLinkLocal:
 
             # https://github.com/AlexxIT/SonoffLAN/issues/527
             if 'currentTemperature' in state:
-                state['temperature'] = float(state['currentTemperature'])
+                try:
+                    state['temperature'] = float(state['currentTemperature'])
+                except ValueError:
+                    pass
             if 'currentHumidity' in state:
-                state['humidity'] = float(state['currentHumidity'])
+                try:
+                    state['humidity'] = float(state['currentHumidity'])
+                except ValueError:
+                    pass
 
             # TH bug in local mode https://github.com/AlexxIT/SonoffLAN/issues/110
             if state.get('temperature') == 0 and state.get('humidity') == 0:
