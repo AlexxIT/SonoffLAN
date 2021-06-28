@@ -59,16 +59,27 @@ async def async_setup_platform(hass, config, add_entities,
 
 class EWeLinkSensor(EWeLinkEntity, Entity):
     _state = None
+    # support old Home Assistant version
+    _attr_device_class = None
+    _attr_unit_of_measurement = None
+    _attr_icon = None
 
     def __init__(self, registry: EWeLinkRegistry, deviceid: str, attr: str):
         super().__init__(registry, deviceid)
         self._attr = attr
 
+        # DUALR3 fix
+        strip_attr = self._attr.rstrip('_12')
+        if strip_attr in SENSORS:
+            self._attr_device_class = SENSORS[strip_attr][0]
+            self._attr_unit_of_measurement = SENSORS[strip_attr][1]
+            self._attr_icon = SENSORS[strip_attr][2]
+
     async def async_added_to_hass(self) -> None:
         self._init()
 
         if self._name:
-            self._name += f" {self._attr.capitalize()}"
+            self._name += f" {self._attr.replace('_', ' ').capitalize()}"
 
     def _update_handler(self, state: dict, attrs: dict):
         self._attrs.update({k: attrs[k] for k in GLOBAL_ATTRS if k in attrs})
@@ -90,15 +101,15 @@ class EWeLinkSensor(EWeLinkEntity, Entity):
 
     @property
     def device_class(self):
-        return SENSORS[self._attr][0] if self._attr in SENSORS else None
+        return self._attr_device_class
 
     @property
     def unit_of_measurement(self):
-        return SENSORS[self._attr][1] if self._attr in SENSORS else None
+        return self._attr_unit_of_measurement
 
     @property
     def icon(self):
-        return SENSORS[self._attr][2] if self._attr in SENSORS else None
+        return self._attr_icon
 
 
 BUTTON_STATES = ['single', 'double', 'hold']

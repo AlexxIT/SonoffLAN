@@ -14,8 +14,8 @@ from homeassistant.helpers.typing import HomeAssistantType
 
 from . import utils
 from .sonoff_camera import EWeLinkCameras
-from .sonoff_cloud import fix_attrs, CloudPowHelper
-from .sonoff_main import EWeLinkRegistry
+from .sonoff_cloud import CloudPowHelper, fix_attrs as fix_attrs1
+from .sonoff_main import EWeLinkRegistry, fix_attrs as fix_attrs2
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -128,6 +128,10 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
 
     if CONF_SENSORS in config:
         auto_sensors = config[CONF_SENSORS]
+        # DUALR3
+        for k in ('current', 'voltage', 'power'):
+            if k in auto_sensors:
+                auto_sensors += [k + '_1', k + '_2']
         _LOGGER.debug(f"Init auto sensors for: {auto_sensors}")
     else:
         auto_sensors = []
@@ -160,7 +164,9 @@ async def async_setup(hass: HomeAssistantType, hass_config: dict):
         _LOGGER.debug(f"{deviceid} == Init   | {info}")
 
         # fix cloud attrs like currentTemperature and currentHumidity
-        fix_attrs(deviceid, state)
+        fix_attrs1(deviceid, state)
+        # fix local and cloud dualr3 attrs
+        fix_attrs2(state)
 
         # set device force_update if needed
         if force_update and force_update & state.keys():

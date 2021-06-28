@@ -15,7 +15,18 @@ from .sonoff_local import EWeLinkLocal
 _LOGGER = logging.getLogger(__name__)
 
 ATTRS = ('local', 'cloud', 'rssi', 'humidity', 'temperature', 'power',
-         'current', 'voltage', 'consumption', 'water', ATTR_BATTERY_LEVEL)
+         'current', 'voltage', 'consumption', 'water', ATTR_BATTERY_LEVEL,
+         'current_1', 'current_2', 'voltage_1', 'voltage_2',
+         'power_1', 'power_2')
+
+ATTRS_DUALR3 = {
+    'current_00': 'current_1',
+    'current_01': 'current_2',
+    'voltage_00': 'voltage_1',
+    'voltage_01': 'voltage_2',
+    'actPow_00': 'power_1',
+    'actPow_01': 'power_2',
+}
 
 
 def load_cache(filename: str):
@@ -33,6 +44,13 @@ def save_cache(filename: str, data: dict):
     """Save device list to file."""
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
+
+
+def fix_attrs(state: dict):
+    # fix R3 Pow attrs
+    for k, v in ATTRS_DUALR3.items():
+        if k in state:
+            state[v] = round(state[k] * 0.01, 2)
 
 
 def get_attrs(state: dict) -> dict:
