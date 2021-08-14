@@ -26,6 +26,10 @@ ATTRS_DUALR3 = {
     'voltage_01': 'voltage_2',
     'actPow_00': 'power_1',
     'actPow_01': 'power_2',
+    # 'reactPow_00': 'react_power_1',
+    # 'reactPow_01': 'react_power_2',
+    # 'apparentPow_00': 'apparent_power_1',
+    # 'apparentPow_01': 'apparent_power_2',
 }
 
 
@@ -108,6 +112,8 @@ class EWeLinkRegistry:
         if 'handlers' in device:
             # TODO: right place?
             device['available'] = device.get('online') or device.get('host')
+
+            fix_attrs(state)
 
             attrs = get_attrs(state)
             try:
