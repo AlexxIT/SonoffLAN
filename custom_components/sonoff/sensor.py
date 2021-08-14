@@ -4,10 +4,14 @@ from typing import Optional
 from homeassistant.const import DEVICE_CLASS_TEMPERATURE, \
     DEVICE_CLASS_HUMIDITY, DEVICE_CLASS_ILLUMINANCE, DEVICE_CLASS_POWER, \
     DEVICE_CLASS_SIGNAL_STRENGTH, ATTR_BATTERY_LEVEL
-from homeassistant.helpers.entity import Entity
 
 from . import DOMAIN, EWeLinkRegistry
 from .sonoff_main import EWeLinkEntity
+
+try:  # support old Home Assistant version
+    from homeassistant.components.sensor import SensorEntity
+except:
+    from homeassistant.helpers.entity import Entity as SensorEntity
 
 SENSORS = {
     'temperature': [DEVICE_CLASS_TEMPERATURE, '°C', None],
@@ -57,12 +61,15 @@ async def async_setup_platform(hass, config, add_entities,
                       EWeLinkSensor(registry, deviceid, 'humidity')])
 
 
-class EWeLinkSensor(EWeLinkEntity, Entity):
+class EWeLinkSensor(EWeLinkEntity, SensorEntity):
     _state = None
     # support old Home Assistant version
     _attr_device_class = None
     _attr_unit_of_measurement = None
     _attr_icon = None
+
+    # https://developers.home-assistant.io/docs/core/entity/sensor/#long-term-statistics
+    _attr_state_class = "measurement"
 
     def __init__(self, registry: EWeLinkRegistry, deviceid: str, attr: str):
         super().__init__(registry, deviceid)
@@ -115,7 +122,7 @@ class EWeLinkSensor(EWeLinkEntity, Entity):
 BUTTON_STATES = ['single', 'double', 'hold']
 
 
-class ZigBeeButtonSensor(EWeLinkEntity, Entity):
+class ZigBeeButtonSensor(EWeLinkEntity, SensorEntity):
     _state = ''
 
     async def async_added_to_hass(self) -> None:
