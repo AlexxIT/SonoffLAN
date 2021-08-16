@@ -3,7 +3,8 @@ from typing import Optional
 
 from homeassistant.const import DEVICE_CLASS_TEMPERATURE, \
     DEVICE_CLASS_HUMIDITY, DEVICE_CLASS_ILLUMINANCE, DEVICE_CLASS_POWER, \
-    DEVICE_CLASS_SIGNAL_STRENGTH, ATTR_BATTERY_LEVEL
+    DEVICE_CLASS_SIGNAL_STRENGTH, ATTR_BATTERY_LEVEL, DEVICE_CLASS_CURRENT, \
+    DEVICE_CLASS_VOLTAGE
 
 from . import DOMAIN, EWeLinkRegistry
 from .sonoff_main import EWeLinkEntity
@@ -21,8 +22,8 @@ SENSORS = {
     'light': [DEVICE_CLASS_ILLUMINANCE, None, None],
     'noise': [None, None, 'mdi:bell-ring'],
     'power': [DEVICE_CLASS_POWER, 'W', None],
-    'current': [DEVICE_CLASS_POWER, 'A', None],
-    'voltage': [DEVICE_CLASS_POWER, 'V', None],
+    'current': [DEVICE_CLASS_CURRENT, 'A', None],
+    'voltage': [DEVICE_CLASS_VOLTAGE, 'V', None],
     'rssi': [DEVICE_CLASS_SIGNAL_STRENGTH, 'dBm', None]
 }
 
