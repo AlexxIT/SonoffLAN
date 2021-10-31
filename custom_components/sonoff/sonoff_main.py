@@ -165,7 +165,7 @@ class EWeLinkRegistry:
         else:
             handlers = [self._registry_handler]
 
-        self.local.start(handlers, self.devices, zeroconf)
+        await self.local.start(handlers, self.devices, zeroconf)
 
     async def stop(self, *args):
         # TODO: do something

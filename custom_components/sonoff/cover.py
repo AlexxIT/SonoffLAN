@@ -61,7 +61,7 @@ class EWeLinkCover(EWeLinkEntity, CoverEntity):
             else:
                 self._action = None
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def current_cover_position(self):
@@ -115,7 +115,7 @@ class DualR3Cover(EWeLinkCover):
         if 'motorTurn' in state:
             self._action = ACTIONS[state['motorTurn']]
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_open_cover(self, **kwargs):
         await self.registry.send(self.deviceid, {'motorTurn': 1})

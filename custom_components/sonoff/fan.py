@@ -93,7 +93,7 @@ class SonoffFan02(SonoffFanBase):
             else:
                 self._speed = SPEED_OFF
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_set_speed(self, speed: str) -> None:
         channels = IFAN02_STATES.get(speed)
@@ -122,7 +122,7 @@ class SonoffDiffuserFan(SonoffFanBase):
             elif state['state'] == 2:
                 self._speed = SPEED_HIGH
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def speed(self) -> Optional[str]:

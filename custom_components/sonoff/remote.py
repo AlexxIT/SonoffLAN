@@ -76,9 +76,9 @@ class EWeLinkRemote(EWeLinkToggle, RemoteEntity):
 
                 data['entity_id'] = self.entity_id
                 _LOGGER.debug(f"Fire event sonoff.remote: {data}")
-                self.hass.bus.fire('sonoff.remote', data)
+                self.hass.bus.async_fire('sonoff.remote', data)
 
-                self.schedule_update_ha_state()
+                self.async_write_ha_state()
 
     @property
     def supported_features(self):
@@ -86,11 +86,11 @@ class EWeLinkRemote(EWeLinkToggle, RemoteEntity):
 
     async def async_turn_on(self, **kwargs):
         self._is_on = True
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         self._is_on = False
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_send_command(self, command, **kwargs):
         if not self._is_on:

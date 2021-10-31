@@ -53,7 +53,7 @@ class EWeLinkToggle(EWeLinkEntity, ToggleEntity):
         if 'sledOnline' in state:
             self._sled_online = state['sledOnline']
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def should_poll(self) -> bool:
@@ -102,7 +102,7 @@ class ZigBeeBridge(EWeLinkToggle):
             self._attrs['devices'] = \
                 f"{state['subDevNum']} / {state['subDevMaxNum']}"
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def icon(self):

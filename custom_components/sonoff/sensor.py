@@ -5,9 +5,12 @@ from homeassistant.const import DEVICE_CLASS_TEMPERATURE, \
     DEVICE_CLASS_HUMIDITY, DEVICE_CLASS_ILLUMINANCE, DEVICE_CLASS_POWER, \
     DEVICE_CLASS_SIGNAL_STRENGTH, ATTR_BATTERY_LEVEL, DEVICE_CLASS_CURRENT, \
     DEVICE_CLASS_VOLTAGE
+from homeassistant.core import callback
 
 from . import DOMAIN, EWeLinkRegistry
 from .sonoff_main import EWeLinkEntity
+
+from homeassistant.helpers.event import async_call_later
 
 try:  # support old Home Assistant version
     from homeassistant.components.sensor import SensorEntity
@@ -97,7 +100,7 @@ class EWeLinkSensor(EWeLinkEntity, SensorEntity):
 
         self._state = state[self._attr]
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def unique_id(self) -> Optional[str]:
@@ -130,16 +133,23 @@ class ZigBeeButtonSensor(EWeLinkEntity, SensorEntity):
         # don't call update at startup
         self._init(force_refresh=False)
 
+    @callback
+    def _async_reset_state(self, now_) -> None:
+        """Reset the state."""
+        self._state = ''
+        self.async_write_ha_state()
+
     def _update_handler(self, state: dict, attrs: dict):
         self._attrs.update(attrs)
 
-        if 'key' in state:
-            self._state = BUTTON_STATES[state['key']]
+        if 'key' not in state:
             self.async_write_ha_state()
-            time.sleep(.5)
-            self._state = ''
+            return
 
-        self.schedule_update_ha_state()
+        self._state = BUTTON_STATES[state['key']]
+        self.async_write_ha_state()
+        # time.sleep will block the event loop
+        async_call_later(self.hass, 0.5, self._async_reset_state)
 
     @property
     def state(self) -> str:

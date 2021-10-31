@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import ipaddress
 import json
 import logging
@@ -12,7 +13,8 @@ from aiohttp import ClientSession, ClientOSError, ServerDisconnectedError
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
-from zeroconf import ServiceBrowser, Zeroconf, ServiceStateChange
+from zeroconf import Zeroconf, ServiceStateChange
+from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -128,17 +130,16 @@ class EWeLinkLocal:
     def started(self) -> bool:
         return self.browser is not None
 
-    def start(self, handlers: List[Callable], devices: dict, zeroconf):
+    async def start(self, handlers: List[Callable], devices: dict, zeroconf):
         self._handlers = handlers
         self._devices = devices
-        self.browser = ServiceBrowser(zeroconf, '_ewelink._tcp.local.',
+        self.browser = AsyncServiceBrowser(zeroconf, '_ewelink._tcp.local.',
                                       handlers=[self._zeroconf_handler])
         # for beautiful logs
         self.browser.name = 'Sonoff_LAN'
 
-    def stop(self, *args):
-        self.browser.cancel()
-        self.browser.zc.close()
+    async def stop(self, *args):
+        await self.browser.async_cancel()
 
     def _zeroconf_handler(self, zeroconf: Zeroconf, service_type: str,
                           name: str, state_change: ServiceStateChange):
@@ -153,90 +154,101 @@ class EWeLinkLocal:
                 self.loop.create_task(coro)
             return
 
+        asyncio.create_task(self._async_zeroconf_handler(zeroconf, service_type, name, state_change))
+
+    async def _async_zeroconf_handler(
+        self, zeroconf: Zeroconf, service_type: str, name: str, state_change: ServiceStateChange
+    ):
+        """Handle the zeroconf update."""
         try:
-            info = zeroconf.get_service_info(service_type, name)
-            properties = {
-                k.decode(): v.decode() if isinstance(v, bytes) else v
-                for k, v in info.properties.items()
-            }
+            await self._async_zeroconf_handler(zeroconf, service_type, name, state_change)
+        except Exception as ex:
+            _LOGGER.debug(f"Problem while processing zeroconf: %s: %s", name, ex)
 
-            deviceid = properties['id']
-            device = self._devices.setdefault(deviceid, {})
+    async def _async_zeroconf_handler(
+        self, zeroconf: Zeroconf, service_type: str, name: str, state_change: ServiceStateChange
+    ):
+        """Handle the zeroconf update with a wrapped exception handler."""
+        info = AsyncServiceInfo(service_type, name)
+        if not await info.async_request(zeroconf, 3000) or not info.properties:
+            _LOGGER.debug(f"Failed to fetch properties for: %s", name)
+            return
 
-            log = f"{deviceid} <= Local{state_change.value}"
+        properties = {
+            k.decode(): v.decode() if isinstance(v, bytes) else v
+            for k, v in info.properties.items()
+        }
 
-            if properties.get('encrypt'):
-                devicekey = device.get('devicekey')
-                if devicekey == 'skip':
-                    return
-                if not devicekey:
-                    _LOGGER.info(f"{log} | No devicekey for device")
-                    # skip device next time
-                    device['devicekey'] = 'skip'
-                    return
+        deviceid = properties['id']
+        device = self._devices.setdefault(deviceid, {})
 
-                data = decrypt(properties, devicekey)
-                # Fix Sonoff RF Bridge sintax bug
-                if data and data.startswith(b'{"rf'):
-                    data = data.replace(b'"="', b'":"')
-            else:
-                data = ''.join([properties[f'data{i}'] for i in range(1, 5, 1)
-                                if f'data{i}' in properties])
+        log = f"{deviceid} <= Local{state_change.value}"
 
-            try:
-                state = json.loads(data)
-            except:
-                _LOGGER.debug(f"{log} !! Wrong JSON data: {data}")
+        if properties.get('encrypt'):
+            devicekey = device.get('devicekey')
+            if devicekey == 'skip':
                 return
-            seq = properties.get('seq')
+            if not devicekey:
+                _LOGGER.info(f"{log} | No devicekey for device")
+                # skip device next time
+                device['devicekey'] = 'skip'
+                return
 
-            _LOGGER.debug(f"{log} | {state} | {seq}")
+            data = decrypt(properties, devicekey)
+            # Fix Sonoff RF Bridge sintax bug
+            if data and data.startswith(b'{"rf'):
+                data = data.replace(b'"="', b'":"')
+        else:
+            data = ''.join([properties[f'data{i}'] for i in range(1, 5, 1)
+                            if f'data{i}' in properties])
 
-            # https://github.com/AlexxIT/SonoffLAN/issues/527
-            if 'currentTemperature' in state:
-                try:
-                    state['temperature'] = float(state['currentTemperature'])
-                except ValueError:
-                    pass
-            if 'currentHumidity' in state:
-                try:
-                    state['humidity'] = float(state['currentHumidity'])
-                except ValueError:
-                    pass
-
-            # TH bug in local mode https://github.com/AlexxIT/SonoffLAN/issues/110
-            if state.get('temperature') == 0 and state.get('humidity') == 0:
-                del state['temperature'], state['humidity']
-
-            if 'temperature' in state and self.sync_temperature:
-                # cloud API send only one decimal (not round)
-                state['temperature'] = int(state['temperature'] * 10) / 10.0
-
-            if properties['type'] == 'fan_light':
-                state = ifan03to02(state)
-                device['uiid'] = 'fan_light'
-
-            host = str(ipaddress.ip_address(info.addresses[0]))
-            # update every time device host change (alsow first time)
-            if device.get('host') != host:
-                # state connection for attrs update
-                state['local'] = 'online'
-                # device host for local connection
-                device['host'] = host
-                # update or set device init state
-                if 'params' in device:
-                    device['params'].update(state)
-                else:
-                    device['params'] = state
-                    # set uiid with: strip, plug, light, rf
-                    device['uiid'] = properties['type']
-
-            for handler in self._handlers:
-                handler(deviceid, state, seq)
-
+        try:
+            state = json.loads(data)
         except:
-            _LOGGER.debug(
-                f"Problem while processing zeroconf: {service_type}, {name}")
+            _LOGGER.debug(f"{log} !! Wrong JSON data: {data}")
+            return
+        seq = properties.get('seq')
+
+        _LOGGER.debug(f"{log} | {state} | {seq}")
+
+        # https://github.com/AlexxIT/SonoffLAN/issues/527
+        if 'currentTemperature' in state:
+            with contextlib.suppress(ValueError):
+                state['temperature'] = float(state['currentTemperature'])
+        if 'currentHumidity' in state:
+            with contextlib.suppress(ValueError):
+                state['humidity'] = float(state['currentHumidity'])
+
+        # TH bug in local mode https://github.com/AlexxIT/SonoffLAN/issues/110
+        if state.get('temperature') == 0 and state.get('humidity') == 0:
+            del state['temperature'], state['humidity']
+
+        if 'temperature' in state and self.sync_temperature:
+            # cloud API send only one decimal (not round)
+            state['temperature'] = int(state['temperature'] * 10) / 10.0
+
+        if properties['type'] == 'fan_light':
+            state = ifan03to02(state)
+            device['uiid'] = 'fan_light'
+
+        host = str(ipaddress.ip_address(info.addresses[0]))
+        # update every time device host change (alsow first time)
+        if device.get('host') != host:
+            # state connection for attrs update
+            state['local'] = 'online'
+            # device host for local connection
+            device['host'] = host
+            # update or set device init state
+            if 'params' in device:
+                device['params'].update(state)
+            else:
+                device['params'] = state
+                # set uiid with: strip, plug, light, rf
+                device['uiid'] = properties['type']
+
+        for handler in self._handlers:
+            handler(deviceid, state, seq)
+
 
     async def check_offline(self, deviceid: str):
         """Try to get response from device after received Zeroconf Removed."""

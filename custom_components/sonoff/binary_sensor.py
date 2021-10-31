@@ -40,7 +40,7 @@ class EWeLinkBinarySensor(EWeLinkEntity, BinarySensorEntity):
     def _update_handler(self, state: dict, attrs: dict):
         state = {k: json.dumps(v) for k, v in state.items()}
         self._attrs.update(state)
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def is_on(self):
@@ -62,7 +62,7 @@ class WiFiDoorWindowSensor(EWeLinkBinarySensor):
         if 'switch' in state:
             self._is_on = state['switch'] == 'on'
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def device_class(self):
@@ -77,7 +77,7 @@ class ZigBeeDoorWindowSensor(WiFiDoorWindowSensor):
             # 1 - open, 0 - close
             self._is_on = (state['lock'] == 1)
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
 
 class ZigBeeMotionSensor(EWeLinkBinarySensor):
@@ -91,7 +91,7 @@ class ZigBeeMotionSensor(EWeLinkBinarySensor):
             # zigbee turn unavailable (occurs with some frequency)
             self._is_on = False
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def device_class(self):
@@ -120,7 +120,7 @@ class RFBridgeSensor(BinarySensorEntity):
 
             if self._is_on:
                 self._is_on = False
-                self.schedule_update_ha_state()
+                self.async_write_ha_state()
 
         elif event.data['name'] == self.trigger:
             if self._unsub_turn_off:
@@ -132,7 +132,7 @@ class RFBridgeSensor(BinarySensorEntity):
 
             if not self._is_on:
                 self._is_on = True
-                self.schedule_update_ha_state()
+                self.async_write_ha_state()
 
     async def _turn_off(self, now):
         self._unsub_turn_off = None

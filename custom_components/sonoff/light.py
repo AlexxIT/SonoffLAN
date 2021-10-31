@@ -71,7 +71,7 @@ class SonoffD1(EWeLinkLight):
         if 'switch' in state:
             self._is_on = state['switch'] == 'on'
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def brightness(self):
@@ -106,7 +106,7 @@ class SonoffDimmer(SonoffD1):
         if 'switch' in state:
             self._is_on = state['switch'] == 'on'
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs) -> None:
         if ATTR_BRIGHTNESS in kwargs:
@@ -148,7 +148,7 @@ class SonoffLED(EWeLinkLight):
         if 'switch' in state:
             self._is_on = state['switch'] == 'on'
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def brightness(self):
@@ -239,7 +239,7 @@ class SonoffB1(EWeLinkLight):
         if 'state' in state:
             self._is_on = state['state'] == 'on'
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def brightness(self):
@@ -336,7 +336,7 @@ class EWeLinkLightGroup(SonoffD1):
         if 'sledOnline' in state:
             self._sled_online = state['sledOnline']
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs) -> None:
         if ATTR_BRIGHTNESS in kwargs:
@@ -384,7 +384,7 @@ class SonoffDiffuserLight(EWeLinkLight):
         if 'lightswitch' in state:
             self._is_on = state['lightswitch'] == 1
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     @property
     def brightness(self):
@@ -457,7 +457,7 @@ class Sonoff57(SonoffD1):
         if 'state' in state:
             self._is_on = state['state'] == 'on'
 
-        self.schedule_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs) -> None:
         payload = {'state': 'on'}
