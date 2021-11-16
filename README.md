@@ -150,13 +150,7 @@ These devices only work through the cloud!
 
 ## Install with HACS
 
-Latest [HACS](https://hacs.xyz/) require HA 0.110.0 or newer:
-
-![](demo_hacs1.gif)
-
-Old HACS:
-
-![](demo_hacs.gif)
+Use [HACS](https://hacs.xyz/) > Integrations > Plus > **SonoffLAN**.
 
 Or manually copy `sonoff` folder from [latest release](https://github.com/AlexxIT/SonoffLAN/releases/latest) to `custom_components` folder in your config folder.
 
