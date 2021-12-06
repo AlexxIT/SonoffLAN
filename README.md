@@ -248,6 +248,8 @@ sonoff:
       devicekey: f9765c85-463a-4623-9cbe-8d59266cb2e4
 ```
 
+See [Getting devicekey manually](https://github.com/AlexxIT/SonoffLAN#getting-devicekey-manually) to retrieve the devicekey.
+
 ### Local only mode (DIY devices)
 
 Recommended for users who do not trust Cloud Servers for some reason. Only works with devices in DIY mode.
@@ -564,6 +566,10 @@ Change **Name** or **Entity ID** of any device:
 3. Open in browser `http://10.10.7.1/device`
 4. Copy `deviceid` and `apikey` (this is `devicekey`)
 5. Connect to your Wi-Fi network and setup Sonoff via the eWeLink app
+
+**For Sonoff Micro**
+
+The process above does not work for the Sonoff Micro (USB Smart Adapter). Use [Local mode with load config from Cloud](https://github.com/AlexxIT/SonoffLAN#local-mode-with-load-config-from-cloud).
 
 ## Common problems in only LAN mode
 
