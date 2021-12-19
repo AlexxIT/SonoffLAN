@@ -8,6 +8,7 @@ import hmac
 import json
 import logging
 import time
+import os
 from typing import Optional, Callable, List
 
 from aiohttp import ClientSession, WSMsgType, ClientConnectorError, \
@@ -28,6 +29,18 @@ DATA_ERROR = {
 CLOUD_ERROR = (
     "Cloud mode cannot work simultaneously with two copies of component. "
     "Read more: https://github.com/AlexxIT/SonoffLAN#config-examples")
+
+"""
+Return true if server is reacheable, false if not
+"""
+def ping_check(ServerName: str):
+    response = os.system("ping -c 1 " + ServerName)
+    # and then check the response...
+    if response == 0:
+        pingstatus = True
+    else:
+        pingstatus = False
+    return pingstatus
 
 
 def fix_attrs(deviceid: str, state: dict):
@@ -101,7 +114,16 @@ class EWeLinkCloud(ResponseWaiter, EWeLinkApp):
     _handlers = None
     _ws: Optional[ClientWebSocketResponse] = None
 
-    _baseurl = 'https://eu-api.coolkit.cc:8080/'
+    if ping_check("eu-api.coolkit.cc"):
+        _baseurl = 'https://eu-api.coolkit.cc:8080/'
+        _LOGGER.debug(f"Setting base url to EU")
+    elif ping_check("us-api.coolkit.cc"):
+        _baseurl = 'https://us-api.coolkit.cc:8080/'
+        _LOGGER.debug(f"Setting base url to US")
+    else:
+        _LOGGER.exception(f"Could not reach api host")
+        raise NotImplemented
+
     _apikey = None
     _token = None
     _last_ts = 0
