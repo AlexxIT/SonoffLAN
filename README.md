@@ -582,6 +582,7 @@ Cloud users don't have these problems.
    - Oracle VM VirtualBox
    - linux firewall
    - linux network driver
+   - incorrect network interface selected in HA Configuration -> Settings -> Global -> Network
 
 The devices publish their data through [Multicast DNS](https://en.wikipedia.org/wiki/Multicast_DNS) (mDNS/[zeroconf](https://www.home-assistant.io/integrations/zeroconf/)), read [more](http://developers.sonoff.tech/sonoff-diy-mode-api-protocol.html#Device-mDNS-Service-Info-Publish-Process).
 
