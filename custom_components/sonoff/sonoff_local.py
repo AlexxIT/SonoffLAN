@@ -231,6 +231,11 @@ class EWeLinkLocal:
                     # set uiid with: strip, plug, light, rf
                     device['uiid'] = properties['type']
 
+            if 'params' in device and 'cloud' not in device['params']:
+                for param in ('humidity', 'temperature'):
+                    if param in state:
+                        device['params'][param] = state[param]
+
             for handler in self._handlers:
                 handler(deviceid, state, seq)
 
