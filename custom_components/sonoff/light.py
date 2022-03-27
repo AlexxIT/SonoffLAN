@@ -47,6 +47,8 @@ async def async_setup_platform(hass, config, add_entities,
         add_entities([Sonoff103(registry, deviceid)])
     elif uiid == 104:
         add_entities([SonoffB05(registry, deviceid)])
+    elif uiid == 137:
+        add_entities([SonoffLED(registry, deviceid)])
     elif channels and len(channels) >= 2:
         add_entities([EWeLinkLightGroup(registry, deviceid, channels)])
     else:
