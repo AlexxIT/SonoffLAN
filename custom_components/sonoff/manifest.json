@@ -6,6 +6,6 @@
   "codeowners": ["@AlexxIT"],
   "dependencies": ["http", "zeroconf"],
   "requirements": ["pycryptodome>=3.6.6"],
-  "version": "v2.4.6",
+  "version": "v2.4.7",
   "iot_class": "local_push"
 }
