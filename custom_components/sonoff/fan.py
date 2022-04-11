@@ -6,15 +6,19 @@ PSF-BFB-GL | fan_light | 34   | iFan (Sonoff iFan03)
 
 https://github.com/AlexxIT/SonoffLAN/issues/30
 """
-from typing import Optional, List
+from typing import List
 
-from homeassistant.components.fan import FanEntity, SUPPORT_SET_SPEED, \
-    SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH, SPEED_OFF
+from homeassistant.components.fan import FanEntity, SUPPORT_SET_SPEED
 
 # noinspection PyUnresolvedReferences
 from . import DOMAIN, SCAN_INTERVAL
 from .sonoff_main import EWeLinkEntity
 from .switch import EWeLinkToggle
+
+SPEED_OFF = 0
+SPEED_LOW = 33
+SPEED_MEDIUM = 67
+SPEED_HIGH = 100
 
 IFAN02_CHANNELS = [2, 3, 4]
 IFAN02_STATES = {
@@ -52,19 +56,28 @@ class SonoffSimpleFan(EWeLinkToggle, FanEntity):
 
 
 class SonoffFanBase(EWeLinkEntity, FanEntity):
-    _speed = None
+    _speed = 0
 
     @property
     def supported_features(self):
         return SUPPORT_SET_SPEED
 
     @property
-    def speed(self) -> Optional[str]:
+    def percentage(self) -> int:
         return self._speed
 
     @property
-    def speed_list(self) -> list:
-        return [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
+    def speed_count(self) -> int:
+        return 3
+
+    async def async_turn_on(self, percentage: int = None, **kwargs):
+        if percentage:
+            await self.async_set_percentage(percentage)
+        else:
+            await self._turn_on()
+
+    async def async_turn_off(self, **kwargs) -> None:
+        await self._turn_off()
 
 
 class SonoffFan02(SonoffFanBase):
@@ -95,18 +108,12 @@ class SonoffFan02(SonoffFanBase):
 
         self.schedule_update_ha_state()
 
-    async def async_set_speed(self, speed: str) -> None:
-        channels = IFAN02_STATES.get(speed)
+    async def async_set_percentage(self, percentage: int):
+        percentage = int(round(
+            round(percentage / self.percentage_step) * self.percentage_step
+        ))
+        channels = IFAN02_STATES.get(percentage)
         await self._turn_bulk(channels)
-
-    async def async_turn_on(self, speed: Optional[str] = None, **kwargs):
-        if speed:
-            await self.async_set_speed(speed)
-        else:
-            await self._turn_on()
-
-    async def async_turn_off(self, **kwargs) -> None:
-        await self._turn_off()
 
 
 class SonoffDiffuserFan(SonoffFanBase):
@@ -125,28 +132,18 @@ class SonoffDiffuserFan(SonoffFanBase):
         self.schedule_update_ha_state()
 
     @property
-    def speed(self) -> Optional[str]:
+    def percentage(self) -> int:
         return self._speed if self._is_on else SPEED_OFF
 
-    @property
-    def speed_list(self) -> list:
-        return [SPEED_OFF, SPEED_LOW, SPEED_HIGH]
-
-    async def async_set_speed(self, speed: str) -> None:
-        if speed == SPEED_HIGH:
+    async def async_set_percentage(self, percentage: int):
+        percentage = int(round(
+            round(percentage / self.percentage_step) * self.percentage_step
+        ))
+        if percentage in (SPEED_HIGH, SPEED_MEDIUM):
             await self.registry.send(self.deviceid,
                                      {'switch': 'on', 'state': 2})
-        elif speed == SPEED_LOW:
+        elif percentage == SPEED_LOW:
             await self.registry.send(self.deviceid,
                                      {'switch': 'on', 'state': 1})
-        elif speed == SPEED_OFF:
+        elif percentage == SPEED_OFF:
             await self._turn_off()
-
-    async def async_turn_on(self, speed: Optional[str] = None, **kwargs):
-        if speed:
-            await self.async_set_speed(speed)
-        else:
-            await self._turn_on()
-
-    async def async_turn_off(self, **kwargs) -> None:
-        await self._turn_off()
