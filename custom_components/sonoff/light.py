@@ -20,3 +20,11 @@ class XFanLight(XEntity, LightEntity):
     def set_state(self, params: dict):
         params = next(i for i in params["switches"] if i["outlet"] == 0)
         self._attr_is_on = params["switch"] == "on"
+
+    async def async_turn_on(self, **kwargs):
+        params = {"switches": [{"outlet": 0, "switch": "on"}]}
+        await self.ewelink.send(self.device, params)
+
+    async def async_turn_off(self):
+        params = {"switches": [{"outlet": 0, "switch": "off"}]}
+        await self.ewelink.send(self.device, params)
