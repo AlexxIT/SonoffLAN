@@ -71,7 +71,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     LOCAL mode. If there is a login error to the cloud - it starts  with
     devices list from cache.
     """
-    # add options handler
     registry = hass.data[DOMAIN].get(entry.entry_id)
     if not registry:
         session = async_get_clientsession(hass)
