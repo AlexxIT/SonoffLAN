@@ -376,13 +376,53 @@ def test_sonoff_sc():
         },
         "productModel": "SC",
     })
-    temp: XSensor = entities[0]
+    temp: XSensor = next(e for e in entities if e.uid == "temperature")
     assert temp.state == 25
-    hum: XSensor = entities[1]
+    hum: XSensor = next(e for e in entities if e.uid == "humidity")
     assert hum.state == 92
-    dusty: XSensor = entities[2]
+    dusty: XSensor = next(e for e in entities if e.uid == "dusty")
     assert dusty.state == 2
-    light: XSensor = entities[3]
+    light: XSensor = next(e for e in entities if e.uid == "light")
     assert light.state == 10
-    noise: XSensor = entities[4]
+    noise: XSensor = next(e for e in entities if e.uid == "noise")
     assert noise.state == 2
+
+
+def test_sonoff_pow():
+    _, entities = get_entitites({
+        "name": "Fridge",
+        "deviceid": DEVICEID,
+        "online": True,
+        "extra": {"uiid": 32},
+        "params": {
+            "hundredDaysKwh": "get",
+            "startTime": "2020-05-28T13:19:55.409Z",
+            "endTime": "2020-05-28T18:24:24.429Z",
+            "timeZone": 2,
+            "uiActive": 60,
+            "oneKwh": "stop",
+            "current": "1.23",
+            "voltage": "234.20",
+            "power": "12.34",
+            "pulseWidth": 500,
+            "pulse": "off",
+            "startup": "on",
+            "switch": "on",
+            "alarmPValue": [-1, -1],
+            "alarmCValue": [-1, -1],
+            "alarmVValue": [-1, -1],
+            "alarmType": "pcv",
+            "init": 1,
+            "rssi": -72,
+            "staMac": "11:22:33:AA:BB:CC",
+            "fwVersion": "3.4.0",
+            "sledOnline": "on",
+            "version": 8
+        },
+        "productModel": "POW",
+    })
+
+    power: XSensor = next(e for e in entities if e.uid == "power")
+    assert power.state == 12.34
+    power: XSensor = next(e for e in entities if e.uid == "current")
+    assert power.state == 1.23

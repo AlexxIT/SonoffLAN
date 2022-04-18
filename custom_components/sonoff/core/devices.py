@@ -41,7 +41,7 @@ DEVICES = {
     2: SPEC_2CH,
     3: SPEC_3CH,
     4: SPEC_4CH,
-    5: SPEC_SWITCH,  # Sonoff Pow
+    5: SPEC_SWITCH,
     6: SPEC_SWITCH,
     7: SPEC_2CH,  # Sonoff T1 2CH
     8: SPEC_3CH,  # Sonoff T1 3CH
@@ -67,6 +67,12 @@ DEVICES = {
     29: SPEC_2CH,
     30: SPEC_3CH,
     31: SPEC_4CH,
+    32: [
+        XSwitch, LED, RSSI,
+        spec(XSensor, param="current"),
+        spec(XSensor, param="power"),
+        spec(XSensor, param="voltage"),
+    ],  # Sonoff Pow
     34: [XFan, XFanLight],  # Sonoff iFan02 and iFan03
     36: [XDimmer],  # KING-M4 (dimmer, only cloud)
     44: [XLightD1],  # Sonoff D1
