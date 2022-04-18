@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Enter your eWeLink account data.\nUse any **username** and blank **password** for DIY mode.{error}",
+        "data": {
+          "username": "Email or phone",
+          "password": "Password"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "mode": "Mode"
+        }
+      }
+    }
+  }
+}

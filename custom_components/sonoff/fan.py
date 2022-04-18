@@ -1,152 +1,72 @@
-"""
-Firmware   | LAN type  | uiid | Product Model
------------|-----------|------|--------------
-PSF-B04-GL | strip     | 34   | iFan02 (Sonoff iFan02)
-PSF-BFB-GL | fan_light | 34   | iFan (Sonoff iFan03)
+from homeassistant.components.fan import FanEntity
 
-https://github.com/AlexxIT/SonoffLAN/issues/30
-"""
-from typing import Optional, List
-
-from homeassistant.components.fan import FanEntity, SUPPORT_SET_SPEED, \
-    SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH, SPEED_OFF
-
-# noinspection PyUnresolvedReferences
-from . import DOMAIN, SCAN_INTERVAL
-from .sonoff_main import EWeLinkEntity
-from .switch import EWeLinkToggle
-
-IFAN02_CHANNELS = [2, 3, 4]
-IFAN02_STATES = {
-    SPEED_OFF: {2: False},
-    SPEED_LOW: {2: True, 3: False, 4: False},
-    SPEED_MEDIUM: {2: True, 3: True, 4: False},
-    SPEED_HIGH: {2: True, 3: False, 4: True}
-}
+from .core.const import DOMAIN
+from .core.entity import XEntity
+from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
 
 
-async def async_setup_platform(hass, config, add_entities,
-                               discovery_info=None):
-    if discovery_info is None:
-        return
-
-    deviceid = discovery_info['deviceid']
-    channels = discovery_info['channels']
-    registry = hass.data[DOMAIN]
-
-    # iFan02 and iFan03 have the same uiid!
-    uiid = registry.devices[deviceid].get('uiid')
-    if uiid == 34 or uiid == 'fan_light':
-        # only channel 2 is used for switching
-        add_entities([SonoffFan02(registry, deviceid, [2])])
-    elif uiid == 25:
-        add_entities([SonoffDiffuserFan(registry, deviceid)])
-    else:
-        add_entities([SonoffSimpleFan(registry, deviceid, channels)])
+async def async_setup_entry(hass, config_entry, add_entities):
+    ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
+    ewelink.dispatcher_connect(
+        SIGNAL_ADD_ENTITIES,
+        lambda x: add_entities([e for e in x if isinstance(e, FanEntity)])
+    )
 
 
-class SonoffSimpleFan(EWeLinkToggle, FanEntity):
-    @property
-    def supported_features(self):
-        return 0
+# noinspection PyAbstractClass
+class XFan(XEntity, FanEntity):
+    params = {"switches"}
+    _attr_speed_count = 3
 
+    def set_state(self, params: dict):
+        s = {i["outlet"]: i["switch"] for i in params["switches"]}
 
-class SonoffFanBase(EWeLinkEntity, FanEntity):
-    _speed = None
+        if s[1] == "off":
+            self._attr_percentage = 0
+        elif s[2] == "off" and s[3] == "off":
+            self._attr_percentage = 33
+        elif s[2] == "on" and s[3] == "off":
+            self._attr_percentage = 67
+        elif s[2] == "off" and s[3] == "on":
+            self._attr_percentage = 100
 
-    @property
-    def supported_features(self):
-        return SUPPORT_SET_SPEED
-
-    @property
-    def speed(self) -> Optional[str]:
-        return self._speed
-
-    @property
-    def speed_list(self) -> list:
-        return [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
-
-
-class SonoffFan02(SonoffFanBase):
-    def _is_on_list(self, state: dict) -> List[bool]:
-        # https://github.com/AlexxIT/SonoffLAN/issues/146
-        switches = sorted(state['switches'], key=lambda i: i['outlet'])
-        return [
-            switches[channel - 1]['switch'] == 'on'
-            for channel in IFAN02_CHANNELS
-        ]
-
-    def _update_handler(self, state: dict, attrs: dict):
-        self._attrs.update(attrs)
-
-        if 'switches' in state:
-            mask = self._is_on_list(state)
-            if mask[0]:
-                if not mask[1] and not mask[2]:
-                    self._speed = SPEED_LOW
-                elif mask[1] and not mask[2]:
-                    self._speed = SPEED_MEDIUM
-                elif not mask[1] and mask[2]:
-                    self._speed = SPEED_HIGH
-                else:
-                    raise Exception("Wrong iFan02 state")
-            else:
-                self._speed = SPEED_OFF
-
-        self.schedule_update_ha_state()
-
-    async def async_set_speed(self, speed: str) -> None:
-        channels = IFAN02_STATES.get(speed)
-        await self._turn_bulk(channels)
-
-    async def async_turn_on(self, speed: Optional[str] = None, **kwargs):
-        if speed:
-            await self.async_set_speed(speed)
+    async def async_set_percentage(self, percentage: int):
+        if percentage > 67:
+            param = {1: "on", 2: "off", 3: "on"}
+        elif percentage > 33:
+            param = {1: "on", 2: "on", 3: "off"}
+        elif percentage > 0:
+            param = {1: "on", 2: "off", 3: "off"}
         else:
-            await self._turn_on()
+            param = {1: "off"}
+        param = [{"outlet": k, "switch": v} for k, v in param.items()]
+        await self.ewelink.send(self.device, {"switches": param})
 
-    async def async_turn_off(self, **kwargs) -> None:
-        await self._turn_off()
+    async def async_turn_on(self, percentage=None, **kwargs):
+        await self.async_set_percentage(percentage)
+
+    async def async_turn_off(self):
+        await self.async_set_percentage(0)
 
 
-class SonoffDiffuserFan(SonoffFanBase):
-    def _update_handler(self, state: dict, attrs: dict):
-        self._attrs.update(attrs)
+# noinspection PyAbstractClass
+class XDiffuserFan(XFan):
+    params = {"state", "switch"}
+    _attr_speed_count = 2
 
-        if 'switch' in state:
-            self._is_on = state['switch'] == 'on'
+    def set_state(self, params: dict):
+        if params["switch"] == "off":
+            self._attr_percentage = 0
+        elif params["state"] == 1:
+            self._attr_percentage = 50
+        elif params["state"] == 2:
+            self._attr_percentage = 100
 
-        if 'state' in state:
-            if state['state'] == 1:
-                self._speed = SPEED_LOW
-            elif state['state'] == 2:
-                self._speed = SPEED_HIGH
-
-        self.schedule_update_ha_state()
-
-    @property
-    def speed(self) -> Optional[str]:
-        return self._speed if self._is_on else SPEED_OFF
-
-    @property
-    def speed_list(self) -> list:
-        return [SPEED_OFF, SPEED_LOW, SPEED_HIGH]
-
-    async def async_set_speed(self, speed: str) -> None:
-        if speed == SPEED_HIGH:
-            await self.registry.send(self.deviceid,
-                                     {'switch': 'on', 'state': 2})
-        elif speed == SPEED_LOW:
-            await self.registry.send(self.deviceid,
-                                     {'switch': 'on', 'state': 1})
-        elif speed == SPEED_OFF:
-            await self._turn_off()
-
-    async def async_turn_on(self, speed: Optional[str] = None, **kwargs):
-        if speed:
-            await self.async_set_speed(speed)
+    async def async_set_percentage(self, percentage: int):
+        if percentage > 50:
+            param = {"switch": "on", "state": 2}
+        elif percentage > 0:
+            param = {"switch": "on", "state": 1}
         else:
-            await self._turn_on()
-
-    async def async_turn_off(self, **kwargs) -> None:
-        await self._turn_off()
+            param = {"switch": "off"}
+        await self.ewelink.send(self.device, param)

@@ -1,115 +1,80 @@
-"""
-Firmware   | LAN type  | uiid | Product Model
------------|-----------|------|--------------
-ITA-GZ1-GL | plug      | 14   | Sonoff (Sonoff Basic)
-PSF-B01-GL | plug      | 1    | - (switch 1ch)
-PSF-BD1-GL | plug      | 1    | MINI (Sonoff Mini)
-PSF-B04-GL | strip     | 2    | - (switch 2ch)
-PSF-B04-GL | strip     | 4    | 4CHPRO (Sonoff 4CH Pro)
-"""
-import logging
-from typing import Optional
+from homeassistant.components.switch import SwitchEntity
 
-from homeassistant.helpers.entity import ToggleEntity
-
-# noinspection PyUnresolvedReferences
-from . import DOMAIN, CONF_FORCE_UPDATE, SCAN_INTERVAL
-from .sonoff_main import EWeLinkEntity
-
-_LOGGER = logging.getLogger(__name__)
+from .core.const import DOMAIN
+from .core.entity import XEntity
+from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
 
 
-async def async_setup_platform(hass, config, add_entities,
-                               discovery_info=None):
-    if discovery_info is None:
-        return
-
-    deviceid = discovery_info['deviceid']
-    channels = discovery_info['channels']
-    registry = hass.data[DOMAIN]
-
-    uiid = registry.devices[deviceid].get('uiid')
-    if uiid == 66:
-        add_entities([ZigBeeBridge(registry, deviceid)])
-    else:
-        add_entities([EWeLinkToggle(registry, deviceid, channels)])
+async def async_setup_entry(hass, config_entry, add_entities):
+    ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
+    ewelink.dispatcher_connect(
+        SIGNAL_ADD_ENTITIES,
+        lambda x: add_entities([e for e in x if isinstance(e, SwitchEntity)])
+    )
 
 
-class EWeLinkToggle(EWeLinkEntity, ToggleEntity):
-    """Toggle can force update device with sledonline command."""
-    _should_poll = None
-    _sled_online = None
+# noinspection PyAbstractClass
+class XSwitch(XEntity, SwitchEntity):
+    params = {"switch"}
 
-    async def async_added_to_hass(self) -> None:
-        device = self._init()
-        self._should_poll = device.pop(CONF_FORCE_UPDATE, False)
+    def set_state(self, params: dict):
+        self._attr_is_on = params["switch"] == "on"
 
-    def _update_handler(self, state: dict, attrs: dict):
-        self._attrs.update(attrs)
+    async def async_turn_on(self):
+        await self.ewelink.send(self.device, {"switch": "on"})
 
-        if 'switch' in state or 'switches' in state:
-            self._is_on = any(self._is_on_list(state))
-
-        if 'sledOnline' in state:
-            self._sled_online = state['sledOnline']
-
-        self.schedule_update_ha_state()
-
-    @property
-    def should_poll(self) -> bool:
-        # The device itself sends an update of its status
-        return self._should_poll
-
-    @property
-    def unique_id(self) -> Optional[str]:
-        if self.channels:
-            chid = ''.join(str(ch) for ch in self.channels)
-            return f'{self.deviceid}_{chid}'
-        else:
-            return self.deviceid
-
-    @property
-    def is_on(self) -> bool:
-        return self._is_on
-
-    async def async_turn_on(self, **kwargs) -> None:
-        await self._turn_on()
-
-    async def async_turn_off(self, **kwargs) -> None:
-        await self._turn_off()
-
-    async def async_update(self):
-        """Auto refresh device state.
-
-        Called from: `EntityPlatform._update_entity_states`
-
-        https://github.com/AlexxIT/SonoffLAN/issues/14
-        """
-        _LOGGER.debug(f"Refresh device state {self.deviceid}")
-        await self.registry.send(self.deviceid, {'_query': self._sled_online})
+    async def async_turn_off(self):
+        await self.ewelink.send(self.device, {"switch": "off"})
 
 
-class ZigBeeBridge(EWeLinkToggle):
-    def _update_handler(self, state: dict, attrs: dict):
-        self._attrs.update(attrs)
+# noinspection PyAbstractClass
+class XSwitches(XEntity, SwitchEntity):
+    params = {"switches"}
+    channel: int = 0
 
-        if 'addSubDevState' in state:
-            self._is_on = (state['addSubDevState'] == 'on')
-        elif 'subDevMaxNum' in state:
-            self._is_on = False
+    def __init__(self, ewelink: XRegistry, device: dict):
+        super().__init__(ewelink, device)
 
-        if 'subDevNum' in state and 'subDevMaxNum' in state:
-            self._attrs['devices'] = \
-                f"{state['subDevNum']} / {state['subDevMaxNum']}"
+        try:
+            self._attr_name = \
+                device["tags"]["ck_channel_name"][str(self.channel)]
+        except KeyError:
+            pass
+        self._attr_unique_id = f"{device['deviceid']}_{self.channel + 1}"
 
-        self.schedule_update_ha_state()
+    def set_state(self, params: dict):
+        params = next(
+            i for i in params["switches"] if i["outlet"] == self.channel
+        )
+        self._attr_is_on = params["switch"] == "on"
 
-    @property
-    def icon(self):
-        return 'mdi:zigbee'
+    async def async_turn_on(self):
+        params = {"switches": [{"outlet": self.channel, "switch": "on"}]}
+        await self.ewelink.send(self.device, params)
 
-    async def async_turn_on(self, **kwargs) -> None:
-        await self.registry.send(self.deviceid, {'addSubDevState': 'on'})
+    async def async_turn_off(self):
+        params = {"switches": [{"outlet": self.channel, "switch": "off"}]}
+        await self.ewelink.send(self.device, params)
 
-    async def async_turn_off(self, **kwargs) -> None:
-        await self.registry.send(self.deviceid, {'addSubDevState': 'off'})
+
+# noinspection PyAbstractClass
+class XSwitchTH(XSwitch):
+    async def async_turn_on(self):
+        params = {"switch": "on", "mainSwitch": "on", "deviceType": "normal"}
+        await self.ewelink.send(self.device, params)
+
+    async def async_turn_off(self):
+        params = {"switch": "off", "mainSwitch": "off", "deviceType": "normal"}
+        await self.ewelink.send(self.device, params)
+
+
+# noinspection PyAbstractClass
+class XToggle(XEntity, SwitchEntity):
+    def set_state(self, params: dict):
+        self._attr_is_on = params[self.param] == "on"
+
+    async def async_turn_on(self):
+        await self.ewelink.send(self.device, {self.param: "on"})
+
+    async def async_turn_off(self):
+        await self.ewelink.send(self.device, {self.param: "off"})
