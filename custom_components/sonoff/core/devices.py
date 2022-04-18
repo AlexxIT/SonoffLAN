@@ -10,9 +10,9 @@ XEntity properties:
 """
 from typing import Optional
 
-from ..conver import XCover
-from ..fan import XFan
-from ..light import XFanLight
+from ..cover import XCover
+from ..fan import XFan, XDiffuserFan
+from ..light import *
 from ..sensor import XSensor, XSensor100
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
 
@@ -30,52 +30,52 @@ Switch4 = spec(XSwitches, channel=3, uid="4")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
 
-DEVICES = [{
-    1: "Sonoff 1CH",
-    5: "Sonoff Pow",
-    6: "??",
-    14: "Sonoff Basic",
-    "spec": [XSwitch, LED, RSSI]
-}, {
-    2: "Sonoff 2CH",
-    7: "Sonoff T1 2CH",
-    29: "Sonoff 2CH",
-    "spec": [Switch1, Switch2]
-}, {
-    3: "Sonoff 3CH",
-    8: "Sonoff T1 3CH",
-    30: "Sonoff 3CH",
-    "spec": [Switch1, Switch2, Switch3]
-}, {
-    4: "Sonoff 4CH",
-    9: "Sonoff 4CH",
-    31: "Sonoff 4CH",
-    "spec": [Switch1, Switch2, Switch3, Switch4]
-}, {
-    77: "Sonoff Micro",
-    78: "Sonoff 1CH",
-    81: "Sonoff 1CH",
-    107: "Sonoff 1CH",
-    "spec": [Switch1]
-}, {
-    11: "King Art - King Q4 Cover",
-    "spec": [XCover, LED, RSSI],
-}, {
-    15: "Sonoff TH16",
-    "spec": [
+SPEC_SWITCH = [XSwitch, LED, RSSI]
+SPEC_1CH = [Switch1]
+SPEC_2CH = [Switch1, Switch2]
+SPEC_3CH = [Switch1, Switch2, Switch3]
+SPEC_4CH = [Switch1, Switch2, Switch3, Switch4]
+
+DEVICES = {
+    1: SPEC_SWITCH,
+    2: SPEC_2CH,
+    3: SPEC_3CH,
+    4: SPEC_4CH,
+    5: SPEC_SWITCH,  # Sonoff Pow
+    6: SPEC_SWITCH,
+    7: SPEC_2CH,  # Sonoff T1 2CH
+    8: SPEC_3CH,  # Sonoff T1 3CH
+    9: SPEC_4CH,
+    11: [XCover, LED, RSSI],  # King Art - King Q4 Cover (only cloud)
+    14: SPEC_SWITCH,  # Sonoff Basic (3rd party)
+    15: [
         XSwitchTH, LED, RSSI,
         spec(XSensor, param="currentTemperature", uid="temperature"),
         spec(XSensor, param="currentHumidity", uid="humidity"),
-    ]
-}, {
-    28: "Sonoff RFBridge",
-    "spec": [LED, RSSI]
-}, {
-    34: "Sonoff iFan",  # Sonoff iFan02 and iFan03
-    "spec": [XFan, XFanLight]
-}, {
-    126: "Sonoff Dual R3",
-    "spec": [
+    ],  # Sonoff TH16
+    22: [XLightB1],  # Sonoff B1 (only cloud)
+    # https://github.com/AlexxIT/SonoffLAN/issues/173
+    25: [XDiffuserFan, XDiffuserLight],  # Diffuser
+    28: [LED, RSSI],  # Sonoff RF Brigde 433
+    29: SPEC_2CH,
+    30: SPEC_3CH,
+    31: SPEC_4CH,
+    34: [XFan, XFanLight],  # Sonoff iFan02 and iFan03
+    36: [XDimmer],  # KING-M4 (dimmer, only cloud)
+    44: [XLightD1],  # Sonoff D1
+    57: [XLight57],  # Mosquito Killer Lamp
+    59: [XLightLED],  # Sonoff LED (only cloud)
+    # 66: switch1,  # ZigBee Bridge
+    77: SPEC_1CH,  # Sonoff Micro
+    78: SPEC_1CH,
+    81: SPEC_1CH,
+    82: SPEC_2CH,
+    83: SPEC_3CH,
+    84: SPEC_4CH,
+    103: [XLightB02],  # Sonoff B02 CCT bulb
+    104: [XLightB05],  # Sonoff B05 RGB+CCT color bulb
+    107: SPEC_1CH,
+    126: [
         Switch1, Switch2,
         spec(XSensor100, param="current_00", uid="current_1"),
         spec(XSensor100, param="current_01", uid="current_2"),
@@ -83,57 +83,8 @@ DEVICES = [{
         spec(XSensor100, param="voltage_01", uid="voltage_2"),
         spec(XSensor100, param="actPow_00", uid="power_1"),
         spec(XSensor100, param="actPow_01", uid="power_2"),
-    ]
-}]
-
-# , {
-#     11: "Cover",
-#     "spec": [
-#         Converter("cover", "cover"),
-#     ]
-# }, {
-#     18: "Sonoff SC",
-#     "spec": [
-#         Converter("xxx", "sensor"),
-#     ]
-# }, {
-#     22: "Sonoff SC",
-#     "spec": [
-#         Converter("light", "light"),
-#     ]
-# }, {
-#     25: "Diffuser",
-#     "spec": [
-#         Converter("fan", "fan", speed_count=2),
-#         Converter("light", "light"),
-#     ]
-# }, {
-#     28: "Sonoff RF Brigde 433",
-#     "spec": [
-#         Converter("", "remote"),
-#     ]
-# }, {
-#     34: "Sonoff iFan",  # Sonoff iFan02 and iFan03
-#     "spec": [
-#         Converter("", "light"),
-#         Converter("", "fan"),
-#     ]
-# }, {
-#     36: "KING-M4",
-#     "spec": [
-#         Converter("", "light"),
-#     ]
-# }, {
-#     44: "Sonoff D1",
-#     "spec": [
-#         Converter("", "light"),
-#     ]
-# }, {
-#     102: "Sonoff DW2 Door/Window sensor",
-#     "spec": [
-#         Converter("door", "binary_sensor"),
-#     ]
-# }]
+    ],  # DUALR3
+}
 
 DIY = {
     # DIY type, UIID, Brand, Model/Name
@@ -150,12 +101,7 @@ DIY = {
 
 
 def get_spec(device: dict) -> Optional[list]:
-    try:
-        uiid = device["extra"]["uiid"]
-        info = next(i for i in DEVICES if uiid in i)
-        return info["spec"]
-    except:
-        return None
+    return DEVICES.get(device["extra"]["uiid"])
 
 
 def setup_diy(device: dict) -> dict:
