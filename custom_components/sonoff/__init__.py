@@ -18,7 +18,7 @@ from .core.ewelink.cloud import AuthError
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["fan", "light", "sensor", "switch"]
+PLATFORMS = ["cover", "fan", "light", "sensor", "switch"]
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({

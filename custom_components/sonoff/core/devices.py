@@ -10,6 +10,7 @@ XEntity properties:
 """
 from typing import Optional
 
+from ..conver import XCover
 from ..fan import XFan
 from ..light import XFanLight
 from ..sensor import XSensor, XSensor100
@@ -56,6 +57,9 @@ DEVICES = [{
     81: "Sonoff 1CH",
     107: "Sonoff 1CH",
     "spec": [Switch1]
+}, {
+    11: "King Art - King Q4 Cover",
+    "spec": [XCover, LED, RSSI],
 }, {
     15: "Sonoff TH16",
     "spec": [
