@@ -355,3 +355,34 @@ def test_diffuser():
             'only_device': {'ota': 'success'},
         }
     })
+
+
+def test_sonoff_sc():
+    _, entities = get_entitites({
+        "name": "Meteo",
+        "deviceid": DEVICEID,
+        "extra": {"uiid": 18},
+        "online": False,
+        "params": {
+            "dusty": 2,
+            "fwVersion": "2.7.0",
+            "humidity": 92,
+            "light": 10,
+            "noise": 2,
+            "rssi": -34,
+            "sledOnline": "on",
+            "staMac": "11:22:33:AA:BB:CC",
+            "temperature": 25
+        },
+        "productModel": "SC",
+    })
+    temp: XSensor = entities[0]
+    assert temp.state == 25
+    hum: XSensor = entities[1]
+    assert hum.state == 92
+    dusty: XSensor = entities[2]
+    assert dusty.state == 2
+    light: XSensor = entities[3]
+    assert light.state == 10
+    noise: XSensor = entities[4]
+    assert noise.state == 2

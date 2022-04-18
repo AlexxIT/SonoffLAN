@@ -28,7 +28,9 @@ ENTITY_CATEGORIES = {
 }
 
 ICONS = {
+    "dusty": "mdi:cloud",
     "led": "mdi:led-off",
+    "noise": "mdi:bell-ring",
 }
 
 NAMES = {

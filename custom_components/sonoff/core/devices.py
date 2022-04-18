@@ -53,6 +53,13 @@ DEVICES = {
         spec(XSensor, param="currentTemperature", uid="temperature"),
         spec(XSensor, param="currentHumidity", uid="humidity"),
     ],  # Sonoff TH16
+    18: [
+        spec(XSensor, param="temperature"),
+        spec(XSensor, param="humidity"),
+        spec(XSensor, param="dusty"),
+        spec(XSensor, param="light"),
+        spec(XSensor, param="noise"),
+    ],
     22: [XLightB1],  # Sonoff B1 (only cloud)
     # https://github.com/AlexxIT/SonoffLAN/issues/173
     25: [XDiffuserFan, XDiffuserLight],  # Diffuser
