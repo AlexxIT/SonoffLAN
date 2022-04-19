@@ -49,7 +49,7 @@ class XSensor(XEntity, SensorEntity):
 
 class XSensor100(XSensor):
     def set_state(self, params: dict):
-        self._attr_native_value = round(params[self.param] * 0.01, 2)
+        self._attr_native_value = round(float(params[self.param]) * 0.01, 2)
 
 
 BUTTON_STATES = ["single", "double", "hold"]

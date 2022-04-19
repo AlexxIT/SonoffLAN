@@ -110,6 +110,11 @@ DEVICES = {
     ],  # Sonoff S40
     1000: [XZigbeeButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [XZigbeeLigth],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
+    1770: [
+        spec(XSensor100, param="temperature"),
+        spec(XSensor100, param="humidity"),
+        Battery,
+    ],  # ZCL_HA_DEVICEID_TEMPERATURE_SENSOR
 }
 
 DIY = {

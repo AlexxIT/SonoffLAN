@@ -283,6 +283,7 @@ def test_sonoff_th():
 
 
 def test_dual_r3():
+    # noinspection DuplicatedCode
     _, entities = get_entitites({
         'extra': {'uiid': 126},
         'params': {
@@ -520,3 +521,24 @@ def test_zigbee_button():
         "deviceid": DEVICEID, "params": {'trigTime': '1601285000235', 'key': 1}
     })
     assert button.state == "double"
+
+
+def test_zigbee_th():
+    _, entities = get_entitites({
+        "extra": {"uiid": 1770},
+        "params": {
+            "humidity": "6443",
+            "temperature": "2096",
+            "trigTime": "1594745697262",
+            "battery": 127,
+        }
+    })
+
+    temp: XSensor = entities[0]
+    assert temp.state == 20.96
+
+    hum: XSensor = entities[1]
+    assert hum.state == 64.43
+
+    bat: XSensor = entities[2]
+    assert bat.state == 127
