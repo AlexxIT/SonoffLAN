@@ -10,6 +10,7 @@ XEntity properties:
 """
 from typing import Optional
 
+from ..binary_sensor import XBinarySensor
 from ..cover import XCover
 from ..fan import XFan, XDiffuserFan
 from ..light import *
@@ -28,6 +29,8 @@ Switch1 = spec(XSwitches, channel=0, uid="1")
 Switch2 = spec(XSwitches, channel=1, uid="2")
 Switch3 = spec(XSwitches, channel=2, uid="3")
 Switch4 = spec(XSwitches, channel=3, uid="4")
+
+Battery = spec(XSensor, param="battery")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
 
@@ -86,6 +89,7 @@ DEVICES = {
     82: SPEC_2CH,
     83: SPEC_3CH,
     84: SPEC_4CH,
+    102: [XBinarySensor, Battery, RSSI],  # Sonoff DW2 Door/Window sensor
     103: [XLightB02],  # Sonoff B02 CCT bulb
     104: [XLightB05],  # Sonoff B05 RGB+CCT color bulb
     107: SPEC_1CH,

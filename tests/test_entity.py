@@ -1,7 +1,7 @@
 from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
-from custom_components.sonoff.binary_sensor import XRemoteSensor
+from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
 from custom_components.sonoff.core.ewelink import XRegistry, \
     SIGNAL_ADD_ENTITIES, SIGNAL_UPDATE, SIGNAL_CONNECTED
 from custom_components.sonoff.fan import XFan
@@ -484,3 +484,21 @@ def test_rfbridge():
         "params": {"cmd": "trigger", "rfTrig1": "2022-04-19T03:57:52.000Z"}
     })
     assert alarm.state == "off"
+
+
+def test_wifi_sensor():
+    _, entities = get_entitites({
+        "extra": {"uiid": "102"},
+        "params": {
+            "actionTime": "2020-05-20T08:43:33.151Z",
+            "battery": 3,
+            "fwVersion": "1000.2.917",
+            "lastUpdateTime": "2020-05-20T13:43:24.124Z",
+            "rssi": -64,
+            "switch": "off",
+            "type": 4
+        }
+    })
+
+    sensor: XBinarySensor = entities[0]
+    assert sensor.state == "off"

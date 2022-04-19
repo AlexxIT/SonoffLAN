@@ -5,6 +5,7 @@ from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.helpers.entity import DeviceInfo
 
 from .core.const import DOMAIN
+from .core.entity import XEntity
 from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
 
 
@@ -15,6 +16,14 @@ async def async_setup_entry(hass, config_entry, add_entities):
             [e for e in x if isinstance(e, BinarySensorEntity)]
         )
     )
+
+
+# noinspection PyAbstractClass
+class XBinarySensor(XEntity, BinarySensorEntity):
+    params = {"switch"}
+
+    def set_state(self, params: dict):
+        self._attr_is_on = params['switch'] == 'on'
 
 
 # noinspection PyAbstractClass
