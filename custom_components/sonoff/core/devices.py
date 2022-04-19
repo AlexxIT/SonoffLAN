@@ -11,7 +11,7 @@ XEntity properties:
 from typing import Optional
 
 from ..binary_sensor import XBinarySensor, XZigbeeMotion, XZigbeeDoor
-from ..cover import XCover
+from ..cover import XCover, XCoverDualR3
 from ..fan import XFan, XDiffuserFan
 from ..light import *
 from ..remote import XRemote
@@ -134,7 +134,11 @@ DIY = {
 
 
 def get_spec(device: dict) -> Optional[list]:
-    return DEVICES.get(device["extra"]["uiid"])
+    uiid = device["extra"]["uiid"]
+    # DualR3 in cover mode
+    if uiid == 126 and device["params"].get("workMode") == 2:
+        return [XCoverDualR3]
+    return DEVICES.get(uiid)
 
 
 def setup_diy(device: dict) -> dict:
