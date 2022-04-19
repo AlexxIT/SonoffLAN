@@ -24,8 +24,6 @@ async def async_setup_entry(hass, config_entry, add_entities):
 
 # noinspection PyAbstractClass
 class XRemote(XEntity, RemoteEntity):
-    _attr_is_on = True
-
     def __init__(self, ewelink: XRegistry, device: dict):
         super().__init__(ewelink, device)
 
@@ -70,15 +68,13 @@ class XRemote(XEntity, RemoteEntity):
                 return
             child.internal_update(ts)
 
-            self.hass.bus.async_fire("sonoff.remote", {
+            self._attr_extra_state_attributes = data = {
                 "command": int(child.channel), "name": child.name,
                 "entity_id": self.entity_id, "ts": ts,
-            })
+            }
+            self.hass.bus.async_fire("sonoff.remote", data)
 
     async def async_send_command(self, command, **kwargs):
-        if not self._attr_is_on:
-            return
-
         delay = kwargs.get(ATTR_DELAY_SECS, DEFAULT_DELAY_SECS)
         for i, channel in enumerate(command):
             if i:
@@ -96,9 +92,6 @@ class XRemote(XEntity, RemoteEntity):
             })
 
     async def async_learn_command(self, **kwargs):
-        if not self._attr_is_on:
-            return
-
         command = kwargs[ATTR_COMMAND]
         # cmd param for local and for cloud mode
         await self.ewelink.send(self.device, {
