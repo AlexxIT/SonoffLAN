@@ -8,7 +8,7 @@ from custom_components.sonoff.core.ewelink import XRegistry, \
     SIGNAL_ADD_ENTITIES, SIGNAL_UPDATE, SIGNAL_CONNECTED
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import XFanLight
-from custom_components.sonoff.sensor import XSensor, XZigbeeButton
+from custom_components.sonoff.sensor import XSensor, XZigbeeButton, XUnknown
 from custom_components.sonoff.switch import XSwitch, XSwitchTH, XToggle
 
 DEVICEID = "1000123abc"
@@ -118,6 +118,21 @@ def test_available():
     reg.cloud.dispatcher_send(SIGNAL_UPDATE, msg)
     assert switch.available is True
     assert switch.state == "off"
+
+
+def test_nospec():
+    device = {"extra": {"uiid": "X"}, "params": {"switch": "on"}}
+    _, entities = get_entitites(device)
+
+    switch: XSwitch = entities[0]
+    assert switch.state == "on"
+
+    device = {"extra": {"uiid": "Y"}, "params": {"property": 123}}
+    _, entities = get_entitites(device)
+
+    sensor: XUnknown = entities[0]
+    assert len(sensor.state) == 25
+    assert sensor.extra_state_attributes["property"] == 123
 
 
 def test_switch_2ch():

@@ -15,7 +15,7 @@ from ..cover import XCover, XCoverDualR3
 from ..fan import XFan, XDiffuserFan
 from ..light import *
 from ..remote import XRemote
-from ..sensor import XSensor, XSensor100, XZigbeeButton
+from ..sensor import XSensor, XSensor100, XZigbeeButton, XUnknown
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
 
 
@@ -138,7 +138,13 @@ def get_spec(device: dict) -> Optional[list]:
     # DualR3 in cover mode
     if uiid == 126 and device["params"].get("workMode") == 2:
         return [XCoverDualR3]
-    return DEVICES.get(uiid)
+    if uiid in DEVICES:
+        return DEVICES[uiid]
+    if "switch" in device["params"]:
+        return SPEC_SWITCH
+    if "switches" in device["params"]:
+        return SPEC_4CH
+    return [XUnknown]
 
 
 def setup_diy(device: dict) -> dict:

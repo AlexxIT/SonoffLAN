@@ -3,6 +3,7 @@ import asyncio
 from homeassistant.components.sensor import SensorEntity, \
     STATE_CLASS_MEASUREMENT
 from homeassistant.const import *
+from homeassistant.util import dt
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -69,3 +70,14 @@ class XZigbeeButton(XEntity, SensorEntity):
         await asyncio.sleep(.5)
         self._attr_native_value = ""
         self._async_write_ha_state()
+
+
+class XUnknown(XEntity, SensorEntity):
+    _attr_device_class = DEVICE_CLASS_TIMESTAMP
+
+    def internal_update(self, params: dict = None):
+        self._attr_native_value = dt.utcnow()
+        self._attr_extra_state_attributes = params
+
+        if self.hass:
+            self._async_write_ha_state()
