@@ -542,3 +542,28 @@ def test_zigbee_th():
 
     bat: XSensor = entities[2]
     assert bat.state == 127
+
+
+def test_zigbee_motion():
+    reg, entities = get_entitites({
+        "extra": {"uiid": 2026},
+        "params": {
+            "battery": 100,
+            "trigTime": "1595266029933",
+            "motion": 0,
+        }
+    })
+
+    motion: XBinarySensor = entities[0]
+    assert motion.state == "off"
+
+    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID,
+        "params": {'trigTime': '1601285000235', 'motion': 1}
+    })
+    assert motion.state == "on"
+
+    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID, "params": {'online': False}
+    })
+    assert motion.state == "off"

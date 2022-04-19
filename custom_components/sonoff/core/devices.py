@@ -10,7 +10,7 @@ XEntity properties:
 """
 from typing import Optional
 
-from ..binary_sensor import XBinarySensor
+from ..binary_sensor import XBinarySensor, XZigbeeMotion
 from ..cover import XCover
 from ..fan import XFan, XDiffuserFan
 from ..light import *
@@ -115,6 +115,7 @@ DEVICES = {
         spec(XSensor100, param="humidity"),
         Battery,
     ],  # ZCL_HA_DEVICEID_TEMPERATURE_SENSOR
+    2026: [XZigbeeMotion, Battery],  # ZIGBEE_MOBILE_SENSOR
 }
 
 DIY = {

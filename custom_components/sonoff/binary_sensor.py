@@ -27,6 +27,19 @@ class XBinarySensor(XEntity, BinarySensorEntity):
 
 
 # noinspection PyAbstractClass
+class XZigbeeMotion(XEntity, BinarySensorEntity):
+    params = {"motion", "online"}
+
+    def set_state(self, params: dict):
+        if "motion" in params:
+            self._attr_is_on = params['motion'] == 1
+        elif params.get("online") is False:
+            # Fix stuck in `on` state after bridge goes to unavailable
+            # https://github.com/AlexxIT/SonoffLAN/pull/425
+            self._attr_is_on = False
+
+
+# noinspection PyAbstractClass
 class XRemoteSensor(BinarySensorEntity):
     task: asyncio.Task = None
 
