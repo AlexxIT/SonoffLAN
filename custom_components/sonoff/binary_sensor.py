@@ -40,6 +40,14 @@ class XZigbeeMotion(XEntity, BinarySensorEntity):
 
 
 # noinspection PyAbstractClass
+class XZigbeeDoor(XEntity, BinarySensorEntity):
+    params = {"lock"}
+
+    def set_state(self, params: dict):
+        self._attr_is_on = params['lock'] == 1
+
+
+# noinspection PyAbstractClass
 class XRemoteSensor(BinarySensorEntity):
     task: asyncio.Task = None
 
