@@ -5,7 +5,7 @@ import voluptuous as vol
 from homeassistant.components import zeroconf
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import *
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -61,6 +61,29 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     hass.data[DOMAIN] = {
         CONF_DEVICES: conf.get(CONF_DEVICES)
     }
+
+    async def send_command(call: ServiceCall):
+        """Service for send raw command to device.
+        :param call: `device` - required param, all other params - optional
+        """
+        data = dict(call.data)
+        deviceid = str(data.pop('device'))
+
+        registry = next(
+            r for r in hass.data[DOMAIN].values()
+            if isinstance(r, XRegistry) and deviceid in r.devices
+        )
+        device = registry.devices[deviceid]
+
+        if len(deviceid) == 10:
+            await registry.send(device, data)
+        # elif len(deviceid) == 6:
+        #     await cameras.send(device, data['cmd'])
+        # else:
+        #     _LOGGER.error(f"Wrong deviceid {deviceid}")
+
+    hass.services.async_register(DOMAIN, 'send_command', send_command)
+
     return True
 
 
