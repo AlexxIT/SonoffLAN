@@ -15,7 +15,7 @@ from ..cover import XCover
 from ..fan import XFan, XDiffuserFan
 from ..light import *
 from ..remote import XRemote
-from ..sensor import XSensor, XSensor100
+from ..sensor import XSensor, XSensor100, XZigbeeButton
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
 
 
@@ -108,6 +108,7 @@ DEVICES = {
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
     ],  # Sonoff S40
+    1000: [XZigbeeButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
 }
 
 DIY = {

@@ -1,3 +1,5 @@
+import asyncio
+
 from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
@@ -6,7 +8,7 @@ from custom_components.sonoff.core.ewelink import XRegistry, \
     SIGNAL_ADD_ENTITIES, SIGNAL_UPDATE, SIGNAL_CONNECTED
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import XFanLight
-from custom_components.sonoff.sensor import XSensor
+from custom_components.sonoff.sensor import XSensor, XZigbeeButton
 from custom_components.sonoff.switch import XSwitch, XSwitchTH, XToggle
 
 DEVICEID = "1000123abc"
@@ -33,6 +35,8 @@ def get_entitites(device: dict, config: dict = None):
     device["params"].setdefault("staMac", "11:22:33:AA:BB:CC")
 
     entities = []
+
+    asyncio.create_task = lambda _: None
 
     reg = XRegistry(None)
     reg.config = config
@@ -497,3 +501,22 @@ def test_wifi_sensor():
 
     sensor: XBinarySensor = entities[0]
     assert sensor.state == "off"
+
+
+def test_zigbee_button():
+    reg, entities = get_entitites({
+        "extra": {"uiid": 1000},
+        "params": {
+            "battery": 100,
+            "trigTime": "1601263115917",
+            "key": 0
+        }
+    })
+
+    button: XZigbeeButton = entities[0]
+    assert button.state == ""
+
+    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID, "params": {'trigTime': '1601285000235', 'key': 1}
+    })
+    assert button.state == "double"

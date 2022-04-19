@@ -1,3 +1,5 @@
+import asyncio
+
 from homeassistant.components.sensor import SensorEntity, \
     STATE_CLASS_MEASUREMENT
 from homeassistant.const import *
@@ -48,3 +50,22 @@ class XSensor(XEntity, SensorEntity):
 class XSensor100(XSensor):
     def set_state(self, params: dict):
         self._attr_native_value = round(params[self.param] * 0.01, 2)
+
+
+BUTTON_STATES = ["single", "double", "hold"]
+
+
+class XZigbeeButton(XEntity, SensorEntity):
+    def __init__(self, ewelink: XRegistry, device: dict):
+        super().__init__(ewelink, device)
+        self.params = {"key"}
+        self._attr_native_value = ""
+
+    def set_state(self, params: dict):
+        self._attr_native_value = BUTTON_STATES[params["key"]]
+        asyncio.create_task(self.clear_state())
+
+    async def clear_state(self):
+        await asyncio.sleep(.5)
+        self._attr_native_value = ""
+        self._async_write_ha_state()
