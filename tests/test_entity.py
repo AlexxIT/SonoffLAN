@@ -1,6 +1,7 @@
 from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
+from custom_components.sonoff.binary_sensor import XRemoteSensor
 from custom_components.sonoff.core.ewelink import XRegistry, \
     SIGNAL_ADD_ENTITIES, SIGNAL_UPDATE
 from custom_components.sonoff.fan import XFan
@@ -13,17 +14,26 @@ DEVICEID = "1000123abc"
 
 class HassDummy:
     def __init__(self):
-        self.async_set = lambda *args: None
         self.config = Config(None)
         self.data = {}
+
         self.states = self
+        self.async_set = lambda *args: None
+
+        self.bus = self
+        self.async_fire = lambda *args: None
 
 
 # noinspection PyTypeChecker
-def get_entitites(device: dict):
+def get_entitites(device: dict, config: dict = None):
+    device.setdefault("name", "Device1")
+    device.setdefault("deviceid", DEVICEID)
+    device.setdefault("online", True)
+
     entities = []
 
     reg = XRegistry(None)
+    reg.config = config
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
     reg.setup_devices([device])
 
@@ -426,3 +436,58 @@ def test_sonoff_pow():
     assert power.state == 12.34
     power: XSensor = next(e for e in entities if e.uid == "current")
     assert power.state == 1.23
+
+
+def test_rfbridge():
+    reg, entities = get_entitites({
+        "extra": {"uiid": 28},
+        "params": {
+            "cmd": "trigger",
+            "fwVersion": "3.4.0",
+            "init": 1,
+            "rfChl": 0,
+            "rfList": [],
+            "rfTrig0": "2020-05-10T19:29:43.000Z",
+            "rfTrig1": 0,
+            "rssi": -55,
+            "setState": "arm",
+            "sledOnline": "on",
+            "timers": [],
+            "version": 8
+        },
+        "tags": {
+            "disable_timers": [],
+            "zyx_info": [{
+                "buttonName": [{"0": "Button1"}],
+                "name": "Alarm1",
+                "remote_type": "6"
+            }, {
+                "buttonName": [{"1": "Button1"}],
+                "name": "Alarm2",
+                "remote_type": "6"
+            }]
+        }
+    }, {
+        "rfbridge": {
+            "Alarm1": {
+                "name": "Custom1",
+                "timeout": 0,
+                "payload_off": "Alarm2"
+            }
+        }
+    })
+
+    alarm: XRemoteSensor = next(e for e in entities if e.name == "Custom1")
+    assert alarm.state == "off"
+
+    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID,
+        "params": {"cmd": "trigger", "rfTrig0": "2022-04-19T03:56:52.000Z"}
+    })
+    assert alarm.state == "on"
+
+    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID,
+        "params": {"cmd": "trigger", "rfTrig1": "2022-04-19T03:57:52.000Z"}
+    })
+    assert alarm.state == "off"

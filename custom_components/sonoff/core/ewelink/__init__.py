@@ -16,6 +16,8 @@ SIGNAL_ADD_ENTITIES = "add_entities"
 
 
 class XRegistry(XRegistryBase):
+    config: dict = None
+
     def __init__(self, session: ClientSession):
         super().__init__(session)
 

@@ -13,6 +13,7 @@ from typing import Optional
 from ..cover import XCover
 from ..fan import XFan, XDiffuserFan
 from ..light import *
+from ..remote import XRemote
 from ..sensor import XSensor, XSensor100
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
 
@@ -63,7 +64,7 @@ DEVICES = {
     22: [XLightB1],  # Sonoff B1 (only cloud)
     # https://github.com/AlexxIT/SonoffLAN/issues/173
     25: [XDiffuserFan, XDiffuserLight],  # Diffuser
-    28: [LED, RSSI],  # Sonoff RF Brigde 433
+    28: [XRemote, LED, RSSI],  # Sonoff RF Brigde 433
     29: SPEC_2CH,
     30: SPEC_3CH,
     31: SPEC_4CH,

@@ -18,7 +18,10 @@ from .core.ewelink.cloud import AuthError
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["cover", "fan", "light", "sensor", "switch"]
+PLATFORMS = [
+    "binary_sensor", "button", "cover", "fan", "light", "remote", "sensor",
+    "switch"
+]
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
@@ -53,6 +56,7 @@ CONFIG_SCHEMA = vol.Schema({
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     if not backward.hass_version_supported:
         return False
+    XRegistry.config = config.get(DOMAIN)
     conf = config.get(DOMAIN) or {}
     hass.data[DOMAIN] = {
         CONF_DEVICES: conf.get(CONF_DEVICES)

@@ -41,7 +41,7 @@ NAMES = {
 
 
 class XEntity(Entity):
-    params: set = None
+    params: set = ""
     param: str = None
     uid: str = None
 
@@ -67,7 +67,7 @@ class XEntity(Entity):
             self._attr_name = device["name"]
             self._attr_unique_id = device["deviceid"]
 
-        self.entity_id = DOMAIN + "." + self.unique_id
+        self.entity_id = DOMAIN + "." + self._attr_unique_id
 
         deviceid: str = device['deviceid']
         params: dict = device['params']
