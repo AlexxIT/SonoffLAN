@@ -14,6 +14,7 @@ from homeassistant.helpers.storage import Store
 from .core import backward
 from .core.const import DOMAIN, CONF_MODES, CONF_DEVICEKEY
 from .core.ewelink import XRegistry, XRegistryCloud, XRegistryLocal
+from .core.ewelink.camera import XCameras
 from .core.ewelink.cloud import AuthError
 
 _LOGGER = logging.getLogger(__name__)
@@ -62,6 +63,9 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         CONF_DEVICES: conf.get(CONF_DEVICES)
     }
 
+    # cameras starts only on first command to it
+    cameras = XCameras()
+
     async def send_command(call: ServiceCall):
         """Service for send raw command to device.
         :param call: `device` - required param, all other params - optional
@@ -69,18 +73,20 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         data = dict(call.data)
         deviceid = str(data.pop('device'))
 
-        registry = next(
-            r for r in hass.data[DOMAIN].values()
-            if isinstance(r, XRegistry) and deviceid in r.devices
-        )
-        device = registry.devices[deviceid]
-
         if len(deviceid) == 10:
+            registry = next(
+                r for r in hass.data[DOMAIN].values()
+                if isinstance(r, XRegistry) and deviceid in r.devices
+            )
+            device = registry.devices[deviceid]
+
             await registry.send(device, data)
-        # elif len(deviceid) == 6:
-        #     await cameras.send(device, data['cmd'])
-        # else:
-        #     _LOGGER.error(f"Wrong deviceid {deviceid}")
+
+        elif len(deviceid) == 6:
+            await cameras.send(deviceid, data['cmd'])
+
+        else:
+            _LOGGER.error(f"Wrong deviceid {deviceid}")
 
     hass.services.async_register(DOMAIN, 'send_command', send_command)
 
