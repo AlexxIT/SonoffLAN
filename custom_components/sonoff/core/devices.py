@@ -15,7 +15,7 @@ from ..cover import XCover, XCoverDualR3
 from ..fan import XFan, XDiffuserFan
 from ..light import *
 from ..remote import XRemote
-from ..sensor import XSensor, XSensor100, XZigbeeButton, XUnknown
+from ..sensor import XSensor, XZigbeeButton, XUnknown
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
 
 
@@ -29,6 +29,8 @@ Switch1 = spec(XSwitches, channel=0, uid="1")
 Switch2 = spec(XSwitches, channel=1, uid="2")
 Switch3 = spec(XSwitches, channel=2, uid="3")
 Switch4 = spec(XSwitches, channel=3, uid="4")
+
+XSensor100 = spec(XSensor, multiply=0.01, round=2)
 
 Battery = spec(XSensor, param="battery")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
@@ -54,7 +56,7 @@ DEVICES = {
     14: SPEC_SWITCH,  # Sonoff Basic (3rd party)
     15: [
         XSwitchTH, LED, RSSI,
-        spec(XSensor, param="currentTemperature", uid="temperature"),
+        spec(XSensor, param="currentTemperature", uid="temperature", round=1),
         spec(XSensor, param="currentHumidity", uid="humidity"),
     ],  # Sonoff TH16
     18: [

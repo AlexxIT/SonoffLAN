@@ -30,6 +30,9 @@ UNITS = {
 
 
 class XSensor(XEntity, SensorEntity):
+    multiply = None
+    round = None
+
     def __init__(self, ewelink: XRegistry, device: dict):
         super().__init__(ewelink, device)
 
@@ -39,18 +42,16 @@ class XSensor(XEntity, SensorEntity):
             self._attr_native_unit_of_measurement = UNITS[self.param]
 
     def set_state(self, params: dict):
-        value = params[self.param]
-        if isinstance(value, str):
-            try:
-                value = float(value)
-            except ValueError:
-                value = None
-        self._attr_native_value = value
-
-
-class XSensor100(XSensor):
-    def set_state(self, params: dict):
-        self._attr_native_value = round(float(params[self.param]) * 0.01, 2)
+        try:
+            value = float(params[self.param])
+            if self.multiply:
+                value *= self.multiply
+            if self.round is not None:
+                # convert to int when round is zero
+                value = round(value, self.round or None)
+            self._attr_native_value = value
+        except ValueError:
+            self._attr_native_value = None
 
 
 BUTTON_STATES = ["single", "double", "hold"]

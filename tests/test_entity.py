@@ -270,6 +270,14 @@ def test_sonoff_th():
     temp: XSensor = next(e for e in entities if e.uid == "temperature")
     assert temp.state == 14.6
 
+    # test round to 1 digit
+    msg = {
+        "deviceid": DEVICEID, "host": "",
+        "params": {"deviceType": "normal", "temperature": 12.34}
+    }
+    reg.local.dispatcher_send(SIGNAL_UPDATE, msg)
+    assert temp.state == 12.3
+
     hum: XSensor = next(e for e in entities if e.uid == "humidity")
     assert hum.state == 42
 
