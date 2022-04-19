@@ -101,7 +101,7 @@ DEVICES = {
         spec(XSensor100, param="voltage_01", uid="voltage_2"),
         spec(XSensor100, param="actPow_00", uid="power_1"),
         spec(XSensor100, param="actPow_01", uid="power_2"),
-    ],  # Sonoff DUALR3
+    ],  # Sonoff DualR3
     182: [
         Switch1, LED, RSSI,
         spec(XSensor, param="current"),

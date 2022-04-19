@@ -41,7 +41,7 @@ NAMES = {
 
 
 class XEntity(Entity):
-    params: set = None
+    params: set = {}
     param: str = None
     uid: str = None
 
@@ -51,7 +51,7 @@ class XEntity(Entity):
 
         if self.param and self.uid is None:
             self.uid = self.param
-        if self.param and self.params is None:
+        if self.param and not self.params:
             self.params = {self.param}
 
         if self.uid:

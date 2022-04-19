@@ -24,8 +24,6 @@ async def async_setup_entry(hass, config_entry, add_entities):
 
 # noinspection PyAbstractClass
 class XRemote(XEntity, RemoteEntity):
-    params = {}
-
     _attr_is_on = True
 
     def __init__(self, ewelink: XRegistry, device: dict):

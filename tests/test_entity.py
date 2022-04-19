@@ -157,11 +157,6 @@ def test_switch_2ch():
     switch1: XSwitch = entities[0]
     assert switch1.name == "Channel A"
     assert switch1.unique_id == DEVICEID + "_1"
-    assert (CONNECTION_NETWORK_MAC, "11:22:33:AA:BB:CC") in \
-           switch1.device_info["connections"]
-    assert switch1.device_info["manufacturer"] == "AoYan touch"
-    assert switch1.device_info["model"] == "M602-1"
-    assert switch1.device_info["sw_version"] == "3.3.0"
     assert switch1.state == "on"
 
     switch2: XSwitch = entities[1]
@@ -488,7 +483,7 @@ def test_rfbridge():
 
 def test_wifi_sensor():
     _, entities = get_entitites({
-        "extra": {"uiid": "102"},
+        "extra": {"uiid": 102},
         "params": {
             "actionTime": "2020-05-20T08:43:33.151Z",
             "battery": 3,

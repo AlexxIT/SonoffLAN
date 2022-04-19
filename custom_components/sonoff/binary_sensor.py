@@ -66,9 +66,9 @@ class XRemoteSensor(BinarySensorEntity):
         self._async_write_ha_state()
 
         if self.timeout:
-            self.task = asyncio.create_task(self.async_clear(self.timeout))
+            self.task = asyncio.create_task(self.clear_state(self.timeout))
 
-    async def async_clear(self, delay: int):
+    async def clear_state(self, delay: int):
         await asyncio.sleep(delay)
         self._attr_is_on = False
         self._async_write_ha_state()
