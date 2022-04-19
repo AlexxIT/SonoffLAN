@@ -3,17 +3,18 @@ from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
 from custom_components.sonoff.binary_sensor import XRemoteSensor
 from custom_components.sonoff.core.ewelink import XRegistry, \
-    SIGNAL_ADD_ENTITIES, SIGNAL_UPDATE
+    SIGNAL_ADD_ENTITIES, SIGNAL_UPDATE, SIGNAL_CONNECTED
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import XFanLight
 from custom_components.sonoff.sensor import XSensor
-from custom_components.sonoff.switch import XSwitch, XSwitchTH
+from custom_components.sonoff.switch import XSwitch, XSwitchTH, XToggle
 
 DEVICEID = "1000123abc"
 
 
 class HassDummy:
     def __init__(self):
+        # noinspection PyTypeChecker
         self.config = Config(None)
         self.data = {}
 
@@ -29,6 +30,7 @@ def get_entitites(device: dict, config: dict = None):
     device.setdefault("name", "Device1")
     device.setdefault("deviceid", DEVICEID)
     device.setdefault("online", True)
+    device["params"].setdefault("staMac", "11:22:33:AA:BB:CC")
 
     entities = []
 
@@ -44,10 +46,9 @@ def get_entitites(device: dict, config: dict = None):
     return reg, entities
 
 
-def test_switch1():
+def test_simple_switch():
     _, entities = get_entitites({
         'name': 'Kitchen',
-        'deviceid': DEVICEID,
         'extra': {'uiid': 1, 'model': 'PSF-BD1-GL'},
         'brandName': 'SONOFF',
         'productModel': 'MINI',
@@ -76,12 +77,12 @@ def test_switch1():
     assert switch.device_info["sw_version"] == "3.3.0"
     assert switch.state == "on"
 
-    led: XSwitch = entities[1]
-    # assert rssi.unique_id == "1000123abc_led"
+    led: XToggle = next(e for e in entities if e.uid == "led")
+    assert led.unique_id == DEVICEID + "_led"
     assert led.state == "on"
     assert led.entity_registry_enabled_default is False
 
-    rssi: XSensor = entities[2]
+    rssi: XSensor = next(e for e in entities if e.uid == "rssi")
     assert rssi.unique_id == DEVICEID + "_rssi"
     assert rssi.native_value == -39
     assert rssi.entity_registry_enabled_default is False
@@ -96,8 +97,11 @@ def test_available():
         'params': {'switch': 'on'},
     })
     switch: XSwitch = entities[0]
-    assert switch.available is True
+    assert switch.available is False
     assert switch.state == "on"
+
+    reg.cloud.online = True
+    reg.cloud.dispatcher_send(SIGNAL_CONNECTED)
 
     # only cloud online changed
     msg = {"deviceid": DEVICEID, "params": {"online": False}}
@@ -112,14 +116,9 @@ def test_available():
     assert switch.state == "off"
 
 
-def test_switch2():
+def test_switch_2ch():
     _, entities = get_entitites({
-        'name': 'Switch 2CH',
-        'deviceid': DEVICEID,
         'extra': {'uiid': 2, 'model': 'PSF-B04-GL'},
-        'brandName': 'AoYan touch',
-        'productModel': 'M602-1',
-        'online': True,
         'params': {
             'init': 1,
             'switches': [
@@ -261,26 +260,32 @@ def test_sonoff_th():
     assert hum.state == 42
 
     # check TH v3.4.0 param name
-    msg = {"deviceid": DEVICEID, "host": "", "params": {"humidity": 48}}
+    msg = {
+        "deviceid": DEVICEID, "host": "",
+        "params": {"deviceType": "normal", "humidity": 48}
+    }
     reg.local.dispatcher_send(SIGNAL_UPDATE, msg)
     assert hum.state == 48
 
     # check TH v3.4.0 zero humidity bug (skip value)
-    msg["params"] = {"humidity": 0}
+    msg = {
+        "deviceid": DEVICEID, "host": "",
+        "params": {"deviceType": "normal", "humidity": 0}
+    }
     reg.local.dispatcher_send(SIGNAL_UPDATE, msg)
     assert hum.state == 48
 
-    msg["params"] = {"currentHumidity": "unavailable"}
+    msg = {
+        "deviceid": DEVICEID, "host": "",
+        "params": {"deviceType": "normal", "currentHumidity": "unavailable"}
+    }
     reg.local.dispatcher_send(SIGNAL_UPDATE, msg)
     assert hum.state is None
 
 
 def test_dual_r3():
     _, entities = get_entitites({
-        'name': 'Sonoff Dual R3',
-        'deviceid': DEVICEID,
         'extra': {'uiid': 126},
-        'online': False,
         'params': {
             'version': 7,
             'workMode': 1,
@@ -292,7 +297,6 @@ def test_dual_r3():
             'currLocation': 0,
             'location': 0,
             'sledBright': 100,
-            'staMac': '112233AABBCC',
             'rssi': -35,
             'overload_00': {
                 'minActPow': {'enabled': 0, 'value': 10},
@@ -343,10 +347,7 @@ def test_dual_r3():
 
 def test_diffuser():
     _, entitites = get_entitites({
-        'name': 'Wood Diffuser ',
-        'deviceid': DEVICEID,
         'extra': {'uiid': 25},
-        'online': False,
         'params': {
             'lightbright': 254,
             'lightBcolor': 255,
@@ -369,10 +370,7 @@ def test_diffuser():
 
 def test_sonoff_sc():
     _, entities = get_entitites({
-        "name": "Meteo",
-        "deviceid": DEVICEID,
         "extra": {"uiid": 18},
-        "online": False,
         "params": {
             "dusty": 2,
             "fwVersion": "2.7.0",
@@ -384,7 +382,6 @@ def test_sonoff_sc():
             "staMac": "11:22:33:AA:BB:CC",
             "temperature": 25
         },
-        "productModel": "SC",
     })
     temp: XSensor = next(e for e in entities if e.uid == "temperature")
     assert temp.state == 25
@@ -400,9 +397,6 @@ def test_sonoff_sc():
 
 def test_sonoff_pow():
     _, entities = get_entitites({
-        "name": "Fridge",
-        "deviceid": DEVICEID,
-        "online": True,
         "extra": {"uiid": 32},
         "params": {
             "hundredDaysKwh": "get",
@@ -429,7 +423,6 @@ def test_sonoff_pow():
             "sledOnline": "on",
             "version": 8
         },
-        "productModel": "POW",
     })
 
     power: XSensor = next(e for e in entities if e.uid == "power")

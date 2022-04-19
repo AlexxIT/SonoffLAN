@@ -41,7 +41,7 @@ NAMES = {
 
 
 class XEntity(Entity):
-    params: set = ""
+    params: set = None
     param: str = None
     uid: str = None
 
