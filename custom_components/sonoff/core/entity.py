@@ -59,7 +59,7 @@ class XEntity(Entity):
             self._attr_entity_category = ENTITY_CATEGORIES.get(self.uid)
             self._attr_icon = ICONS.get(self.uid)
 
-            s = NAMES.get(self.uid) or self.uid.title()
+            s = NAMES.get(self.uid) or self.uid.title().replace("_", " ")
             self._attr_name = f"{device['name']} {s}"
             self._attr_unique_id = f"{device['deviceid']}_{self.uid}"
 
