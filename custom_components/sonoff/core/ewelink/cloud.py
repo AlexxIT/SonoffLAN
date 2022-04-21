@@ -53,8 +53,8 @@ class ResponseWaiter:
     async def _set_response(self, sequence: str, error: int):
         # sometimes the error doesn't exists
         result = DATA_ERROR[error] if error in DATA_ERROR else f"E#{error}"
-        # set future result
-        self._waiters[sequence].set_result(result)
+        if sequence in self._waiters:
+            self._waiters[sequence].set_result(result)
 
     async def _wait_response(self, sequence: str, timeout: int):
         self._waiters[sequence] = asyncio.get_event_loop().create_future()
