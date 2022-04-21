@@ -1,14 +1,15 @@
 """
-Each device has a specification - list of classes (XEntity childs)
+Each device has a specification - list of classes (XEntity childs). Platform
+will setup entity if it isinstance() of platform entity class.
+
+User can override SwitchEntity of any device via YAML (device_class option).
 
 XEntity properties:
 - params - required, set of parameters that this entity can read
 - param - optional, entity main parameter (useful for sensors)
 - uid - optional, entity unique_id tail
 
-spec - function can change default class with some options
-
-device_class - can override platform for switch entity
+Developer can change global properties of existing classes via spec function.
 """
 from typing import Optional
 
@@ -137,25 +138,6 @@ DEVICES = {
     3026: [XZigbeeDoor, Battery],  # ZIGBEE_DOOR_AND_WINDOW_SENSOR
 }
 
-DIY = {
-    # DIY type, UIID, Brand, Model/Name
-    "plug": [1, None, "Single Channel DIY"],
-    "strip": [4, None, "Multi Channel DIY"],
-    "diy_plug": [1, "SONOFF", "MINI DIY"],
-    "enhanced_plug": [5, "SONOFF", "POW DIY"],
-    "th_plug": [15, "SONOFF", "TH DIY"],
-    "rf": [28, "SONOFF", "RFBridge DIY"],
-    "fan_light": [34, "SONOFF", "iFan DIY"],
-    "light": [44, "SONOFF", "D1 DIY"],
-    "multifun_switch": [126, "SONOFF", "DualR3 DIY"],
-}
-
-
-def set_default_class(device_class: str):
-    XSwitch.__bases__ = XSwitches.__bases__ = XSwitchTH.__bases__ = (
-        XEntity, LightEntity if device_class == "light" else SwitchEntity
-    )
-
 
 def get_spec(device: dict) -> Optional[list]:
     uiid = device["extra"]["uiid"]
@@ -222,11 +204,36 @@ def get_custom_spec(classes: list, device_class):
     return classes
 
 
+def set_default_class(device_class: str):
+    XSwitch.__bases__ = XSwitches.__bases__ = XSwitchTH.__bases__ = (
+        XEntity, LightEntity if device_class == "light" else SwitchEntity
+    )
+
+
+DIY = {
+    # DIY type, UIID, Brand, Model/Name
+    "plug": [1, None, "Single Channel DIY"],
+    "strip": [4, None, "Multi Channel DIY"],
+    "diy_plug": [1, "SONOFF", "MINI DIY"],
+    "enhanced_plug": [5, "SONOFF", "POW DIY"],
+    "th_plug": [15, "SONOFF", "TH DIY"],
+    "rf": [28, "SONOFF", "RFBridge DIY"],
+    "fan_light": [34, "SONOFF", "iFan DIY"],
+    "light": [44, "SONOFF", "D1 DIY"],
+    "multifun_switch": [126, "SONOFF", "DualR3 DIY"],
+}
+
+
 def setup_diy(device: dict) -> dict:
-    uiid, brand, model = DIY.get(device["diy"])
-    device.setdefault("name", model)
-    device["brandName"] = brand
-    device["extra"] = {"uiid": uiid}
+    try:
+        uiid, brand, model = DIY[device["diy"]]
+        device["name"] = model
+        device["brandName"] = brand
+        device["extra"] = {"uiid": uiid}
+        device["productModel"] = model
+    except:
+        device["name"] = "Unknown DIY"
+        device["extra"] = {"uiid": None}
+        device["productModel"] = device["diy"]
     device["online"] = False
-    device["productModel"] = model
     return device

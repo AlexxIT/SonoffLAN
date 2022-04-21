@@ -746,6 +746,25 @@ def test_diy_device():
     assert isinstance(switch, LightEntity)
 
 
+def test_unknown_diy():
+    reg = DummyRegistry()
+
+    entities = []
+    reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
+
+    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+        "host": "192.168.1.123",
+        "deviceid": DEVICEID,
+        "diy": "dummy",
+        "params": {"switch": "on"}
+    })
+
+    switch: XSwitch = entities[0]
+    assert switch.name == "Unknown DIY"
+    assert switch.device_info["model"] == "dummy"
+    assert switch.state == "on"
+
+
 def test_local_devicekey():
     reg = DummyRegistry()
     reg.config = {
