@@ -267,8 +267,6 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     async def _process_ws_msg(self, data: dict):
         _LOGGER.debug(data)
 
-        # deviceid = data.get('deviceid')
-        # device = self.devices[deviceid]
         if "action" not in data:
             # response on our command
             await self._set_response(data["sequence"], data["error"])
@@ -283,7 +281,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 # Force update device actual status
                 asyncio.create_task(self.send(data))
 
-        elif data["action"] in "update":
+        elif data["action"] == "update":
             # new state from device
             self.dispatcher_send(SIGNAL_UPDATE, data)
 
