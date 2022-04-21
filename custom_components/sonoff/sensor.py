@@ -78,7 +78,10 @@ class XUnknown(XEntity, SensorEntity):
 
     def internal_update(self, params: dict = None):
         self._attr_native_value = dt.utcnow()
-        self._attr_extra_state_attributes = params
+
+        if params is not None:
+            params.pop("bindInfos", None)
+            self._attr_extra_state_attributes = params
 
         if self.hass:
             self._async_write_ha_state()
