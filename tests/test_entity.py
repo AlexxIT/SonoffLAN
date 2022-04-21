@@ -33,7 +33,10 @@ class DummyHass:
 
 
 class DummyRegistry(XRegistry):
-    send_args = None
+    def __init__(self):
+        # noinspection PyTypeChecker
+        super().__init__(None)
+        self.send_args = None
 
     async def send(self, *args):
         self.send_args = args
@@ -52,10 +55,10 @@ def get_entitites(device: dict, config: dict = None):
 
     asyncio.create_task = lambda _: None
 
-    reg = DummyRegistry(None)
+    reg = DummyRegistry()
     reg.config = config
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
-    reg.setup_devices(reg.restore_devices([device]))
+    reg.setup_devices([device])
 
     hass = DummyHass()
     for entity in entities:
@@ -659,7 +662,7 @@ def test_device_class2():
         "params": {
             'switches': [
                 {'switch': 'on', 'outlet': 0},
-                {'switch': 'off', 'outlet': 1},
+                {'switch': 'on', 'outlet': 1},
                 {'switch': 'off', 'outlet': 2},
                 {'switch': 'off', 'outlet': 3}
             ],
@@ -676,7 +679,7 @@ def test_device_class2():
 
     fan: XSwitches = entities[1]
     assert isinstance(fan, FanEntity)
-    assert fan.state == "off"
+    assert fan.state == "on"
 
 
 def test_light_group():
@@ -714,3 +717,59 @@ def test_light_group():
     assert reg.send_args[1]["switches"] == [
         {'outlet': 1, 'switch': 'on'}, {'outlet': 0, 'switch': 'on'}
     ]
+
+
+def test_diy_device():
+    reg = DummyRegistry()
+    reg.config = {
+        "devices": {
+            DEVICEID: {
+                "name": "MyDIY",
+                "device_class": "light"
+            }
+        }
+    }
+
+    entities = []
+    reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
+
+    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+        "host": "192.168.1.123",
+        "deviceid": DEVICEID,
+        "diy": "diy_plug",
+        "params": {"switch": "on"}
+    })
+
+    switch: XSwitch = entities[0]
+    assert switch.name == "MyDIY"
+    assert switch.state == "on"
+    assert isinstance(switch, LightEntity)
+
+
+def test_local_devicekey():
+    reg = DummyRegistry()
+    reg.config = {
+        "devices": {
+            DEVICEID: {
+                "devicekey": "64271b79-89f6-4d18-8318-7d751faacd13",
+                "device_class": "fan"
+            }
+        }
+    }
+
+    entities = []
+    reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
+
+    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+        "host": "192.168.1.123",
+        "deviceid": DEVICEID,
+        "diy": "diy_plug",
+        "iv": "3PgYPjEuE4qCoZOTsPE2xg==",
+        "data": "t9YKDAK3nnURqivGN0evtaS+Yj4M6b6NUV+ptJlMTOQ=",
+    })
+
+    switch: XSwitch = entities[0]
+    # await_(reg.local.send(switch.device, {"switch": "on"}))
+    assert switch.name == "MINI DIY"
+    assert switch.state == "on"
+    assert isinstance(switch, FanEntity)

@@ -34,34 +34,20 @@ class XRegistry(XRegistryBase):
         from ..devices import get_spec
 
         for device in devices:
+            deviceid = device["deviceid"]
+            try:
+                device.update(self.config["devices"][deviceid])
+            except:
+                pass
+
             spec = get_spec(device)
             entities = [cls(self, device) for cls in spec]
             self.dispatcher_send(SIGNAL_ADD_ENTITIES, entities)
 
-            self.devices[device["deviceid"]] = device
-
-    def restore_devices(self, new_devices: list = None) -> list:
-        if not self.config or "devices" not in self.config:
-            return new_devices
-
-        conf_devices: dict = self.config["devices"]
-        if not new_devices:
-            return [{"deviceid": k, **v} for k, v in conf_devices.items()]
-
-        for k, v in conf_devices.items():
-            device = next((d for d in new_devices if d["deviceid"] == k), None)
-            if not device:
-                new_devices.append({"deviceid": k, **v})
-            else:
-                device.update(v)
-
-        return new_devices
+            self.devices[deviceid] = device
 
     async def stop(self):
-        # DIY devices need to be reinit
-        self.devices = {
-            k: v for k, v in self.devices.items() if "diy" not in v
-        }
+        self.devices.clear()
         self.dispatcher.clear()
 
         await self.cloud.stop()
@@ -126,11 +112,19 @@ class XRegistry(XRegistryBase):
         self.dispatcher_send(msg["deviceid"], params)
 
     def local_update(self, msg: dict):
-        device = self.devices.get(msg["deviceid"])
+        deviceid = msg["deviceid"]
+        device = self.devices.get(deviceid)
         if not device:
             if "params" not in msg:
-                # unknown device without devicekey
-                return
+                try:
+                    # allow setup if can decrypt device message
+                    devicekey = self.config["devices"][deviceid]["devicekey"]
+                    data = decrypt(msg, devicekey)
+                    msg["params"] = json.loads(data)
+                except:
+                    _LOGGER.info(f"Skip setup for encrypted device: {msg}")
+                    self.devices[deviceid] = msg
+                    return
 
             from ..devices import setup_diy
             device = setup_diy(msg)
@@ -159,9 +153,7 @@ class XRegistry(XRegistryBase):
                 self.dispatcher_send(msg["deviceid"])
             return
 
-        _LOCALLOG.debug(
-            f"{msg['deviceid']} <= Local3 | {params} | {msg.get('seq')}"
-        )
+        _LOCALLOG.debug(f"{deviceid} <= Local3 | {params} | {msg.get('seq')}")
 
         if "deviceType" in params:
             # Sonoff TH v3.4.0 sends `temperature` and `humidity` via LAN
@@ -176,4 +168,4 @@ class XRegistry(XRegistryBase):
 
         device["host"] = msg["host"]
 
-        self.dispatcher_send(msg["deviceid"], params)
+        self.dispatcher_send(deviceid, params)

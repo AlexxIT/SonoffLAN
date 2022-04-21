@@ -6,18 +6,19 @@ XEntity properties:
 - param - optional, entity main parameter (useful for sensors)
 - uid - optional, entity unique_id tail
 
-`spec` - function can change default class with some options
+spec - function can change default class with some options
+
+device_class - can override platform for switch entity
 """
 from typing import Optional
 
 from aiomusiccast.capabilities import BinarySensor
-from homeassistant.components.fan import FanEntity
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 
 from ..binary_sensor import XBinarySensor, XZigbeeMotion, XZigbeeDoor
 from ..cover import XCover, XCoverDualR3
-from ..fan import XFan, XDiffuserFan
+from ..fan import XFan, XDiffuserFan, XToggleFan
 from ..light import *
 from ..remote import XRemote
 from ..sensor import XSensor, XZigbeeButton, XUnknown
@@ -25,18 +26,18 @@ from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
 
 # supported custom device_class
 DEVICE_CLASS = {
-    "binary_sensor": BinarySensor,
-    "fan": FanEntity,
-    "light": LightEntity,
-    "sensor": SensorEntity,
-    "switch": SwitchEntity,
+    "binary_sensor": (XEntity, BinarySensor),
+    "fan": (XToggleFan,),  # using custom class for overriding is_on function
+    "light": (XEntity, LightEntity),
+    "sensor": (XEntity, SensorEntity),
+    "switch": (XEntity, SwitchEntity),
 }
 
 
 def spec(cls, enabled=None, base=None, **kwargs):
     if enabled is not None:
         kwargs["_attr_entity_registry_enabled_default"] = enabled
-    bases = (XEntity, DEVICE_CLASS[base]) if base else (cls,)
+    bases = DEVICE_CLASS[base] if base else (cls,)
     return type(cls.__name__, bases, {**cls.__dict__, **kwargs})
 
 

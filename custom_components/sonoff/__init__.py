@@ -190,7 +190,6 @@ async def internal_cache_setup(
             _LOGGER.debug(f"Loaded {len(devices)} devices from cache")
 
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
-    devices = registry.restore_devices(devices)
     if devices:
         registry.setup_devices(devices)
 

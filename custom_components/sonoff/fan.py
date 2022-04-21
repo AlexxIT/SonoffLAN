@@ -99,3 +99,10 @@ class XDiffuserFan(XFan):
         else:
             param = {"switch": "off"}
         await self.ewelink.send(self.device, param)
+
+
+# noinspection PyAbstractClass
+class XToggleFan(XEntity, FanEntity):
+    @property
+    def is_on(self):
+        return self._attr_is_on
