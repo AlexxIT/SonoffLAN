@@ -67,6 +67,8 @@ class XEntity(Entity):
             self._attr_name = device["name"]
             self._attr_unique_id = device["deviceid"]
 
+        self._attr_should_poll = False
+
         self.entity_id = DOMAIN + "." + self._attr_unique_id
 
         deviceid: str = device['deviceid']

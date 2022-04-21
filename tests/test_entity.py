@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from homeassistant.components.fan import FanEntity
 from homeassistant.components.light import LightEntity
@@ -792,3 +793,49 @@ def test_local_devicekey():
     assert switch.name == "MINI DIY"
     assert switch.state == "on"
     assert isinstance(switch, FanEntity)
+
+
+# https://www.avrfreaks.net/sites/default/files/forum_attachments/AT08550_ZigBee_Attribute_Reporting_0.pdf
+def test_reporting():
+    time.time = lambda: 0
+
+    reg, entities = get_entitites({
+        'extra': {'uiid': 15},
+        'params': {
+            'currentTemperature': '14.6',
+        },
+    }, {
+        "devices": {
+            DEVICEID: {
+                "reporting": {
+                    "temperature": [5, 60, 0.5]
+                }
+            }
+        }
+    })
+
+    temp: XSensor = next(e for e in entities if e.uid == "temperature")
+    assert temp.state == 14.6
+
+    # update in min report interval - no update
+    temp.set_state({temp.param: 20})
+    assert temp.state == 14.6
+
+    # automatic update value after 30 seconds (Hass force_update logic)
+    time.time = lambda: 30
+    await_(temp.async_update())
+    assert temp.state == 20
+
+    # lower than reportable change value - no update
+    time.time = lambda: 40
+    temp.set_state({temp.param: 20.3})
+    assert temp.state == 20
+
+    # more than reportable change value - update
+    temp.set_state({temp.param: 21})
+    assert temp.state == 21
+
+    # update after max report interval - update
+    time.time = lambda: 140
+    temp.set_state({temp.param: 21.1})
+    assert temp.state == 21.1

@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from homeassistant.components.sensor import SensorEntity, \
     STATE_CLASS_MEASUREMENT
@@ -30,18 +31,34 @@ UNITS = {
 
 
 class XSensor(XEntity, SensorEntity):
+    """Class can convert string sensor value to float, multiply it and round if
+    needed. Also class can filter incoming values using zigbee-like reporting
+    logic: min report interval, max report interval, reportable change value.
+    """
     multiply = None
     round = None
+
+    report_ts = None
+    report_mint = None
+    report_maxt = None
+    report_delta = None
+    report_value = None
 
     def __init__(self, ewelink: XRegistry, device: dict):
         super().__init__(ewelink, device)
 
-        if self.param in UNITS:
+        if self.uid in UNITS:
             # by default all sensors with units is measurement sensors
             self._attr_state_class = STATE_CLASS_MEASUREMENT
-            self._attr_native_unit_of_measurement = UNITS[self.param]
+            self._attr_native_unit_of_measurement = UNITS[self.uid]
 
-    def set_state(self, params: dict):
+        reporting = device.get("reporting", {}).get(self.uid)
+        if reporting:
+            self.report_mint, self.report_maxt, self.report_delta = reporting
+            self.report_ts = time.time()
+            self._attr_force_update = True
+
+    def set_state(self, params: dict = None):
         try:
             value = float(params[self.param])
             if self.multiply:
@@ -49,9 +66,29 @@ class XSensor(XEntity, SensorEntity):
             if self.round is not None:
                 # convert to int when round is zero
                 value = round(value, self.round or None)
-            self._attr_native_value = value
-        except ValueError:
-            self._attr_native_value = None
+        except (TypeError, ValueError):
+            value = self.report_value
+
+        if self.report_ts is not None:
+            ts = time.time()
+
+            if (ts - self.report_ts < self.report_mint) or (
+                    ts - self.report_ts < self.report_maxt and
+                    value is not None and
+                    self._attr_native_value is not None and
+                    abs(value - self._attr_native_value) <= self.report_delta
+            ):
+                self.report_value = value
+                return
+
+            self.report_value = None
+            self.report_ts = ts
+
+        self._attr_native_value = value
+
+    async def async_update(self):
+        if self.report_value is not None:
+            self.set_state()
 
 
 BUTTON_STATES = ["single", "double", "hold"]
