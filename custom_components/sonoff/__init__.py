@@ -57,11 +57,12 @@ CONFIG_SCHEMA = vol.Schema({
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     if not backward.hass_version_supported:
         return False
+
+    # init storage for registries
+    hass.data[DOMAIN] = {}
+
+    # load optional global registry config
     XRegistry.config = config.get(DOMAIN)
-    conf = config.get(DOMAIN) or {}
-    hass.data[DOMAIN] = {
-        CONF_DEVICES: conf.get(CONF_DEVICES)
-    }
 
     # cameras starts only on first command to it
     cameras = XCameras()
@@ -75,8 +76,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
         if len(deviceid) == 10:
             registry = next(
-                r for r in hass.data[DOMAIN].values()
-                if isinstance(r, XRegistry) and deviceid in r.devices
+                r for r in hass.data[DOMAIN].values() if deviceid in r.devices
             )
             device = registry.devices[deviceid]
 
@@ -178,31 +178,19 @@ async def internal_normal_setup(hass: HomeAssistant, entry: ConfigEntry):
 async def internal_cache_setup(
         hass: HomeAssistant, entry: ConfigEntry, devices: list = None
 ):
+    await asyncio.gather(*[
+        hass.config_entries.async_forward_entry_setup(entry, domain)
+        for domain in PLATFORMS
+    ])
+
     if devices is None:
         store = Store(hass, 1, f"{DOMAIN}/{entry.data['username']}.json")
         devices = await store.async_load()
         if devices:
             _LOGGER.debug(f"Loaded {len(devices)} devices from cache")
 
-    conf_devices: dict = hass.data[DOMAIN].get(CONF_DEVICES)
-    if devices and conf_devices:
-        _LOGGER.debug(f"Loaded {len(conf_devices)} devices from YAML")
-        # join devices from YAML
-        for k, v in conf_devices.items():
-            device = next((d for d in devices if d["deviceid"] == k), None)
-            if not device:
-                devices.append({"deviceid": k, **v})
-            else:
-                device.update(v)
-    elif conf_devices:
-        devices = [{"deviceid": k, **v} for k, v in conf_devices.items()]
-
-    await asyncio.gather(*[
-        hass.config_entries.async_forward_entry_setup(entry, domain)
-        for domain in PLATFORMS
-    ])
-
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
+    devices = registry.restore_devices(devices)
     if devices:
         registry.setup_devices(devices)
 

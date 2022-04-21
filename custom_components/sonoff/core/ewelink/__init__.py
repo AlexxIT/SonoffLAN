@@ -35,14 +35,27 @@ class XRegistry(XRegistryBase):
 
         for device in devices:
             spec = get_spec(device)
-            if not spec:
-                _LOGGER.warning(f"No spec for device: {device}")
-                continue
-
             entities = [cls(self, device) for cls in spec]
             self.dispatcher_send(SIGNAL_ADD_ENTITIES, entities)
 
             self.devices[device["deviceid"]] = device
+
+    def restore_devices(self, new_devices: list = None) -> list:
+        if not self.config or "devices" not in self.config:
+            return new_devices
+
+        conf_devices: dict = self.config["devices"]
+        if not new_devices:
+            return [{"deviceid": k, **v} for k, v in conf_devices.items()]
+
+        for k, v in conf_devices.items():
+            device = next((d for d in new_devices if d["deviceid"] == k), None)
+            if not device:
+                new_devices.append({"deviceid": k, **v})
+            else:
+                device.update(v)
+
+        return new_devices
 
     async def stop(self):
         # DIY devices need to be reinit

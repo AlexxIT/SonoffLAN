@@ -10,6 +10,11 @@ XEntity properties:
 """
 from typing import Optional
 
+from aiomusiccast.capabilities import BinarySensor
+from homeassistant.components.fan import FanEntity
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.switch import SwitchEntity
+
 from ..binary_sensor import XBinarySensor, XZigbeeMotion, XZigbeeDoor
 from ..cover import XCover, XCoverDualR3
 from ..fan import XFan, XDiffuserFan
@@ -18,11 +23,21 @@ from ..remote import XRemote
 from ..sensor import XSensor, XZigbeeButton, XUnknown
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
 
+# supported custom device_class
+DEVICE_CLASS = {
+    "binary_sensor": BinarySensor,
+    "fan": FanEntity,
+    "light": LightEntity,
+    "sensor": SensorEntity,
+    "switch": SwitchEntity,
+}
 
-def spec(cls, enabled=None, **kwargs):
+
+def spec(cls, enabled=None, base=None, **kwargs):
     if enabled is not None:
         kwargs["_attr_entity_registry_enabled_default"] = enabled
-    return type(cls.__name__, (cls,), {**cls.__dict__, **kwargs})
+    bases = (XEntity, DEVICE_CLASS[base]) if base else (cls,)
+    return type(cls.__name__, bases, {**cls.__dict__, **kwargs})
 
 
 Switch1 = spec(XSwitches, channel=0, uid="1")
@@ -135,18 +150,75 @@ DIY = {
 }
 
 
+def set_default_class(device_class: str):
+    XSwitch.__bases__ = XSwitches.__bases__ = XSwitchTH.__bases__ = (
+        XEntity, LightEntity if device_class == "light" else SwitchEntity
+    )
+
+
 def get_spec(device: dict) -> Optional[list]:
     uiid = device["extra"]["uiid"]
     # DualR3 in cover mode
     if uiid == 126 and device["params"].get("workMode") == 2:
         return [XCoverDualR3]
+
     if uiid in DEVICES:
-        return DEVICES[uiid]
-    if "switch" in device["params"]:
-        return SPEC_SWITCH
-    if "switches" in device["params"]:
-        return SPEC_4CH
-    return [XUnknown]
+        classes = DEVICES[uiid]
+    elif "switch" in device["params"]:
+        classes = SPEC_SWITCH
+    elif "switches" in device["params"]:
+        classes = SPEC_4CH
+    else:
+        classes = [XUnknown]
+
+    if "device_class" in device:
+        classes = get_custom_spec(classes, device["device_class"])
+
+    return classes
+
+
+def get_custom_spec(classes: list, device_class):
+    """Supported device_class formats:
+    1. Single channel:
+       device_class: light
+    2. Multiple channels:
+       device_class: [light, fan, switch]
+    3. Light with brightness control
+       device_class:
+         - switch  # entity 1 (channel 1)
+         - light: [2, 3]  # entity 2 (channels 2 and 3)
+         - fan: 4  # entity 3 (channel 4)
+    """
+    # 1. single channel
+    if isinstance(device_class, str):
+        classes[0] = spec(classes[0], base=device_class)
+
+    elif isinstance(device_class, list):
+        # remove all default multichannel classes from spec
+        classes = [cls for cls in classes if XSwitches not in cls.__bases__]
+
+        for i, sub_class in enumerate(device_class):
+            # 2. simple multichannel
+            if isinstance(sub_class, str):
+                classes.append(spec(
+                    XSwitches, channel=i, uid=str(i + 1), base=sub_class
+                ))
+
+            elif isinstance(sub_class, dict):
+                sub_class, i = next(iter(sub_class.items()))
+
+                # 3. light with brightness
+                if isinstance(i, list) and sub_class == "light":
+                    channels = [i - 1 for i in i]
+                    classes.append(spec(XLightGroup, channels=channels))
+
+                # 4. multichannel
+                elif isinstance(i, int):
+                    classes.append(spec(
+                        XSwitches, channel=(i - 1), uid=str(i), base=sub_class
+                    ))
+
+    return classes
 
 
 def setup_diy(device: dict) -> dict:

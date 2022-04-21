@@ -1,20 +1,25 @@
 import asyncio
 
+from homeassistant.components.fan import FanEntity
+from homeassistant.components.light import LightEntity
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
 from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
+from custom_components.sonoff.core import devices
 from custom_components.sonoff.core.ewelink import XRegistry, \
     SIGNAL_ADD_ENTITIES, SIGNAL_UPDATE, SIGNAL_CONNECTED
 from custom_components.sonoff.fan import XFan
-from custom_components.sonoff.light import XFanLight
+from custom_components.sonoff.light import XFanLight, XLightGroup
 from custom_components.sonoff.sensor import XSensor, XZigbeeButton, XUnknown
-from custom_components.sonoff.switch import XSwitch, XSwitchTH, XToggle
+from custom_components.sonoff.switch import XSwitch, XSwitchTH, XToggle, \
+    XSwitches
 
 DEVICEID = "1000123abc"
 
 
-class HassDummy:
+class DummyHass:
     def __init__(self):
         # noinspection PyTypeChecker
         self.config = Config(None)
@@ -27,27 +32,40 @@ class HassDummy:
         self.async_fire = lambda *args: None
 
 
+class DummyRegistry(XRegistry):
+    send_args = None
+
+    async def send(self, *args):
+        self.send_args = args
+
+
 # noinspection PyTypeChecker
 def get_entitites(device: dict, config: dict = None):
     device.setdefault("name", "Device1")
     device.setdefault("deviceid", DEVICEID)
     device.setdefault("online", True)
-    device["params"].setdefault("staMac", "11:22:33:AA:BB:CC")
+    device.setdefault("extra", {"uiid": None})
+    params = device.setdefault("params", {})
+    params.setdefault("staMac", "11:22:33:AA:BB:CC")
 
     entities = []
 
     asyncio.create_task = lambda _: None
 
-    reg = XRegistry(None)
+    reg = DummyRegistry(None)
     reg.config = config
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
-    reg.setup_devices([device])
+    reg.setup_devices(reg.restore_devices([device]))
 
-    hass = HassDummy()
+    hass = DummyHass()
     for entity in entities:
         entity.hass = hass
 
     return reg, entities
+
+
+def await_(coro):
+    return asyncio.get_event_loop().run_until_complete(coro)
 
 
 def test_simple_switch():
@@ -590,3 +608,109 @@ def test_zigbee_motion():
         "deviceid": DEVICEID, "params": {'online': False}
     })
     assert motion.state == "off"
+
+
+def test_default_class():
+    devices.set_default_class("light")
+
+    _, entities = get_entitites({"extra": {"uiid": 15}})
+    assert isinstance(entities[0], XSwitchTH)
+    assert isinstance(entities[0], LightEntity)
+    assert not isinstance(entities[0], SwitchEntity)
+
+    _, entities = get_entitites({
+        "extra": {"uiid": 1}
+    }, {
+        "devices": {
+            DEVICEID: {"device_class": "switch"}
+        }
+    })
+    assert isinstance(entities[0], SwitchEntity)
+    assert not isinstance(entities[0], LightEntity)
+
+    # restore changes
+    devices.set_default_class("switch")
+
+
+def test_device_class():
+    reg, entities = get_entitites({
+        "extra": {"uiid": 1}
+    }, {
+        "devices": {
+            DEVICEID: {"device_class": "light"}
+        }
+    })
+
+    entity: XSwitch = entities[0]
+    assert entity.state is None
+
+    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID, "params": {"switch": "on"}
+    })
+    assert entity.state == "on"
+
+    assert isinstance(entity, LightEntity)
+    assert not isinstance(entity, SwitchEntity)
+
+
+def test_device_class2():
+    reg, entities = get_entitites({
+        "extra": {"uiid": 2},
+        "params": {
+            'switches': [
+                {'switch': 'on', 'outlet': 0},
+                {'switch': 'off', 'outlet': 1},
+                {'switch': 'off', 'outlet': 2},
+                {'switch': 'off', 'outlet': 3}
+            ],
+        }
+    }, {
+        "devices": {
+            DEVICEID: {"device_class": ["light", "fan"]}
+        }
+    })
+
+    light: XSwitches = entities[0]
+    assert isinstance(light, LightEntity)
+    assert light.state == "on"
+
+    fan: XSwitches = entities[1]
+    assert isinstance(fan, FanEntity)
+    assert fan.state == "off"
+
+
+def test_light_group():
+    reg, entities = get_entitites({
+        "extra": {"uiid": 2},
+        "params": {
+            'switches': [
+                {'switch': 'on', 'outlet': 0},
+                {'switch': 'on', 'outlet': 1},
+                {'switch': 'off', 'outlet': 2},
+                {'switch': 'off', 'outlet': 3}
+            ],
+        }
+    }, {
+        "devices": {
+            DEVICEID: {"device_class": [{"light": [2, 1]}]}
+        }
+    })
+
+    light: XLightGroup = entities[0]
+    assert light.state == "on" and light.brightness == 255
+
+    await_(light.async_turn_on(brightness=128))
+    assert reg.send_args[1]["switches"] == [
+        {'outlet': 1, 'switch': 'on'}, {'outlet': 0, 'switch': 'off'}
+    ]
+    assert light.brightness == 128
+
+    await_(light.async_turn_on(brightness=0))
+    assert reg.send_args[1]["switches"] == [
+        {'outlet': 1, 'switch': 'off'}, {'outlet': 0, 'switch': 'off'}
+    ]
+
+    await_(light.async_turn_on())
+    assert reg.send_args[1]["switches"] == [
+        {'outlet': 1, 'switch': 'on'}, {'outlet': 0, 'switch': 'on'}
+    ]

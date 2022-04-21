@@ -514,3 +514,47 @@ class XZigbeeLigth(XEntity, LightEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {"switch": "off"})
+
+
+# noinspection PyAbstractClass
+class XLightGroup(XDimmer):
+    """Differs from the usual switch by brightness adjustment. Is logical
+    use only for two or more channels. Able to remember brightness on moment
+    off.
+    The sequence of channels is important. The first channels will be turned on
+    at low brightness.
+    """
+    params = {"switches"}
+    channels: list = None
+
+    def set_state(self, params: dict):
+        cnt = sum(
+            1 for i in params["switches"]
+            if i["outlet"] in self.channels and i["switch"] == "on"
+        )
+        if cnt:
+            # if at least something is on - remember the new brightness
+            self._attr_brightness = round(cnt / len(self.channels) * 255)
+            self._attr_is_on = True
+        else:
+            self._attr_is_on = False
+
+    async def async_turn_on(self, brightness: int = None, **kwargs):
+        if brightness is not None:
+            self._attr_brightness = brightness
+        elif self._attr_brightness == 0:
+            self._attr_brightness = 255
+
+        # how much light should turn on at such brightness
+        cnt = round(self._attr_brightness / 255 * len(self.channels))
+
+        # the first part of the lights - turn on, the second - turn off
+        switches = [
+            {"outlet": channel, "switch": "on" if i < cnt else "off"}
+            for i, channel in enumerate(self.channels)
+        ]
+        await self.ewelink.send(self.device, {"switches": switches})
+
+    async def async_turn_off(self, **kwargs) -> None:
+        switches = [{"outlet": ch, "switch": "off"} for ch in self.channels]
+        await self.ewelink.send(self.device, {"switches": switches})

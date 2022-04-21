@@ -33,7 +33,7 @@ class XSwitches(XEntity, SwitchEntity):
     channel: int = 0
 
     def __init__(self, ewelink: XRegistry, device: dict):
-        super().__init__(ewelink, device)
+        XEntity.__init__(self, ewelink, device)
 
         try:
             self._attr_name = \
@@ -58,7 +58,12 @@ class XSwitches(XEntity, SwitchEntity):
 
 
 # noinspection PyAbstractClass
-class XSwitchTH(XSwitch):
+class XSwitchTH(XEntity, SwitchEntity):
+    params = {"switch"}
+
+    def set_state(self, params: dict):
+        self._attr_is_on = params["switch"] == "on"
+
     async def async_turn_on(self):
         params = {"switch": "on", "mainSwitch": "on", "deviceType": "normal"}
         await self.ewelink.send(self.device, params)
