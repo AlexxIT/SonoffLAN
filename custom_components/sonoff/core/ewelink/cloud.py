@@ -276,6 +276,9 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             # with params response on query, without - on update
             if "params" in data:
                 self.dispatcher_send(SIGNAL_UPDATE, data)
+            elif "config" in data:
+                data["params"] = data.pop("config")
+                self.dispatcher_send(SIGNAL_UPDATE, data)
             elif data["error"] == 0:
                 # Force update device actual status
                 asyncio.create_task(self.send(data))

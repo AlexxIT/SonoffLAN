@@ -22,7 +22,7 @@ from ..cover import XCover, XCoverDualR3
 from ..fan import XFan, XDiffuserFan, XToggleFan
 from ..light import *
 from ..remote import XRemote
-from ..sensor import XSensor, XZigbeeButton, XUnknown
+from ..sensor import XSensor, XZigbeeButton, XUnknown, XConsumption
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
 
 # supported custom device_class
@@ -95,6 +95,8 @@ DEVICES = {
         spec(XSensor, param="current"),
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
+        spec(XConsumption, param="hundredDaysKwhData", uid="consumption",
+             get_params={"hundredDaysKwh": "get"}),
     ],  # Sonoff Pow
     34: [XFan, XFanLight],  # Sonoff iFan02 and iFan03
     36: [XDimmer],  # KING-M4 (dimmer, only cloud)
@@ -120,6 +122,10 @@ DEVICES = {
         spec(XSensor100, param="voltage_01", uid="voltage_2"),
         spec(XSensor100, param="actPow_00", uid="power_1"),
         spec(XSensor100, param="actPow_01", uid="power_2"),
+        spec(XConsumption, param="kwhHistories_00", uid="consumption_1",
+             get_params={"getKwh_00": 2}),
+        spec(XConsumption, param="kwhHistories_01", uid="consumption_2",
+             get_params={"getKwh_01": 2}),
     ],  # Sonoff DualR3
     182: [
         Switch1, LED, RSSI,

@@ -91,6 +91,32 @@ class XSensor(XEntity, SensorEntity):
             self.set_state()
 
 
+class XConsumption(XEntity, SensorEntity):
+    """Power devices sends data only when active mobile App UI. So we emulate
+    this situation. Feature will work only with active cloud connection.
+    """
+    get_params = None
+    next_ts = 0
+
+    def __init__(self, ewelink: XRegistry, device: dict):
+        super().__init__(ewelink, device)
+        self._attr_entity_registry_enabled_default = False
+        self._attr_should_poll = True
+
+    def set_state(self, params: dict):
+        value = params[self.param]
+        self._attr_native_value = round(
+            int(value[0:2], 16) + int(value[2:4], 16) * 0.01 +
+            int(value[4:6], 16) * 0.0001, 2
+        )
+
+    async def async_update(self):
+        ts = time.time()
+        if ts > self.next_ts and self.ewelink.cloud.online:
+            self.next_ts = ts + 3600
+            await self.ewelink.cloud.send(self.device, self.get_params)
+
+
 BUTTON_STATES = ["single", "double", "hold"]
 
 
