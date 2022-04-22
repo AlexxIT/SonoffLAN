@@ -1,31 +1,30 @@
-from homeassistant.const import *
+from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
-from homeassistant.helpers.entity import Entity, DeviceInfo
+from homeassistant.helpers.entity import DeviceInfo, Entity, EntityCategory
 
-from .backward import ENTITY_CATEGORY_CONFIG, ENTITY_CATEGORY_DIAGNOSTIC
 from .const import DOMAIN
 from .ewelink import XRegistry
 
 DEVICE_CLASSES = {
-    "battery": DEVICE_CLASS_BATTERY,
-    "current": DEVICE_CLASS_CURRENT,
-    "current_1": DEVICE_CLASS_CURRENT,
-    "current_2": DEVICE_CLASS_CURRENT,
-    "humidity": DEVICE_CLASS_HUMIDITY,
-    "power": DEVICE_CLASS_POWER,
-    "power_1": DEVICE_CLASS_POWER,
-    "power_2": DEVICE_CLASS_POWER,
-    "rssi": DEVICE_CLASS_SIGNAL_STRENGTH,
-    "temperature": DEVICE_CLASS_TEMPERATURE,
-    "voltage": DEVICE_CLASS_VOLTAGE,
-    "voltage_1": DEVICE_CLASS_VOLTAGE,
-    "voltage_2": DEVICE_CLASS_VOLTAGE,
+    "battery": SensorDeviceClass.BATTERY,
+    "current": SensorDeviceClass.CURRENT,
+    "current_1": SensorDeviceClass.CURRENT,
+    "current_2": SensorDeviceClass.CURRENT,
+    "humidity": SensorDeviceClass.HUMIDITY,
+    "power": SensorDeviceClass.POWER,
+    "power_1": SensorDeviceClass.POWER,
+    "power_2": SensorDeviceClass.POWER,
+    "rssi": SensorDeviceClass.SIGNAL_STRENGTH,
+    "temperature": SensorDeviceClass.TEMPERATURE,
+    "voltage": SensorDeviceClass.VOLTAGE,
+    "voltage_1": SensorDeviceClass.VOLTAGE,
+    "voltage_2": SensorDeviceClass.VOLTAGE,
 }
 
 ENTITY_CATEGORIES = {
-    "battery": ENTITY_CATEGORY_DIAGNOSTIC,
-    "led": ENTITY_CATEGORY_CONFIG,
-    "rssi": ENTITY_CATEGORY_DIAGNOSTIC,
+    "battery": EntityCategory.DIAGNOSTIC,
+    "led": EntityCategory.CONFIG,
+    "rssi": EntityCategory.DIAGNOSTIC,
 }
 
 ICONS = {
@@ -44,6 +43,9 @@ class XEntity(Entity):
     params: set = {}
     param: str = None
     uid: str = None
+
+    # fix Hass v2021.12 empty attribute bug
+    _attr_is_on = None
 
     def __init__(self, ewelink: XRegistry, device: dict):
         self.ewelink = ewelink

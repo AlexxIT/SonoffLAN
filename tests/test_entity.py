@@ -612,7 +612,8 @@ def test_device_class():
     })
 
     entity: XSwitch = entities[0]
-    assert entity.state is None
+    # Hass v2021.12 - off, Hass v2022.2 and more - None
+    assert entity.state in (None, "off")
 
     reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {"switch": "on"}
