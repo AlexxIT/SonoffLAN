@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.device_registry import async_get as device_registry
 from homeassistant.helpers.storage import Store
 
 from .core import backward
@@ -234,4 +235,5 @@ def internal_unique_devices(uid: str, devices: list) -> list:
 async def async_remove_config_entry_device(
         hass: HomeAssistant, entry: ConfigEntry, device
 ) -> bool:
-    return False
+    device_registry(hass).async_remove_device(device.id)
+    return True
