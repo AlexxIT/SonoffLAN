@@ -98,7 +98,10 @@ DEVICES = {
         spec(XConsumption, param="hundredDaysKwhData", uid="consumption",
              get_params={"hundredDaysKwh": "get"}),
     ],  # Sonoff Pow
-    34: [XFan, XFanLight],  # Sonoff iFan02 and iFan03
+    34: [
+        XFan, LED, RSSI,
+        spec(XSwitches, channel=0, uid="1", base="light"),
+    ],  # Sonoff iFan02 and iFan03
     36: [XDimmer],  # KING-M4 (dimmer, only cloud)
     44: [XLightD1],  # Sonoff D1
     57: [XLight57],  # Mosquito Killer Lamp
@@ -204,8 +207,9 @@ def get_custom_spec(classes: list, device_class):
 
                 # 3. light with brightness
                 if isinstance(i, list) and sub_class == "light":
-                    channels = [i - 1 for i in i]
-                    classes.append(spec(XLightGroup, channels=channels))
+                    chs = [x - 1 for x in i]
+                    uid = ''.join(str(x) for x in i)
+                    classes.append(spec(XLightGroup, channels=chs, uid=uid))
 
                 # 4. multichannel
                 elif isinstance(i, int):

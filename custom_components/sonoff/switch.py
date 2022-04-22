@@ -40,6 +40,7 @@ class XSwitches(XEntity, SwitchEntity):
                 device["tags"]["ck_channel_name"][str(self.channel)]
         except KeyError:
             pass
+        # backward compatibility
         self._attr_unique_id = f"{device['deviceid']}_{self.channel + 1}"
 
     def set_state(self, params: dict):

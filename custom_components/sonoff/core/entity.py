@@ -57,13 +57,17 @@ class XEntity(Entity):
             self.params = {self.param}
 
         if self.uid:
-            self._attr_device_class = DEVICE_CLASSES.get(self.uid)
-            self._attr_entity_category = ENTITY_CATEGORIES.get(self.uid)
-            self._attr_icon = ICONS.get(self.uid)
-
-            s = NAMES.get(self.uid) or self.uid.title().replace("_", " ")
-            self._attr_name = f"{device['name']} {s}"
             self._attr_unique_id = f"{device['deviceid']}_{self.uid}"
+
+            if not self.uid.isdigit():
+                self._attr_device_class = DEVICE_CLASSES.get(self.uid)
+                self._attr_entity_category = ENTITY_CATEGORIES.get(self.uid)
+                self._attr_icon = ICONS.get(self.uid)
+
+                s = NAMES.get(self.uid) or self.uid.title().replace("_", " ")
+                self._attr_name = f"{device['name']} {s}"
+            else:
+                self._attr_name = device["name"]
 
         else:
             self._attr_name = device["name"]
@@ -71,7 +75,8 @@ class XEntity(Entity):
 
         self._attr_should_poll = False
 
-        self.entity_id = DOMAIN + "." + self._attr_unique_id
+        # domain will be replaced in entity_registry.async_generate_entity_id
+        self.entity_id = f"{DOMAIN}.{DOMAIN}_{self._attr_unique_id}"
 
         deviceid: str = device['deviceid']
         params: dict = device['params']
