@@ -161,9 +161,11 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         """With params - send new state to device, without - request device
         state. With zero timeout - won't wait response.
         """
+        log = f"{device['deviceid']} => Cloud4 | {params} | "
+
         # protect cloud from DDoS (it can break connection)
         while time.time() - self.last_ts < 0.1:
-            _LOGGER.debug("Protect cloud from DDoS")
+            log += "DDoS | "
             await asyncio.sleep(0.1)
             sequence = None
 
@@ -185,7 +187,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             "sequence": sequence,
         }
 
-        log = f"{device['deviceid']} => Cloud4 | {params} | {sequence}"
+        log += sequence
         _LOGGER.debug(log)
         try:
             await self.ws.send_json(payload)
@@ -267,8 +269,6 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         self.task = asyncio.create_task(self._connect(fails + 1))
 
     async def _process_ws_msg(self, data: dict):
-        _LOGGER.debug(data)
-
         if "action" not in data:
             # response on our command
             ok = self._set_response(data["sequence"], data["error"])
@@ -279,7 +279,9 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             elif "config" in data:
                 data["params"] = data.pop("config")
                 self.dispatcher_send(SIGNAL_UPDATE, data)
-            elif data["error"] == 0 and ok:
+            elif data["error"] != 0:
+                _LOGGER.warning(f"Cloud ERROR: {data}")
+            elif ok:
                 # Force update device actual status
                 asyncio.create_task(self.send(data))
 
@@ -290,3 +292,6 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         elif data["action"] == "sysmsg":
             # changed device online status
             self.dispatcher_send(SIGNAL_UPDATE, data)
+
+        else:
+            _LOGGER.warning(f"UNKNOWN cloud msg: {data}")

@@ -7,8 +7,8 @@ from typing import Dict, List
 from aiohttp import ClientSession
 
 from .base import XRegistryBase, SIGNAL_UPDATE, SIGNAL_CONNECTED
-from .cloud import XRegistryCloud
-from .local import XRegistryLocal, decrypt, _LOGGER as _LOCALLOG
+from .cloud import XRegistryCloud, _LOGGER as CLOUDLOG
+from .local import XRegistryLocal, decrypt, _LOGGER as LOCALLOG
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,6 +40,13 @@ class XRegistry(XRegistryBase):
                 device.update(self.config["devices"][deviceid])
             except:
                 pass
+
+            dump = {
+                k: v for k, v in device['params'].items()
+                if k not in ('bindInfos', 'bssid', 'ssid', 'staMac')
+            }
+            uiid = device['extra']['uiid']
+            _LOGGER.debug(f"{deviceid} == Init | {uiid:04} | {dump}")
 
             spec = get_spec(device)
             entities = [cls(self, device) for cls in spec]
@@ -99,11 +106,15 @@ class XRegistry(XRegistryBase):
             self.task = asyncio.create_task(self.pow_helper())
 
     def cloud_update(self, msg: dict):
-        device = self.devices.get(msg["deviceid"])
+        did = msg["deviceid"]
+        device = self.devices.get(did)
         if not device:
+            CLOUDLOG.warning(f"UNKNOWN cloud device: {msg}")
             return
 
         params = msg["params"]
+
+        CLOUDLOG.debug(f"{did} <= Cloud3 | {params} | {msg.get('sequence')}")
 
         # process online change
         if "online" in params:
@@ -116,21 +127,21 @@ class XRegistry(XRegistryBase):
         elif device["online"] is False:
             device["online"] = True
 
-        self.dispatcher_send(msg["deviceid"], params)
+        self.dispatcher_send(did, params)
 
     def local_update(self, msg: dict):
-        deviceid = msg["deviceid"]
-        device = self.devices.get(deviceid)
+        did = msg["deviceid"]
+        device = self.devices.get(did)
         if not device:
             if "params" not in msg:
                 try:
                     # allow setup if can decrypt device message
-                    devicekey = self.config["devices"][deviceid]["devicekey"]
+                    devicekey = self.config["devices"][did]["devicekey"]
                     data = decrypt(msg, devicekey)
                     msg["params"] = json.loads(data)
                 except:
-                    _LOGGER.info(f"Skip setup for encrypted device {deviceid}")
-                    self.devices[deviceid] = msg
+                    _LOGGER.info(f"Skip setup for encrypted device {did}")
+                    self.devices[did] = msg
                     return
 
             from ..devices import setup_diy
@@ -160,7 +171,7 @@ class XRegistry(XRegistryBase):
                 self.dispatcher_send(msg["deviceid"])
             return
 
-        _LOCALLOG.debug(f"{deviceid} <= Local3 | {params} | {msg.get('seq')}")
+        LOCALLOG.debug(f"{did} <= Local3 | {params} | {msg.get('seq')}")
 
         if "deviceType" in params:
             # Sonoff TH v3.4.0 sends `temperature` and `humidity` via LAN
@@ -175,7 +186,7 @@ class XRegistry(XRegistryBase):
 
         device["host"] = msg["host"]
 
-        self.dispatcher_send(deviceid, params)
+        self.dispatcher_send(did, params)
 
     async def pow_helper(self):
         from ..devices import POW_UI_ACTIVE

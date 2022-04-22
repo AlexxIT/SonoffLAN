@@ -178,7 +178,7 @@ async def internal_normal_setup(hass: HomeAssistant, entry: ConfigEntry):
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
     if registry.cloud.auth:
         devices = await registry.cloud.get_devices()
-        _LOGGER.debug(f"Loaded {len(devices)} devices from cloud")
+        _LOGGER.debug(f"{len(devices)} devices loaded from Cloud")
 
         store = Store(hass, 1, f"{DOMAIN}/{entry.data['username']}.json")
         await store.async_save(devices)
@@ -200,7 +200,8 @@ async def internal_cache_setup(
         store = Store(hass, 1, f"{DOMAIN}/{entry.data['username']}.json")
         devices = await store.async_load()
         if devices:
-            _LOGGER.debug(f"Loaded {len(devices)} devices from cache")
+            # 16 devices loaded from the Cloud Server
+            _LOGGER.debug(f"{len(devices)} devices loaded from Cache")
 
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
     if devices:
@@ -213,6 +214,8 @@ async def internal_cache_setup(
     if mode != "cloud":
         zc = await zeroconf.async_get_instance(hass)
         registry.local.start(zc)
+
+    _LOGGER.debug(f"{mode.upper()} mode start")
 
     if not entry.update_listeners:
         entry.add_update_listener(async_update_options)
