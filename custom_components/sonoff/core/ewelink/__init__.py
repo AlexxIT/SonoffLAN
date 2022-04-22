@@ -17,6 +17,7 @@ SIGNAL_ADD_ENTITIES = "add_entities"
 
 class XRegistry(XRegistryBase):
     config: dict = None
+    task: asyncio.Task = None
 
     def __init__(self, session: ClientSession):
         super().__init__(session)
@@ -52,6 +53,9 @@ class XRegistry(XRegistryBase):
 
         await self.cloud.stop()
         await self.local.stop()
+
+        if self.task:
+            self.task.cancel()
 
     async def send(self, device: dict, params: dict):
         seq = str(int(time.time() * 1000))
@@ -90,6 +94,9 @@ class XRegistry(XRegistryBase):
     def cloud_connected(self):
         for deviceid in self.devices.keys():
             self.dispatcher_send(deviceid)
+
+        if not self.task or self.task.done():
+            self.task = asyncio.create_task(self.pow_helper())
 
     def cloud_update(self, msg: dict):
         device = self.devices.get(msg["deviceid"])
@@ -169,3 +176,23 @@ class XRegistry(XRegistryBase):
         device["host"] = msg["host"]
 
         self.dispatcher_send(deviceid, params)
+
+    async def pow_helper(self):
+        from ..devices import POW_UI_ACTIVE
+        while True:
+            if not self.cloud.online:
+                await asyncio.sleep(60)
+                continue
+
+            for device in self.devices.values():
+                if "extra" not in device:
+                    continue
+
+                params = POW_UI_ACTIVE.get(device["extra"]["uiid"])
+                if not params:
+                    continue
+
+                await self.cloud.send(device, params, timeout=0)
+
+            # sleep for 1 minute
+            await asyncio.sleep(3600)

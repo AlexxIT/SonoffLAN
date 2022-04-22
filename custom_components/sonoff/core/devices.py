@@ -144,6 +144,12 @@ DEVICES = {
     3026: [XZigbeeDoor, Battery],  # ZIGBEE_DOOR_AND_WINDOW_SENSOR
 }
 
+# Pow devices sends sensors data only in uiActive mode
+POW_UI_ACTIVE = {
+    32: {"uiActive": 7200},
+    126: {"uiActive": {"all": 1, "time": 7200}},
+}
+
 
 def get_spec(device: dict) -> Optional[list]:
     uiid = device["extra"]["uiid"]

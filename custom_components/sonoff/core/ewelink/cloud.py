@@ -50,11 +50,13 @@ class ResponseWaiter:
     """Class wait right sequences in response messages."""
     _waiters = {}
 
-    async def _set_response(self, sequence: str, error: int):
+    def _set_response(self, sequence: str, error: int) -> bool:
+        if sequence not in self._waiters:
+            return False
         # sometimes the error doesn't exists
         result = DATA_ERROR[error] if error in DATA_ERROR else f"E#{error}"
-        if sequence in self._waiters:
-            self._waiters[sequence].set_result(result)
+        self._waiters[sequence].set_result(result)
+        return True
 
     async def _wait_response(self, sequence: str, timeout: int):
         self._waiters[sequence] = asyncio.get_event_loop().create_future()
@@ -157,7 +159,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             timeout: int = 5
     ):
         """With params - send new state to device, without - request device
-        state.
+        state. With zero timeout - won't wait response.
         """
         # protect cloud from DDoS (it can break connection)
         while time.time() - self.last_ts < 0.1:
@@ -188,9 +190,9 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         try:
             await self.ws.send_json(payload)
 
-            # wait for response with same sequence
-            return await self._wait_response(sequence, timeout)
-
+            if timeout:
+                # wait for response with same sequence
+                return await self._wait_response(sequence, timeout)
         except:
             _LOGGER.exception(log)
             return 'E#???'
@@ -269,7 +271,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
 
         if "action" not in data:
             # response on our command
-            await self._set_response(data["sequence"], data["error"])
+            ok = self._set_response(data["sequence"], data["error"])
 
             # with params response on query, without - on update
             if "params" in data:
@@ -277,7 +279,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             elif "config" in data:
                 data["params"] = data.pop("config")
                 self.dispatcher_send(SIGNAL_UPDATE, data)
-            elif data["error"] == 0:
+            elif data["error"] == 0 and ok:
                 # Force update device actual status
                 asyncio.create_task(self.send(data))
 
