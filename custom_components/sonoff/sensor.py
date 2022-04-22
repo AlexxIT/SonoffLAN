@@ -1,8 +1,7 @@
 import asyncio
 import time
 
-from homeassistant.components.sensor import SensorEntity, \
-    STATE_CLASS_MEASUREMENT
+from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.const import *
 from homeassistant.util import dt
 
@@ -22,11 +21,17 @@ async def async_setup_entry(hass, config_entry, add_entities):
 UNITS = {
     "battery": PERCENTAGE,
     "current": ELECTRIC_CURRENT_AMPERE,
+    "current_1": ELECTRIC_CURRENT_AMPERE,
+    "current_2": ELECTRIC_CURRENT_AMPERE,
     "humidity": PERCENTAGE,
     "power": POWER_WATT,
+    "power_1": POWER_WATT,
+    "power_2": POWER_WATT,
     "rssi": SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     "temperature": TEMP_CELSIUS,
     "voltage": ELECTRIC_POTENTIAL_VOLT,
+    "voltage_1": ELECTRIC_POTENTIAL_VOLT,
+    "voltage_2": ELECTRIC_POTENTIAL_VOLT,
 }
 
 
@@ -49,7 +54,7 @@ class XSensor(XEntity, SensorEntity):
 
         if self.uid in UNITS:
             # by default all sensors with units is measurement sensors
-            self._attr_state_class = STATE_CLASS_MEASUREMENT
+            self._attr_state_class = SensorStateClass.MEASUREMENT
             self._attr_native_unit_of_measurement = UNITS[self.uid]
 
         reporting = device.get("reporting", {}).get(self.uid)
@@ -101,7 +106,9 @@ class XConsumption(XEntity, SensorEntity):
     def __init__(self, ewelink: XRegistry, device: dict):
         super().__init__(ewelink, device)
         self._attr_entity_registry_enabled_default = False
+        self._attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
         self._attr_should_poll = True
+        self._attr_state_class = SensorStateClass.TOTAL_INCREASING
 
     def set_state(self, params: dict):
         value = params[self.param]

@@ -6,7 +6,7 @@
 - v2021.12 - new EntityCategory class (isinstance check in v2022.4)
 - v2021.12 - new ButtonEntity
 - v2021.12 - new FanEntity percentage logic
-- v2021.12 - new SensorDeviceClass for device_class
+- v2021.12 - new SensorDeviceClass, SensorStateClass classes
 """
 from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 
