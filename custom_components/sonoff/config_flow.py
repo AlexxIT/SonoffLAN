@@ -17,6 +17,9 @@ class SonoffLANFlowHandler(ConfigFlow, domain=DOMAIN):
         session = async_get_clientsession(self.hass)
         return XRegistryCloud(session)
 
+    async def async_step_import(self, user_input=None):
+        return await self.async_step_user(user_input)
+
     async def async_step_user(self, user_input=None):
         if user_input is not None:
             username = user_input.get(CONF_USERNAME)

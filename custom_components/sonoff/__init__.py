@@ -3,7 +3,8 @@ import logging
 
 import voluptuous as vol
 from homeassistant.components import zeroconf
-from homeassistant.config_entries import ConfigEntry, ConfigEntryState
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState, \
+    SOURCE_IMPORT
 from homeassistant.const import *
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed
@@ -28,7 +29,6 @@ CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
         vol.Optional(CONF_USERNAME): cv.string,
         vol.Optional(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_MODE, default='auto'): vol.In(CONF_MODES),
         vol.Optional(CONF_DEFAULT_CLASS): cv.string,
         # vol.Optional(CONF_DEBUG, default=False): cv.boolean,
         vol.Optional(CONF_RFBRIDGE): {
@@ -62,6 +62,20 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
     # cameras starts only on first command to it
     cameras = XCameras()
+
+    try:
+        # import ewelink account from YAML (first time)
+        data = {
+            CONF_USERNAME: XRegistry.config[CONF_USERNAME],
+            CONF_PASSWORD: XRegistry.config[CONF_PASSWORD]
+        }
+        if not hass.config_entries.async_entries(DOMAIN):
+            coro = hass.config_entries.flow.async_init(
+                DOMAIN, context={"source": SOURCE_IMPORT}, data=data
+            )
+            hass.async_create_task(coro)
+    except:
+        pass
 
     async def send_command(call: ServiceCall):
         """Service for send raw command to device.
