@@ -4,6 +4,7 @@ import time
 from homeassistant.components.fan import FanEntity
 from homeassistant.components.light import LightEntity
 from homeassistant.components.switch import SwitchEntity
+from homeassistant.const import TEMP_FAHRENHEIT
 from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
@@ -806,3 +807,19 @@ def test_reporting():
     time.time = lambda: 140
     temp.set_state({temp.param: 21.1})
     assert temp.state == 21.1
+
+
+def test_temperature_convert():
+    reg, entities = get_entitites({
+        'extra': {'uiid': 15},
+        'params': {
+            'currentTemperature': '14.6',
+        },
+    })
+
+    temp: XSensor = next(e for e in entities if e.uid == "temperature")
+    assert temp.state == 14.6
+
+    temp.hass.config.units.temperature_unit = TEMP_FAHRENHEIT
+    assert temp.state == 58.3
+    assert temp.unit_of_measurement == TEMP_FAHRENHEIT
