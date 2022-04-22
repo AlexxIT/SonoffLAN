@@ -12,7 +12,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from .core import backward
-from .core.const import DOMAIN, CONF_MODES, CONF_DEVICEKEY
+from .core.const import *
 from .core.ewelink import XRegistry, XRegistryCloud, XRegistryLocal
 from .core.ewelink.camera import XCameras
 from .core.ewelink.cloud import AuthError
@@ -29,25 +29,21 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_USERNAME): cv.string,
         vol.Optional(CONF_PASSWORD): cv.string,
         vol.Optional(CONF_MODE, default='auto'): vol.In(CONF_MODES),
-        # vol.Optional(CONF_DEFAULT_CLASS, default='switch'): cv.string,
-        # vol.Optional(CONF_SCAN_INTERVAL): cv.time_period,
-        # vol.Optional(CONF_FORCE_UPDATE): cv.ensure_list,
-        # vol.Optional(CONF_SENSORS): cv.ensure_list,
+        vol.Optional(CONF_DEFAULT_CLASS): cv.string,
         # vol.Optional(CONF_DEBUG, default=False): cv.boolean,
-        # vol.Optional(CONF_RFBRIDGE): {
-        #     cv.string: vol.Schema({
-        #         vol.Optional(CONF_NAME): cv.string,
-        #         vol.Optional(CONF_DEVICE_CLASS): cv.string,
-        #         vol.Optional(CONF_TIMEOUT, default=120): cv.positive_int,
-        #         vol.Optional(CONF_PAYLOAD_OFF): cv.string
-        #     }, extra=vol.ALLOW_EXTRA),
-        # },
+        vol.Optional(CONF_RFBRIDGE): {
+            cv.string: vol.Schema({
+                vol.Optional(CONF_NAME): cv.string,
+                vol.Optional(CONF_DEVICE_CLASS): cv.string,
+                vol.Optional(CONF_TIMEOUT, default=120): cv.positive_int,
+                vol.Optional(CONF_PAYLOAD_OFF): cv.string
+            }, extra=vol.ALLOW_EXTRA),
+        },
         vol.Optional(CONF_DEVICES): {
             cv.string: vol.Schema({
                 vol.Optional(CONF_NAME): cv.string,
                 vol.Optional(CONF_DEVICE_CLASS): vol.Any(str, list),
                 vol.Optional(CONF_DEVICEKEY): cv.string,
-                vol.Optional(CONF_FORCE_UPDATE): cv.boolean
             }, extra=vol.ALLOW_EXTRA),
         },
     }, extra=vol.ALLOW_EXTRA),

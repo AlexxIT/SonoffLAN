@@ -50,7 +50,7 @@ def get_entitites(device: dict, config: dict = None):
     device.setdefault("online", True)
     device.setdefault("extra", {"uiid": None})
     params = device.setdefault("params", {})
-    params.setdefault("staMac", "11:22:33:AA:BB:CC")
+    params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
 
     entities = []
 
@@ -116,10 +116,7 @@ def test_simple_switch():
 
 def test_available():
     reg, entities = get_entitites({
-        'name': 'Sonoff Basic',
-        'deviceid': DEVICEID,
         'extra': {'uiid': 1},
-        'online': True,
         'params': {'switch': 'on'},
     })
     switch: XSwitch = entities[0]
@@ -159,35 +156,14 @@ def test_nospec():
 
 def test_switch_2ch():
     _, entities = get_entitites({
-        'extra': {'uiid': 2, 'model': 'PSF-B04-GL'},
+        'extra': {'uiid': 2},
         'params': {
-            'init': 1,
             'switches': [
                 {'switch': 'on', 'outlet': 0},
                 {'switch': 'off', 'outlet': 1},
                 {'switch': 'off', 'outlet': 2},
                 {'switch': 'off', 'outlet': 3}
             ],
-            'configure': [
-                {'startup': 'off', 'outlet': 0},
-                {'startup': 'off', 'outlet': 1},
-                {'startup': 'off', 'outlet': 2},
-                {'startup': 'off', 'outlet': 3}
-            ],
-            'fwVersion': '3.3.0',
-            'rssi': -41,
-            'staMac': '11:22:33:AA:BB:CC',
-            'pulse': 'off',
-            'pulseWidth': 0,
-            'version': 8,
-            'sledOnline': 'on',
-            'lock': 0,
-            'pulses': [
-                {'pulse': 'off', 'width': 1000, 'outlet': 0},
-                {'pulse': 'off', 'width': 1000, 'outlet': 1},
-                {'pulse': 'off', 'width': 1000, 'outlet': 2},
-                {'pulse': 'off', 'width': 1000, 'outlet': 3}
-            ]
         },
         'tags': {
             'ck_channel_name': {'0': 'Channel A', '1': 'Channel B'}
@@ -208,16 +184,9 @@ def test_switch_2ch():
 
 def test_fan():
     _, entities = get_entitites({
-        'name': 'iFan Toilet',
-        'deviceid': DEVICEID,
         'extra': {'uiid': 34, 'model': 'PSF-BFB-GL'},
-        'brandName': 'SONOFF',
-        'productModel': 'iFan03',
-        'online': True,
         'params': {
-            'version': 8,
             'sledOnline': 'on',
-            'init': 1,
             'fwVersion': '3.5.0',
             'rssi': -47,
             'switches': [
@@ -232,7 +201,6 @@ def test_fan():
                 {'startup': 'stay', 'outlet': 2},
                 {'startup': 'stay', 'outlet': 3}
             ],
-            'staMac': 'D8:F1:5B:8D:A3:2F'
         },
     })
 
@@ -274,7 +242,6 @@ def test_sonoff_th():
             'rssi': -43,
             'sensorType': 'AM2301',
             'sledOnline': 'on',
-            'staMac': '11:22:33:AA:BB:CC',
             'startup': 'stay',
             'switch': 'off',
             'targets': [
@@ -463,7 +430,6 @@ def test_sonoff_pow():
             "alarmType": "pcv",
             "init": 1,
             "rssi": -72,
-            "staMac": "11:22:33:AA:BB:CC",
             "fwVersion": "3.4.0",
             "sledOnline": "on",
             "version": 8

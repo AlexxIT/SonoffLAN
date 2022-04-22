@@ -13,7 +13,7 @@ Developer can change global properties of existing classes via spec function.
 """
 from typing import Optional
 
-from aiomusiccast.capabilities import BinarySensor
+from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 
@@ -27,7 +27,7 @@ from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
 
 # supported custom device_class
 DEVICE_CLASS = {
-    "binary_sensor": (XEntity, BinarySensor),
+    "binary_sensor": (XEntity, BinarySensorEntity),
     "fan": (XToggleFan,),  # using custom class for overriding is_on function
     "light": (XEntity, LightEntity),
     "sensor": (XEntity, SensorEntity),
