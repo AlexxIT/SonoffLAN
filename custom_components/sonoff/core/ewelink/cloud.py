@@ -1,5 +1,5 @@
 """
-https://coolkit-technologies.github.io/apiDocs/#/en/APICenter
+https://coolkit-technologies.github.io/eWeLink-API/#/en/PlatformOverview
 """
 import asyncio
 import base64
