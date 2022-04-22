@@ -49,6 +49,8 @@ CONFIG_SCHEMA = vol.Schema({
     }, extra=vol.ALLOW_EXTRA),
 }, extra=vol.ALLOW_EXTRA)
 
+UNIQUE_DEVICES = {}
+
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     if not backward.hass_version_supported:
@@ -201,6 +203,7 @@ async def internal_cache_setup(
 
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
     if devices:
+        devices = internal_unique_devices(entry.entry_id, devices)
         registry.setup_devices(devices)
 
     mode = entry.options.get(CONF_MODE, "auto")
@@ -216,6 +219,16 @@ async def internal_cache_setup(
     entry.async_on_unload(
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, registry.stop)
     )
+
+
+def internal_unique_devices(uid: str, devices: list) -> list:
+    """For support multiple integrations - bind each device to one integraion.
+    To avoid duplicates.
+    """
+    return [
+        device for device in devices
+        if UNIQUE_DEVICES.setdefault(device["deviceid"], uid) == uid
+    ]
 
 
 async def async_remove_config_entry_device(
