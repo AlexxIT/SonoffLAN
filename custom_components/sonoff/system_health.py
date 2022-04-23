@@ -1,6 +1,7 @@
 """Provide info to system health."""
 import logging
 import re
+import traceback
 import uuid
 from collections import deque
 from datetime import datetime
@@ -75,7 +76,13 @@ class DebugView(logging.Handler, HomeAssistantView):
 
     def handle(self, rec: logging.LogRecord) -> None:
         dt = datetime.fromtimestamp(rec.created).strftime("%Y-%m-%d %H:%M:%S")
-        self.text.append(f"{dt} [{rec.levelname[0]}] {rec.msg}")
+        if rec.exc_info:
+            exc = traceback.format_exception(*rec.exc_info, limit=1)
+            exc = "".join(exc[-2:]).replace("\n", "|")
+            msg = f"{dt} [{rec.levelname[0]}] {rec.msg}|{exc}"
+        else:
+            msg = f"{dt} [{rec.levelname[0]}] {rec.msg}"
+        self.text.append(msg)
 
     async def get(self, request: web.Request):
         try:
