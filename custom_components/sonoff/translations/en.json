@@ -23,6 +23,7 @@
   },
   "system_health": {
     "info": {
+      "version": "Version",
       "cloud_online": "Cloud devices online",
       "local_online": "Local devices online",
       "debug": "Debug page"

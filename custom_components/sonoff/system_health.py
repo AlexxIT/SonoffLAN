@@ -37,7 +37,9 @@ async def system_health_info(hass: HomeAssistant) -> dict[str, Any]:
                 if "params" in device:
                     local_online += 1
 
+    integration = hass.data["integrations"][DOMAIN]
     info = {
+        "version": str(integration.version),
         "cloud_online": f"{cloud_online} / {cloud_total}",
         "local_online": f"{local_online} / {local_total}",
     }
