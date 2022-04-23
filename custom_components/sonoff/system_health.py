@@ -52,29 +52,33 @@ async def system_health_info(hass: HomeAssistant) -> dict[str, Any]:
 
 
 async def setup_debug(hass: HomeAssistant, logger: Logger):
-    info = await hass.helpers.system_info.async_get_system_info()
-    view = DebugView()
-
-    logger.addHandler(view)
-    logger.debug(f"SysInfo: {info}")
-
+    view = DebugView(logger)
     hass.http.register_view(view)
+
+    info = await hass.helpers.system_info.async_get_system_info()
+    logger.debug(f"SysInfo: {info}")
 
 
 class DebugView(logging.Handler, HomeAssistantView):
-    name = "sonoff_debug"
+    """Class generate web page with component debug logs."""
+    name = DOMAIN
     requires_auth = False
 
-    # https://waymoot.org/home/python_string/
-    text = deque(maxlen=10000)
-
-    def __init__(self, ):
+    def __init__(self, logger: Logger):
         super().__init__()
+
+        # https://waymoot.org/home/python_string/
+        self.text = deque(maxlen=10000)
+
+        self.propagate_level = logger.getEffectiveLevel()
 
         # random url because without authorization!!!
         DebugView.url = f"/api/{DOMAIN}/{uuid.uuid4()}"
 
-    def handle(self, rec: logging.LogRecord) -> None:
+        logger.addHandler(self)
+        logger.setLevel(logging.DEBUG)
+
+    def handle(self, rec: logging.LogRecord):
         dt = datetime.fromtimestamp(rec.created).strftime("%Y-%m-%d %H:%M:%S")
         if rec.exc_info:
             exc = traceback.format_exception(*rec.exc_info, limit=1)
@@ -82,7 +86,12 @@ class DebugView(logging.Handler, HomeAssistantView):
             msg = f"{dt} [{rec.levelname[0]}] {rec.msg}|{exc}"
         else:
             msg = f"{dt} [{rec.levelname[0]}] {rec.msg}"
+
         self.text.append(msg)
+
+        # prevent debug to Hass log if user don't want it
+        if self.propagate_level > rec.levelno:
+            rec.levelno = -1
 
     async def get(self, request: web.Request):
         try:
