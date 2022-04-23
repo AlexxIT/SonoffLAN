@@ -138,6 +138,12 @@ DEVICES = {
         spec(XConsumption, param="kwhHistories_01", uid="consumption_2",
              get_params={"getKwh_01": 2}),
     ],  # Sonoff DualR3
+    133: [
+        Switch1, Switch2,
+        spec(XSensor, param="temperature"),
+        spec(XSensor, param="humidity"),
+
+    ],
     136: [XLightB05],  # https://github.com/AlexxIT/SonoffLAN/issues/712
     137: [XLightLED],
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)

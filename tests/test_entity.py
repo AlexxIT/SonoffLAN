@@ -855,3 +855,63 @@ def test_temperature_convert():
     temp.hass.config.units.temperature_unit = TEMP_FAHRENHEIT
     assert temp.state == 58.3
     assert temp.unit_of_measurement == TEMP_FAHRENHEIT
+
+
+def test_ns_panel():
+    reg, entities = get_entitites({
+        'extra': {'uiid': 133},
+        'params': {
+            'version': 8,
+            'pulses': [
+                {'pulse': 'off', 'width': 1000, 'outlet': 0},
+                {'pulse': 'off', 'width': 1000, 'outlet': 1}
+            ],
+            'switches': [
+                {'switch': 'on', 'outlet': 0},
+                {'switch': 'on', 'outlet': 1}
+            ],
+            'configure': [
+                {'startup': 'stay', 'outlet': 0},
+                {'startup': 'stay', 'outlet': 1}
+            ], 'lock': 0,
+            'fwVersion': '1.2.0',
+            'temperature': 20,
+            'humidity': 50,
+            'tempUnit': 0,
+            'HMI_outdoorTemp': {'current': 7, 'range': '6,17'},
+            'HMI_weather': 33,
+            'cityId': '123456',
+            'dst': 1,
+            'dstChange': '2022-10-30T01:00:00.000Z',
+            'geo': '12.3456,-12.3456',
+            'timeZone': 0,
+            'HMI_ATCDevice': {
+                'ctype': 'device', 'id': '100xxxxxx', 'outlet': 0,
+                'etype': 'cold'
+            },
+            'ctype': 'device',
+            'id': '100xxxxxx',
+            'resourcetype': 'ATC',
+            'ATCEnable': 0,
+            'ATCMode': 0,
+            'ATCExpect0': 26,
+            'HMI_dimEnable': 1,
+            'HMI_resources': [
+                {'ctype': 'device', 'id': '1000yyyyyy', 'uiid': 6},
+                {'ctype': 'idle'},
+                {'ctype': 'device', 'id': '1000zzzzzz', 'uiid': 1},
+                {'ctype': 'scene', 'id': '61dd5af0b615852f758669d6'},
+                {'ctype': 'idle'},
+                {'ctype': 'idle'},
+                {'ctype': 'idle'},
+                {'ctype': 'scene', 'id': '61dd5b0ab615852f758669d8'}
+            ],
+            'ATCExpect1': -999, 'HMI_dimOpen': 0,
+            'only_device': {'ota': 'success', 'ota_fail_reason': 0},
+            'tempCorrection': -2,
+            'cityStr': 'Sheffield'
+        }
+    })
+
+    for uid in ("1", "2", "temperature", "humidity"):
+        assert any(e.uid == uid for e in entities)
