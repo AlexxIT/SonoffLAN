@@ -251,7 +251,7 @@ def setup_diy(device: dict) -> dict:
         device["productModel"] = model
     except Exception:
         device["name"] = "Unknown DIY"
-        device["extra"] = {"uiid": None}
+        device["extra"] = {"uiid": 0}
         device["productModel"] = device["diy"]
     device["online"] = False
     return device

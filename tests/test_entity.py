@@ -13,8 +13,8 @@ from custom_components.sonoff.core import devices
 from custom_components.sonoff.core.ewelink import XRegistry, \
     SIGNAL_ADD_ENTITIES, SIGNAL_UPDATE, SIGNAL_CONNECTED
 from custom_components.sonoff.fan import XFan
-from custom_components.sonoff.light import XFanLight, XLightGroup
-from custom_components.sonoff.sensor import XSensor, XZigbeeButton, XUnknown
+from custom_components.sonoff.light import XLightGroup
+from custom_components.sonoff.sensor import XSensor, XRemoteButton, XUnknown
 from custom_components.sonoff.switch import XSwitch, XSwitchTH, XToggle, \
     XSwitches
 
@@ -141,13 +141,13 @@ def test_available():
 
 
 def test_nospec():
-    device = {"extra": {"uiid": "X"}, "params": {"switch": "on"}}
+    device = {"extra": {"uiid": 0}, "params": {"switch": "on"}}
     _, entities = get_entitites(device)
 
     switch: XSwitch = entities[0]
     assert switch.state == "on"
 
-    device = {"extra": {"uiid": "Y"}, "params": {"property": 123}}
+    device = {"extra": {"uiid": 0}, "params": {"property": 123}}
     _, entities = get_entitites(device)
 
     sensor: XUnknown = entities[0]
@@ -219,8 +219,9 @@ def test_fan():
     assert fan.state == "on"
     assert fan.percentage == 67
 
-    light: XFanLight = entities[1]
+    light: XSwitches = next(e for e in entities if e.uid == "1")
     assert light.state == "off"
+    assert isinstance(light, LightEntity)
 
 
 def test_sonoff_th():
@@ -526,13 +527,35 @@ def test_zigbee_button():
         }
     })
 
-    button: XZigbeeButton = entities[0]
+    button: XRemoteButton = entities[0]
     assert button.state == ""
 
     reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {'trigTime': '1601285000235', 'key': 1}
     })
     assert button.state == "double"
+
+
+def test_sonoff_r5():
+    reg, entities = get_entitites({
+        "extra": {"uiid": 174},
+        "params": {
+            'subDevId': '7007ad88', 'parentid': '10015c1cfc',
+            'bleAddr': '7007AD88', 'outlet': 3, 'key': 0, 'count': 181,
+            'actionTime': '2022-04-11T13:51:08.986Z'
+        }
+    })
+
+    button: XRemoteButton = entities[0]
+    assert button.state == ""
+
+    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID, "params": {
+            'bleAddr': '7007AD88', 'outlet': 2, 'key': 1, 'count': 883,
+            'actionTime': '2022-04-12T11:17:45.831Z'
+        }
+    })
+    assert button.state == "button_3_double"
 
 
 def test_zigbee_th():
