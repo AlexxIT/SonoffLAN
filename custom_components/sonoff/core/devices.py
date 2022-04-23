@@ -114,7 +114,7 @@ DEVICES = {
     59: [XLightLED],  # Sonoff LED (only cloud)
     # 66: switch1,  # ZigBee Bridge
     77: SPEC_1CH,  # Sonoff Micro
-    78: SPEC_1CH,
+    78: SPEC_1CH,  # https://github.com/AlexxIT/SonoffLAN/issues/615
     81: SPEC_1CH,
     82: SPEC_2CH,
     83: SPEC_3CH,
