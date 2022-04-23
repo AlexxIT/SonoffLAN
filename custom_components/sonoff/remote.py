@@ -22,7 +22,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
 # noinspection PyAbstractClass
 class XRemote(XEntity, RemoteEntity):
     def __init__(self, ewelink: XRegistry, device: dict):
-        super().__init__(ewelink, device)
+        XEntity.__init__(self, ewelink, device)
 
         self.childs = {}
         self.params = {"cmd", "arming"}

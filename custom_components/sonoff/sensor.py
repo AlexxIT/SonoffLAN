@@ -50,7 +50,7 @@ class XSensor(XEntity, SensorEntity):
     report_value = None
 
     def __init__(self, ewelink: XRegistry, device: dict):
-        super().__init__(ewelink, device)
+        XEntity.__init__(self, ewelink, device)
 
         if self.uid in UNITS:
             # by default all sensors with units is measurement sensors
@@ -104,7 +104,7 @@ class XConsumption(XEntity, SensorEntity):
     next_ts = 0
 
     def __init__(self, ewelink: XRegistry, device: dict):
-        super().__init__(ewelink, device)
+        XEntity.__init__(self, ewelink, device)
         self._attr_entity_registry_enabled_default = False
         self._attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
         self._attr_should_poll = True
@@ -129,7 +129,7 @@ BUTTON_STATES = ["single", "double", "hold"]
 
 class XRemoteButton(XEntity, SensorEntity):
     def __init__(self, ewelink: XRegistry, device: dict):
-        super().__init__(ewelink, device)
+        XEntity.__init__(self, ewelink, device)
         self.params = {"key"}
         self._attr_native_value = ""
 

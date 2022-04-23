@@ -23,7 +23,7 @@ from ..fan import XFan, XDiffuserFan, XToggleFan
 from ..light import *
 from ..remote import XRemote
 from ..sensor import XSensor, XRemoteButton, XUnknown, XConsumption
-from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
+from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle, XZigbeeSwitches
 
 # supported custom device_class
 DEVICE_CLASS = {
@@ -35,11 +35,19 @@ DEVICE_CLASS = {
 }
 
 
-def spec(cls, enabled=None, base=None, **kwargs):
+def spec(cls, base: str = None, enabled: bool = None, **kwargs) -> type:
+    """Make duplicate for cls class with changes in kwargs params.
+
+    If `base` param provided - can change Entity base class for cls. So it can
+    be added to different Hass domain.
+    """
     if enabled is not None:
         kwargs["_attr_entity_registry_enabled_default"] = enabled
-    bases = DEVICE_CLASS[base] if base else (cls,)
-    return type(cls.__name__, bases, {**cls.__dict__, **kwargs})
+    if base:
+        bases = cls.__mro__[-len(XSwitch.__mro__)::-1]
+        bases = {k: v for b in bases for k, v in b.__dict__.items()}
+        return type(cls.__name__, DEVICE_CLASS[base], {**bases, **kwargs})
+    return type(cls.__name__, (cls,), {**cls.__dict__, **kwargs})
 
 
 Switch1 = spec(XSwitches, channel=0, uid="1")
@@ -147,6 +155,12 @@ DEVICES = {
     ],  # ZCL_HA_DEVICEID_TEMPERATURE_SENSOR
     2026: [XZigbeeMotion, Battery],  # ZIGBEE_MOBILE_SENSOR
     3026: [XZigbeeDoor, Battery],  # ZIGBEE_DOOR_AND_WINDOW_SENSOR
+    4256: [
+        spec(XZigbeeSwitches, channel=0, uid="1"),
+        spec(XZigbeeSwitches, channel=1, uid="2"),
+        spec(XZigbeeSwitches, channel=2, uid="3"),
+        spec(XZigbeeSwitches, channel=3, uid="4"),
+    ],
 }
 
 # Pow devices sends sensors data only in uiActive mode
@@ -195,13 +209,14 @@ def get_custom_spec(classes: list, device_class):
 
     elif isinstance(device_class, list):
         # remove all default multichannel classes from spec
-        classes = [cls for cls in classes if XSwitches not in cls.__bases__]
+        base = classes[0].__base__
+        classes = [cls for cls in classes if base not in cls.__bases__]
 
         for i, sub_class in enumerate(device_class):
             # 2. simple multichannel
             if isinstance(sub_class, str):
                 classes.append(spec(
-                    XSwitches, channel=i, uid=str(i + 1), base=sub_class
+                    base, channel=i, uid=str(i + 1), base=sub_class
                 ))
 
             elif isinstance(sub_class, dict):
@@ -216,14 +231,14 @@ def get_custom_spec(classes: list, device_class):
                 # 4. multichannel
                 elif isinstance(i, int):
                     classes.append(spec(
-                        XSwitches, channel=(i - 1), uid=str(i), base=sub_class
+                        base, channel=(i - 1), uid=str(i), base=sub_class
                     ))
 
     return classes
 
 
 def set_default_class(device_class: str):
-    XSwitch.__bases__ = XSwitches.__bases__ = XSwitchTH.__bases__ = (
+    XSwitch.__bases__ = XSwitches.__bases__ = (
         XEntity, LightEntity if device_class == "light" else SwitchEntity
     )
 

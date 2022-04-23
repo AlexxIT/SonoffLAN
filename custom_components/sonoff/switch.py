@@ -59,12 +59,7 @@ class XSwitches(XEntity, SwitchEntity):
 
 
 # noinspection PyAbstractClass
-class XSwitchTH(XEntity, SwitchEntity):
-    params = {"switch"}
-
-    def set_state(self, params: dict):
-        self._attr_is_on = params["switch"] == "on"
-
+class XSwitchTH(XSwitch):
     async def async_turn_on(self):
         params = {"switch": "on", "mainSwitch": "on", "deviceType": "normal"}
         await self.ewelink.send(self.device, params)
@@ -72,6 +67,27 @@ class XSwitchTH(XEntity, SwitchEntity):
     async def async_turn_off(self):
         params = {"switch": "off", "mainSwitch": "off", "deviceType": "normal"}
         await self.ewelink.send(self.device, params)
+
+
+# noinspection PyAbstractClass
+class XZigbeeSwitches(XSwitches):
+    async def async_turn_on(self, **kwargs):
+        # zigbee switch should send all channels at once
+        # https://github.com/AlexxIT/SonoffLAN/issues/714
+        switches = [
+            {"outlet": self.channel, "switch": "on"}
+            if switch["outlet"] == self.channel else switch
+            for switch in self.device["params"]["switches"]
+        ]
+        await self.ewelink.send(self.device, {"switches": switches})
+
+    async def async_turn_off(self):
+        switches = [
+            {"outlet": self.channel, "switch": "off"}
+            if switch["outlet"] == self.channel else switch
+            for switch in self.device["params"]["switches"]
+        ]
+        await self.ewelink.send(self.device, {"switches": switches})
 
 
 # noinspection PyAbstractClass

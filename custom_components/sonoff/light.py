@@ -321,7 +321,7 @@ class XLightB02(XEntity, LightEntity):
     )
 
     def __init__(self, ewelink: XRegistry, device: dict):
-        super().__init__(ewelink, device)
+        XEntity.__init__(self, ewelink, device)
 
         model = device.get("productModel")
         if model == "B02-F-ST64":

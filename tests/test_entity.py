@@ -3,20 +3,18 @@ import time
 
 from homeassistant.components.fan import FanEntity
 from homeassistant.components.light import LightEntity
-from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import TEMP_FAHRENHEIT
 from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
 from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
 from custom_components.sonoff.core import devices
-from custom_components.sonoff.core.ewelink import XRegistry, \
-    SIGNAL_ADD_ENTITIES, SIGNAL_UPDATE, SIGNAL_CONNECTED
+from custom_components.sonoff.core.ewelink import SIGNAL_UPDATE, \
+    SIGNAL_CONNECTED
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import XLightGroup
 from custom_components.sonoff.sensor import XSensor, XRemoteButton, XUnknown
-from custom_components.sonoff.switch import XSwitch, XSwitchTH, XToggle, \
-    XSwitches
+from custom_components.sonoff.switch import *
 
 DEVICEID = "1000123abc"
 
@@ -628,50 +626,61 @@ def test_default_class():
 
 def test_device_class():
     reg, entities = get_entitites({
-        "extra": {"uiid": 1}
+        "extra": {"uiid": 15}
     }, {
         "devices": {
             DEVICEID: {"device_class": "light"}
         }
     })
 
-    entity: XSwitch = entities[0]
+    light: XSwitchTH = entities[0]
     # Hass v2021.12 - off, Hass v2022.2 and more - None
-    assert entity.state in (None, "off")
+    assert light.state in (None, "off")
 
     reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {"switch": "on"}
     })
-    assert entity.state == "on"
+    assert light.state == "on"
 
-    assert isinstance(entity, LightEntity)
-    assert not isinstance(entity, SwitchEntity)
+    assert light.__class__.__init__ == XEntity.__init__
+    assert light.__class__.set_state == XSwitch.set_state
+    assert light.__class__.async_turn_on == XSwitchTH.async_turn_on
+
+    assert isinstance(light, LightEntity)
+    assert not isinstance(light, SwitchEntity)
 
 
 def test_device_class2():
-    reg, entities = get_entitites({
-        "extra": {"uiid": 2},
-        "params": {
-            'switches': [
-                {'switch': 'on', 'outlet': 0},
-                {'switch': 'on', 'outlet': 1},
-                {'switch': 'off', 'outlet': 2},
-                {'switch': 'off', 'outlet': 3}
-            ],
-        }
-    }, {
-        "devices": {
-            DEVICEID: {"device_class": ["light", "fan"]}
-        }
-    })
+    classes = {
+        2: XSwitches.async_turn_on,
+        4256: XZigbeeSwitches.async_turn_on
+    }
+    for uiid, func in classes.items():
+        reg, entities = get_entitites({
+            "extra": {"uiid": uiid},
+            "params": {
+                'switches': [
+                    {'switch': 'on', 'outlet': 0},
+                    {'switch': 'on', 'outlet': 1},
+                    {'switch': 'off', 'outlet': 2},
+                    {'switch': 'off', 'outlet': 3}
+                ],
+            }
+        }, {
+            "devices": {
+                DEVICEID: {"device_class": ["light", "fan"]}
+            }
+        })
 
-    light: XSwitches = entities[0]
-    assert isinstance(light, LightEntity)
-    assert light.state == "on"
+        light: XSwitches = entities[0]
+        assert isinstance(light, LightEntity)
+        assert light.state == "on"
 
-    fan: XSwitches = entities[1]
-    assert isinstance(fan, FanEntity)
-    assert fan.state == "on"
+        fan: XSwitches = entities[1]
+        assert isinstance(fan, FanEntity)
+        assert fan.state == "on"
+
+        assert light.__class__.async_turn_on == func
 
 
 def test_light_group():
