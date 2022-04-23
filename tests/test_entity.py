@@ -154,7 +154,7 @@ def test_nospec():
 
 
 def test_switch_2ch():
-    _, entities = get_entitites({
+    reg, entities = get_entitites({
         'extra': {'uiid': 2},
         'params': {
             'switches': [
@@ -179,6 +179,12 @@ def test_switch_2ch():
     assert switch2.name == "Channel B"
     assert switch2.unique_id == DEVICEID + "_2"
     assert switch2.state == "off"
+
+    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID,
+        "params": {"switches": [{"outlet": 1, "switch": "on"}]}
+    })
+    assert switch2.state == "on"
 
 
 def test_fan():
