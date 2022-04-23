@@ -20,7 +20,7 @@ class XSwitch(XEntity, SwitchEntity):
     def set_state(self, params: dict):
         self._attr_is_on = params["switch"] == "on"
 
-    async def async_turn_on(self):
+    async def async_turn_on(self, **kwargs):
         await self.ewelink.send(self.device, {"switch": "on"})
 
     async def async_turn_off(self):
@@ -49,7 +49,7 @@ class XSwitches(XEntity, SwitchEntity):
         )
         self._attr_is_on = params["switch"] == "on"
 
-    async def async_turn_on(self):
+    async def async_turn_on(self, **kwargs):
         params = {"switches": [{"outlet": self.channel, "switch": "on"}]}
         await self.ewelink.send(self.device, params)
 
