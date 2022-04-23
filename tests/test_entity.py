@@ -267,37 +267,39 @@ def test_sonoff_th():
     assert temp.state == 14.6
 
     # test round to 1 digit
-    msg = {
+    reg.local.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "host": "",
         "params": {"deviceType": "normal", "temperature": 12.34}
-    }
-    reg.local.dispatcher_send(SIGNAL_UPDATE, msg)
+    })
+    assert temp.state == 12.3
+
+    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID,
+        "params": {"deviceType": "normal", "temperature": -273}
+    })
     assert temp.state == 12.3
 
     hum: XSensor = next(e for e in entities if e.uid == "humidity")
     assert hum.state == 42
 
     # check TH v3.4.0 param name
-    msg = {
+    reg.local.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "host": "",
         "params": {"deviceType": "normal", "humidity": 48}
-    }
-    reg.local.dispatcher_send(SIGNAL_UPDATE, msg)
+    })
     assert hum.state == 48
 
     # check TH v3.4.0 zero humidity bug (skip value)
-    msg = {
+    reg.local.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "host": "",
         "params": {"deviceType": "normal", "humidity": 0}
-    }
-    reg.local.dispatcher_send(SIGNAL_UPDATE, msg)
+    })
     assert hum.state == 48
 
-    msg = {
+    reg.local.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "host": "",
         "params": {"deviceType": "normal", "currentHumidity": "unavailable"}
-    }
-    reg.local.dispatcher_send(SIGNAL_UPDATE, msg)
+    })
     assert hum.state is None
 
 

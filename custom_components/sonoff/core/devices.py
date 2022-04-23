@@ -77,7 +77,9 @@ DEVICES = {
     14: SPEC_SWITCH,  # Sonoff Basic (3rd party)
     15: [
         XSwitchTH, LED, RSSI,
-        spec(XSensor, param="currentTemperature", uid="temperature", round=1),
+        # https://github.com/AlexxIT/SonoffLAN/issues/683
+        spec(XSensor, param="currentTemperature", uid="temperature",
+             round=1, min=-270, max=270),
         spec(XSensor, param="currentHumidity", uid="humidity"),
     ],  # Sonoff TH16
     18: [

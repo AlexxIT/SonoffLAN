@@ -59,8 +59,10 @@ class XSensor(XEntity, SensorEntity):
     needed. Also class can filter incoming values using zigbee-like reporting
     logic: min report interval, max report interval, reportable change value.
     """
-    multiply = None
-    round = None
+    max: float = float("inf")
+    min: float = -float("inf")
+    multiply: float = None
+    round: int = None
 
     report_ts = None
     report_mint = None
@@ -92,6 +94,8 @@ class XSensor(XEntity, SensorEntity):
             if self.round is not None:
                 # convert to int when round is zero
                 value = round(value, self.round or None)
+            if value < self.min or value > self.max:
+                return
         except (TypeError, ValueError):
             value = self.report_value
 
