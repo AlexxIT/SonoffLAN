@@ -106,5 +106,5 @@ class DebugView(logging.Handler, HomeAssistantView):
                      '</html>',
                 content_type="text/html"
             )
-        except:
+        except Exception:
             return web.Response(status=500)

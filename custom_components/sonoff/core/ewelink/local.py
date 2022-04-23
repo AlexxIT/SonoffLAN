@@ -59,20 +59,16 @@ def encrypt(payload: dict, devicekey: str):
 
 
 def decrypt(payload: dict, devicekey: str):
-    try:
-        devicekey = devicekey.encode('utf-8')
+    devicekey = devicekey.encode('utf-8')
 
-        hash_ = MD5.new()
-        hash_.update(devicekey)
-        key = hash_.digest()
+    hash_ = MD5.new()
+    hash_.update(devicekey)
+    key = hash_.digest()
 
-        cipher = AES.new(key, AES.MODE_CBC, iv=base64.b64decode(payload['iv']))
-        ciphertext = base64.b64decode(payload['data'])
-        padded = cipher.decrypt(ciphertext)
-        return unpad(padded, AES.block_size)
-
-    except:
-        return None
+    cipher = AES.new(key, AES.MODE_CBC, iv=base64.b64decode(payload['iv']))
+    ciphertext = base64.b64decode(payload['data'])
+    padded = cipher.decrypt(ciphertext)
+    return unpad(padded, AES.block_size)
 
 
 class XRegistryLocal(XRegistryBase):
@@ -231,9 +227,9 @@ class XRegistryLocal(XRegistryBase):
 
         except (aiohttp.ClientOSError, aiohttp.ServerDisconnectedError,
                 asyncio.CancelledError) as e:
-            _LOGGER.debug(f"{log} !! {e.args}")
+            _LOGGER.debug(log, exc_info=e)
             return 'E#COS'
 
-        except:
-            _LOGGER.exception(log)
+        except Exception as e:
+            _LOGGER.error(log, exc_info=e)
             return 'E#???'

@@ -65,7 +65,7 @@ class XRemoteSensor(BinarySensorEntity):
 
             if "payload_off" in item:
                 XRemoteSensorOff.sensors[item["payload_off"]] = self
-        except:
+        except Exception:
             self.timeout = 120
             self._attr_name = name
 

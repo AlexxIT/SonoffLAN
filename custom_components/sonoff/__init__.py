@@ -77,7 +77,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                 DOMAIN, context={"source": SOURCE_IMPORT}, data=data
             )
             hass.async_create_task(coro)
-    except:
+    except Exception:
         pass
 
     async def send_command(call: ServiceCall):

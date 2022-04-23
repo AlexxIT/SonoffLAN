@@ -168,5 +168,5 @@ class XCameras(Thread):
             try:
                 data, addr = self.sock.recvfrom(1024)
                 self.datagram_received(data, addr)
-            except:
-                _LOGGER.exception("Camera read exception")
+            except Exception as e:
+                _LOGGER.error("Camera read exception", exc_info=e)

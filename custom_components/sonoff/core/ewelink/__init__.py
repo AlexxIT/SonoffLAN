@@ -38,7 +38,7 @@ class XRegistry(XRegistryBase):
             deviceid = device["deviceid"]
             try:
                 device.update(self.config["devices"][deviceid])
-            except:
+            except Exception:
                 pass
 
             dump = {
@@ -139,7 +139,7 @@ class XRegistry(XRegistryBase):
                     devicekey = self.config["devices"][did]["devicekey"]
                     data = decrypt(msg, devicekey)
                     msg["params"] = json.loads(data)
-                except:
+                except Exception:
                     _LOGGER.info(f"Skip setup for encrypted device {did}")
                     self.devices[did] = msg
                     return
@@ -160,7 +160,8 @@ class XRegistry(XRegistryBase):
                 if data and data.startswith(b'{"rf'):
                     data = data.replace(b'"="', b'":"')
                 params = json.loads(data)
-            except:
+            except Exception as e:
+                _LOGGER.debug("Can't decrypt message", exc_info=e)
                 return
 
         if "online" in params:

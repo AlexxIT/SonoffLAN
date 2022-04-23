@@ -195,8 +195,8 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             if timeout:
                 # wait for response with same sequence
                 return await self._wait_response(sequence, timeout)
-        except:
-            _LOGGER.exception(log)
+        except Exception as e:
+            _LOGGER.error(log, exc_info=e)
             return 'E#???'
 
     def start(self):
