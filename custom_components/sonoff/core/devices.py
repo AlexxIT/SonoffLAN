@@ -143,6 +143,7 @@ DEVICES = {
     ],  # Sonoff NS Panel
     136: [XLightB05],  # https://github.com/AlexxIT/SonoffLAN/issues/712
     137: [XLightLED],
+    162: SPEC_3CH,  # https://github.com/AlexxIT/SonoffLAN/issues/659
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)
     177: [XRemoteButton],  # Sonoff S-Mate
     182: [
