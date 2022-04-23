@@ -1,5 +1,4 @@
 import asyncio
-import logging
 
 from homeassistant.components.remote import RemoteEntity, ATTR_DELAY_SECS, \
     DEFAULT_DELAY_SECS
@@ -10,8 +9,6 @@ from .button import XRemoteButton
 from .core.const import DOMAIN
 from .core.entity import XEntity
 from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
-
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, config_entry, add_entities):

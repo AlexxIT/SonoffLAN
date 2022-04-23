@@ -7,8 +7,8 @@ from typing import Dict, List
 from aiohttp import ClientSession
 
 from .base import XRegistryBase, SIGNAL_UPDATE, SIGNAL_CONNECTED
-from .cloud import XRegistryCloud, _LOGGER as CLOUDLOG
-from .local import XRegistryLocal, decrypt, _LOGGER as LOCALLOG
+from .cloud import XRegistryCloud
+from .local import XRegistryLocal, decrypt
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class XRegistry(XRegistryBase):
                 if k not in ('bindInfos', 'bssid', 'ssid', 'staMac')
             }
             uiid = device['extra']['uiid']
-            _LOGGER.debug(f"{deviceid} == Init | {uiid:04} | {dump}")
+            _LOGGER.debug(f"{deviceid} UIID {uiid:04} | {dump}")
 
             spec = get_spec(device)
             entities = [cls(self, device) for cls in spec]
@@ -109,12 +109,12 @@ class XRegistry(XRegistryBase):
         did = msg["deviceid"]
         device = self.devices.get(did)
         if not device:
-            CLOUDLOG.warning(f"UNKNOWN cloud device: {msg}")
+            _LOGGER.warning(f"UNKNOWN cloud device: {msg}")
             return
 
         params = msg["params"]
 
-        CLOUDLOG.debug(f"{did} <= Cloud3 | {params} | {msg.get('sequence')}")
+        _LOGGER.debug(f"{did} <= Cloud3 | {params} | {msg.get('sequence')}")
 
         # process online change
         if "online" in params:
@@ -171,7 +171,7 @@ class XRegistry(XRegistryBase):
                 self.dispatcher_send(msg["deviceid"])
             return
 
-        LOCALLOG.debug(f"{did} <= Local3 | {params} | {msg.get('seq')}")
+        _LOGGER.debug(f"{did} <= Local3 | {params} | {msg.get('seq')}")
 
         if "deviceType" in params:
             # Sonoff TH v3.4.0 sends `temperature` and `humidity` via LAN

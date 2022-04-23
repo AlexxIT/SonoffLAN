@@ -13,6 +13,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import async_get as device_registry
 from homeassistant.helpers.storage import Store
 
+from . import system_health
 from .core import backward
 from .core.const import *
 from .core.ewelink import XRegistry, XRegistryCloud, XRegistryLocal
@@ -31,7 +32,6 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_USERNAME): cv.string,
         vol.Optional(CONF_PASSWORD): cv.string,
         vol.Optional(CONF_DEFAULT_CLASS): cv.string,
-        # vol.Optional(CONF_DEBUG, default=False): cv.boolean,
         vol.Optional(CONF_RFBRIDGE): {
             cv.string: vol.Schema({
                 vol.Optional(CONF_NAME): cv.string,
@@ -121,6 +121,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not registry:
         session = async_get_clientsession(hass)
         hass.data[DOMAIN][entry.entry_id] = registry = XRegistry(session)
+
+    if entry.options.get("debug") and not _LOGGER.handlers:
+        await system_health.setup_debug(hass, _LOGGER)
 
     username = entry.data.get(CONF_USERNAME)
     password = entry.data.get(CONF_PASSWORD)
