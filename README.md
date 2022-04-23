@@ -105,7 +105,7 @@ These devices work both on a local network and through the cloud.
 - [Sonoff G1](https://www.itead.cc/sonoff-g1.html) fw 3.5.0 
 - [Sonoff Dual](https://www.itead.cc/sonoff-dual.html)
 - [Sonoff iFan02](https://www.itead.cc/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control) fw 3.3.0
-- [Sonoff iFan03](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) fw 3.4.0
+- [Sonoff iFan03 and iFan04](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) fw 3.4.0
 - [Sonoff S20](https://www.itead.cc/smart-socket.html)
 - [Sonoff S26](https://www.itead.cc/sonoff-s26-wifi-smart-plug.html)
 - [Sonoff S31](https://www.itead.cc/sonoff-s31.html) (show power consumption)
