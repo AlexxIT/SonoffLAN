@@ -140,7 +140,7 @@ class XRegistry(XRegistryBase):
                     data = decrypt(msg, devicekey)
                     msg["params"] = json.loads(data)
                 except Exception:
-                    _LOGGER.info(f"Skip setup for encrypted device {did}")
+                    _LOGGER.debug(f"{did} !! skip setup for encrypted device")
                     self.devices[did] = msg
                     return
 
