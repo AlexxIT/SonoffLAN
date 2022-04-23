@@ -121,7 +121,7 @@ class XSensor(XEntity, SensorEntity):
             self.set_state()
 
 
-class XConsumption(XEntity, SensorEntity):
+class XEnergySensor(XEntity, SensorEntity):
     """Power devices sends data only when active mobile App UI. So we emulate
     this situation. Feature will work only with active cloud connection.
     """
@@ -130,6 +130,7 @@ class XConsumption(XEntity, SensorEntity):
 
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
+        self._attr_device_class = SensorDeviceClass.ENERGY
         self._attr_entity_registry_enabled_default = False
         self._attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
         self._attr_should_poll = True

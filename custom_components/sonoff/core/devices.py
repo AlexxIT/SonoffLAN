@@ -101,7 +101,7 @@ DEVICES = {
         spec(XSensor, param="current"),
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
-        spec(XConsumption, param="hundredDaysKwhData", uid="consumption",
+        spec(XEnergySensor, param="hundredDaysKwhData", uid="energy",
              get_params={"hundredDaysKwh": "get"}),
     ],  # Sonoff Pow
     34: [
@@ -131,9 +131,9 @@ DEVICES = {
         spec(XSensor100, param="voltage_01", uid="voltage_2"),
         spec(XSensor100, param="actPow_00", uid="power_1"),
         spec(XSensor100, param="actPow_01", uid="power_2"),
-        spec(XConsumption, param="kwhHistories_00", uid="consumption_1",
+        spec(XEnergySensor, param="kwhHistories_00", uid="energy_1",
              get_params={"getKwh_00": 2}),
-        spec(XConsumption, param="kwhHistories_01", uid="consumption_2",
+        spec(XEnergySensor, param="kwhHistories_01", uid="energy_2",
              get_params={"getKwh_01": 2}),
     ],  # Sonoff DualR3
     133: [
