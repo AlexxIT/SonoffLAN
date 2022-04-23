@@ -13,9 +13,10 @@
   "options": {
     "step": {
       "init": {
+        "description": "**Auto mode** is recommended for most users. Integration documentation and a link to the **debug page** can be found in **Settings > Info** page.",
         "data": {
           "mode": "Mode",
-          "debug": "Debug"
+          "debug": "Debug page"
         }
       }
     }
