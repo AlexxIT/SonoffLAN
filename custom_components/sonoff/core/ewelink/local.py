@@ -118,6 +118,9 @@ class XRegistryLocal(XRegistryBase):
         info = AsyncServiceInfo(service_type, name)
         await info.async_request(zeroconf, 3000)
 
+        if len(info.addresses) == 0:
+            return
+
         data = {
             k.decode(): v.decode() if isinstance(v, bytes) else v
             for k, v in info.properties.items()
