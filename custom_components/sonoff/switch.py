@@ -44,10 +44,13 @@ class XSwitches(XEntity, SwitchEntity):
         self._attr_unique_id = f"{device['deviceid']}_{self.channel + 1}"
 
     def set_state(self, params: dict):
-        params = next(
-            i for i in params["switches"] if i["outlet"] == self.channel
-        )
-        self._attr_is_on = params["switch"] == "on"
+        try:
+            params = next(
+                i for i in params["switches"] if i["outlet"] == self.channel
+            )
+            self._attr_is_on = params["switch"] == "on"
+        except StopIteration:
+            pass
 
     async def async_turn_on(self, **kwargs):
         params = {"switches": [{"outlet": self.channel, "switch": "on"}]}
