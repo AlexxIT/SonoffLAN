@@ -13,17 +13,13 @@ Developer can change global properties of existing classes via spec function.
 """
 from typing import Optional
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.components.switch import SwitchEntity
-
-from ..binary_sensor import XBinarySensor, XZigbeeMotion, XZigbeeDoor
+from ..binary_sensor import *
 from ..cover import XCover, XCoverDualR3
 from ..fan import XFan, XDiffuserFan, XToggleFan
 from ..light import *
 from ..remote import XRemote
-from ..sensor import XSensor, XRemoteButton, XUnknown, XConsumption
-from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle, XZigbeeSwitches
+from ..sensor import *
+from ..switch import *
 
 # supported custom device_class
 DEVICE_CLASS = {
@@ -139,11 +135,10 @@ DEVICES = {
              get_params={"getKwh_01": 2}),
     ],  # Sonoff DualR3
     133: [
-        Switch1, Switch2,
+        Switch1, Switch2, XNSOutdoorTemp,
         spec(XSensor, param="temperature"),
         spec(XSensor, param="humidity"),
-
-    ],
+    ],  # Sonoff NS Panel
     136: [XLightB05],  # https://github.com/AlexxIT/SonoffLAN/issues/712
     137: [XLightLED],
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)

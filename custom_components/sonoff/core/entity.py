@@ -1,25 +1,8 @@
-from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityCategory
 
 from .const import DOMAIN
 from .ewelink import XRegistry
-
-DEVICE_CLASSES = {
-    "battery": SensorDeviceClass.BATTERY,
-    "current": SensorDeviceClass.CURRENT,
-    "current_1": SensorDeviceClass.CURRENT,
-    "current_2": SensorDeviceClass.CURRENT,
-    "humidity": SensorDeviceClass.HUMIDITY,
-    "power": SensorDeviceClass.POWER,
-    "power_1": SensorDeviceClass.POWER,
-    "power_2": SensorDeviceClass.POWER,
-    "rssi": SensorDeviceClass.SIGNAL_STRENGTH,
-    "temperature": SensorDeviceClass.TEMPERATURE,
-    "voltage": SensorDeviceClass.VOLTAGE,
-    "voltage_1": SensorDeviceClass.VOLTAGE,
-    "voltage_2": SensorDeviceClass.VOLTAGE,
-}
 
 ENTITY_CATEGORIES = {
     "battery": EntityCategory.DIAGNOSTIC,
@@ -60,7 +43,6 @@ class XEntity(Entity):
             self._attr_unique_id = f"{device['deviceid']}_{self.uid}"
 
             if not self.uid.isdigit():
-                self._attr_device_class = DEVICE_CLASSES.get(self.uid)
                 self._attr_entity_category = ENTITY_CATEGORIES.get(self.uid)
                 self._attr_icon = ICONS.get(self.uid)
 

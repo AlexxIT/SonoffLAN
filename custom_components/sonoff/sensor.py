@@ -1,7 +1,8 @@
 import asyncio
 import time
 
-from homeassistant.components.sensor import SensorEntity, SensorStateClass
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, \
+    SensorStateClass
 from homeassistant.const import *
 from homeassistant.util import dt
 
@@ -18,12 +19,30 @@ async def async_setup_entry(hass, config_entry, add_entities):
     )
 
 
+DEVICE_CLASSES = {
+    "battery": SensorDeviceClass.BATTERY,
+    "current": SensorDeviceClass.CURRENT,
+    "current_1": SensorDeviceClass.CURRENT,
+    "current_2": SensorDeviceClass.CURRENT,
+    "humidity": SensorDeviceClass.HUMIDITY,
+    "outdoor_temp": SensorDeviceClass.TEMPERATURE,
+    "power": SensorDeviceClass.POWER,
+    "power_1": SensorDeviceClass.POWER,
+    "power_2": SensorDeviceClass.POWER,
+    "rssi": SensorDeviceClass.SIGNAL_STRENGTH,
+    "temperature": SensorDeviceClass.TEMPERATURE,
+    "voltage": SensorDeviceClass.VOLTAGE,
+    "voltage_1": SensorDeviceClass.VOLTAGE,
+    "voltage_2": SensorDeviceClass.VOLTAGE,
+}
+
 UNITS = {
     "battery": PERCENTAGE,
     "current": ELECTRIC_CURRENT_AMPERE,
     "current_1": ELECTRIC_CURRENT_AMPERE,
     "current_2": ELECTRIC_CURRENT_AMPERE,
     "humidity": PERCENTAGE,
+    "outdoor_temp": TEMP_CELSIUS,
     "power": POWER_WATT,
     "power_1": POWER_WATT,
     "power_2": POWER_WATT,
@@ -51,6 +70,8 @@ class XSensor(XEntity, SensorEntity):
 
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
+
+        self._attr_device_class = DEVICE_CLASSES.get(self.uid)
 
         if self.uid in UNITS:
             # by default all sensors with units is measurement sensors
@@ -122,6 +143,25 @@ class XConsumption(XEntity, SensorEntity):
         if ts > self.next_ts and self.ewelink.cloud.online:
             self.next_ts = ts + 3600
             await self.ewelink.cloud.send(self.device, self.get_params)
+
+
+class XNSOutdoorTemp(XSensor):
+    param = "HMI_outdoorTemp"
+    uid = "outdoor_temp"
+
+    # noinspection PyMethodOverriding
+    def set_state(self, params: dict):
+        try:
+            value = params[self.param]
+            self._attr_native_value = value["current"]
+
+            mint, maxt = value["range"].split(",")
+            self._attr_extra_state_attributes = {
+                "temp_min": int(mint),
+                "temp_max": int(maxt)
+            }
+        except Exception:
+            pass
 
 
 BUTTON_STATES = ["single", "double", "hold"]

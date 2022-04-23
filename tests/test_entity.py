@@ -6,6 +6,7 @@ from homeassistant.components.light import LightEntity
 from homeassistant.const import TEMP_FAHRENHEIT
 from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
+from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
 from custom_components.sonoff.core import devices
@@ -858,7 +859,7 @@ def test_temperature_convert():
     temp: XSensor = next(e for e in entities if e.uid == "temperature")
     assert temp.state == 14.6
 
-    temp.hass.config.units.temperature_unit = TEMP_FAHRENHEIT
+    temp.hass.config.units = IMPERIAL_SYSTEM
     assert temp.state == 58.3
     assert temp.unit_of_measurement == TEMP_FAHRENHEIT
 
@@ -921,3 +922,7 @@ def test_ns_panel():
 
     for uid in ("1", "2", "temperature", "humidity"):
         assert any(e.uid == uid for e in entities)
+
+    temp: XSensor = next(e for e in entities if e.uid == "outdoor_temp")
+    assert temp.state == 7
+    assert temp.extra_state_attributes == {"temp_min": 6, "temp_max": 17}
