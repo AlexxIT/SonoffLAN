@@ -22,7 +22,7 @@ from ..cover import XCover, XCoverDualR3
 from ..fan import XFan, XDiffuserFan, XToggleFan
 from ..light import *
 from ..remote import XRemote
-from ..sensor import XSensor, XZigbeeButton, XUnknown, XConsumption
+from ..sensor import XSensor, XRemoteButton, XUnknown, XConsumption
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle
 
 # supported custom device_class
@@ -130,13 +130,15 @@ DEVICES = {
         spec(XConsumption, param="kwhHistories_01", uid="consumption_2",
              get_params={"getKwh_01": 2}),
     ],  # Sonoff DualR3
+    174: [XRemoteButton],  # Sonoff R5 (6-key remote)
+    177: [XRemoteButton],  # Sonoff S-Mate
     182: [
         Switch1, LED, RSSI,
         spec(XSensor, param="current"),
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
     ],  # Sonoff S40
-    1000: [XZigbeeButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
+    1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [XZigbeeLigth],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
     1770: [
         spec(XSensor100, param="temperature"),

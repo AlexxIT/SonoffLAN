@@ -127,14 +127,17 @@ class XConsumption(XEntity, SensorEntity):
 BUTTON_STATES = ["single", "double", "hold"]
 
 
-class XZigbeeButton(XEntity, SensorEntity):
+class XRemoteButton(XEntity, SensorEntity):
     def __init__(self, ewelink: XRegistry, device: dict):
         super().__init__(ewelink, device)
         self.params = {"key"}
         self._attr_native_value = ""
 
     def set_state(self, params: dict):
-        self._attr_native_value = BUTTON_STATES[params["key"]]
+        button = params.get("outlet")
+        key = BUTTON_STATES[params["key"]]
+        self._attr_native_value = f"button_{button + 1}_{key}" \
+            if button is not None else key
         asyncio.create_task(self.clear_state())
 
     async def clear_state(self):
