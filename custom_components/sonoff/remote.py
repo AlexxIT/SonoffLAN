@@ -44,6 +44,10 @@ class XRemote(XEntity, RemoteEntity):
         ewelink.dispatcher_send(SIGNAL_ADD_ENTITIES, self.childs.values())
 
     def set_state(self, params: dict):
+        # skip full cloud state update
+        if "init" in params:
+            return
+
         for param, ts in params.items():
             if not param.startswith("rfTrig"):
                 continue
