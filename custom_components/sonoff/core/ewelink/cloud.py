@@ -195,6 +195,8 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             if timeout:
                 # wait for response with same sequence
                 return await self._wait_response(sequence, timeout)
+        except ConnectionResetError:
+            return 'offline'
         except Exception as e:
             _LOGGER.error(log, exc_info=e)
             return 'E#???'
