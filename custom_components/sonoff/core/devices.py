@@ -132,9 +132,9 @@ DEVICES = {
              get_params={"getKwh_01": 2}),
     ],  # Sonoff DualR3
     133: [
+        # Humidity. ALWAYS 50... NSPanel DOESN'T HAVE HUMIDITY SENSOR
         Switch1, Switch2, XNSOutdoorTemp,
         spec(XSensor, param="temperature"),
-        spec(XSensor, param="humidity"),
     ],  # Sonoff NS Panel
     136: [XLightB05],  # https://github.com/AlexxIT/SonoffLAN/issues/712
     137: [XLightLED],
