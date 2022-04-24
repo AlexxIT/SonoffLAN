@@ -114,7 +114,7 @@ DEVICES = {
     82: SPEC_2CH,
     83: SPEC_3CH,
     84: SPEC_4CH,
-    102: [XBinarySensor, Battery, RSSI],  # Sonoff DW2 Door/Window sensor
+    102: [XWiFiDoor, Battery, RSSI],  # Sonoff DW2 Door/Window sensor
     103: [XLightB02],  # Sonoff B02 CCT bulb
     104: [XLightB05],  # Sonoff B05 RGB+CCT color bulb
     107: SPEC_1CH,
@@ -206,7 +206,8 @@ def get_custom_spec(classes: list, device_class):
     """
     # 1. single channel
     if isinstance(device_class, str):
-        classes[0] = spec(classes[0], base=device_class)
+        if device_class in DEVICE_CLASS:
+            classes[0] = spec(classes[0], base=device_class)
 
     elif isinstance(device_class, list):
         # remove all default multichannel classes from spec

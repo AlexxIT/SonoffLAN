@@ -1,6 +1,7 @@
 import asyncio
 import time
 
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity
 from homeassistant.components.light import LightEntity
 from homeassistant.const import TEMP_FAHRENHEIT
@@ -540,10 +541,15 @@ def test_wifi_sensor():
             "switch": "off",
             "type": 4
         }
+    }, {
+        "devices": {
+            DEVICEID: {"device_class": "window"}
+        }
     })
 
     sensor: XBinarySensor = entities[0]
     assert sensor.state == "off"
+    assert sensor.device_class == BinarySensorDeviceClass.WINDOW
 
 
 def test_zigbee_button():
