@@ -1,8 +1,12 @@
+import logging
+
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityCategory
 
 from .const import DOMAIN
 from .ewelink import XRegistry
+
+_LOGGER = logging.getLogger(__name__)
 
 ENTITY_CATEGORIES = {
     "battery": EntityCategory.DIAGNOSTIC,
@@ -75,7 +79,10 @@ class XEntity(Entity):
             sw_version=params.get('fwVersion'),
         )
 
-        self.internal_update(params)
+        try:
+            self.internal_update(params)
+        except Exception as e:
+            _LOGGER.error(f"Can't init device: {device}", exc_info=e)
         ewelink.dispatcher_connect(deviceid, self.internal_update)
 
     def set_state(self, params: dict):
