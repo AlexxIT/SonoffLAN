@@ -119,7 +119,7 @@ DEVICES = {
     104: [XLightB05],  # Sonoff B05 RGB+CCT color bulb
     107: SPEC_1CH,
     126: [
-        Switch1, Switch2,
+        Switch1, Switch2, RSSI,
         spec(XSensor100, param="current_00", uid="current_1"),
         spec(XSensor100, param="current_01", uid="current_2"),
         spec(XSensor100, param="voltage_00", uid="voltage_1"),
