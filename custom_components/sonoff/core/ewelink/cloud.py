@@ -295,5 +295,9 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             # changed device online status
             self.dispatcher_send(SIGNAL_UPDATE, data)
 
+        elif data["action"] == "reportSubDevice":
+            # nothing useful: https://github.com/AlexxIT/SonoffLAN/issues/767
+            pass
+
         else:
             _LOGGER.warning(f"UNKNOWN cloud msg: {data}")
