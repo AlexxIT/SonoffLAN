@@ -100,7 +100,7 @@ These devices work both on a local network and through the cloud.
 - [Sonoff 4CH Pro R3](https://www.itead.cc/smart-home/sonoff-4ch-r3-pro-r3.html) fw 3.3.0
 - [Sonoff Pow R2](https://www.itead.cc/sonoff-pow-r2.html) (show power consumption)
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html) fw 3.4.0
-- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) fw 3.3.0, 3.4.0
+- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) latest fw works only in cloud mode!
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0, 3.5.0
 - [Sonoff G1](https://www.itead.cc/sonoff-g1.html) fw 3.5.0 
 - [Sonoff Dual](https://www.itead.cc/sonoff-dual.html)
