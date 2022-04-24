@@ -22,44 +22,64 @@ SPEED_HIGH = "high"
 
 # noinspection PyAbstractClass
 class XFan(XEntity, FanEntity):
-    params = {"switches"}
+    params = {"switches", "fan"}
     _attr_speed_count = 3
     _attr_supported_features = SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE
     _attr_preset_modes = [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
 
     def set_state(self, params: dict):
-        s = {i["outlet"]: i["switch"] for i in params["switches"]}
+        mode = None
+        # Cloud sends switches, LAN sends fan/speed
+        if "switches" in params:
+            s = {i["outlet"]: i["switch"] for i in params["switches"]}
+            if s[1] == "off":
+                pass
+            elif s[2] == "off" and s[3] == "off":
+                mode = SPEED_LOW
+            elif s[2] == "on" and s[3] == "off":
+                mode = SPEED_MEDIUM
+            elif s[2] == "off" and s[3] == "on":
+                mode = SPEED_HIGH
+        else:
+            if params["fan"] == "off":
+                pass
+            elif params["speed"] == 1:
+                mode = SPEED_LOW
+            elif params["speed"] == 2:
+                mode = SPEED_MEDIUM
+            elif params["speed"] == 3:
+                mode = SPEED_HIGH
 
-        if s[1] == "off":
-            self._attr_percentage = 0
-            self._attr_preset_mode = None
-        elif s[2] == "off" and s[3] == "off":
-            self._attr_percentage = 33
-            self._attr_preset_mode = SPEED_LOW
-        elif s[2] == "on" and s[3] == "off":
-            self._attr_percentage = 67
-            self._attr_preset_mode = SPEED_MEDIUM
-        elif s[2] == "off" and s[3] == "on":
-            self._attr_percentage = 100
-            self._attr_preset_mode = SPEED_HIGH
+        self._attr_percentage = int(
+            self._attr_preset_modes.index(mode or SPEED_OFF) /
+            self._attr_speed_count * 100
+        )
+        self._attr_preset_mode = mode
 
     async def async_set_percentage(self, percentage: int):
         if percentage is None:
             param = {1: "on"}
-        elif percentage > 67:
+            params_lan = {"fan": "on"}
+        elif percentage > 66:
             param = {1: "on", 2: "off", 3: "on"}  # high
+            params_lan = {"fan": "on", "speed": 3}
         elif percentage > 33:
             param = {1: "on", 2: "on", 3: "off"}  # medium
+            params_lan = {"fan": "on", "speed": 2}
         elif percentage > 0:
             param = {1: "on", 2: "off", 3: "off"}  # low
+            params_lan = {"fan": "on", "speed": 1}
         else:
             param = {1: "off"}
+            params_lan = {"fan": "off"}
         param = [{"outlet": k, "switch": v} for k, v in param.items()]
-        await self.ewelink.send(self.device, {"switches": param})
+        await self.ewelink.send(self.device, {"switches": param}, params_lan)
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        k = self._attr_preset_modes.index(preset_mode)
-        percentage = int(k / self._attr_speed_count * 100)
+        percentage = int(
+            self._attr_preset_modes.index(preset_mode) /
+            self._attr_speed_count * 100
+        )
         await self.async_set_percentage(percentage)
 
     async def async_turn_on(self, percentage=None, preset_mode=None, **kwargs):

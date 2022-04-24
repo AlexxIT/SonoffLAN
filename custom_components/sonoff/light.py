@@ -15,6 +15,29 @@ async def async_setup_entry(hass, config_entry, add_entities):
 
 
 # noinspection PyAbstractClass, UIID 22
+class XFanLight(XEntity, LightEntity):
+    params = {"switches", "light"}
+    uid = "1"  # backward compatibility
+
+    def set_state(self, params: dict):
+        if "switches" in params:
+            params = next(i for i in params["switches"] if i["outlet"] == 0)
+            self._attr_is_on = params["switch"] == "on"
+        else:
+            self._attr_is_on = params["light"] == "on"
+
+    async def async_turn_on(self, **kwargs):
+        params = {"switches": [{"outlet": 0, "switch": "on"}]}
+        params_lan = {"light": "on"}
+        await self.ewelink.send(self.device, params, params_lan)
+
+    async def async_turn_off(self):
+        params = {"switches": [{"outlet": 0, "switch": "off"}]}
+        params_lan = {"light": "off"}
+        await self.ewelink.send(self.device, params, params_lan)
+
+
+# noinspection PyAbstractClass, UIID 22
 class XLightB1(XEntity, LightEntity):
     params = {"state", "zyx_mode", "channel0", "channel2"}
 

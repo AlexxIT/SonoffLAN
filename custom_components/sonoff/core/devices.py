@@ -101,8 +101,7 @@ DEVICES = {
              get_params={"hundredDaysKwh": "get"}),
     ],  # Sonoff Pow
     34: [
-        XFan, LED, RSSI,
-        spec(XSwitches, channel=0, uid="1", base="light"),
+        XFan, XFanLight, LED, RSSI,
     ],  # Sonoff iFan02 and iFan03
     36: [XDimmer],  # KING-M4 (dimmer, only cloud)
     44: [XLightD1],  # Sonoff D1

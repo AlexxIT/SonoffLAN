@@ -189,7 +189,7 @@ def test_switch_2ch():
 
 
 def test_fan():
-    _, entities = get_entitites({
+    reg, entities = get_entitites({
         'extra': {'uiid': 34, 'model': 'PSF-BFB-GL'},
         'params': {
             'sledOnline': 'on',
@@ -222,11 +222,33 @@ def test_fan():
         {'switch': 'off', 'outlet': 3}
     ]})
     assert fan.state == "on"
-    assert fan.percentage == 67
+    assert fan.percentage == 66
 
     light: XSwitches = next(e for e in entities if e.uid == "1")
     assert light.state == "off"
     assert isinstance(light, LightEntity)
+
+    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID, "params": {"light": "on"}
+    })
+    assert light.state == "on"
+
+    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID, "params": {"fan": "off"}
+    })
+    assert fan.state == "off"
+
+    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID, "params": {'switches': [
+            {'switch': 'off', 'outlet': 0},
+            {'switch': 'on', 'outlet': 1},
+            {'switch': 'off', 'outlet': 2},
+            {'switch': 'off', 'outlet': 3}
+        ]}
+    })
+    assert fan.state == "on"
+    assert fan.percentage == 33
+    assert light.state == "off"
 
 
 def test_sonoff_th():
@@ -268,7 +290,7 @@ def test_sonoff_th():
 
     # test round to 1 digit
     reg.local.dispatcher_send(SIGNAL_UPDATE, {
-        "deviceid": DEVICEID, "host": "",
+        "deviceid": DEVICEID,
         "params": {"deviceType": "normal", "temperature": 12.34}
     })
     assert temp.state == 12.3
@@ -284,20 +306,20 @@ def test_sonoff_th():
 
     # check TH v3.4.0 param name
     reg.local.dispatcher_send(SIGNAL_UPDATE, {
-        "deviceid": DEVICEID, "host": "",
+        "deviceid": DEVICEID,
         "params": {"deviceType": "normal", "humidity": 48}
     })
     assert hum.state == 48
 
     # check TH v3.4.0 zero humidity bug (skip value)
     reg.local.dispatcher_send(SIGNAL_UPDATE, {
-        "deviceid": DEVICEID, "host": "",
+        "deviceid": DEVICEID,
         "params": {"deviceType": "normal", "humidity": 0}
     })
     assert hum.state == 48
 
     reg.local.dispatcher_send(SIGNAL_UPDATE, {
-        "deviceid": DEVICEID, "host": "",
+        "deviceid": DEVICEID,
         "params": {"deviceType": "normal", "currentHumidity": "unavailable"}
     })
     assert hum.state is None

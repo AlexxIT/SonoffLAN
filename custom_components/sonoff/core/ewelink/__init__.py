@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import time
 from typing import Dict, List
@@ -64,7 +63,8 @@ class XRegistry(XRegistryBase):
         if self.task:
             self.task.cancel()
 
-    async def send(self, device: dict, params: dict):
+    async def send(self, device: dict, params: dict, params_lan: dict = None):
+        """For some devices LAN params can be different (ex iFan03)."""
         seq = str(int(time.time() * 1000))
 
         can_local = self.local.online and device.get('host')
@@ -74,7 +74,9 @@ class XRegistry(XRegistryBase):
 
         if can_local and can_cloud:
             # try to send a command locally (wait no more than a second)
-            state['local'] = await self.local.send(device, params, seq, 1)
+            state['local'] = await self.local.send(
+                device, params_lan or params, seq, 1
+            )
 
             # otherwise send a command through the cloud
             if state['local'] != 'online':
@@ -84,7 +86,9 @@ class XRegistry(XRegistryBase):
                     asyncio.create_task(coro)
 
         elif can_local:
-            state['local'] = await self.local.send(device, params, seq, 5)
+            state['local'] = await self.local.send(
+                device, params_lan or params, seq, 5
+            )
             if state['local'] != 'online':
                 coro = self.local.check_offline(device)
                 asyncio.create_task(coro)
@@ -130,15 +134,15 @@ class XRegistry(XRegistryBase):
         self.dispatcher_send(did, params)
 
     def local_update(self, msg: dict):
-        did = msg["deviceid"]
-        device = self.devices.get(did)
+        did: str = msg["deviceid"]
+        device: dict = self.devices.get(did)
+        params: dict = msg.get("params")
         if not device:
-            if "params" not in msg:
+            if not params:
                 try:
-                    # allow setup if can decrypt device message
-                    devicekey = self.config["devices"][did]["devicekey"]
-                    data = decrypt(msg, devicekey)
-                    msg["params"] = json.loads(data)
+                    msg["params"] = params = self.local.decrypt_msg(
+                        msg, self.config["devices"][did]["devicekey"]
+                    )
                 except Exception:
                     _LOGGER.debug(f"{did} !! skip setup for encrypted device")
                     self.devices[did] = msg
@@ -148,21 +152,16 @@ class XRegistry(XRegistryBase):
             device = setup_diy(msg)
             self.setup_devices([device])
 
-        params: dict = msg.get("params")
-        if not params:
-            devicekey = device.get("devicekey")
-            if not devicekey:
-                # encrypted device without devicekey
+        elif not params:
+            if "devicekey" not in device:
                 return
             try:
-                data = decrypt(msg, devicekey)
-                # Fix Sonoff RF Bridge sintax bug
-                if data and data.startswith(b'{"rf'):
-                    data = data.replace(b'"="', b'":"')
-                params = json.loads(data)
+                params = self.local.decrypt_msg(msg, device["devicekey"])
             except Exception as e:
                 _LOGGER.debug("Can't decrypt message", exc_info=e)
                 return
+
+        _LOGGER.debug(f"{did} <= Local3 | {params} | {msg.get('seq')}")
 
         if "online" in params:
             if params["online"] is None:
@@ -172,20 +171,7 @@ class XRegistry(XRegistryBase):
                 self.dispatcher_send(msg["deviceid"])
             return
 
-        _LOGGER.debug(f"{did} <= Local3 | {params} | {msg.get('seq')}")
-
-        if "deviceType" in params:
-            # Sonoff TH v3.4.0 sends `temperature` and `humidity` via LAN
-            # zero temp or hum is probably bug
-            # https://github.com/AlexxIT/SonoffLAN/issues/110
-            # Sonoff TH v3.5.0 sends `currentXXX` (like a cloud)
-            # https://github.com/AlexxIT/SonoffLAN/issues/527
-            if params.get("temperature", 0) != 0:
-                params["currentTemperature"] = params["temperature"]
-            if params.get("humidity", 0) != 0:
-                params["currentHumidity"] = params["humidity"]
-
-        device["host"] = msg["host"]
+        device["host"] = msg.get("host")  # get for tests
 
         self.dispatcher_send(did, params)
 

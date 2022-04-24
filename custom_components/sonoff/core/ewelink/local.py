@@ -233,3 +233,11 @@ class XRegistryLocal(XRegistryBase):
         except Exception as e:
             _LOGGER.error(log, exc_info=e)
             return 'E#???'
+
+    @staticmethod
+    def decrypt_msg(msg: dict, devicekey: str = None) -> dict:
+        data = decrypt(msg, devicekey)
+        # Fix Sonoff RF Bridge sintax bug
+        if data and data.startswith(b'{"rf'):
+            data = data.replace(b'"="', b'":"')
+        return json.loads(data)
