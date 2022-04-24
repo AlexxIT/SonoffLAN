@@ -59,10 +59,10 @@ LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
 
 SPEC_SWITCH = [XSwitch, LED, RSSI]
-SPEC_1CH = [Switch1]
-SPEC_2CH = [Switch1, Switch2]
-SPEC_3CH = [Switch1, Switch2, Switch3]
-SPEC_4CH = [Switch1, Switch2, Switch3, Switch4]
+SPEC_1CH = [Switch1, LED, RSSI]
+SPEC_2CH = [Switch1, Switch2, LED, RSSI]
+SPEC_3CH = [Switch1, Switch2, Switch3, LED, RSSI]
+SPEC_4CH = [Switch1, Switch2, Switch3, Switch4, LED, RSSI]
 
 DEVICES = {
     1: SPEC_SWITCH,
@@ -86,9 +86,9 @@ DEVICES = {
         spec(XSensor, param="light"),
         spec(XSensor, param="noise"),
     ],
-    22: [XLightB1],  # Sonoff B1 (only cloud)
+    22: [XLightB1, RSSI],  # Sonoff B1 (only cloud)
     # https://github.com/AlexxIT/SonoffLAN/issues/173
-    25: [XDiffuserFan, XDiffuserLight],  # Diffuser
+    25: [XDiffuserFan, XDiffuserLight, RSSI],  # Diffuser
     28: [XRemote, LED, RSSI],  # Sonoff RF Brigde 433
     29: SPEC_2CH,
     30: SPEC_3CH,
@@ -104,10 +104,10 @@ DEVICES = {
     34: [
         XFan, XFanLight, LED, RSSI,
     ],  # Sonoff iFan02 and iFan03
-    36: [XDimmer],  # KING-M4 (dimmer, only cloud)
-    44: [XLightD1],  # Sonoff D1
-    57: [XLight57],  # Mosquito Killer Lamp
-    59: [XLightLED],  # Sonoff LED (only cloud)
+    36: [XDimmer, RSSI],  # KING-M4 (dimmer, only cloud)
+    44: [XLightD1, RSSI],  # Sonoff D1
+    57: [XLight57, RSSI],  # Mosquito Killer Lamp
+    59: [XLightLED, RSSI],  # Sonoff LED (only cloud)
     # 66: switch1,  # ZigBee Bridge
     77: SPEC_1CH,  # Sonoff Micro
     78: SPEC_1CH,  # https://github.com/AlexxIT/SonoffLAN/issues/615
@@ -116,8 +116,8 @@ DEVICES = {
     83: SPEC_3CH,
     84: SPEC_4CH,
     102: [XWiFiDoor, Battery, RSSI],  # Sonoff DW2 Door/Window sensor
-    103: [XLightB02],  # Sonoff B02 CCT bulb
-    104: [XLightB05],  # Sonoff B05 RGB+CCT color bulb
+    103: [XLightB02, RSSI],  # Sonoff B02 CCT bulb
+    104: [XLightB05, RSSI],  # Sonoff B05 RGB+CCT color bulb
     107: SPEC_1CH,
     126: [
         Switch1, Switch2, RSSI,
@@ -137,8 +137,8 @@ DEVICES = {
         Switch1, Switch2, XNSOutdoorTemp,
         spec(XSensor, param="temperature"),
     ],  # Sonoff NS Panel
-    136: [XLightB05],  # https://github.com/AlexxIT/SonoffLAN/issues/712
-    137: [XLightLED],
+    136: [XLightB05, RSSI],  # https://github.com/AlexxIT/SonoffLAN/issues/712
+    137: [XLightLED, RSSI],
     162: SPEC_3CH,  # https://github.com/AlexxIT/SonoffLAN/issues/659
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)
     177: [XRemoteButton],  # Sonoff S-Mate
