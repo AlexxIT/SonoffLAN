@@ -1,4 +1,4 @@
-from homeassistant.components.cover import CoverEntity, ATTR_POSITION
+from homeassistant.components.cover import CoverEntity, CoverDeviceClass
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -13,9 +13,19 @@ async def async_setup_entry(hass, config_entry, add_entities):
     )
 
 
+# noinspection PyUnresolvedReferences
+DEVICE_CLASSES = {cls.value: cls for cls in CoverDeviceClass}
+
+
 # noinspection PyAbstractClass
 class XCover(XEntity, CoverEntity):
     params = {"switch", "setclose"}
+
+    def __init__(self, ewelink: XRegistry, device: dict):
+        XEntity.__init__(self, ewelink, device)
+        self._attr_device_class = DEVICE_CLASSES.get(
+            device.get("device_class")
+        )
 
     def set_state(self, params: dict):
         # skip any full state update except first one
@@ -70,7 +80,7 @@ class XCover(XEntity, CoverEntity):
 
 
 # noinspection PyAbstractClass
-class XCoverDualR3(XEntity, CoverEntity):
+class XCoverDualR3(XCover):
     params = {"currLocation", "motorTurn"}
 
     def set_state(self, params: dict):
@@ -99,6 +109,5 @@ class XCoverDualR3(XEntity, CoverEntity):
     async def async_close_cover(self, **kwargs):
         await self.ewelink.send(self.device, {"motorTurn": 2})
 
-    async def async_set_cover_position(self, **kwargs):
-        position = kwargs.get(ATTR_POSITION)
+    async def async_set_cover_position(self, position: int, **kwargs):
         await self.ewelink.send(self.device, {"location": position})
