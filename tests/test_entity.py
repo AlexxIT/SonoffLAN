@@ -827,7 +827,7 @@ def test_reporting():
     assert temp.state == 14.6
 
     # update in min report interval - no update
-    temp.set_state({temp.param: 20})
+    temp.set_state({"temperature": 20})
     assert temp.state == 14.6
 
     # automatic update value after 30 seconds (Hass force_update logic)
@@ -837,16 +837,16 @@ def test_reporting():
 
     # lower than reportable change value - no update
     time.time = lambda: 40
-    temp.set_state({temp.param: 20.3})
+    temp.set_state({"temperature": 20.3})
     assert temp.state == 20
 
     # more than reportable change value - update
-    temp.set_state({temp.param: 21})
+    temp.set_state({"temperature": 21})
     assert temp.state == 21
 
     # update after max report interval - update
     time.time = lambda: 140
-    temp.set_state({temp.param: 21.1})
+    temp.set_state({"temperature": 21.1})
     assert temp.state == 21.1
 
 

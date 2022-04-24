@@ -59,8 +59,6 @@ class XSensor(XEntity, SensorEntity):
     needed. Also class can filter incoming values using zigbee-like reporting
     logic: min report interval, max report interval, reportable change value.
     """
-    max: float = float("inf")
-    min: float = -float("inf")
     multiply: float = None
     round: int = None
 
@@ -86,18 +84,17 @@ class XSensor(XEntity, SensorEntity):
             self.report_ts = time.time()
             self._attr_force_update = True
 
-    def set_state(self, params: dict = None):
-        try:
-            value = float(params[self.param])
-            if self.multiply:
-                value *= self.multiply
-            if self.round is not None:
-                # convert to int when round is zero
-                value = round(value, self.round or None)
-            if value < self.min or value > self.max:
-                return
-        except (TypeError, ValueError):
-            value = self.report_value
+    def set_state(self, params: dict = None, value: float = None):
+        if params:
+            try:
+                value = float(params[self.param])
+                if self.multiply:
+                    value *= self.multiply
+                if self.round is not None:
+                    # convert to int when round is zero
+                    value = round(value, self.round or None)
+            except (TypeError, ValueError):
+                pass
 
         if self.report_ts is not None:
             ts = time.time()
@@ -118,7 +115,42 @@ class XSensor(XEntity, SensorEntity):
 
     async def async_update(self):
         if self.report_value is not None:
-            self.set_state()
+            XSensor.set_state(self, value=self.report_value)
+
+
+class XTHTemperature(XSensor):
+    params = {"currentTemperature", "temperature"}
+    uid = "temperature"
+
+    def set_state(self, params: dict = None, value: float = None):
+        try:
+            # can be int, float, str or undefined
+            value = params.get("currentTemperature") or params["temperature"]
+            value = float(value)
+            # filter zero values
+            # https://github.com/AlexxIT/SonoffLAN/issues/110
+            # filter wrong values
+            # https://github.com/AlexxIT/SonoffLAN/issues/683
+            if value != 0 and -270 < value < 270:
+                XSensor.set_state(self, value=round(value, 1))
+        except Exception:
+            XSensor.set_state(self)
+
+
+class XTHHumidity(XSensor):
+    params = {"currentHumidity", "humidity"}
+    uid = "humidity"
+
+    def set_state(self, params: dict = None, value: float = None):
+        try:
+            value = params.get("currentHumidity") or params["humidity"]
+            value = int(value)
+            # filter zero values
+            # https://github.com/AlexxIT/SonoffLAN/issues/110
+            if value != 0:
+                XSensor.set_state(self, value=value)
+        except Exception:
+            XSensor.set_state(self)
 
 
 class XEnergySensor(XEntity, SensorEntity):
