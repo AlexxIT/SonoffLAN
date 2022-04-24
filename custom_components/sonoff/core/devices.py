@@ -167,6 +167,7 @@ DEVICES = {
 # Pow devices sends sensors data only in uiActive mode
 POW_UI_ACTIVE = {
     32: {"uiActive": 7200},
+    182: {"uiActive": 7200},
     126: {"uiActive": {"all": 1, "time": 7200}},
 }
 
