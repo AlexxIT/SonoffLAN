@@ -14,6 +14,7 @@ Developer can change global properties of existing classes via spec function.
 from typing import Optional
 
 from ..binary_sensor import *
+from ..climate import XClimateTH
 from ..cover import XCover, XCoverDualR3
 from ..fan import XFan, XDiffuserFan, XToggleFan
 from ..light import *
@@ -76,7 +77,7 @@ DEVICES = {
     11: [XCover, LED, RSSI],  # King Art - King Q4 Cover (only cloud)
     14: SPEC_SWITCH,  # Sonoff Basic (3rd party)
     15: [
-        XSwitchTH, XTHTemperature, XTHHumidity, LED, RSSI,
+        XSwitchTH, XClimateTH, XTemperatureTH, XHumidityTH, LED, RSSI,
     ],  # Sonoff TH16
     18: [
         spec(XSensor, param="temperature"),

@@ -118,7 +118,7 @@ class XSensor(XEntity, SensorEntity):
             XSensor.set_state(self, value=self.report_value)
 
 
-class XTHTemperature(XSensor):
+class XTemperatureTH(XSensor):
     params = {"currentTemperature", "temperature"}
     uid = "temperature"
 
@@ -137,7 +137,7 @@ class XTHTemperature(XSensor):
             XSensor.set_state(self)
 
 
-class XTHHumidity(XSensor):
+class XHumidityTH(XSensor):
     params = {"currentHumidity", "humidity"}
     uid = "humidity"
 

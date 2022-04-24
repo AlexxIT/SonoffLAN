@@ -23,8 +23,8 @@ from .core.ewelink.cloud import AuthError
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [
-    "binary_sensor", "button", "cover", "fan", "light", "remote", "sensor",
-    "switch"
+    "binary_sensor", "button", "climate", "cover", "fan", "light", "remote",
+    "sensor", "switch"
 ]
 
 CONFIG_SCHEMA = vol.Schema({
