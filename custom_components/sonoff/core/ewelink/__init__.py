@@ -40,12 +40,8 @@ class XRegistry(XRegistryBase):
             except Exception:
                 pass
 
-            dump = {
-                k: v for k, v in device['params'].items()
-                if k not in ('bindInfos', 'bssid', 'ssid', 'staMac')
-            }
             uiid = device['extra']['uiid']
-            _LOGGER.debug(f"{deviceid} UIID {uiid:04} | {dump}")
+            _LOGGER.debug(f"{deviceid} UIID {uiid:04} | %s", device["params"])
 
             spec = get_spec(device)
             entities = [cls(self, device) for cls in spec]
@@ -126,7 +122,7 @@ class XRegistry(XRegistryBase):
 
         params = msg["params"]
 
-        _LOGGER.debug(f"{did} <= Cloud3 | {params} | {msg.get('sequence')}")
+        _LOGGER.debug(f"{did} <= Cloud3 | %s | {msg.get('sequence')}", params)
 
         # process online change
         if "online" in params:
@@ -169,7 +165,7 @@ class XRegistry(XRegistryBase):
                 _LOGGER.debug("Can't decrypt message", exc_info=e)
                 return
 
-        _LOGGER.debug(f"{did} <= Local3 | {params} | {msg.get('seq')}")
+        _LOGGER.debug(f"{did} <= Local3 | %s | {msg.get('seq')}", params)
 
         if "online" in params:
             if params["online"] is None:

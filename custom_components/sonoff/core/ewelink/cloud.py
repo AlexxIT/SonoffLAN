@@ -161,17 +161,19 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         """With params - send new state to device, without - request device
         state. With zero timeout - won't wait response.
         """
-        log = f"{device['deviceid']} => Cloud4 | {params} | "
+        log = f"{device['deviceid']} => Cloud4 | "
+        if params:
+            log += f"{params} | "
 
         # protect cloud from DDoS (it can break connection)
         while time.time() - self.last_ts < 0.1:
             log += "DDoS | "
             await asyncio.sleep(0.1)
-
         self.last_ts = time.time()
 
         if sequence is None:
             sequence = self.sequence()
+        log += sequence
 
         # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=websocket-update-device-status
         payload = {
@@ -186,7 +188,6 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             "sequence": sequence,
         }
 
-        log += sequence
         _LOGGER.debug(log)
         try:
             await self.ws.send_json(payload)

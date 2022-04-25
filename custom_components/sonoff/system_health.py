@@ -61,6 +61,9 @@ async def setup_debug(hass: HomeAssistant, logger: Logger):
     logger.debug(f"SysInfo: {info}")
 
 
+PRIVATE_KEYS = ('bindInfos', 'bssid', 'ssid', 'staMac')
+
+
 class DebugView(logging.Handler, HomeAssistantView):
     """Class generate web page with component debug logs."""
     name = DOMAIN
@@ -81,14 +84,15 @@ class DebugView(logging.Handler, HomeAssistantView):
         logger.setLevel(logging.DEBUG)
 
     def handle(self, rec: logging.LogRecord):
+        if isinstance(rec.args, dict):
+            rec.msg = rec.msg % {
+                k: v for k, v in rec.args.items() if k not in PRIVATE_KEYS
+            }
         dt = datetime.fromtimestamp(rec.created).strftime("%Y-%m-%d %H:%M:%S")
+        msg = f"{dt} [{rec.levelname[0]}] {rec.msg}"
         if rec.exc_info:
             exc = traceback.format_exception(*rec.exc_info, limit=1)
-            exc = "".join(exc[-2:]).replace("\n", "|")
-            msg = f"{dt} [{rec.levelname[0]}] {rec.msg}|{exc}"
-        else:
-            msg = f"{dt} [{rec.levelname[0]}] {rec.msg}"
-
+            msg += "|" + "".join(exc[-2:]).replace("\n", "|")
         self.text.append(msg)
 
         # prevent debug to Hass log if user don't want it
