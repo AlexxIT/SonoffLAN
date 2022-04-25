@@ -177,20 +177,29 @@ class XRegistry(XRegistryBase):
 
     async def pow_helper(self):
         from ..devices import POW_UI_ACTIVE
+
+        # collect pow devices
+        devices = [
+            device for device in self.devices.values()
+            if "extra" in device and device["extra"]["uiid"] in POW_UI_ACTIVE
+        ]
+        if not devices:
+            return
+
         while True:
             if not self.cloud.online:
                 await asyncio.sleep(60)
                 continue
 
-            for device in self.devices.values():
-                if "extra" not in device:
+            ts = time.time()
+
+            for device in devices:
+                if device.get("pow_ts", 0) > ts:
                     continue
 
-                params = POW_UI_ACTIVE.get(device["extra"]["uiid"])
-                if not params:
-                    continue
-
+                dt, params = POW_UI_ACTIVE[device["extra"]["uiid"]]
+                device["pow_ts"] = ts + dt
                 await self.cloud.send(device, params, timeout=0)
 
-            # sleep for 1 minute
-            await asyncio.sleep(3600)
+            # sleep for 150 seconds (because minimal uiActive - 180 seconds)
+            await asyncio.sleep(150)
