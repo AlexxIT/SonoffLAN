@@ -63,38 +63,46 @@ class XRegistry(XRegistryBase):
         if self.task:
             self.task.cancel()
 
-    async def send(self, device: dict, params: dict, params_lan: dict = None):
-        """For some devices LAN params can be different (ex iFan03)."""
-        seq = str(int(time.time() * 1000))
+    async def send(
+            self, device: dict, params: dict, params_lan: dict = None,
+            query_cloud: bool = True
+    ):
+        """Send command to device with LAN and Cloud. Usual params are same.
+
+        :param device: device object
+        :param params: usual params are same
+        :param params_lan: optional if LAN params different (ex iFan03)
+        :param query_cloud: optional query Cloud device state after send cmd
+        """
+        seq = self.sequence()
 
         can_local = self.local.online and device.get('host')
         can_cloud = self.cloud.online and device.get('online')
 
-        state = {}
-
         if can_local and can_cloud:
             # try to send a command locally (wait no more than a second)
-            state['local'] = await self.local.send(
-                device, params_lan or params, seq, 1
-            )
+            ok = await self.local.send(device, params_lan or params, seq, 1)
 
             # otherwise send a command through the cloud
-            if state['local'] != 'online':
-                state['cloud'] = await self.cloud.send(device, params, seq)
-                if state['cloud'] != 'online':
+            if ok != 'online':
+                ok = await self.cloud.send(device, params, seq)
+                if ok != 'online':
                     coro = self.local.check_offline(device)
                     asyncio.create_task(coro)
+                elif query_cloud:
+                    # force update device actual status
+                    await self.cloud.send(device, timeout=0)
 
         elif can_local:
-            state['local'] = await self.local.send(
-                device, params_lan or params, seq, 5
-            )
-            if state['local'] != 'online':
+            ok = await self.local.send(device, params_lan or params, seq, 5)
+            if ok != 'online':
                 coro = self.local.check_offline(device)
                 asyncio.create_task(coro)
 
         elif can_cloud:
-            state['cloud'] = await self.cloud.send(device, params, seq)
+            ok = await self.cloud.send(device, params, seq)
+            if ok == "online" and query_cloud:
+                await self.cloud.send(device, timeout=0)
 
         else:
             return

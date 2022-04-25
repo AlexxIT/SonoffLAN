@@ -167,12 +167,11 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         while time.time() - self.last_ts < 0.1:
             log += "DDoS | "
             await asyncio.sleep(0.1)
-            sequence = None
 
         self.last_ts = time.time()
 
         if sequence is None:
-            sequence = str(int(self.last_ts * 1000))
+            sequence = self.sequence()
 
         # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=websocket-update-device-status
         payload = {
@@ -273,7 +272,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     async def _process_ws_msg(self, data: dict):
         if "action" not in data:
             # response on our command
-            ok = self._set_response(data["sequence"], data["error"])
+            self._set_response(data["sequence"], data["error"])
 
             # with params response on query, without - on update
             if "params" in data:
@@ -283,9 +282,6 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 self.dispatcher_send(SIGNAL_UPDATE, data)
             elif data["error"] != 0:
                 _LOGGER.warning(f"Cloud ERROR: {data}")
-            elif ok:
-                # Force update device actual status
-                asyncio.create_task(self.send(data))
 
         elif data["action"] == "update":
             # new state from device

@@ -150,7 +150,7 @@ class XRegistryLocal(XRegistryBase):
             return
 
         device['check_offline'] = True
-        sequence = str(int(time.time() * 1000))
+        sequence = self.sequence()
 
         for t in range(20, 61, 20):
             _LOGGER.debug(f"{log} | Check offline with timeout {t}s")
@@ -191,7 +191,7 @@ class XRegistryLocal(XRegistryBase):
             params = {"sledonline": "on"}
 
         if sequence is None:
-            sequence = str(int(time.time() * 1000))
+            sequence = self.sequence()
 
         payload = {
             "sequence": sequence,
