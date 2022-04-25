@@ -4,7 +4,7 @@ import time
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity
 from homeassistant.components.light import LightEntity
-from homeassistant.const import TEMP_FAHRENHEIT
+from homeassistant.const import *
 from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
@@ -13,6 +13,7 @@ from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
 from custom_components.sonoff.core import devices
 from custom_components.sonoff.core.ewelink import SIGNAL_UPDATE, \
     SIGNAL_CONNECTED
+from custom_components.sonoff.cover import XCover
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import XLightGroup
 from custom_components.sonoff.sensor import XSensor, XRemoteButton, XUnknown
@@ -958,3 +959,32 @@ def test_ns_panel():
     temp: XSensor = next(e for e in entities if e.uid == "outdoor_temp")
     assert temp.state == 7
     assert temp.extra_state_attributes == {"temp_min": 6, "temp_max": 17}
+
+
+def test_cover():
+    entities = get_entitites({
+        'extra': {'uiid': 11},
+        'params': {'switch': 'off', 'sequence': '123', 'setclose': 100}
+    })
+
+    cover: XCover = entities[0]
+    assert cover.state == STATE_CLOSED
+    assert cover.current_cover_position == 0
+
+    cover.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID, "params": {"setclose": 30}
+    })
+    assert cover.state == STATE_OPENING
+    assert cover.current_cover_position == 0
+
+    cover.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID, "params": {"sequence": "123", "setclose": 30}
+    })
+    assert cover.state == STATE_OPEN
+    assert cover.current_cover_position == 70
+
+    cover.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
+        "deviceid": DEVICEID, "params": {"switch": "off"}
+    })
+    assert cover.state == STATE_CLOSING
+    assert cover.current_cover_position == 70
