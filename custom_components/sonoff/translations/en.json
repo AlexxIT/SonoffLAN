@@ -1,8 +1,12 @@
 {
   "config": {
+    "error": {
+      "exists": "This account is already configured",
+      "template": "{error}"
+    },
     "step": {
       "user": {
-        "description": "Enter your eWeLink account data.\nUse any **username** and blank **password** for DIY mode.{error}",
+        "description": "Enter your eWeLink account data.\nUse any **username** and blank **password** for DIY mode.",
         "data": {
           "username": "Email or phone",
           "password": "Password"

@@ -2,12 +2,38 @@ from functools import lru_cache
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigEntry, OptionsFlow
-from homeassistant.const import *
+from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_MODE
 from homeassistant.core import callback
+from homeassistant.data_entry_flow import FlowHandler
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .core.const import DOMAIN, CONF_MODES, CONF_DEBUG
 from .core.ewelink import XRegistryCloud
+
+
+def form(
+        flow: FlowHandler, step_id: str, schema: dict, defaults: dict = None,
+        template: dict = None, error: str = None,
+):
+    """Suppport:
+     - overwrite schema defaults from dict (user_input or entry.options)
+     - set base error code (translations > config > error > code)
+     - set custom error via placeholders ("template": "{error}")
+    """
+    if defaults:
+        for key in schema:
+            if key.schema in defaults:
+                key.default = vol.default_factory(defaults[key.schema])
+
+    if template and "error" in template:
+        error = {"base": "template"}
+    elif error:
+        error = {"base": error}
+
+    return flow.async_show_form(
+        step_id=step_id, data_schema=vol.Schema(schema),
+        description_placeholders=template, errors=error,
+    )
 
 
 class SonoffLANFlowHandler(ConfigFlow, domain=DOMAIN):
@@ -20,28 +46,29 @@ class SonoffLANFlowHandler(ConfigFlow, domain=DOMAIN):
     async def async_step_import(self, user_input=None):
         return await self.async_step_user(user_input)
 
-    async def async_step_user(self, user_input=None):
-        if user_input is not None:
-            username = user_input.get(CONF_USERNAME)
-            password = user_input.get(CONF_PASSWORD)
+    async def async_step_user(self, data=None, error=None):
+        schema = {
+            vol.Required(CONF_USERNAME): str,
+            vol.Optional(CONF_PASSWORD): str
+        }
+
+        if data is not None:
+            username = data.get(CONF_USERNAME)
+            password = data.get(CONF_PASSWORD)
+
+            if await self.async_set_unique_id(username):
+                return form(self, "user", schema, data, error="exists")
+
             try:
                 if username and password:
                     await self.cloud.login(username, password)
-                return self.async_create_entry(title=username, data=user_input)
+                return self.async_create_entry(title=username, data=data)
             except Exception as e:
-                error = f"\n\n`{e}`"
-        else:
-            error = None
-            username = vol.UNDEFINED
+                return form(self, "user", schema, data, template={
+                    "error": str(e)
+                })
 
-        return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema({
-                vol.Required(CONF_USERNAME, default=username): str,
-                vol.Optional(CONF_PASSWORD): str,
-            }),
-            description_placeholders={"error": error}
-        )
+        return form(self, "user", schema)
 
     async def async_step_reauth(self, user_input=None):
         return await self.async_step_user()
@@ -57,17 +84,11 @@ class OptionsFlowHandler(OptionsFlow):
     def __init__(self, entry: ConfigEntry):
         self.entry = entry
 
-    async def async_step_init(self, user_input: dict = None):
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+    async def async_step_init(self, data: dict = None):
+        if data is not None:
+            return self.async_create_entry(title="", data=data)
 
-        mode = self.entry.options.get(CONF_MODE, "auto")
-        debug = self.entry.options.get(CONF_DEBUG, False)
-
-        return self.async_show_form(
-            step_id="init",
-            data_schema=vol.Schema({
-                vol.Optional(CONF_MODE, default=mode): vol.In(CONF_MODES),
-                vol.Optional(CONF_DEBUG, default=debug): bool,
-            })
-        )
+        return form(self, "init", {
+            vol.Optional(CONF_MODE, default="auto"): vol.In(CONF_MODES),
+            vol.Optional(CONF_DEBUG, default=False): bool,
+        }, self.entry.options)
