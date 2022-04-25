@@ -45,7 +45,7 @@ class DummyRegistry(XRegistry):
 
 
 # noinspection PyTypeChecker
-def get_entitites(device: dict, config: dict = None):
+def get_entitites(device: dict, config: dict = None) -> list:
     device.setdefault("name", "Device1")
     device.setdefault("deviceid", DEVICEID)
     device.setdefault("online", True)
@@ -66,7 +66,7 @@ def get_entitites(device: dict, config: dict = None):
     for entity in entities:
         entity.hass = hass
 
-    return reg, entities
+    return entities
 
 
 def await_(coro):
@@ -74,7 +74,7 @@ def await_(coro):
 
 
 def test_simple_switch():
-    _, entities = get_entitites({
+    entities = get_entitites({
         'name': 'Kitchen',
         'extra': {'uiid': 1, 'model': 'PSF-BD1-GL'},
         'brandName': 'SONOFF',
@@ -116,7 +116,7 @@ def test_simple_switch():
 
 
 def test_available():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         'extra': {'uiid': 1},
         'params': {'switch': 'on'},
     })
@@ -124,31 +124,31 @@ def test_available():
     assert switch.available is False
     assert switch.state == "on"
 
-    reg.cloud.online = True
-    reg.cloud.dispatcher_send(SIGNAL_CONNECTED)
+    switch.ewelink.cloud.online = True
+    switch.ewelink.cloud.dispatcher_send(SIGNAL_CONNECTED)
 
     # only cloud online changed
     msg = {"deviceid": DEVICEID, "params": {"online": False}}
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, msg)
+    switch.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, msg)
     assert switch.available is False
     assert switch.state == "on"
 
     # cloud state changed (also change available)
     msg = {"deviceid": DEVICEID, "params": {"switch": "off"}}
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, msg)
+    switch.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, msg)
     assert switch.available is True
     assert switch.state == "off"
 
 
 def test_nospec():
     device = {"extra": {"uiid": 0}, "params": {"switch": "on"}}
-    _, entities = get_entitites(device)
+    entities = get_entitites(device)
 
     switch: XSwitch = entities[0]
     assert switch.state == "on"
 
     device = {"extra": {"uiid": 0}, "params": {"property": 123}}
-    _, entities = get_entitites(device)
+    entities = get_entitites(device)
 
     sensor: XUnknown = entities[0]
     assert len(sensor.state) == 25
@@ -156,7 +156,7 @@ def test_nospec():
 
 
 def test_switch_2ch():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         'extra': {'uiid': 2},
         'params': {
             'switches': [
@@ -170,7 +170,6 @@ def test_switch_2ch():
             'ck_channel_name': {'0': 'Channel A', '1': 'Channel B'}
         }
     })
-    assert len(entities) == 2
 
     switch1: XSwitch = entities[0]
     assert switch1.name == "Channel A"
@@ -182,7 +181,7 @@ def test_switch_2ch():
     assert switch2.unique_id == DEVICEID + "_2"
     assert switch2.state == "off"
 
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+    switch2.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID,
         "params": {"switches": [{"outlet": 1, "switch": "on"}]}
     })
@@ -190,7 +189,7 @@ def test_switch_2ch():
 
 
 def test_fan():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         'extra': {'uiid': 34, 'model': 'PSF-BFB-GL'},
         'params': {
             'sledOnline': 'on',
@@ -229,17 +228,17 @@ def test_fan():
     assert light.state == "off"
     assert isinstance(light, LightEntity)
 
-    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+    fan.ewelink.local.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {"light": "on"}
     })
     assert light.state == "on"
 
-    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+    fan.ewelink.local.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {"fan": "off"}
     })
     assert fan.state == "off"
 
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+    fan.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {'switches': [
             {'switch': 'off', 'outlet': 0},
             {'switch': 'on', 'outlet': 1},
@@ -253,7 +252,7 @@ def test_fan():
 
 
 def test_sonoff_th():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         'name': 'Sonoff TH',
         'deviceid': DEVICEID,
         'extra': {'uiid': 15, 'model': 'PSA-BHA-GL'},
@@ -290,13 +289,13 @@ def test_sonoff_th():
     assert temp.state == 14.6
 
     # test round to 1 digit
-    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+    temp.ewelink.local.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID,
         "params": {"deviceType": "normal", "temperature": 12.34}
     })
     assert temp.state == 12.3
 
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+    temp.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID,
         "params": {"deviceType": "normal", "temperature": -273}
     })
@@ -306,20 +305,20 @@ def test_sonoff_th():
     assert hum.state == 42
 
     # check TH v3.4.0 param name
-    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+    temp.ewelink.local.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID,
         "params": {"deviceType": "normal", "humidity": 48}
     })
     assert hum.state == 48
 
     # check TH v3.4.0 zero humidity bug (skip value)
-    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+    temp.ewelink.local.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID,
         "params": {"deviceType": "normal", "humidity": 0}
     })
     assert hum.state == 48
 
-    reg.local.dispatcher_send(SIGNAL_UPDATE, {
+    temp.ewelink.local.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID,
         "params": {"deviceType": "normal", "currentHumidity": "unavailable"}
     })
@@ -328,7 +327,7 @@ def test_sonoff_th():
 
 def test_dual_r3():
     # noinspection DuplicatedCode
-    _, entities = get_entitites({
+    entities = get_entitites({
         'extra': {'uiid': 126},
         'params': {
             'version': 7,
@@ -390,7 +389,7 @@ def test_dual_r3():
 
 
 def test_diffuser():
-    _, entitites = get_entitites({
+    _ = get_entitites({
         'extra': {'uiid': 25},
         'params': {
             'lightbright': 254,
@@ -413,7 +412,7 @@ def test_diffuser():
 
 
 def test_sonoff_sc():
-    _, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 18},
         "params": {
             "dusty": 2,
@@ -440,7 +439,7 @@ def test_sonoff_sc():
 
 
 def test_sonoff_pow():
-    _, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 32},
         "params": {
             "hundredDaysKwh": "get",
@@ -475,7 +474,7 @@ def test_sonoff_pow():
 
 
 def test_rfbridge():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 28},
         "params": {
             "cmd": "trigger",
@@ -516,13 +515,13 @@ def test_rfbridge():
     alarm: XRemoteSensor = next(e for e in entities if e.name == "Custom1")
     assert alarm.state == "off"
 
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+    alarm.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID,
         "params": {"cmd": "trigger", "rfTrig0": "2022-04-19T03:56:52.000Z"}
     })
     assert alarm.state == "on"
 
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+    alarm.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID,
         "params": {"cmd": "trigger", "rfTrig1": "2022-04-19T03:57:52.000Z"}
     })
@@ -530,7 +529,7 @@ def test_rfbridge():
 
 
 def test_wifi_sensor():
-    _, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 102},
         "params": {
             "actionTime": "2020-05-20T08:43:33.151Z",
@@ -553,7 +552,7 @@ def test_wifi_sensor():
 
 
 def test_zigbee_button():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 1000},
         "params": {
             "battery": 100,
@@ -565,14 +564,14 @@ def test_zigbee_button():
     button: XRemoteButton = entities[0]
     assert button.state == ""
 
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+    button.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {'trigTime': '1601285000235', 'key': 1}
     })
     assert button.state == "double"
 
 
 def test_sonoff_r5():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 174},
         "params": {
             'subDevId': '7007ad88', 'parentid': '10015c1cfc',
@@ -584,7 +583,7 @@ def test_sonoff_r5():
     button: XRemoteButton = entities[0]
     assert button.state == ""
 
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+    button.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {
             'bleAddr': '7007AD88', 'outlet': 2, 'key': 1, 'count': 883,
             'actionTime': '2022-04-12T11:17:45.831Z'
@@ -594,7 +593,7 @@ def test_sonoff_r5():
 
 
 def test_zigbee_th():
-    _, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 1770},
         "params": {
             "humidity": "6443",
@@ -615,7 +614,7 @@ def test_zigbee_th():
 
 
 def test_zigbee_motion():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 2026},
         "params": {
             "battery": 100,
@@ -627,13 +626,13 @@ def test_zigbee_motion():
     motion: XBinarySensor = entities[0]
     assert motion.state == "off"
 
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+    motion.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID,
         "params": {'trigTime': '1601285000235', 'motion': 1}
     })
     assert motion.state == "on"
 
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+    motion.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {'online': False}
     })
     assert motion.state == "off"
@@ -642,12 +641,12 @@ def test_zigbee_motion():
 def test_default_class():
     devices.set_default_class("light")
 
-    _, entities = get_entitites({"extra": {"uiid": 15}})
+    entities = get_entitites({"extra": {"uiid": 15}})
     assert isinstance(entities[0], XSwitchTH)
     assert isinstance(entities[0], LightEntity)
     assert not isinstance(entities[0], SwitchEntity)
 
-    _, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 1}
     }, {
         "devices": {
@@ -662,7 +661,7 @@ def test_default_class():
 
 
 def test_device_class():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 15}
     }, {
         "devices": {
@@ -674,7 +673,7 @@ def test_device_class():
     # Hass v2021.12 - off, Hass v2022.2 and more - None
     assert light.state in (None, "off")
 
-    reg.cloud.dispatcher_send(SIGNAL_UPDATE, {
+    light.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {"switch": "on"}
     })
     assert light.state == "on"
@@ -693,7 +692,7 @@ def test_device_class2():
         4256: XZigbeeSwitches.async_turn_on
     }
     for uiid, func in classes.items():
-        reg, entities = get_entitites({
+        entities = get_entitites({
             "extra": {"uiid": uiid},
             "params": {
                 'switches': [
@@ -709,11 +708,11 @@ def test_device_class2():
             }
         })
 
-        light: XSwitches = entities[0]
+        light: XSwitches = next(e for e in entities if e.uid == "1")
         assert isinstance(light, LightEntity)
         assert light.state == "on"
 
-        fan: XSwitches = entities[1]
+        fan: XSwitches = next(e for e in entities if e.uid == "2")
         assert isinstance(fan, FanEntity)
         assert fan.state == "on"
 
@@ -721,7 +720,7 @@ def test_device_class2():
 
 
 def test_light_group():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         "extra": {"uiid": 2},
         "params": {
             'switches': [
@@ -737,22 +736,25 @@ def test_light_group():
         }
     })
 
-    light: XLightGroup = entities[0]
+    light: XLightGroup = next(e for e in entities if e.uid == "21")
     assert light.state == "on" and light.brightness == 255
 
+    # noinspection PyTypeChecker
+    registry: DummyRegistry = light.ewelink
+
     await_(light.async_turn_on(brightness=128))
-    assert reg.send_args[1]["switches"] == [
+    assert registry.send_args[1]["switches"] == [
         {'outlet': 1, 'switch': 'on'}, {'outlet': 0, 'switch': 'off'}
     ]
     assert light.brightness == 128
 
     await_(light.async_turn_on(brightness=0))
-    assert reg.send_args[1]["switches"] == [
+    assert registry.send_args[1]["switches"] == [
         {'outlet': 1, 'switch': 'off'}, {'outlet': 0, 'switch': 'off'}
     ]
 
     await_(light.async_turn_on())
-    assert reg.send_args[1]["switches"] == [
+    assert registry.send_args[1]["switches"] == [
         {'outlet': 1, 'switch': 'on'}, {'outlet': 0, 'switch': 'on'}
     ]
 
@@ -836,7 +838,7 @@ def test_local_devicekey():
 def test_reporting():
     time.time = lambda: 0
 
-    reg, entities = get_entitites({
+    entities = get_entitites({
         'extra': {'uiid': 15},
         'params': {
             'currentTemperature': '14.6',
@@ -879,7 +881,7 @@ def test_reporting():
 
 
 def test_temperature_convert():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         'extra': {'uiid': 15},
         'params': {
             'currentTemperature': '14.6',
@@ -895,7 +897,7 @@ def test_temperature_convert():
 
 
 def test_ns_panel():
-    reg, entities = get_entitites({
+    entities = get_entitites({
         'extra': {'uiid': 133},
         'params': {
             'version': 8,
@@ -950,7 +952,7 @@ def test_ns_panel():
         }
     })
 
-    for uid in ("1", "2", "temperature", "humidity"):
+    for uid in ("1", "2", "temperature"):
         assert any(e.uid == uid for e in entities)
 
     temp: XSensor = next(e for e in entities if e.uid == "outdoor_temp")
