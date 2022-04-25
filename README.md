@@ -6,67 +6,40 @@
 
 Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devices with [eWeLink](https://www.ewelink.cc/en/) (original) firmware over LAN and/or Cloud.
 
-## Table of Contents
+**New features in version 3.0**
 
-- [Main Info](#main-info)
-- [Tested Devices](#tested-devices)
-- [Install with HACS](#install-with-hacs)
-- [Config Examples](#config-examples)
-  - [Local and Cloud mode](#local-and-cloud-mode)
-  - [Cloud only mode](#cloud-only-mode)
-  - [Local mode with load config from Cloud](#local-mode-with-load-config-from-cloud)
-  - [Local only mode (manual get devicekey)](#local-only-mode-manual-get-devicekey)
-  - [Local only mode (DIY devices)](#local-only-mode-diy-devices)
-  - [Custom device_class for any mode](#custom-device_class-for-any-mode)
-  - [Refresh interval for TH and Pow](#refresh-interval-for-th-and-pow)
-  - [Sensors from device attributes](#sensors-from-device-attributes)
-- [Sonoff RF Bridge 433](#sonoff-rf-bridge-433)
-  - [RF Bridge Sensors](#rf-bridge-sensors)
-  - [RF Bridge Commands and Events](#rf-bridge-commands-and-events)
-- [Sonoff Pow Power Consumption](#sonoff-pow-power-consumption)
-- [Sonoff GK-200MP2-B Camera](#sonoff-gk-200mp2-b-camera)
-- [Demo](#demo)
-- [Getting devicekey manually](#getting-devicekey-manually)
-- [Common problems in only LAN mode](#common-problems-in-only-lan-mode)
-- [Component Debug Mode](#component-debug-mode)
-- [Useful Links](#useful-links)
+- support Integration UI, Devices and Zones
+- support new [eWeLink API](https://coolkit-technologies.github.io/eWeLink-API/#/en/PlatformOverview)
+- support [multiple eWeLink accounts](#configuration) and [homes](#homes)
+- support many sensors for each device (include [RFBridge](#sonoff-rf-bridge-433))
+- support thermostats for [Sonoff TH](#sonoff-th) ans NS Panel
+- support [preventing DB size growth](#preventing-db-size-growth)
+- support many new Hass features
 
-## Main Info
-
-**New features in version 2.0:**
+**Features from previous versions**
 
 - can manage **both local and cloud control at the same time**!
 - support old devices wih 2.7 firmware (only cloud connection)
 - support new device types: color lights, sensors, covers
-- support eWeLink cameras with PTZ ([read more](#sonoff-gk-200mp2-b-camera))
-- support unavailable device state for both local and cloud connection 
-- support refresh interval for Sonoff TH and Sonoff Pow ([read more](#refresh-interval-for-th-and-pow))
-- support sensors for Sonoff RF Bridge 433 ([read more](#rf-bridge-sensors))
+- support [eWeLink cameras](#sonoff-gk-200mp2-b-camera) with PTZ
+- support unavailable device state for both local and cloud connection
+- support sensors for Sonoff [RF Bridge 433](#sonoff-rf-bridge-433)
 - support ZigBee Bridge and Devices
-- added new debug mode for troubleshooting ([read more](#component-debug-mode))
+- added new [debug mode](#debug-page) for troubleshooting
 
-**Breaking changes 2.0:** by default, both local and cloud modes will start working together. If you do not want this - enable the `mode: local` setting. But I recommend using the new mode, it works great.
-
-If your internet breaks down - local management will continue to work.  
-If you have problems with multicast on the local network - cloud management will work.  
-If you want only local or only cloud control - this can also be configured.
-
-![](demo.png)
-
-Pros:
+**Pros**
 
 - work with original eWeLink / Sonoff firmware, no need to flash devices
-- work over Local Network and / or Cloud Server ([read more](#local-and-cloud-mode))
+- work over Local Network and/or Cloud Server
 - work with devices without DIY-mode
-- work with devices in DIY-mode ([read more](#local-only-mode-diy-devices))
+- work with devices in DIY-mode
 - support single and multi-channel devices
-- support TH and Pow device attributes ([read more](#sonoff-th-and-pow))
-- support Sonoff RF Bridge 433 for receive and send commands ([read more](#sonoff-rf-bridge-433))
-- support Sonoff GK-200MP2-B Camera ([read more](#sonoff-gk-200mp2-b-camera))
-- instant device state update with Local Multicast or Cloud Websocket connection
-- load devices list from eWeLink Servers (with names, apikey/devicekey and device_class) and save it locally
-- (optional) change device type from `switch` to `light` ([read more](#custom-device_class-for-any-mode))
-- (optional) config force refresh interval for TH and Pow ([read more](#refresh-interval-for-th-and-pow))
+- support TH and Pow device sensors
+- support Sonoff [RF Bridge 433](#sonoff-rf-bridge-433) for receive and send commands
+- support Sonoff [GK-200MP2-B Camera](#sonoff-gk-200mp2-b-camera)
+- instant device state update with local Multicast or cloud Websocket connection
+- load devices list from eWeLink Servers (with names and encryption keys) and save it locally
+- (optional) change [device type](#custom-device_class) from `switch` to `light`
 
 **Component review from DrZzs**
 
@@ -79,12 +52,7 @@ Thanks to [@michthom](https://github.com/michthom) and [@EpicLPer](https://githu
 
 ## Tested Devices
 
-**Tested (only LAN)**
-
-Maybe other eWeLink cameras also work, I don’t know.
-
-- [Camera GK-100CD10B](https://www.gearbest.com/smart-home-controls/pp_009678072743.html) (camera with PTZ)
-- [Sonoff GK-200MP2-B](https://www.itead.cc/sonoff-gk-200mp2-b-wi-fi-wireless-ip-security-camera.html) (camera with PTZ)
+Almost any single or multi-channel Switch working in the eWeLink application will work with this Integration even if it is not on the list.
 
 **Tested (LAN and Cloud)**
 
@@ -95,14 +63,14 @@ These devices work both on a local network and through the cloud.
 - [Sonoff Basic R3](https://www.itead.cc/sonoff-basicr3-wifi-diy-smart-switch.html)
 - [Sonoff RFR3](https://www.itead.cc/sonoff-rfr3.html)
 - [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode) fw 3.3.0
-- [Sonoff TH](https://www.itead.cc/sonoff-th.html) (show temperature and humidity) fw 3.4.0
+- [Sonoff TH](https://www.itead.cc/sonoff-th.html) (support Thermostat) fw 3.5.0
 - [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html) fw 3.3.0
 - [Sonoff 4CH Pro R3](https://www.itead.cc/smart-home/sonoff-4ch-r3-pro-r3.html) fw 3.3.0
 - [Sonoff Pow R2](https://www.itead.cc/sonoff-pow-r2.html) (show power consumption)
 - [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html) fw 3.4.0
-- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) latest fw works only in cloud mode!
+- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) fw 3.5.0
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0, 3.5.0
-- [Sonoff G1](https://www.itead.cc/sonoff-g1.html) fw 3.5.0 
+- [Sonoff G1](https://www.itead.cc/sonoff-g1.html) fw 3.5.0
 - [Sonoff Dual](https://www.itead.cc/sonoff-dual.html)
 - [Sonoff iFan02](https://www.itead.cc/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control) fw 3.3.0
 - [Sonoff iFan03 and iFan04](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) fw 3.4.0
@@ -148,117 +116,66 @@ These devices only work through the cloud!
 - SONOFF SNZB-03 - ZigBee Motion Sensor
 - SONOFF SNZB-04 - ZigBee Wireless door/window sensor
 
-## Install with HACS
+**Tested Cameras (only LAN)**
 
-Use [HACS](https://hacs.xyz/) > Integrations > Plus > **SonoffLAN**.
+Maybe other eWeLink cameras also work, I don’t know.
+
+- [Camera GK-100CD10B](https://www.gearbest.com/smart-home-controls/pp_009678072743.html) (camera with PTZ)
+- [Sonoff GK-200MP2-B](https://www.itead.cc/sonoff-gk-200mp2-b-wi-fi-wireless-ip-security-camera.html) (camera with PTZ)
+
+## Installation
+
+[HACS](https://hacs.xyz/) > Integrations > Plus > **SonoffLAN**
 
 Or manually copy `sonoff` folder from [latest release](https://github.com/AlexxIT/SonoffLAN/releases/latest) to `custom_components` folder in your config folder.
 
-## Config Examples
+## Configuration
 
-Cloud mode **cannot work simultaneously** with the 3rd version eWeLink mobile application. You need:
-- eWeLink application of the 4th version (Android only)  
-- create a second account, share devices with it and use it in the component
+Configuration > [Integrations](https://my.home-assistant.io/redirect/integrations/) > Add Integration > [Sonoff](https://my.home-assistant.io/redirect/config_flow_start/?domain=sonoff)
 
-Cloud mode **cannot work simultaneously** with two copies of component (example main and test Home Assistant). You need:
-- create a second account, share devices with it and use it in the second Home Assistant
+You can setup multiple integrations with different ewelink accounts.
 
-Local only mode users fine.
+## Additional options
 
-Local mode with load device list - break authorization in a mobile application only at the start of Home Assistant.
+Configuration > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > Configure
 
-### Local and Cloud mode
+### Mode
 
-Recommended for general user.
+In `auto` mode component using both local and cloud connections to your devcies. If device could be reached via LAN - the local connection will be used. Otherwise the cloud connection will be used. This mode is recommended for most general user.
 
-For devices **on the 3rd firmware version in the same local network with a working multicast**, it uses both local and cloud connections simultaneously.
+`local` mode or `cloud` mode will use only this type of connection.
 
-In other cases, it uses **only a cloud connection**:
-- devices on the 2nd firmware version
-- devices on another LAN / VLAN
-- users with problems setting up multicast traffic
-- when the local connection freezes (yes it happens)
+Sometimes it can be difficult to get a local connection to work. You need a local network with working Multicast (mDNS/[zeroconf](https://www.home-assistant.io/integrations/zeroconf/)) traffic between the Hass and your devices. Read about [common problems](#common-problems-in-only-lan-mode).
 
-```yaml
-sonoff:
-  username: mymail@gmail.com
-  password: mypassword
+Each time the integration starts, a list of user devices is loaded from cloud and saved locally (`/config/.storage/sonoff/`).
+
+`auto` mode and `local` mode can work without Internet connection. If the integration fails to connect to the cloud - the component will use the previously saved list of devices and continue to work only in `local` mode. `auto` mode will continue trying to connect to the cloud.
+
+`local` mode can't work without ewelink credentials because it needs devices encryption keys.
+
+Devices in DIY mode can be used without ewelink credentials because their protocol unencrypted. But the average user does not need to use the devices in this mode.
+
+### Debug page
+
+If you have any problems with Ingegration:
+
+1. Check the number of online devices on the [info page](https://my.home-assistant.io/redirect/info/)
+2. Check warning and errors on the [logs page](https://my.home-assistant.io/redirect/logs/)
+3. Enable **Debug page** option and check logs on the [info page](https://my.home-assistant.io/redirect/info/)
+
+Debug page shows only Integration logs and removes all private data. You can filter log and enable auto refresh (in seconds).
+
+```
+http://192.168.1.123:8123/api/sonoff/c8503fee-88fb-4a18-84d9-abb782bf0aa7?q=1000xxxxxx&r=2
 ```
 
-or
+### Homes
 
-```yaml
-sonoff:
-  username: +910123456789  # important to use country code
-  password: mypassword
-```
+By default component loads cloud devices **only for current active Home** in ewelink application. If there is only one Home in the account, it shouldn't be a problem. Otherwise you can select one or multiple Homes to load devices from.
 
-If you have Sonoff Pow or Sonoff TH, you might want to use this kind of config:
+## Custom device_class
 
-```yaml
-sonoff:
-  username: mymail@gmail.com
-  password: mypassword
-  force_update: [temperature, power]
-  scan_interval: '00:05:00'  # (optional) default 5 minutes
-  sensors: [temperature, humidity, power, current, voltage]
-```
-
-Read below what it means.
-
-### Cloud only mode
-
-Recommended for users with a bad router, which may freeze due to multicast traffic.
-
-```yaml
-sonoff:
-  username: mymail@gmail.com
-  password: mypassword
-  mode: cloud
-```
-
-### Local mode with load config from Cloud
-
-Legacy mode. Only downloads a list of devices from Cloud Servers. Works with local protocol. Only works with devices on 3rd firmware.
-
-```yaml
-sonoff:
-  username: mymail@gmail.com
-  password: mypassword
-  mode: local
-  reload: always  # update device list every time HA starts
-```
-
-Component loads list of devices from eWeLink Servers and save it in the file `/config/.sonoff.json` (hidden file).
-
-The list will be loaded only once. At the next start, the list will be loaded from the local file. When you have new **eWeLink** devices - manually delete the file and reboot the HA.
-
-With `reload: always` in the config - the list will be loaded from servers at each start.
-
-The list will be loaded from the local file even if you remove `username` and `password` from the settings.
-
-### Local only mode (manual get devicekey)
-
-I don’t understand who needs it, but you never know. You must manually get devicekey for each device. Only works with devices on 3rd firmware.
-
-```yaml
-sonoff:
-  devices:
-    1000abcdefg:
-      devicekey: f9765c85-463a-4623-9cbe-8d59266cb2e4
-```
-
-See [Getting devicekey manually](https://github.com/AlexxIT/SonoffLAN#getting-devicekey-manually) to retrieve the devicekey.
-
-### Local only mode (DIY devices)
-
-Recommended for users who do not trust Cloud Servers for some reason. Only works with devices in DIY mode.
-
-```yaml
-sonoff:
-```
-
-### Custom device_class for any mode
+**Important**. DeviceID is always 10 symbols string from entity_id or eWeLink app.
 
 You can convert all switches into light by default:
 
@@ -267,15 +184,15 @@ sonoff:
   default_class: light  # (optional), default switch
 ```
 
-You can convert specific switches into lights or fans:
+You can convert specific switches into `light`, `fan` or `binary_sensor`:
 
 ```yaml
 sonoff:
   devices:
-    1000abcde0:
+    1000xxxxxx:
       device_class: light
       name: Sonoff Basic
-    1000abcde1:
+    1000yyyyyy:
       device_class: fan
       name: Sonoff Mini
 ```
@@ -285,11 +202,11 @@ You can convert multi-channel devices (e.g. Sonoff T1 2C):
 ```yaml
 sonoff:
   devices:
-    1000abcde2:
+    1000xxxxxx:
       device_class: [light, fan]
       name: Sonoff T1 2C
-    1000abcde3:
-      device_class: [light, light]
+    1000yyyyyy:
+      device_class: [switch, light]
       name: MiniTiger 2CH
 ```
 
@@ -298,7 +215,7 @@ You can convert multi-channel device (e.g. Sonoff T1 3C) into single light with 
 ```yaml
 sonoff:
   devices:
-    1000abcde4:
+    1000xxxxxx:
       device_class:
         - light: [1, 2, 3]
       name: Sonoff T1 3C
@@ -309,68 +226,81 @@ You can control multiple light zones with single multi-channel device (e.g. Sono
 ```yaml
 sonoff:
   devices:
-    1000abcde5:
+    1000xxxxxx:
       device_class:
-        - light  # zone 1 (channel 1)
-        - light  # zone 2 (channel 2)
-        - light: [3, 4]  # zone 3 (channels 3 and 4)
+        - switch: 1  # entity 1 (channel 1)
+        - light: [2, 3]  # entity 2 (channels 2 and 3)
+        - fan: 4  # entity 3 (channel 4)
       name: Sonoff 4CH Pow
 ```
 
-You can change `device_class` for Door Sensor:
+You can change `device_class` for [Binary Sensor](https://www.home-assistant.io/integrations/binary_sensor/):
 
 ```yaml
 sonoff:
   devices:
-    1000abcde6:
+    1000xxxxxx:
       device_class: window
 ```
 
-You can skip importing any cloud devices:
+You can change `device_class` for [Cover](https://www.home-assistant.io/integrations/cover/):
 
 ```yaml
 sonoff:
   devices:
-    1000abcde7:
-      device_class: exclude
+    1000xxxxxx:
+      device_class: shutter
 ```
 
-### Refresh interval for TH and Pow
+## Preventing DB size growth
 
-You can config forced updating of TH and Pow attributes ([read more](https://github.com/AlexxIT/SonoffLAN/issues/14)).
-
-**Force update device by attribute**
-
-It is not necessary to list all the attributes of each device (e.g. `temperature` and `humidity`). Only one is enough.
+Pow devices may send a lot of data every second. You can reduce the amount of processed data.
 
 ```yaml
 sonoff:
-  force_update: [temperature, power]
-  scan_interval: '00:05:00'  # (optional) default 5 minutes
-```
-
-**Force update device by deviceid**
-
-```yaml
-sonoff:
-  scan_interval: '00:05:00'  # (optional) default 5 minutes
   devices:
-    1000abcde0:
-      name: Sonoff TH
-      force_update: True
-    1000abcde1:
-      name: Sonoff Pow
-      force_update: True
+    1000xxxxxx:
+      reporting:
+        power: [30, 3600, 1]  # min seconds, max seconds, min delta value
+        current: [5, 3600, 0.1]
+        voltage: [60, 3600, 5]
 ```
 
-### Sensors from device attributes
+- if new value came before `min seconds` - it will be "delayed"
+- if new value came between `min` and `max seconds`
+  - if delta lower than `delta value` - it will be "delayed"
+  - otherwise - it will be used
+- if new value came after `max seconds` - it will be used
+- any used value will erase "delayed" value
+- new "delayed" value will overwrite old one
+- "delayed" value will be checked for the above conditions every 30 seconds
 
-Temperature and power sensors are not created by default!  
-You can list all the attributes you want to see as sensors.
+## Sonoff TH
+
+Support optional [Climate](https://www.home-assistant.io/integrations/climate/) entity that controls Thermostat. You can control low and high temperature values and hvac modes:
+
+- **heat** - lower temp enable switch, higher temp disable switch
+- **cool** - lower temp disable switch, higher temp enable switch
+- **dry** - change control by **humidity** with previous low/high switch settings
+
+In `dry` mode, the Thermostat controls and displays Humidity. But the units are displayed as temperature (Hass limitation).
+
+Thermostat can be controlled only with **Cloud** connection. Main switch and TH sensors support LAN and Cloud connections.
+
+## Sonoff Pow
+
+Support power, current and voltage sensors via LAN and Cloud connections. Also support energy (consumption) sensor only with **Cloud** connection. Energy data loads from cloud every hour.
+
+You can also setup a sensor, that will collect energy data locally by Hass:
 
 ```yaml
-sonoff:
-  sensors: [temperature, humidity, power, current, voltage, rssi]
+sensor:
+  - platform: integration
+    source: sensor.sonoff_1000xxxxxx_power
+    name: Dishwasher
+    unit_prefix: k
+    unit: kWh
+    round: 2
 ```
 
 ## Sonoff RF Bridge 433
@@ -379,147 +309,13 @@ sonoff:
 
 [![Automatic Calls and Messages from Home Assistant, Sonoff RF Bridge and Smoke Detectors](https://img.youtube.com/vi/QD1K7s01cak/mqdefault.jpg)](https://www.youtube.com/watch?v=QD1K7s01cak?t=284)
 
-Video HOWTO from me in [Demo](#demo) section.
+**Important**. Integration v3 supports automatic creation of sensors for RF Bridge. All buttons will be created as [Button entity](https://www.home-assistant.io/integrations/button/). All sensors will be created as [Binary entity](https://www.home-assistant.io/integrations/binary_sensor/).
 
-### RF Bridge Sensors
+Both button and binary sensor has `last_triggered` attribute with the time of the last signal received. You can use it in automations.
 
-You can config sensors for your RF Bridge.
+Binary sensor will stay in `on` state during **120 seconds** by default. Each new signal will reset the timer.
 
-The PIR sensor sends a signal if it detects motion. The door / window sensor sends a signal when open. You can set the time after which the sensor goes into off state. Default 120 seconds.
-
-If you has door sensor with two states (for open and for closed state) like [this one](https://www.banggood.com/10Pcs-GS-WDS07-Wireless-Door-Magnetic-Strip-433MHz-for-Security-Alarm-Home-System-p-1597356.html?cur_warehouse=CN), you can config `payload_off` as in the example below. Also disable the timeout if you do not need it in this case (with `timeout: 0` option).
-
-You can use any `device_class` that is supported in [Binary Sensor](https://www.home-assistant.io/integrations/binary_sensor/).
-
-**PIR Sensor**
-
-```yaml
-sonoff:
-  rfbridge:
-    PIR Sensor 1:  # sensor name in eWeLink application
-      device_class: motion
-      timeout: 60  # optional (default 120), timeout in seconds for auto turn off
-    PIR Sensor 2:  # sensor name in eWeLink application
-      device_class: motion
-      timeout: 60  # optional (default 120), timeout in seconds for auto turn off
-```
-
-**Single State Sensor**
-
-```yaml
-sonoff:
-  rfbridge:
-    Door Sensor 1:  # sensor name in eWeLink application
-      name: Door Sensor # optional, you can change sensor name
-      device_class: door  # e.g. door, window
-      timeout: 5
-    Door Sensor 2:
-      name: Door Sensor
-      device_class: door
-      timeout: 5
-```
-
-**Dual State Sensor**
-
-```yaml
-sonoff:
-  rfbridge:
-    Button1:  # button name in eWeLink application (open signal)
-      name: Window Sensor  # optional, you can change sensor name
-      device_class: window  # e.g. door, window
-      timeout: 0  # disable auto close timeout
-      payload_off: Button2  # button name in eWeLink application (close signal)
-    Button3:
-      name: Window Sensor
-      device_class: window
-      timeout: 0
-      payload_off: Button4
-```
-
-### RF Bridge Commands and Events
-
-Component will create only one entity per RF Bridge - `remote.sonoff_1000abcdefg`.
-
-You can receive signals from RF Buttons and RF Sensors through an event `sonoff.remote`. And send signals using the service `remote.send_command`.
-
-Although the component supports training, it is recommended to train RF Buttons through the eWeLink application.
-
-When a command is received, the event `sonoff.remote` is generated with a button number and response time (in UTC, sends the device).
-
-The last command received can be seen in the Bridge attributes:
-
-![](demo_bridge.png)
-
-**Example for receive all RF signal**
-
-```yaml
-automation:
-- alias: Sonoff RF Receive
-  trigger:
-    platform: event
-    event_type: sonoff.remote  # this is NOT entity_id, don't change it!
-  action:
-    service: persistent_notification.create
-    data_template:
-      title: Sonoff RF Receive
-      message: |-
-        Name: {{ trigger.event.data.name }}
-        Command: {{ trigger.event.data.command }}
-        Time: {{ trigger.event.data.ts }}
-```
-
-**Example of reaction to the selected button**
-
-Instead of a `name: Button1`, you can use `command: 0` number of the button in the eWeLink application (starts from zero).
-
-```yaml
-automation:
-- alias: Receive Button1
-  trigger:
-    platform: event
-    event_type: sonoff.remote  # this is NOT entity_id, don't change it!
-    event_data:
-      name: Button1  # button/sensor name in eWeLink application
-  action:
-    service: persistent_notification.create
-    data:
-      message: My Remote button pressed
-```
-
-**Example for send RF signal**
-
-```yaml
-script:
-  send_button1:
-    alias: Send RF Button1
-    sequence:
-    - service: remote.send_command
-      data:
-        entity_id: remote.sonoff_1000abcdef
-        command: Button1  # button name in eWeLink application
-```
-
-## Sonoff Pow Power Consumption
-
-For update power consumption of all your Pow devices you can call `sonoff.update_consumption` service.
-
-The device attributes will display data for the last 100 days. The first element is today's data. It's up to you how often to call updates and what to do with this data later.
-
-Remember, without calling the service, there will be no values. Use automation.
-
-```yaml
-sensor:
-- platform: template
-  sensors:
-    today_consumption:
-      friendly_name: Today consumpion
-      unit_of_measurement: kWh
-      value_template: "{{ state_attr('switch.sonoff_1000abcdef', 'consumption').0 }}"
-    ten_days_consumption:
-      friendly_name: 10 days consumpion
-      unit_of_measurement: kWh
-      value_template: "{% set p=state_attr('switch.sonoff_1000abcdef', 'consumption') %}{{ p[:10]|sum if p }}"
-```
+You can read more about configuring and using this bridge in [wiki](https://github.com/AlexxIT/SonoffLAN/wiki/RF-Bridge).
 
 ## Sonoff GK-200MP2-B Camera
 
@@ -539,99 +335,45 @@ script:
 
 `device` - this is the number from the camera ID `EWLK-012345-XXXXX`, exactly 6 digits (leading zeros - it is important).
 
-**Never ever tell anyone your camera ID!**
-
-*In development: camera entity with still image and stream support.*
-
-## Demo
-
-Check other videos on my [YouTube](https://www.youtube.com/c/AlexxIT) channel.
-
-**Sonoff RF Bridge automation via Node-RED**
-
-[![Sonoff RF Bridge automation via SonoffLAN, Home Assistan and Node-RED](https://img.youtube.com/vi/DhYIjEOtZ_I/mqdefault.jpg)](https://www.youtube.com/watch?v=DhYIjEOtZ_I)
-
-**Control Sonoff 4CH Pow R2 from HomeKit**
-
-[![Control Sonoff Devices with eWeLink firmware over LAN from Home Assistant](https://img.youtube.com/vi/X7PcYfDy57A/mqdefault.jpg)](https://www.youtube.com/watch?v=X7PcYfDy57A) [![Sonoff GK-200MP2-B Camera LAN Control](https://img.youtube.com/vi/TnFS7qWgKoo/mqdefault.jpg)](https://www.youtube.com/watch?v=TnFS7qWgKoo)
-
-Change **Name** or **Entity ID** of any device: 
-
-![](demo_rename.gif)
-
-## Getting devicekey manually
-
-1. Put the device in setup mode
-2. Connect to the Wi-Fi network `ITEAD-10000`, password` 12345678`
-3. Open in browser `http://10.10.7.1/device`
-4. Copy `deviceid` and `apikey` (this is `devicekey`)
-5. Connect to your Wi-Fi network and setup Sonoff via the eWeLink app
-
-**For Sonoff Micro**
-
-The process above does not work for the Sonoff Micro (USB Smart Adapter). Use [Local mode with load config from Cloud](https://github.com/AlexxIT/SonoffLAN#local-mode-with-load-config-from-cloud).
-
 ## Common problems in only LAN mode
 
-Cloud users don't have these problems.
+`auto` mode and `cloud` mode users don't have these problems.
 
 **Devices are not displayed**
 
-1. Only supported devices with firmware v3+
-2. Common problems with Multicast:
-   - two routers
-   - **docker** with port forwarding
-     - you must use: [--network host](https://docs.docker.com/network/network-tutorial-host/)
-     - hassio users are okay
-   - **virtual machine** with port forwarding
-     - you must use bridge virtual network mode (not NAT mode)
-   - Oracle VM VirtualBox
-   - linux firewall
-   - linux network driver
-   - incorrect network interface selected in HA Configuration -> Settings -> Global -> Network
+- not all devices supports local protocol
+- two routers
+- **docker** with port forwarding
+  - you must use: [--network host](https://docs.docker.com/network/network-tutorial-host/)
+  - hassio users are okay
+- **virtual machine** with port forwarding
+  - you must use bridge virtual network mode (not NAT mode)
+- Oracle VM VirtualBox
+- linux firewall
+- linux network driver
+- incorrect network interface selected in Configuration > [Settings](https://my.home-assistant.io/redirect/general/) > Global > Network
 
 The devices publish their data through [Multicast DNS](https://en.wikipedia.org/wiki/Multicast_DNS) (mDNS/[zeroconf](https://www.home-assistant.io/integrations/zeroconf/)), read [more](http://developers.sonoff.tech/sonoff-diy-mode-api-protocol.html#Device-mDNS-Service-Info-Publish-Process).
 
 **Devices unavailable after reboot**
 
-All devices **unavailable** after each Home Assistant restart. It does not depend on `reload` setting. Devices are automatically detected in the local network after each restart. Sometimes devices appear quickly. Sometimes after a few minutes. If this does not happen, there are some problems with the multicast / router.
+All devices **unavailable** after each Home Assistant restart. Devices are automatically detected in the local network after each restart. Sometimes devices appear quickly. Sometimes after a few minutes. If this does not happen, there are some problems with the multicast / router.
 
-## Component Debug Mode
-
-Component support debug mode. Shows only component logs and removes all private data automatically. The link to the logs is always random.
-
-[![Control Sonoff Devices with eWeLink firmware over LAN from Home Assistant](https://img.youtube.com/vi/Lt5fT4N5Pm8/mqdefault.jpg)](https://www.youtube.com/watch?v=Lt5fT4N5Pm8)
-
-```yaml
-sonoff:
-  username: mymail@gmail.com
-  password: mypassword
-  debug: True  # you will get HA notification with a link to the logs page
-```
-
-You can filter multiple devices in the logs and enable auto refresh (in seconds).
-
-```
-http://192.168.1.123:8123/c4e99cfc-0c83-4a39-b7f0-278b0e719bd1?q=1000abcde1|1000abcde2&r=2
-```
-
-All unknown devices with command `switch` support will be added as `switch`.
-
-All other unknown devices will be added as `binary_sensor` (always `off`). The full state of the device is displayed in its attributes.
+## Raw commands
 
 The component adds the service `sonoff.send_command` to send low-level commands.
 
 Example service params to single switch:
 
 ```yaml
-device: 1000123456
+device: 1000xxxxxx
 switch: 'on'
 ```
 
 Example service params to multi-channel switch:
 
 ```yaml
-device: 1000123456
+device: 1000xxxxxx
 switches: [{outlet: 0, switch: 'off'}]
 ```
 
@@ -645,13 +387,24 @@ brightness: 50
 mode: 0
 ```
 
+## Getting devicekey manually
+
+*The average user does not need to get the device key manually. The component does everything automatically, using the ewelink account.*
+
+1. Put the device in setup mode
+2. Connect to the Wi-Fi network `ITEAD-10000`, password` 12345678`
+3. Open in browser `http://10.10.7.1/device`
+4. Copy `deviceid` and `apikey` (this is `devicekey`)
+5. Connect to your Wi-Fi network and setup Sonoff via the eWeLink app
+
 ## Useful Links
 
 - https://github.com/peterbuga/HASS-sonoff-ewelink
 - https://github.com/beveradb/sonoff-lan-mode-homeassistant
 - https://github.com/mattsaxon/sonoff-lan-mode-homeassistant
 - https://github.com/EpicLPer/Sonoff_GK-200MP2-B_Dump
+- https://github.com/bwp91/homebridge-ewelink
 - https://blog.ipsumdomus.com/sonoff-switch-complete-hack-without-firmware-upgrade-1b2d6632c01
-- https://github.com/itead/Sonoff_Devices_DIY_Tools/blob/master/SONOFF%20DIY%20MODE%20Protocol%20Doc%20v1.4.md
+- https://github.com/itead/Sonoff_Devices_DIY_Tools
 - [SONOFF DIY MODE API PROTOCOL](http://developers.sonoff.tech/sonoff-diy-mode-api-protocol.html)
 - [No Tasmota And EWeLink Cloud To Control The SONOFF Device? YES!](https://sonoff.tech/product-tutorials/diy-mode-to-control-the-sonoff-device)
