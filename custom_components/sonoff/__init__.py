@@ -166,10 +166,7 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry):
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    await asyncio.gather(*[
-        hass.config_entries.async_forward_entry_unload(entry, domain)
-        for domain in PLATFORMS
-    ])
+    await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
     await registry.stop()
