@@ -687,6 +687,29 @@ def test_device_class():
     assert not isinstance(light, SwitchEntity)
 
 
+def test_device_class_micro():
+    # Sonoff Micro has multichannel firmware
+    for device_class in ("light", ["light"]):
+        entities = get_entitites({
+            "extra": {"uiid": 77},
+            "params": {
+                "switches": [{'switch': 'on', 'outlet': 0}]
+            }
+        }, {
+            "devices": {
+                DEVICEID: {"device_class": device_class}
+            }
+        })
+
+        light: XSwitches = next(e for e in entities if e.uid == "1")
+        assert light.state == "on"
+
+        light.set_state({"switches": [{'switch': 'off', 'outlet': 0}]})
+        assert light.state == "off"
+
+        assert isinstance(light, LightEntity)
+
+
 def test_device_class2():
     classes = {
         2: XSwitches.async_turn_on,
