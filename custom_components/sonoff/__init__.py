@@ -135,7 +135,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         try:
             await registry.cloud.login(username, password)
         except Exception as e:
-            _LOGGER.warning(f"Can't login: {e}. Mode: {mode}")
+            _LOGGER.warning(f"Can't login with mode: {mode}", exc_info=e)
             raise ConfigEntryNotReady(e)
         if mode == "auto":
             registry.cloud.start()
@@ -147,7 +147,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         try:
             await registry.cloud.login(username, password)
         except Exception as e:
-            _LOGGER.warning(f"Can't login: {e}, mode: {mode}")
+            _LOGGER.warning(f"Can't login with mode: {mode}", exc_info=e)
             if mode in ("auto", "local"):
                 hass.async_create_task(internal_cache_setup(hass, entry))
             if mode in ("auto", "cloud"):
