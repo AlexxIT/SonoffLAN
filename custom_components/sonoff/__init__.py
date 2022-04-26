@@ -175,16 +175,20 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 
 async def internal_normal_setup(hass: HomeAssistant, entry: ConfigEntry):
-    registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
-    if registry.cloud.auth:
-        homes = entry.options.get("homes")
-        devices = await registry.cloud.get_devices(homes)
-        _LOGGER.debug(f"{len(devices)} devices loaded from Cloud")
+    devices = None
 
-        store = Store(hass, 1, f"{DOMAIN}/{entry.data['username']}.json")
-        await store.async_save(devices)
-    else:
-        devices = None
+    try:
+        registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
+        if registry.cloud.auth:
+            homes = entry.options.get("homes")
+            devices = await registry.cloud.get_devices(homes)
+            _LOGGER.debug(f"{len(devices)} devices loaded from Cloud")
+
+            store = Store(hass, 1, f"{DOMAIN}/{entry.data['username']}.json")
+            await store.async_save(devices)
+
+    except Exception as e:
+        _LOGGER.warning("Can't load devices", exc_info=e)
 
     await internal_cache_setup(hass, entry, devices)
 
