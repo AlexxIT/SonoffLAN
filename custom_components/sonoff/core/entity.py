@@ -34,7 +34,7 @@ class XEntity(Entity):
     # fix Hass v2021.12 empty attribute bug
     _attr_is_on = None
 
-    def __init__(self, ewelink: XRegistry, device: dict):
+    def __init__(self, ewelink: XRegistry, device: dict) -> None:
         self.ewelink = ewelink
         self.device = device
 

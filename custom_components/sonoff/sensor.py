@@ -159,14 +159,11 @@ class XEnergySensor(XEntity, SensorEntity):
     """
     get_params = None
     next_ts = 0
-
-    def __init__(self, ewelink: XRegistry, device: dict):
-        XEntity.__init__(self, ewelink, device)
-        self._attr_device_class = SensorDeviceClass.ENERGY
-        self._attr_entity_registry_enabled_default = False
-        self._attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
-        self._attr_should_poll = True
-        self._attr_state_class = SensorStateClass.TOTAL_INCREASING
+    _attr_device_class = SensorDeviceClass.ENERGY
+    _attr_entity_registry_enabled_default = False
+    _attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
+    _attr_state_class = SensorStateClass.TOTAL_INCREASING
+    _attr_should_poll = True
 
     def set_state(self, params: dict):
         value = params[self.param]
