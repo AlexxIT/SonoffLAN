@@ -5,7 +5,7 @@ from typing import Dict, List
 
 from aiohttp import ClientSession
 
-from .base import XRegistryBase, SIGNAL_UPDATE, SIGNAL_CONNECTED
+from .base import XRegistryBase, XDevice, SIGNAL_UPDATE, SIGNAL_CONNECTED
 from .cloud import XRegistryCloud
 from .local import XRegistryLocal, decrypt
 
@@ -21,7 +21,7 @@ class XRegistry(XRegistryBase):
     def __init__(self, session: ClientSession):
         super().__init__(session)
 
-        self.devices: Dict[str, dict] = {}
+        self.devices: Dict[str, XDevice] = {}
 
         self.cloud = XRegistryCloud(session)
         self.cloud.dispatcher_connect(SIGNAL_CONNECTED, self.cloud_connected)
@@ -30,7 +30,7 @@ class XRegistry(XRegistryBase):
         self.local = XRegistryLocal(session)
         self.local.dispatcher_connect(SIGNAL_UPDATE, self.local_update)
 
-    def setup_devices(self, devices: List[dict]):
+    def setup_devices(self, devices: List[XDevice]):
         from ..devices import get_spec
 
         for device in devices:
@@ -60,7 +60,7 @@ class XRegistry(XRegistryBase):
             self.task.cancel()
 
     async def send(
-            self, device: dict, params: dict, params_lan: dict = None,
+            self, device: XDevice, params: dict, params_lan: dict = None,
             query_cloud: bool = True
     ):
         """Send command to device with LAN and Cloud. Usual params are same.

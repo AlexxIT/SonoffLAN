@@ -13,7 +13,7 @@ from typing import List
 from aiohttp import ClientConnectorError, WSMessage, WSMsgType, \
     ClientWebSocketResponse
 
-from .base import XRegistryBase, SIGNAL_CONNECTED, SIGNAL_UPDATE
+from .base import XRegistryBase, XDevice, SIGNAL_CONNECTED, SIGNAL_UPDATE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -158,7 +158,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         ]
 
     async def send(
-            self, device: dict, params: dict = None, sequence: str = None,
+            self, device: XDevice, params: dict = None, sequence: str = None,
             timeout: int = 5
     ):
         """With params - send new state to device, without - request device

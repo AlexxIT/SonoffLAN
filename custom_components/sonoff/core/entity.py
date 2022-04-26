@@ -4,7 +4,7 @@ from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityCategory
 
 from .const import DOMAIN
-from .ewelink import XRegistry
+from .ewelink import XRegistry, XDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class XEntity(Entity):
     _attr_is_on = None
     _attr_should_poll = False
 
-    def __init__(self, ewelink: XRegistry, device: dict) -> None:
+    def __init__(self, ewelink: XRegistry, device: XDevice) -> None:
         self.ewelink = ewelink
         self.device = device
 

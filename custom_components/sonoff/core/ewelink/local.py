@@ -17,7 +17,7 @@ from Crypto.Random import get_random_bytes
 from zeroconf import Zeroconf, ServiceStateChange
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo
 
-from .base import XRegistryBase, SIGNAL_CONNECTED, SIGNAL_UPDATE
+from .base import XRegistryBase, XDevice, SIGNAL_CONNECTED, SIGNAL_UPDATE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -141,7 +141,7 @@ class XRegistryLocal(XRegistryBase):
 
         self.dispatcher_send(SIGNAL_UPDATE, msg)
 
-    async def check_offline(self, device: dict):
+    async def check_offline(self, device: XDevice):
         """Try to get response from device after received Zeroconf Removed."""
         deviceid = device["deviceid"]
         log = f"{deviceid} => Local4"
@@ -175,7 +175,7 @@ class XRegistryLocal(XRegistryBase):
         self.dispatcher_send(SIGNAL_UPDATE, {"online": False})
 
     async def send(
-            self, device: dict, params: dict = None, sequence: str = None,
+            self, device: XDevice, params: dict = None, sequence: str = None,
             timeout: int = 5
     ):
         # known commands for DIY: switch, startup, pulse, sledonline

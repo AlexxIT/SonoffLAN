@@ -1,10 +1,29 @@
 import time
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional, TypedDict
 
 from aiohttp import ClientSession
 
 SIGNAL_CONNECTED = "connected"
 SIGNAL_UPDATE = "update"
+
+
+class XDevice(TypedDict, total=False):
+    deviceid: str
+    extra: dict
+    name: str
+    params: dict
+
+    brandName: Optional[str]
+    productModel: Optional[str]
+
+    online: Optional[bool]  # required for cloud
+    apikey: Optional[str]  # required for cloud
+
+    host: Optional[str]  # required for local
+    devicekey: Optional[str]  # required for encrypted local devices (not DIY)
+    check_offline: Optional[bool]  # used in local runtime
+
+    pow_ts: Optional[int]  # required for pow devices with cloud connection
 
 
 class XRegistryBase:
