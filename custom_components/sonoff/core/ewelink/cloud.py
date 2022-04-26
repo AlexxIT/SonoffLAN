@@ -148,8 +148,8 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
 
     async def get_devices(self) -> List[dict]:
         r = await self.session.get(
-            self.host + "/v2/device/thing", headers=self.headers,
-            timeout=10
+            self.host + "/v2/device/thing?num=0",  # by default num=30
+            headers=self.headers, timeout=10
         )
         resp = await r.json()
         return [i["itemData"] for i in resp["data"]["thingList"]]
