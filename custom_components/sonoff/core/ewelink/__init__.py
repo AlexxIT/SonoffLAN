@@ -165,7 +165,7 @@ class XRegistry(XRegistryBase):
                 _LOGGER.debug("Can't decrypt message", exc_info=e)
                 return
 
-        _LOGGER.debug(f"{did} <= Local3 | %s | {msg.get('seq')}", params)
+        _LOGGER.debug(f"{did} <= Local3 | %s | {msg.get('seq', '')}", params)
 
         if "online" in params:
             if params["online"] is None:
