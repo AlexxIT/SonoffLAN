@@ -152,7 +152,10 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             headers=self.headers, timeout=10
         )
         resp = await r.json()
-        return [i["itemData"] for i in resp["data"]["thingList"]]
+        return [
+            i["itemData"] for i in resp["data"]["thingList"]
+            if i["itemType"] < 3  # skip groups
+        ]
 
     async def send(
             self, device: dict, params: dict = None, sequence: str = None,
