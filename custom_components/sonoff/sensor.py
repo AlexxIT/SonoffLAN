@@ -154,11 +154,9 @@ class XHumidityTH(XSensor):
 
 
 class XEnergySensor(XEntity, SensorEntity):
-    """Power devices sends data only when active mobile App UI. So we emulate
-    this situation. Feature will work only with active cloud connection.
-    """
     get_params = None
     next_ts = 0
+
     _attr_device_class = SensorDeviceClass.ENERGY
     _attr_entity_registry_enabled_default = False
     _attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
@@ -167,10 +165,13 @@ class XEnergySensor(XEntity, SensorEntity):
 
     def set_state(self, params: dict):
         value = params[self.param]
-        self._attr_native_value = round(
-            int(value[0:2], 16) + int(value[2:4], 16) * 0.01 +
-            int(value[4:6], 16) * 0.0001, 2
-        )
+        try:
+            self._attr_native_value = round(
+                int(value[0:2], 16) + int(value[2:4], 16) * 0.01 +
+                int(value[4:6], 16) * 0.0001, 2
+            )
+        except Exception:
+            pass
 
     async def async_update(self):
         ts = time.time()
