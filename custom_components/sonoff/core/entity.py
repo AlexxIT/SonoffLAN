@@ -33,6 +33,7 @@ class XEntity(Entity):
 
     # fix Hass v2021.12 empty attribute bug
     _attr_is_on = None
+    _attr_should_poll = False
 
     def __init__(self, ewelink: XRegistry, device: dict) -> None:
         self.ewelink = ewelink
@@ -58,8 +59,6 @@ class XEntity(Entity):
         else:
             self._attr_name = device["name"]
             self._attr_unique_id = device["deviceid"]
-
-        self._attr_should_poll = False
 
         # domain will be replaced in entity_registry.async_generate_entity_id
         self.entity_id = f"{DOMAIN}.{DOMAIN}_{self._attr_unique_id}"
