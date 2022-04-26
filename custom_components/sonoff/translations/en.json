@@ -6,7 +6,7 @@
     },
     "step": {
       "user": {
-        "description": "Enter your eWeLink account data.\nUse any **username** and blank **password** for DIY mode.",
+        "description": "Enter your [eWeLink account](https://www.ewelink.cc/en/) credentials for general use. Or use any **username** and blank **password** for DIY mode.",
         "data": {
           "username": "Email or phone",
           "password": "Password"
