@@ -210,7 +210,7 @@ def get_custom_spec(classes: list, device_class):
     # 1. single channel
     if isinstance(device_class, str):
         if device_class in DEVICE_CLASS:
-            classes[0] = spec(classes[0], base=device_class)
+            classes = [spec(classes[0], base=device_class)] + classes[1:]
 
     elif isinstance(device_class, list):
         # remove all default multichannel classes from spec
