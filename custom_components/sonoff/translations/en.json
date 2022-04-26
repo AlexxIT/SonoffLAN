@@ -6,10 +6,10 @@
     },
     "step": {
       "user": {
-        "description": "Enter your [eWeLink account](https://www.ewelink.cc/en/) credentials for general use. Or use any **username** and blank **password** for DIY mode.",
+        "description": "Enter your [eWeLink account](https://www.ewelink.cc/en/) credentials",
         "data": {
-          "username": "Email or phone",
-          "password": "Password"
+          "username": "Email or phone (use any for DIY mode)",
+          "password": "Password (leave blank for DIY mode)"
         }
       }
     }
@@ -17,10 +17,10 @@
   "options": {
     "step": {
       "init": {
-        "description": "**Auto mode** is recommended for most users. Integration documentation and a link to the **debug page** can be found in **Settings > Info** page.",
         "data": {
-          "mode": "Mode",
-          "debug": "Debug page"
+          "mode": "Mode (auto is recommended for most users)",
+          "homes": "Homes (leave unchecked for \"current\" Home)",
+          "debug": "Debug page (Configuration > Setting > Info)"
         }
       }
     }

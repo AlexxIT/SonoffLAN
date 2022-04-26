@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigEntry, OptionsFlow
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_MODE
@@ -8,7 +9,7 @@ from homeassistant.data_entry_flow import FlowHandler
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .core.const import DOMAIN, CONF_MODES, CONF_DEBUG
-from .core.ewelink import XRegistryCloud
+from .core.ewelink import XRegistry, XRegistryCloud
 
 
 def form(
@@ -88,7 +89,18 @@ class OptionsFlowHandler(OptionsFlow):
         if data is not None:
             return self.async_create_entry(title="", data=data)
 
+        try:
+            ewelink: XRegistry = self.hass.data[DOMAIN][self.entry.entry_id]
+            homes = await ewelink.cloud.get_homes()
+        except Exception:
+            homes = {}
+
+        for home in self.entry.options.get("homes", []):
+            if home not in homes:
+                homes[home] = home
+
         return form(self, "init", {
             vol.Optional(CONF_MODE, default="auto"): vol.In(CONF_MODES),
             vol.Optional(CONF_DEBUG, default=False): bool,
+            vol.Optional("homes"): cv.multi_select(homes)
         }, self.entry.options)

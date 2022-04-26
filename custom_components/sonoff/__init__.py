@@ -177,7 +177,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 async def internal_normal_setup(hass: HomeAssistant, entry: ConfigEntry):
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
     if registry.cloud.auth:
-        devices = await registry.cloud.get_devices()
+        homes = entry.options.get("homes")
+        devices = await registry.cloud.get_devices(homes)
         _LOGGER.debug(f"{len(devices)} devices loaded from Cloud")
 
         store = Store(hass, 1, f"{DOMAIN}/{entry.data['username']}.json")

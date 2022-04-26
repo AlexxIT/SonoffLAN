@@ -75,10 +75,8 @@ class ResponseWaiter:
 
 
 class XRegistryCloud(ResponseWaiter, XRegistryBase):
-    # appid = 'oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq'
-    # appsecret = '6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM'
-    appid = "4s1FXKC9FaGfoqXhmXSJneb3qcm1gOak"
-    appsecret = "oKvCM06gvwkRbfetd6qWRrbC3rFrbIpV"
+    appid = 'oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq'
+    appsecret = '6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM'
 
     auth: dict = None
     devices: dict = None
@@ -146,16 +144,31 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
 
         return True
 
-    async def get_devices(self) -> List[dict]:
+    async def get_homes(self) -> dict:
         r = await self.session.get(
-            self.host + "/v2/device/thing?num=0",  # by default num=30
-            headers=self.headers, timeout=10
+            self.host + "/v2/family", headers=self.headers, timeout=10
         )
         resp = await r.json()
-        return [
-            i["itemData"] for i in resp["data"]["thingList"]
-            if i["itemType"] < 3  # skip groups
-        ]
+        return {i["id"]: i["name"] for i in resp["data"]["familyList"]}
+
+    async def get_devices(self, homes: list = None) -> List[dict]:
+        devices = []
+        for home in homes or [None]:
+            r = await self.session.get(
+                self.host + "/v2/device/thing",
+                headers=self.headers, timeout=10,
+                params={"num": 0, "familyid": home} if home else {"num": 0}
+            )
+            resp = await r.json()
+            if resp["error"] != 0:
+                raise Exception(resp["msg"])
+            # item type: 1 - user device, 2 - shared device, 3 - user group,
+            # 5 - share device (home)
+            devices += [
+                i["itemData"] for i in resp["data"]["thingList"]
+                if i["itemType"] != 3  # skip groups
+            ]
+        return devices
 
     async def send(
             self, device: XDevice, params: dict = None, sequence: str = None,
