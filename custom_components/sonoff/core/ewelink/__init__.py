@@ -116,8 +116,8 @@ class XRegistry(XRegistryBase):
     def cloud_update(self, msg: dict):
         did = msg["deviceid"]
         device = self.devices.get(did)
-        if not device:
-            _LOGGER.warning(f"UNKNOWN cloud device: {msg}")
+        # the device may be from another Home - skip it
+        if not device or "online" not in device:
             return
 
         params = msg["params"]
