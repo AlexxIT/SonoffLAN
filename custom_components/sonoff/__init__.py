@@ -84,8 +84,8 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         """Service for send raw command to device.
         :param call: `device` - required param, all other params - optional
         """
-        data = dict(call.data)
-        deviceid = str(data.pop('device'))
+        params = dict(call.data)
+        deviceid = str(params.pop('device'))
 
         if len(deviceid) == 10:
             registry = next(
@@ -93,10 +93,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             )
             device = registry.devices[deviceid]
 
-            await registry.send(device, data)
+            await registry.send(device, params)
 
         elif len(deviceid) == 6:
-            await cameras.send(deviceid, data['cmd'])
+            await cameras.send(deviceid, params['cmd'])
 
         else:
             _LOGGER.error(f"Wrong deviceid {deviceid}")
