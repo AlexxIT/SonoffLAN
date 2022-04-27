@@ -119,3 +119,71 @@ class XClimateTH(XEntity, ClimateEntity):
             }]
 
         await self.ewelink.cloud.send(self.device, params)
+
+
+# noinspection PyAbstractClass
+class XClimateNS(XEntity, ClimateEntity):
+    params = {"ATCEnable", "ATCMode", "temperature", "tempCorrection"}
+
+    _attr_entity_registry_enabled_default = False
+    _attr_hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT_COOL, HVAC_MODE_AUTO]
+    _attr_max_temp = 31
+    _attr_min_temp = 16
+    _attr_temperature_unit = TEMP_CELSIUS
+    _attr_target_temperature_step = 1
+
+    def set_state(self, params: dict):
+        cache = self.device["params"]
+        if cache != params:
+            cache.update(params)
+
+        if "HMI_ATCDevice" in params and "etype" in params["HMI_ATCDevice"]:
+            self._attr_hvac_modes[1] = HVAC_MODE_COOL \
+                if cache["HMI_ATCDevice"]["etype"] == "cold" \
+                else HVAC_MODE_HEAT
+
+        if "ATCEnable" in params or "ATCMode" in params:
+            if cache["ATCEnable"]:
+                if cache["ATCMode"]:
+                    self._attr_hvac_mode = HVAC_MODE_AUTO
+                    self._attr_supported_features = 0
+                else:
+                    self._attr_hvac_mode = self.hvac_modes[1]
+                    self._attr_supported_features = SUPPORT_TARGET_TEMPERATURE
+            else:
+                self._attr_hvac_mode = HVAC_MODE_OFF
+                self._attr_supported_features = SUPPORT_TARGET_TEMPERATURE
+
+        if "ATCExpect0" in params:
+            self._attr_target_temperature = cache["ATCExpect0"]
+
+        if "temperature" in params or "tempCorrection" in params:
+            self._attr_current_temperature = \
+                cache["temperature"] + cache["tempCorrection"]
+
+    @staticmethod
+    def get_params(hvac_mode: str) -> dict:
+        if hvac_mode == HVAC_MODE_AUTO:
+            return {"ATCEnable": 1, "ATCMode": 1}
+        elif hvac_mode in (HVAC_MODE_HEAT_COOL, HVAC_MODE_HEAT):
+            return {"ATCEnable": 1, "ATCMode": 0}
+        elif hvac_mode == HVAC_MODE_HEAT_COOL:
+            return {"ATCEnable": 1}  # async_turn_on
+        elif hvac_mode == HVAC_MODE_OFF:
+            return {"ATCEnable": 0}
+        else:
+            return {}
+
+    async def async_set_hvac_mode(self, hvac_mode: str) -> None:
+        params = self.get_params(hvac_mode)
+        await self.ewelink.cloud.send(self.device, params)
+
+    async def async_set_temperature(
+            self, temperature: float = None, hvac_mode: str = None, **kwargs
+    ) -> None:
+        params = self.get_params(hvac_mode)
+        if temperature is not None:
+            params["ATCExpect0"] = temperature
+        if not params:
+            params["ATCEnable"] = 1
+        await self.ewelink.cloud.send(self.device, params)

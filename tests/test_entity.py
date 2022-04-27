@@ -10,6 +10,7 @@ from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
+from custom_components.sonoff.climate import XClimateNS
 from custom_components.sonoff.core import devices
 from custom_components.sonoff.core.ewelink import SIGNAL_UPDATE, \
     SIGNAL_CONNECTED
@@ -982,6 +983,25 @@ def test_ns_panel():
     temp: XSensor = next(e for e in entities if e.uid == "outdoor_temp")
     assert temp.state == 7
     assert temp.extra_state_attributes == {"temp_min": 6, "temp_max": 17}
+
+    clim: XClimateNS = next(e for e in entities if isinstance(e, XClimateNS))
+    assert clim.current_temperature == 18
+    assert clim.state == "off"
+    assert clim.supported_features > 0
+    assert clim.target_temperature == 26
+
+    clim.internal_update({"tempCorrection": 2})
+    assert clim.current_temperature == 22
+
+    clim.internal_update({"ATCEnable": 1})
+    assert clim.state == "cool"
+
+    clim.internal_update({'ATCMode': 0, 'ATCExpect0': 22.22})
+    assert clim.target_temperature == 22.22
+
+    clim.internal_update({'ATCMode': 1})
+    assert clim.state == "auto"
+    assert clim.supported_features == 0
 
 
 def test_cover():

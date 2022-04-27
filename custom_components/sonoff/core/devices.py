@@ -14,7 +14,7 @@ Developer can change global properties of existing classes via spec function.
 from typing import Optional
 
 from ..binary_sensor import *
-from ..climate import XClimateTH
+from ..climate import XClimateTH, XClimateNS
 from ..cover import XCover, XCoverDualR3
 from ..fan import XFan, XDiffuserFan, XToggleFan
 from ..light import *
@@ -134,7 +134,8 @@ DEVICES = {
     ],  # Sonoff DualR3
     133: [
         # Humidity. ALWAYS 50... NSPanel DOESN'T HAVE HUMIDITY SENSOR
-        Switch1, Switch2, XNSOutdoorTemp,
+        # https://github.com/AlexxIT/SonoffLAN/issues/751
+        Switch1, Switch2, XNSOutdoorTemp, XClimateNS,
         spec(XSensor, param="temperature"),
     ],  # Sonoff NS Panel
     136: [XLightB05, RSSI],  # https://github.com/AlexxIT/SonoffLAN/issues/712
