@@ -37,31 +37,56 @@ class XFanLight(XEntity, LightEntity):
         await self.ewelink.send(self.device, params, params_lan)
 
 
-# noinspection PyAbstractClass, UIID 22
+UUID22_MODES = {
+    "Good Night": {
+        "channel0": "0", "channel1": "0", "channel2": "189", "channel3": "118",
+        "channel4": "0", "zyx_mode": 3, "type": "middle"
+    },
+    "Reading": {
+        "channel0": "0", "channel1": "0", "channel2": "255", "channel3": "255",
+        "channel4": "255", "zyx_mode": 4, "type": "middle"
+    },
+    "Party": {
+        "channel0": "0", "channel1": "0", "channel2": "207", "channel3": "56",
+        "channel4": "3", "zyx_mode": 5, "type": "middle"
+    },
+    "Leisure": {
+        "channel0": "0", "channel1": "0", "channel2": "56", "channel3": "85",
+        "channel4": "179", "zyx_mode": 6, "type": "middle"
+    }
+}
+
+
+# noinspection PyAbstractClass
+# https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md#uiid22-rgb-5-color-bulb-light
 class XLightB1(XEntity, LightEntity):
     params = {"state", "zyx_mode", "channel0", "channel2"}
 
-    _attr_min_mireds = 1
-    _attr_max_mireds = 3
-    _attr_supported_features = (
-            SUPPORT_BRIGHTNESS | SUPPORT_COLOR | SUPPORT_COLOR_TEMP
-    )
+    _attr_min_mireds = 1  # cold
+    _attr_max_mireds = 3  # warm
+    _attr_effect_list = list(UUID22_MODES.keys())
+    _attr_supported_color_modes = {
+        COLOR_MODE_ONOFF, COLOR_MODE_BRIGHTNESS, COLOR_MODE_COLOR_TEMP,
+        COLOR_MODE_HS
+    }
+    _attr_supported_features = SUPPORT_EFFECT
 
     def set_state(self, params: dict):
         if 'state' in params:
             self._attr_is_on = params['state'] == 'on'
 
-        # guess the mode if it is not in the data
         if 'zyx_mode' in params:
-            mode = params['zyx_mode']
-        elif 'channel0' in params:
-            mode = 1
-        elif 'channel2' in params:
-            mode = 2
-        else:
-            mode = None
+            mode = params["zyx_mode"]  # 1-6
+            if mode == 1:
+                self._attr_color_mode = COLOR_MODE_COLOR_TEMP
+            else:
+                self._attr_color_mode = COLOR_MODE_HS
+            if mode >= 3:
+                self._attr_effect = self.effect_list[mode - 3]
+            else:
+                self._attr_effect = None
 
-        if mode == 1:
+        if self.color_mode == COLOR_MODE_COLOR_TEMP:
             # from 25 to 255
             cold = int(params['channel0'])
             warm = int(params['channel1'])
@@ -74,54 +99,58 @@ class XLightB1(XEntity, LightEntity):
             br = round((max(cold, warm) - 25) / (255 - 25) * 255)
             # from 1 to 100
             self._attr_brightness = max(br, 1)
-            self._attr_hs_color = None
 
-        elif mode == 2:
+        else:
             self._attr_hs_color = color.color_RGB_to_hs(
                 int(params['channel2']),
                 int(params['channel3']),
                 int(params['channel4'])
             )
 
-    async def async_turn_on(self, **kwargs) -> None:
-        if ATTR_COLOR_TEMP in kwargs or ATTR_BRIGHTNESS in kwargs:
-            if ATTR_BRIGHTNESS in kwargs:
-                self._attr_brightness = kwargs[ATTR_BRIGHTNESS]
+    async def async_turn_on(
+            self, brightness: int = None, color_temp: int = None,
+            hs_color=None, effect: str = None, **kwargs
+    ) -> None:
+        if brightness is not None or color_temp is not None:
+            if brightness is None:
+                brightness = self.brightness
+            if color_temp is None:
+                color_temp = self.color_temp
 
-            if ATTR_COLOR_TEMP in kwargs:
-                self._attr_color_temp = kwargs[ATTR_COLOR_TEMP]
+            ch = str(25 + round(brightness / 255 * (255 - 25)))
+            if color_temp == 1:
+                params = {"channel0": ch, "channel1": "0"}
+            elif color_temp == 2:
+                params = {"channel0": ch, "channel1": ch}
+            elif color_temp == 3:
+                params = {"channel0": ch, "channel1": ch}
+            else:
+                raise NotImplementedError
 
-            ch = str(25 + round(self._attr_brightness / 255 * (255 - 25)))
-            # type send no matter
-            payload = {
+            params.update({
+                'channel2': '0', 'channel3': '0', 'channel4': '0',
                 'zyx_mode': 1,
-                'channel2': '0',
-                'channel3': '0',
-                'channel4': '0'
-            }
-            if self._attr_color_temp == 1:
-                payload.update({'channel0': ch, 'channel1': '0'})
-            elif self._attr_color_temp == 2:
-                payload.update({'channel0': ch, 'channel1': ch})
-            elif self._attr_color_temp == 3:
-                payload.update({'channel0': '0', 'channel1': ch})
+            })
 
-        elif ATTR_HS_COLOR in kwargs:
-            rgb = color.color_hs_to_RGB(*kwargs[ATTR_HS_COLOR])
-            # type send no matter
-            payload = {
+        elif hs_color is not None:
+            r, g, b = color.color_hs_to_RGB(*hs_color)
+            params = {
+                'channel0': '0', 'channel1': '0',
+                'channel2': str(r), 'channel3': str(g), 'channel4': str(b),
                 'zyx_mode': 2,
-                'channel0': '0',
-                'channel1': '0',
-                'channel2': str(rgb[0]),
-                'channel3': str(rgb[1]),
-                'channel4': str(rgb[2]),
             }
+
+        elif effect is not None:
+            params = UUID22_MODES[effect]
 
         else:
-            payload = {'state': 'on'}
+            await self.ewelink.send(self.device, {"state": "on"})
+            return
 
-        await self.ewelink.send(self.device, payload)
+        if not self.is_on:
+            await self.async_turn_on()
+
+        await self.ewelink.send(self.device, params)
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {'state': 'off'})

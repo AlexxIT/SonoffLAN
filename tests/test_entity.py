@@ -3,7 +3,6 @@ import time
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity
-from homeassistant.components.light import LightEntity
 from homeassistant.const import *
 from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
@@ -16,7 +15,7 @@ from custom_components.sonoff.core.ewelink import SIGNAL_UPDATE, \
     SIGNAL_CONNECTED
 from custom_components.sonoff.cover import XCover
 from custom_components.sonoff.fan import XFan
-from custom_components.sonoff.light import XLightGroup
+from custom_components.sonoff.light import *
 from custom_components.sonoff.sensor import XSensor, XRemoteButton, XUnknown
 from custom_components.sonoff.switch import *
 
@@ -44,6 +43,10 @@ class DummyRegistry(XRegistry):
 
     async def send(self, *args):
         self.send_args = args
+
+    def call(self, coro):
+        asyncio.get_event_loop().run_until_complete(coro)
+        return self.send_args
 
 
 # noinspection PyTypeChecker
@@ -1031,3 +1034,37 @@ def test_cover():
     })
     assert cover.state == STATE_CLOSING
     assert cover.current_cover_position == 70
+
+
+def test_light_22():
+    entities = get_entitites({
+        "extra": {"uiid": 22},
+        "params": {
+            "channel0": "159",
+            "channel1": "159",
+            "channel2": "0",
+            "channel3": "0",
+            "channel4": "0",
+            "state": "on",
+            "type": "middle",
+            "zyx_mode": 1
+        }
+    })
+
+    light: XLightB1 = entities[0]
+    assert light.state == "on"
+    assert light.brightness == 149
+    assert light.color_mode == COLOR_MODE_COLOR_TEMP
+    assert light.color_temp == 2
+    assert light.effect is None
+
+    params = UUID22_MODES["Good Night"]
+    light.internal_update(params)
+    assert light.brightness == 149  # don't change
+    assert light.color_mode == COLOR_MODE_HS
+    assert light.effect == "Good Night"
+
+    # noinspection PyTypeChecker
+    reg: DummyRegistry = light.ewelink
+    assert reg.call(light.async_turn_on())[1] == {"state": "on"}
+    assert reg.call(light.async_turn_on(effect="Good Night"))[1] == params
