@@ -92,8 +92,8 @@ class XClimateTH(XEntity, ClimateEntity):
         await self.ewelink.cloud.send(self.device, params)
 
     async def async_set_temperature(
-            self, target_temp_high: float, target_temp_low: float,
-            hvac_mode: str = None, **kwargs
+            self, hvac_mode: str = None, target_temp_high: float = None,
+            target_temp_low: float = None, **kwargs
     ) -> None:
         heat = self.is_aux_heat
         if hvac_mode is None:
@@ -109,12 +109,13 @@ class XClimateTH(XEntity, ClimateEntity):
         else:
             params = {"mainSwitch": "off", "deviceType": "normal"}
 
-        params["targets"] = [{
-            "targetHigh": str(target_temp_high),
-            "reaction": {"switch": "off" if heat else "on"}
-        }, {
-            "targetLow": str(target_temp_low),
-            "reaction": {"switch": "on" if heat else "off"}
-        }]
+        if target_temp_high is not None and target_temp_low is not None:
+            params["targets"] = [{
+                "targetHigh": str(target_temp_high),
+                "reaction": {"switch": "off" if heat else "on"}
+            }, {
+                "targetLow": str(target_temp_low),
+                "reaction": {"switch": "on" if heat else "off"}
+            }]
 
         await self.ewelink.cloud.send(self.device, params)
