@@ -330,7 +330,7 @@ B02_MODE_PAYLOADS = {
 
 
 # noinspection PyAbstractClass, UIID 103
-class XLightB02(XEntity, LightEntity):
+class XLightB02(XDimmer):
     params = {"switch", "ltype"}
 
     # FS-1, B02-F-A60 and other
@@ -424,7 +424,7 @@ B05_MODE_PAYLOADS = {
 
 
 # noinspection PyAbstractClass, UIID 104
-class XLightB05(XEntity, LightEntity):
+class XLightB05(XDimmer):
     def set_state(self, params: dict):
         if "switch" in params:
             self._attr_is_on = params["switch"] == "on"
