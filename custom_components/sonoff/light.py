@@ -509,20 +509,6 @@ class XLightB05(XEntity, LightEntity):
 
 
 # noinspection PyAbstractClass
-class XZigbeeLigth(XEntity, LightEntity):
-    params = {"switch"}
-
-    def set_state(self, params: dict):
-        self._attr_is_on = params["switch"] == "on"
-
-    async def async_turn_on(self, **kwargs) -> None:
-        await self.ewelink.send(self.device, {"switch": "on"})
-
-    async def async_turn_off(self, **kwargs) -> None:
-        await self.ewelink.send(self.device, {"switch": "off"})
-
-
-# noinspection PyAbstractClass
 class XLightGroup(XDimmer):
     """Differs from the usual switch by brightness adjustment. Is logical
     use only for two or more channels. Able to remember brightness on moment
