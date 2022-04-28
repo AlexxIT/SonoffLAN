@@ -172,7 +172,8 @@ class XRegistryLocal(XRegistryBase):
         device.pop('check_offline')
         device.pop("host")
 
-        self.dispatcher_send(SIGNAL_UPDATE, {"online": False})
+        msg = {"deviceid": deviceid, "params": {"online": False}}
+        self.dispatcher_send(SIGNAL_UPDATE, msg)
 
     async def send(
             self, device: XDevice, params: dict = None, sequence: str = None,
