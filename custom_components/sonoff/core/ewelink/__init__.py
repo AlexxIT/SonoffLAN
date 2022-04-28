@@ -49,7 +49,7 @@ class XRegistry(XRegistryBase):
 
             self.devices[deviceid] = device
 
-    async def stop(self):
+    async def stop(self, *args):
         self.devices.clear()
         self.dispatcher.clear()
 
