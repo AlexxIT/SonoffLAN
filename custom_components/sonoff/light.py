@@ -165,6 +165,7 @@ class XDiffuserLight(XEntity, LightEntity):
     _attr_brightness = 0
     # TODO: names for 1 and 2
     _attr_effect_list = ["Color Light", "RGB Color", "Night Light"]
+    _attr_supported_features = SUPPORT_EFFECT
 
     def set_state(self, params: dict):
         if 'lightswitch' in params:
@@ -177,13 +178,15 @@ class XDiffuserLight(XEntity, LightEntity):
         if 'lightmode' in params:
             mode = params['lightmode']
             if mode == 1:
-                self._attr_supported_features = SUPPORT_EFFECT
+                self._attr_supported_color_modes = {COLOR_MODE_ONOFF}
             elif mode == 2:
-                self._attr_supported_features = \
-                    SUPPORT_BRIGHTNESS | SUPPORT_COLOR | SUPPORT_EFFECT
+                self._attr_supported_features = {
+                    COLOR_MODE_ONOFF, COLOR_MODE_BRIGHTNESS, COLOR_MODE_HS
+                }
             elif mode == 3:
-                self._attr_supported_features = \
-                    SUPPORT_BRIGHTNESS | SUPPORT_EFFECT
+                self._attr_supported_features = {
+                    COLOR_MODE_ONOFF, COLOR_MODE_BRIGHTNESS
+                }
 
         if 'lightRcolor' in params:
             self._attr_hs_color = color.color_RGB_to_hs(
@@ -191,31 +194,31 @@ class XDiffuserLight(XEntity, LightEntity):
                 params['lightBcolor']
             )
 
-    async def async_turn_on(self, **kwargs) -> None:
-        payload = {}
+    async def async_turn_on(
+            self, brightness: int = None, hs_color=None, effect: str = None,
+            **kwargs
+    ) -> None:
+        params = {}
 
-        if ATTR_EFFECT in kwargs:
-            mode = self._attr_effect_list.index(kwargs[ATTR_EFFECT]) + 1
-            payload['lightmode'] = mode
+        if effect is not None:
+            params['lightmode'] = mode = self.effect.index(effect) + 1
+            if mode == 2 and hs_color is None:
+                hs_color = self._attr_hs_color
 
-            if mode == 2 and ATTR_HS_COLOR not in kwargs:
-                kwargs[ATTR_HS_COLOR] = self._attr_hs_color
+        if brightness is not None:
+            params['lightbright'] = max(round(brightness / 2.55), 1)
 
-        if ATTR_BRIGHTNESS in kwargs:
-            br = max(round(kwargs[ATTR_BRIGHTNESS] / 2.55), 1)
-            payload['lightbright'] = br
-
-        if ATTR_HS_COLOR in kwargs:
-            rgb = color.color_hs_to_RGB(*kwargs[ATTR_HS_COLOR])
-            payload.update({
+        if hs_color is not None:
+            rgb = color.color_hs_to_RGB(*hs_color)
+            params.update({
                 'lightmode': 2, 'lightRcolor': rgb[0],
                 'lightGcolor': rgb[1], 'lightBcolor': rgb[2]
             })
 
-        if not kwargs:
-            payload['lightswitch'] = 1
+        if params:
+            params['lightswitch'] = 1
 
-        await self.ewelink.send(self.device, payload)
+        await self.ewelink.send(self.device, params)
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {'lightswitch': 0})
