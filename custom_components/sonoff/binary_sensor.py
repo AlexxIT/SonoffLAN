@@ -69,6 +69,13 @@ class XZigbeeDoor(XBinarySensor):
         self._attr_is_on = params['lock'] == 1
 
 
+class XWater(XBinarySensor):
+    params = {"water"}
+
+    def set_state(self, params: dict):
+        self._attr_is_on = params['water'] == 1
+
+
 # noinspection PyAbstractClass
 class XRemoteSensor(BinarySensorEntity):
     task: asyncio.Task = None

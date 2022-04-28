@@ -89,7 +89,7 @@ DEVICES = {
     ],
     22: [XLightB1, RSSI],  # Sonoff B1 (only cloud)
     # https://github.com/AlexxIT/SonoffLAN/issues/173
-    25: [XDiffuserFan, XDiffuserLight, RSSI],  # Diffuser
+    25: [XDiffuserFan, XDiffuserLight, XWater, RSSI],  # Diffuser
     28: [XRemote, LED, RSSI],  # Sonoff RF Brigde 433
     29: SPEC_2CH,
     30: SPEC_3CH,
