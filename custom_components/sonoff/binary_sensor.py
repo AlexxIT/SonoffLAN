@@ -9,6 +9,8 @@ from .core.const import DOMAIN
 from .core.entity import XEntity
 from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
 
+PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
+
 
 async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]

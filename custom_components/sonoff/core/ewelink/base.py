@@ -23,6 +23,7 @@ class XDevice(TypedDict, total=False):
     devicekey: Optional[str]  # required for encrypted local devices (not DIY)
     check_offline: Optional[bool]  # used in local runtime
 
+    params_bulk: Optional[dict]  # helper for send_bulk commands
     pow_ts: Optional[int]  # required for pow devices with cloud connection
 
 

@@ -106,6 +106,18 @@ class XRegistry(XRegistryBase):
         # TODO: response state
         # self.dispatcher_send(device["deviceid"], state)
 
+    async def send_bulk(self, device: XDevice, params: dict):
+        assert "switches" in params
+
+        if "params_bulk" in device:
+            device["params_bulk"]["switches"] += params["switches"]
+            return
+
+        device["params_bulk"] = params
+        await asyncio.sleep(0.1)
+
+        return await self.send(device, device.pop("params_bulk"))
+
     def cloud_connected(self):
         for deviceid in self.devices.keys():
             self.dispatcher_send(deviceid)

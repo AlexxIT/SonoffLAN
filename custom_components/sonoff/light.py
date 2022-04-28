@@ -5,6 +5,8 @@ from .core.const import DOMAIN
 from .core.entity import XEntity
 from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
 
+PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
+
 
 async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
@@ -574,8 +576,8 @@ class XLightGroup(XDimmer):
             {"outlet": channel, "switch": "on" if i < cnt else "off"}
             for i, channel in enumerate(self.channels)
         ]
-        await self.ewelink.send(self.device, {"switches": switches})
+        await self.ewelink.send_bulk(self.device, {"switches": switches})
 
     async def async_turn_off(self, **kwargs) -> None:
         switches = [{"outlet": ch, "switch": "off"} for ch in self.channels]
-        await self.ewelink.send(self.device, {"switches": switches})
+        await self.ewelink.send_bulk(self.device, {"switches": switches})
