@@ -233,7 +233,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
 
             # we can use IP, but using domain because security
             self.ws = await self.session.ws_connect(
-                f"wss://{resp['domain']}:{resp['port']}/api/ws", heartbeat=145
+                f"wss://{resp['domain']}:{resp['port']}/api/ws", heartbeat=90
             )
 
             # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=websocket-handshake
