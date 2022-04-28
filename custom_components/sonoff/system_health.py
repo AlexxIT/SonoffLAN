@@ -46,8 +46,7 @@ async def system_health_info(hass: HomeAssistant) -> dict[str, Any]:
 
     if DebugView.url:
         info["debug"] = {
-            "type": "failed", "error": "",
-            "more_info": DebugView.url
+            "type": "failed", "error": "", "more_info": DebugView.url
         }
 
     return info
@@ -57,7 +56,9 @@ async def setup_debug(hass: HomeAssistant, logger: Logger):
     view = DebugView(logger)
     hass.http.register_view(view)
 
+    sonoff = hass.data["integrations"][DOMAIN]
     info = await hass.helpers.system_info.async_get_system_info()
+    info["sonoff_version"] = str(sonoff.version)
     logger.debug(f"SysInfo: {info}")
 
 
