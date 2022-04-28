@@ -10,14 +10,13 @@ import logging
 import time
 from typing import List
 
-from aiohttp import ClientConnectorError, WSMessage, WSMsgType, \
-    ClientWebSocketResponse
+from aiohttp import ClientConnectorError, WSMessage, ClientWebSocketResponse
 
 from .base import XRegistryBase, XDevice, SIGNAL_CONNECTED, SIGNAL_UPDATE
 
 _LOGGER = logging.getLogger(__name__)
 
-RETRY_DELAYS = [0, 15, 60, 5 * 60, 15 * 60, 60 * 60]
+RETRY_DELAYS = [15, 60, 5 * 60, 15 * 60, 60 * 60]
 
 # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=interface-domain-name
 API = {
@@ -218,14 +217,48 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             return 'E#???'
 
     def start(self):
-        self.task = asyncio.create_task(self._connect())
+        self.task = asyncio.create_task(self.run_forever())
 
     async def stop(self):
-        self.online = False
         if self.task:
             self.task.cancel()
 
-    async def _connect(self, fails: int = 0):
+        self.set_online(False)
+
+    def set_online(self, value: bool):
+        _LOGGER.debug(f"CLOUD {self.online} => {value}")
+        if self.online == value:
+            return
+        self.online = value
+        self.dispatcher_send(SIGNAL_CONNECTED)
+
+    async def run_forever(self):
+        fails = 0
+
+        while not self.session.closed:
+            if not await self.connect():
+                self.set_online(False)
+
+                delay = RETRY_DELAYS[fails]
+                _LOGGER.debug(f"Cloud connection retrying in {delay} seconds")
+                if fails + 1 < len(RETRY_DELAYS):
+                    fails += 1
+                await asyncio.sleep(delay)
+                continue
+
+            fails = 0
+
+            self.set_online(True)
+
+            try:
+                msg: WSMessage
+                async for msg in self.ws:
+                    resp = json.loads(msg.data)
+                    await self._process_ws_msg(resp)
+            except Exception as e:
+                _LOGGER.warning("Cloud processing error", exc_info=e)
+
+    async def connect(self) -> bool:
         try:
             # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=http-dispatchservice-app
             r = await self.session.get(self.ws_host, headers=self.headers)
@@ -251,21 +284,11 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             }
             await self.ws.send_json(payload)
 
-            msg: WSMessage = await self.ws.receive()
-            resp = json.loads(msg.data) if msg.data else None
-            assert resp["error"] == 0, resp
+            resp = await self.ws.receive_json()
+            if resp["error"] != 0:
+                raise Exception(resp)
 
-            _LOGGER.debug("Connected to cloud")
-
-            fails = 0
-
-            self.online = True
-            self.dispatcher_send(SIGNAL_CONNECTED)
-
-            async for msg in self.ws:
-                assert msg.type == WSMsgType.TEXT, msg.type
-                resp = json.loads(msg.data)
-                await self._process_ws_msg(resp)
+            return True
 
         except ClientConnectorError as e:
             _LOGGER.error(f"Cloud WS Connection error", exc_info=e)
@@ -273,18 +296,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         except Exception as e:
             _LOGGER.error(f"Cloud WS exception", exc_info=e)
 
-        self.online = False
-        self.dispatcher_send(SIGNAL_CONNECTED)
-
-        # stop reconnection because session closed
-        if self.session.closed:
-            return
-
-        delay = RETRY_DELAYS[min(fails, len(RETRY_DELAYS) - 1)]
-        _LOGGER.debug(f"Cloud connection retrying in {delay} seconds")
-        await asyncio.sleep(delay)
-
-        self.task = asyncio.create_task(self._connect(fails + 1))
+        return False
 
     async def _process_ws_msg(self, data: dict):
         if "action" not in data:
