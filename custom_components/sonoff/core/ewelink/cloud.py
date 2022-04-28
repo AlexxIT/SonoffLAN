@@ -291,7 +291,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             return True
 
         except ClientConnectorError as e:
-            _LOGGER.error(f"Cloud WS Connection error", exc_info=e)
+            _LOGGER.warning(f"Cloud WS Connection error: {e}")
 
         except Exception as e:
             _LOGGER.error(f"Cloud WS exception", exc_info=e)
