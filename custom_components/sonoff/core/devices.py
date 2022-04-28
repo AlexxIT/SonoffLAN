@@ -142,6 +142,7 @@ DEVICES = {
     136: [XLightB05, RSSI],  # https://github.com/AlexxIT/SonoffLAN/issues/712
     137: [XLightLED, RSSI],
     162: SPEC_3CH,  # https://github.com/AlexxIT/SonoffLAN/issues/659
+    165: [Switch1, Switch2, RSSI],  # DualR3 Lite, without power consumption
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)
     177: [XRemoteButton],  # Sonoff S-Mate
     182: [
@@ -171,16 +172,16 @@ DEVICES = {
 # UUID, refresh time in seconds, params payload
 POW_UI_ACTIVE = {
     32: (3600, {"uiActive": 7200}),
-    182: (0, {"uiActive": 180}),  # maximum for this model
     126: (3600, {"uiActive": {"all": 1, "time": 7200}}),
+    182: (0, {"uiActive": 180}),  # maximum for this model
 }
 
 
 def get_spec(device: dict) -> Optional[list]:
     uiid = device["extra"]["uiid"]
     # DualR3 in cover mode
-    if uiid == 126 and device["params"].get("workMode") == 2:
-        return [XCoverDualR3]
+    if uiid in (126, 165) and device["params"].get("workMode") == 2:
+        return [XCoverDualR3, RSSI]
 
     if uiid in DEVICES:
         classes = DEVICES[uiid]
