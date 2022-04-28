@@ -632,10 +632,15 @@ def test_zigbee_motion():
             "trigTime": "1595266029933",
             "motion": 0,
         }
+    }, {
+        "devices": {
+            DEVICEID: {"device_class": "occupancy"}
+        }
     })
 
     motion: XBinarySensor = entities[0]
     assert motion.state == "off"
+    assert motion.device_class == BinarySensorDeviceClass.OCCUPANCY
 
     motion.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID,
