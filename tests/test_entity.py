@@ -228,6 +228,11 @@ def test_fan():
     ]})
     assert fan.state == "on"
     assert fan.percentage == 66
+    assert fan.preset_mode == "medium"
+
+    fan.set_state({"fan": "on", "speed": 3})
+    assert fan.percentage == 100
+    assert fan.preset_mode == "high"
 
     light: XSwitches = next(e for e in entities if e.uid == "1")
     assert light.state == "off"
@@ -253,6 +258,7 @@ def test_fan():
     })
     assert fan.state == "on"
     assert fan.percentage == 33
+    assert fan.preset_mode == "low"
     assert light.state == "off"
 
 
