@@ -20,7 +20,7 @@
         "data": {
           "mode": "Mode (auto is recommended for most users)",
           "homes": "Homes (leave unchecked for \"current\" Home)",
-          "debug": "Debug page (Configuration > Setting > Info)"
+          "debug": "Debug page (Configuration > System Health)"
         }
       }
     }
