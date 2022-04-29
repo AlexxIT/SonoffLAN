@@ -217,7 +217,6 @@ def test_fan():
     assert fan.state == "off"
     assert fan.state_attributes["percentage"] == 0
     assert fan.state_attributes["preset_mode"] is None
-    assert fan.state_attributes["speed"] == "off"
 
     fan.set_state({'switches': [
         {'switch': 'off', 'outlet': 0},
@@ -228,12 +227,10 @@ def test_fan():
     assert fan.state == "on"
     assert fan.state_attributes["percentage"] == 66
     assert fan.state_attributes["preset_mode"] == "medium"
-    assert fan.state_attributes["speed"] == "medium"
 
     fan.set_state({"fan": "on", "speed": 3})
     assert fan.state_attributes["percentage"] == 100
     assert fan.state_attributes["preset_mode"] == "high"
-    assert fan.state_attributes["speed"] == "high"
 
     light: XSwitches = next(e for e in entities if e.uid == "1")
     assert light.state == "off"
@@ -260,7 +257,6 @@ def test_fan():
     assert fan.state == "on"
     assert fan.state_attributes["percentage"] == 33
     assert fan.state_attributes["preset_mode"] == "low"
-    assert fan.state_attributes["speed"] == "low"
     assert light.state == "off"
 
 
