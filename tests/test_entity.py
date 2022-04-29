@@ -1,5 +1,4 @@
 import asyncio
-import time
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity
@@ -11,8 +10,7 @@ from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
 from custom_components.sonoff.climate import XClimateNS
 from custom_components.sonoff.core import devices
-from custom_components.sonoff.core.ewelink import SIGNAL_UPDATE, \
-    SIGNAL_CONNECTED
+from custom_components.sonoff.core.ewelink.base import *
 from custom_components.sonoff.cover import XCover
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import *
@@ -54,7 +52,7 @@ def get_entitites(device: dict, config: dict = None) -> list:
     device.setdefault("name", "Device1")
     device.setdefault("deviceid", DEVICEID)
     device.setdefault("online", True)
-    device.setdefault("extra", {"uiid": None})
+    device.setdefault("extra", {"uiid": 0})
     params = device.setdefault("params", {})
     params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
 
@@ -217,8 +215,9 @@ def test_fan():
 
     fan: XFan = entities[0]
     assert fan.state == "off"
-    assert fan.percentage == 0
-    assert fan.speed_count == 3
+    assert fan.state_attributes["percentage"] == 0
+    assert fan.state_attributes["preset_mode"] is None
+    assert fan.state_attributes["speed"] == "off"
 
     fan.set_state({'switches': [
         {'switch': 'off', 'outlet': 0},
@@ -227,12 +226,14 @@ def test_fan():
         {'switch': 'off', 'outlet': 3}
     ]})
     assert fan.state == "on"
-    assert fan.percentage == 66
-    assert fan.preset_mode == "medium"
+    assert fan.state_attributes["percentage"] == 66
+    assert fan.state_attributes["preset_mode"] == "medium"
+    assert fan.state_attributes["speed"] == "medium"
 
     fan.set_state({"fan": "on", "speed": 3})
-    assert fan.percentage == 100
-    assert fan.preset_mode == "high"
+    assert fan.state_attributes["percentage"] == 100
+    assert fan.state_attributes["preset_mode"] == "high"
+    assert fan.state_attributes["speed"] == "high"
 
     light: XSwitches = next(e for e in entities if e.uid == "1")
     assert light.state == "off"
@@ -257,8 +258,9 @@ def test_fan():
         ]}
     })
     assert fan.state == "on"
-    assert fan.percentage == 33
-    assert fan.preset_mode == "low"
+    assert fan.state_attributes["percentage"] == 33
+    assert fan.state_attributes["preset_mode"] == "low"
+    assert fan.state_attributes["speed"] == "low"
     assert light.state == "off"
 
 
@@ -400,7 +402,7 @@ def test_dual_r3():
 
 
 def test_diffuser():
-    _ = get_entitites({
+    entitites = get_entitites({
         'extra': {'uiid': 25},
         'params': {
             'lightbright': 254,
@@ -420,6 +422,9 @@ def test_diffuser():
             'only_device': {'ota': 'success'},
         }
     })
+
+    light = next(e for e in entitites if isinstance(e, XDiffuserLight))
+    assert light.state == "off"
 
 
 def test_sonoff_sc():
@@ -999,23 +1004,23 @@ def test_ns_panel():
     assert temp.extra_state_attributes == {"temp_min": 6, "temp_max": 17}
 
     clim: XClimateNS = next(e for e in entities if isinstance(e, XClimateNS))
-    assert clim.current_temperature == 18
     assert clim.state == "off"
-    assert clim.supported_features > 0
-    assert clim.target_temperature == 26
+    assert clim.state_attributes["current_temperature"] == 18
+    assert clim.state_attributes["temperature"] == 26
 
     clim.internal_update({"tempCorrection": 2})
-    assert clim.current_temperature == 22
+    assert clim.state_attributes["current_temperature"] == 22
 
     clim.internal_update({"ATCEnable": 1})
     assert clim.state == "cool"
 
     clim.internal_update({'ATCMode': 0, 'ATCExpect0': 22.22})
-    assert clim.target_temperature == 22.22
+    assert clim.state_attributes["temperature"] == 22.2
 
     clim.internal_update({'ATCMode': 1})
     assert clim.state == "auto"
-    assert clim.supported_features == 0
+    # no target temperature
+    assert clim.state_attributes == {"current_temperature": 22}
 
 
 def test_cover():
@@ -1025,26 +1030,26 @@ def test_cover():
     })
 
     cover: XCover = entities[0]
-    assert cover.state == STATE_CLOSED
-    assert cover.current_cover_position == 0
+    assert cover.state == "closed"
+    assert cover.state_attributes["current_position"] == 0
 
     cover.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {"setclose": 30}
     })
-    assert cover.state == STATE_OPENING
-    assert cover.current_cover_position == 0
+    assert cover.state == "opening"
+    assert cover.state_attributes["current_position"] == 0
 
     cover.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {"sequence": "123", "setclose": 30}
     })
-    assert cover.state == STATE_OPEN
-    assert cover.current_cover_position == 70
+    assert cover.state == "open"
+    assert cover.state_attributes["current_position"] == 70
 
     cover.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
         "deviceid": DEVICEID, "params": {"switch": "off"}
     })
-    assert cover.state == STATE_CLOSING
-    assert cover.current_cover_position == 70
+    assert cover.state == "closing"
+    assert cover.state_attributes["current_position"] == 70
 
 
 def test_light_22():
@@ -1064,16 +1069,17 @@ def test_light_22():
 
     light: XLightB1 = entities[0]
     assert light.state == "on"
-    assert light.brightness == 149
-    assert light.color_mode == COLOR_MODE_COLOR_TEMP
-    assert light.color_temp == 2
-    assert light.effect is None
+    assert light.state_attributes["brightness"] == 149
+    assert light.state_attributes["color_mode"] == COLOR_MODE_COLOR_TEMP
+    assert light.state_attributes["color_temp"] == 2
+    assert "effect" not in light.state_attributes
 
-    params = UUID22_MODES["Good Night"]
+    params = UIID22_MODES["Good Night"]
     light.internal_update(params)
-    assert light.brightness == 149  # don't change
-    assert light.color_mode == COLOR_MODE_HS
-    assert light.effect == "Good Night"
+    assert light.state_attributes["brightness"] == 149  # don't change
+    assert light.state_attributes["color_mode"] == COLOR_MODE_RGB
+    assert light.state_attributes["effect"] == "Good Night"
+    assert "color_temp" not in light.state_attributes
 
     # noinspection PyTypeChecker
     reg: DummyRegistry = light.ewelink
