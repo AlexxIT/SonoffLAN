@@ -1085,3 +1085,33 @@ def test_light_22():
     reg: DummyRegistry = light.ewelink
     assert reg.call(light.async_turn_on())[1] == {"state": "on"}
     assert reg.call(light.async_turn_on(effect="Good Night"))[1] == params
+
+
+def test_light_l1():
+    entities = get_entitites({
+        "extra": {"uiid": 59},
+        "params": {
+            "bright": 100,
+            "colorB": 255,
+            "colorG": 255,
+            "colorR": 255,
+            "fwVersion": "2.9.1",
+            "light_type": 1,
+            "mode": 2,
+            "rssi": -45,
+            "sensitive": 8,
+            "sledOnline": "on",
+            "speed": 100,
+            "switch": "on",
+            "version": 8
+        },
+    })
+
+    light: XLightL1 = entities[0]
+    assert light.state == "on"
+    assert light.state_attributes["brightness"] == 255
+    assert light.state_attributes["effect"] == "Colorful Gradient"
+
+    light.set_state({"switch": "off"})
+    assert light.state == "off"
+    assert light.state_attributes is None

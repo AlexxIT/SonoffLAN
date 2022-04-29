@@ -108,7 +108,7 @@ DEVICES = {
     36: [XDimmer, RSSI],  # KING-M4 (dimmer, only cloud)
     44: [XLightD1, RSSI],  # Sonoff D1
     57: [XLight57, RSSI],  # Mosquito Killer Lamp
-    59: [XLightLED, RSSI],  # Sonoff LED (only cloud)
+    59: [XLightL1, RSSI],  # Sonoff LED (only cloud)
     # 66: switch1,  # ZigBee Bridge
     77: SPEC_1CH,  # Sonoff Micro
     78: SPEC_1CH,  # https://github.com/AlexxIT/SonoffLAN/issues/615
@@ -118,7 +118,7 @@ DEVICES = {
     84: SPEC_4CH,
     102: [XWiFiDoor, Battery, RSSI],  # Sonoff DW2 Door/Window sensor
     103: [XLightB02, RSSI],  # Sonoff B02 CCT bulb
-    104: [XLightB05, RSSI],  # Sonoff B05 RGB+CCT color bulb
+    104: [XLightB05B, RSSI],  # Sonoff B05-B RGB+CCT color bulb
     107: SPEC_1CH,
     126: [
         Switch1, Switch2, RSSI,
@@ -139,8 +139,9 @@ DEVICES = {
         Switch1, Switch2, XNSOutdoorTemp, XClimateNS,
         spec(XSensor, param="temperature"),
     ],  # Sonoff NS Panel
-    136: [XLightB05, RSSI],  # https://github.com/AlexxIT/SonoffLAN/issues/712
-    137: [XLightLED, RSSI],
+    # https://github.com/AlexxIT/SonoffLAN/issues/766
+    136: [XLightB05B, RSSI],  # Sonoff B05-BL
+    137: [XLightL1, RSSI],
     162: SPEC_3CH,  # https://github.com/AlexxIT/SonoffLAN/issues/659
     165: [Switch1, Switch2, RSSI],  # DualR3 Lite, without power consumption
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)
