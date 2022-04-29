@@ -8,7 +8,6 @@ import base64
 import ipaddress
 import json
 import logging
-import time
 
 import aiohttp
 from Crypto.Cipher import AES
@@ -98,7 +97,7 @@ class XRegistryLocal(XRegistryBase):
             # TTL of record 5 minutes
             deviceid = name[8:18]
             _LOGGER.debug(f"{deviceid} <= Local2 | Zeroconf Removed Event")
-            msg = {"deviceid": deviceid, "params": {"online": None}}
+            msg = {"deviceid": deviceid, "params": {"online": False}}
             self.dispatcher_send(SIGNAL_UPDATE, msg)
             return
 
@@ -139,40 +138,6 @@ class XRegistryLocal(XRegistryBase):
         else:
             msg["params"] = json.loads(raw)
 
-        self.dispatcher_send(SIGNAL_UPDATE, msg)
-
-    async def check_offline(self, device: XDevice):
-        """Try to get response from device after received Zeroconf Removed."""
-        deviceid = device["deviceid"]
-        log = f"{deviceid} => Local4"
-        if device.get('check_offline') or device['host'] is None:
-            _LOGGER.debug(f"{log} | Skip parallel checks")
-            return
-
-        device['check_offline'] = True
-        sequence = self.sequence()
-
-        for t in range(20, 61, 20):
-            _LOGGER.debug(f"{log} | Check offline with timeout {t}s")
-
-            t0 = time.time()
-
-            conn = await self.send(device, None, sequence, t)
-            if conn == 'online':
-                device.pop("check_offline")
-                _LOGGER.debug(f"{log} | Welcome back!")
-                return
-
-            if t < 60 and conn != 'timeout':
-                # sometimes need to wait more
-                await asyncio.sleep(t - time.time() + t0)
-
-        _LOGGER.debug(f"{log} | Device offline")
-
-        device.pop('check_offline')
-        device.pop("host")
-
-        msg = {"deviceid": deviceid, "params": {"online": False}}
         self.dispatcher_send(SIGNAL_UPDATE, msg)
 
     async def send(

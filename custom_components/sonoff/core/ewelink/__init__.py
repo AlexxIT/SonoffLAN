@@ -83,8 +83,7 @@ class XRegistry(XRegistryBase):
             if ok != 'online':
                 ok = await self.cloud.send(device, params, seq)
                 if ok != 'online':
-                    coro = self.local.check_offline(device)
-                    asyncio.create_task(coro)
+                    asyncio.create_task(self.check_offline(device))
                 elif query_cloud:
                     # force update device actual status
                     await self.cloud.send(device, timeout=0)
@@ -92,8 +91,7 @@ class XRegistry(XRegistryBase):
         elif can_local:
             ok = await self.local.send(device, params_lan or params, seq, 5)
             if ok != 'online':
-                coro = self.local.check_offline(device)
-                asyncio.create_task(coro)
+                asyncio.create_task(self.check_offline(device))
 
         elif can_cloud:
             ok = await self.cloud.send(device, params, seq)
@@ -118,6 +116,20 @@ class XRegistry(XRegistryBase):
 
         return await self.send(device, device.pop("params_bulk"))
 
+    async def check_offline(self, device: XDevice):
+        if not device.get("host"):
+            return
+
+        ok = await self.local.send(device, timeout=15)
+        if ok == "online":
+            return
+
+        device.pop("host", None)
+
+        did = device["deviceid"]
+        _LOGGER.debug(f"{did} !! Local4 | Device offline")
+        self.dispatcher_send(did)
+
     def cloud_connected(self):
         for deviceid in self.devices.keys():
             self.dispatcher_send(deviceid)
@@ -138,12 +150,11 @@ class XRegistry(XRegistryBase):
 
         # process online change
         if "online" in params:
-            # skip same online
-            if device["online"] == params["online"]:
-                return
             device["online"] = params["online"]
+            # check if LAN online after cloud offline
+            if not device["online"] and device.get("host"):
+                asyncio.create_task(self.check_offline(device))
 
-        # any message from device - set device online to True
         elif device["online"] is False:
             device["online"] = True
 
@@ -179,12 +190,9 @@ class XRegistry(XRegistryBase):
 
         _LOGGER.debug(f"{did} <= Local3 | %s | {msg.get('seq', '')}", params)
 
-        if "online" in params:
-            if params["online"] is None:
-                coro = self.local.check_offline(device)
-                asyncio.create_task(coro)
-            elif params["online"] is False:
-                self.dispatcher_send(msg["deviceid"])
+        # msg from zeroconf ServiceStateChange.Removed
+        if params.get("online") is False:
+            asyncio.create_task(self.check_offline(device))
             return
 
         device["host"] = msg.get("host")  # get for tests
