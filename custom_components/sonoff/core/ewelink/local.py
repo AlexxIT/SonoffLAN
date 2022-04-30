@@ -191,6 +191,10 @@ class XRegistryLocal(XRegistryBase):
             _LOGGER.debug(f"{log} !! Timeout {timeout}")
             return 'timeout'
 
+        except aiohttp.ClientConnectorError as e:
+            _LOGGER.debug(f"{log} !! Can't connect: {e}")
+            return "E#CON"
+
         except (aiohttp.ClientOSError, aiohttp.ServerDisconnectedError,
                 asyncio.CancelledError) as e:
             _LOGGER.debug(log, exc_info=e)
