@@ -8,13 +8,14 @@ import base64
 import ipaddress
 import json
 import logging
+from typing import Callable
 
 import aiohttp
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
-from zeroconf import Zeroconf, ServiceStateChange
-from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo
+from zeroconf import Zeroconf, DNSText, DNSAddress, current_time_millis
+from zeroconf.asyncio import AsyncServiceBrowser
 
 from .base import XRegistryBase, XDevice, SIGNAL_CONNECTED, SIGNAL_UPDATE
 
@@ -70,17 +71,98 @@ def decrypt(payload: dict, devicekey: str):
     return unpad(padded, AES.block_size)
 
 
+class XServiceBrowser(AsyncServiceBrowser):
+    """Default ServiceBrowser have problems with processing messages. So we
+    will process them manually.
+    """
+
+    def __init__(self, zeroconf: Zeroconf, type_: str, handler: Callable):
+        super().__init__(zeroconf, type_, [self.default_handler])
+        self.handler = handler
+        self.suffix = "." + type_
+
+    def default_handler(self, zeroconf, service_type, name, state_change):
+        pass
+
+    @staticmethod
+    def decode_text(text: bytes):
+        data = {}
+        i = 0
+        end = len(text)
+        while i < end:
+            j = text[i] + 1
+            k, v = text[i + 1:i + j].split(b"=", 1)
+            i += j
+            data[k.decode()] = v.decode()
+        return data
+
+    def async_update_records(self, zc, now: float, records: list) -> None:
+        for record, old_record in records:
+            try:
+                # old_record - skip previous seen record
+                # record.ttl <= 1 - skip previous (old) cached records
+                # process only DNSText records with our suffix
+                if old_record or record.ttl <= 1 or \
+                        not isinstance(record, DNSText) or \
+                        not record.key.endswith(self.suffix):
+                    continue
+
+                if not record.is_expired(now):
+                    address = next(
+                        r.address for r, _ in records
+                        if isinstance(r, DNSAddress) and
+                        # check without `local.` tail
+                        record.name.startswith(r.name[:-6])
+                    )
+                    host = str(ipaddress.ip_address(address))
+                    data = self.decode_text(record.text)
+                    asyncio.create_task(self.handler(record.name, host, data))
+                else:
+                    asyncio.create_task(self.handler(record.name))
+
+            except StopIteration:
+                _LOGGER.debug(f"Can't find address for {record.name}")
+            except Exception as e:
+                _LOGGER.warning("Can't process zeroconf", exc_info=e)
+
+        AsyncServiceBrowser.async_update_records(self, zc, now, records)
+
+    def restore_from_cache(self):
+        now = current_time_millis()
+        cache: dict = self.zc.cache.cache
+        for key, records in cache.items():
+            try:
+                if not key.endswith(self.suffix):
+                    continue
+                for record in records.keys():
+                    if not isinstance(record, DNSText) or \
+                            record.is_expired(now):
+                        continue
+                    key = record.key.split(".", 1)[0] + ".local."
+                    address = next(
+                        r.address for r in cache[key].keys()
+                        if isinstance(r, DNSAddress)
+                    )
+                    host = str(ipaddress.ip_address(address))
+                    data = self.decode_text(record.text)
+                    asyncio.create_task(self.handler(record.name, host, data))
+
+            except StopIteration:
+                _LOGGER.debug(f"Can't find address for {key}")
+            except Exception as e:
+                _LOGGER.warning("Can't restore zeroconf cache", exc_info=e)
+
+
 class XRegistryLocal(XRegistryBase):
-    browser: AsyncServiceBrowser = None
+    browser: XServiceBrowser = None
     online: bool = False
 
     def start(self, zeroconf: Zeroconf):
-        self.browser = AsyncServiceBrowser(
-            zeroconf, '_ewelink._tcp.local.', handlers=[self._zeroconf_handler]
+        self.browser = XServiceBrowser(
+            zeroconf, "_ewelink._tcp.local.", self._process_zeroconf
         )
-        self.browser.name = 'Sonoff_LAN'  # for beautiful logs
-
         self.online = True
+        self.browser.restore_from_cache()
         self.dispatcher_send(SIGNAL_CONNECTED)
 
     async def stop(self):
@@ -89,44 +171,21 @@ class XRegistryLocal(XRegistryBase):
         self.online = False
         await self.browser.async_cancel()
 
-    def _zeroconf_handler(
-            self, zeroconf: Zeroconf, service_type: str, name: str,
-            state_change: ServiceStateChange
+    async def _process_zeroconf(
+            self, name: str, host: str = None, data: dict = None
     ):
-        if state_change == ServiceStateChange.Removed:
+        if host is None:
             # TTL of record 5 minutes
-            deviceid = name[8:18]
-            _LOGGER.debug(f"{deviceid} <= Local2 | Zeroconf Removed Event")
-            msg = {"deviceid": deviceid, "params": {"online": False}}
+            msg = {"deviceid": name[8:18], "params": {"online": False}}
             self.dispatcher_send(SIGNAL_UPDATE, msg)
             return
-
-        coro = self._process_zeroconf_change(
-            zeroconf, service_type, name, state_change
-        )
-        asyncio.create_task(coro)
-
-    async def _process_zeroconf_change(
-            self, zeroconf: Zeroconf, service_type: str, name: str,
-            state_change: ServiceStateChange
-    ):
-        info = AsyncServiceInfo(service_type, name)
-        await info.async_request(zeroconf, 3000)
-
-        if len(info.addresses) == 0:
-            return
-
-        data = {
-            k.decode(): v.decode() if isinstance(v, bytes) else v
-            for k, v in info.properties.items()
-        }
 
         raw = ''.join([
             data[f'data{i}'] for i in range(1, 5, 1) if f'data{i}' in data
         ])
 
         msg = {
-            "host": str(ipaddress.ip_address(info.addresses[0])),
+            "host": host,
             "deviceid": data["id"],
             "diy": data["type"],
             "seq": data.get("seq"),
