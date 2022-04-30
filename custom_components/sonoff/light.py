@@ -425,6 +425,7 @@ class XLightGroup(XEntity, LightEntity):
     params = {"switches"}
     channels: list = None
 
+    _attr_brightness = 0
     # support on/off and brightness
     _attr_color_mode = COLOR_MODE_BRIGHTNESS
     _attr_supported_color_modes = {COLOR_MODE_BRIGHTNESS}

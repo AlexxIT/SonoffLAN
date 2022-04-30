@@ -764,8 +764,8 @@ def test_light_group():
         "extra": {"uiid": 2},
         "params": {
             'switches': [
-                {'switch': 'on', 'outlet': 0},
-                {'switch': 'on', 'outlet': 1},
+                {'switch': 'off', 'outlet': 0},
+                {'switch': 'off', 'outlet': 1},
                 {'switch': 'off', 'outlet': 2},
                 {'switch': 'off', 'outlet': 3}
             ],
@@ -777,6 +777,11 @@ def test_light_group():
     })
 
     light: XLightGroup = next(e for e in entities if e.uid == "21")
+    assert light.state == "off" and light.brightness == 0
+
+    light.set_state({"switches": [
+        {'switch': 'on', 'outlet': 0}, {'switch': 'on', 'outlet': 1},
+    ]})
     assert light.state == "on" and light.brightness == 255
 
     # noinspection PyTypeChecker
