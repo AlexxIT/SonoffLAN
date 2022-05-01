@@ -14,7 +14,7 @@ from homeassistant.helpers.device_registry import async_get as device_registry
 from homeassistant.helpers.storage import Store
 
 from . import system_health
-from .core import backward
+from .core import backward, devices
 from .core.const import *
 from .core.ewelink import XRegistry, XRegistryCloud, XRegistryLocal
 from .core.ewelink.camera import XCameras
@@ -62,6 +62,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
     # load optional global registry config
     XRegistry.config = config.get(DOMAIN)
+    try:
+        devices.set_default_class(XRegistry.config[CONF_DEFAULT_CLASS])
+    except Exception:
+        pass
 
     # cameras starts only on first command to it
     cameras = XCameras()
