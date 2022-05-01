@@ -70,10 +70,11 @@ class XLight(XEntity, LightEntity):
                 await self.ewelink.send(
                     self.device, {self.param: "on"}, query_cloud=False
                 )
+            await self.ewelink.send(
+                self.device, params, {"cmd": "dimmable", **params}
+            )
         else:
-            params = {self.param: "on"}
-
-        await self.ewelink.send(self.device, params)
+            await self.ewelink.send(self.device, {self.param: "on"})
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {self.param: "off"})
@@ -119,13 +120,9 @@ class XLightD1(XLight):
         if 'brightness' in params:
             self._attr_brightness = conv(params['brightness'], 0, 100, 1, 255)
 
-    async def async_turn_on(self, brightness: int = None, **kwargs) -> None:
-        params = {"switch": "on", "mode": 0}
-        if brightness is not None:
-            params["brightness"] = conv(brightness, 1, 255, 0, 100)
-        await self.ewelink.send(
-            self.device, params, {"cmd": "dimmable", **params}
-        )
+    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
+        if brightness:
+            return {"mode": 0, "brightness": conv(brightness, 1, 255, 0, 100)}
 
 
 ###############################################################################
