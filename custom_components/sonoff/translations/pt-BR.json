@@ -2,7 +2,7 @@
   "config": {
     "error": {
       "exists": "Esta conta já está configurada",
-      "template": "{erro}"
+      "template": "{error}"
     },
     "step": {
       "user": {
