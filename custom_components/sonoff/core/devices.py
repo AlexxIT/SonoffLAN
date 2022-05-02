@@ -11,7 +11,6 @@ XEntity properties:
 
 Developer can change global properties of existing classes via spec function.
 """
-from typing import Optional
 
 from ..binary_sensor import *
 from ..climate import XClimateTH, XClimateNS, XThermostat
@@ -179,7 +178,7 @@ POW_UI_ACTIVE = {
 }
 
 
-def get_spec(device: dict) -> Optional[list]:
+def get_spec(device: dict) -> list:
     uiid = device["extra"]["uiid"]
     # DualR3 in cover mode
     if uiid in (126, 165) and device["params"].get("workMode") == 2:
