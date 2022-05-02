@@ -153,7 +153,7 @@ Each time the integration starts, a list of user devices is loaded from cloud an
 
 `local` mode can't work without ewelink credentials because it needs devices encryption keys.
 
-Devices in DIY mode can be used without ewelink credentials because their protocol unencrypted. But the average user does not need to use the devices in this mode.
+Devices in DIY mode can be used without ewelink credentials because their protocol unencrypted. But the average user does not need to use devices in this mode.
 
 ### Debug page
 
@@ -250,6 +250,25 @@ sonoff:
   devices:
     1000xxxxxx:
       device_class: shutter
+```
+
+## Custom devices
+
+```yaml
+sonoff:
+  devices:
+    1000xxxxxx:
+      name: Device name from YAML  # optional rewrite device name
+      host: 192.168.1.123  # optional force device IP-address
+```
+
+## Custom sensors
+
+If you want some additional device attributes as sensors:
+
+```yaml
+sonoff:
+  sensors: [staMac, bssid, host]
 ```
 
 ## Preventing DB size growth
