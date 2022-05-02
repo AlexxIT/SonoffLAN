@@ -211,9 +211,8 @@ class XRegistryLocal(XRegistryBase):
             command = params.get("cmd") or next(iter(params))
         else:
             # if we change dummy param - device will send full new status
-            # TODO: use different command for different devices
             command = "sledonline"
-            params = {"sledonline": "on"}
+            params = {"sledOnline": device["params"].get("sledOnline")}
 
         if sequence is None:
             sequence = self.sequence()
@@ -238,8 +237,8 @@ class XRegistryLocal(XRegistryBase):
             )
             resp = await r.json()
             err = resp['error']
-            # no problem with any response from device for sledonline command
-            if err == 0 or command == 'sledonline':
+            # no problem with any response from device for info command
+            if err == 0 or command == 'info':
                 _LOGGER.debug(f"{log} <= {resp}")
                 return 'online'
             else:

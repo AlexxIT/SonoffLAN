@@ -98,6 +98,7 @@ class XZigbeeSwitches(XSwitches):
 # noinspection PyAbstractClass
 class XToggle(XEntity, SwitchEntity):
     def set_state(self, params: dict):
+        self.device["params"][self.param] = params[self.param]
         self._attr_is_on = params[self.param] == "on"
 
     async def async_turn_on(self):

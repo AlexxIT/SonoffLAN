@@ -120,7 +120,7 @@ class XRegistry(XRegistryBase):
         if not device.get("host"):
             return
 
-        ok = await self.local.send(device, timeout=15)
+        ok = await self.local.send(device, {"cmd": "info"}, timeout=15)
         if ok == "online":
             return
 
