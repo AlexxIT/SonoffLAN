@@ -1039,9 +1039,11 @@ def test_ns_panel():
 
 
 def test_cover():
+    # https://github.com/AlexxIT/SonoffLAN/issues/768
+    # https://github.com/AlexxIT/SonoffLAN/issues/792
     entities = get_entitites({
         'extra': {'uiid': 11},
-        'params': {'switch': 'off', 'sequence': '123', 'setclose': 100}
+        'params': {'switch': 'off', 'setclose': 100}
     })
 
     cover: XCover = entities[0]

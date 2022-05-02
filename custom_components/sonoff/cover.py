@@ -30,7 +30,7 @@ class XCover(XEntity, CoverEntity):
         )
 
     def set_state(self, params: dict):
-        if "sequence" in params:
+        if "sequence" in params or self.current_cover_position is None:
             # the device has finished the action
             # reversed position: HA closed at 0, eWeLink closed at 100
             self._attr_current_cover_position = 100 - params["setclose"]
