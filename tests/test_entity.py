@@ -8,7 +8,7 @@ from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
-from custom_components.sonoff.climate import XClimateNS
+from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
 from custom_components.sonoff.core.ewelink.base import *
 from custom_components.sonoff.cover import XCover
@@ -1132,3 +1132,26 @@ def test_light_l1():
     light.set_state({"switch": "off"})
     assert light.state == "off"
     assert light.state_attributes is None
+
+
+def test_thermostat():
+    entities = get_entitites({
+        "extra": {"uiid": 127},
+        "params": {
+            "volatility": 1,
+            "targetTemp": 20,
+            "workMode": 1,
+            "switch": "on",
+            "temperature": 29,
+            "fault": 0,
+            "workState": 2,
+            "tempScale": "c",
+            "childLock": "off",
+        },
+    })
+
+    therm: XThermostat = entities[0]
+    assert therm.state == "auto"
+    assert therm.state_attributes == {
+        'current_temperature': 29, 'temperature': 20, 'preset_mode': 'manual'
+    }
