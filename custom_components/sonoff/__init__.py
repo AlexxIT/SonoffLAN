@@ -32,6 +32,7 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_USERNAME): cv.string,
         vol.Optional(CONF_PASSWORD): cv.string,
         vol.Optional(CONF_DEFAULT_CLASS): cv.string,
+        vol.Optional(CONF_SENSORS): cv.ensure_list,
         vol.Optional(CONF_RFBRIDGE): {
             cv.string: vol.Schema({
                 vol.Optional(CONF_NAME): cv.string,
@@ -61,11 +62,14 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     hass.data[DOMAIN] = {}
 
     # load optional global registry config
-    XRegistry.config = config.get(DOMAIN)
-    try:
-        devices.set_default_class(XRegistry.config[CONF_DEFAULT_CLASS])
-    except Exception:
-        pass
+    if DOMAIN in config:
+        XRegistry.config = conf = config[DOMAIN]
+        if CONF_DEFAULT_CLASS in conf:
+            devices.set_default_class(conf.pop(CONF_DEFAULT_CLASS))
+        if CONF_SENSORS in conf:
+            devices.get_spec = devices.get_spec_wrapper(
+                devices.get_spec, conf.pop(CONF_SENSORS)
+            )
 
     # cameras starts only on first command to it
     cameras = XCameras()

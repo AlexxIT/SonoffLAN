@@ -71,7 +71,8 @@ class XSensor(XEntity, SensorEntity):
     report_value = None
 
     def __init__(self, ewelink: XRegistry, device: dict):
-        XEntity.__init__(self, ewelink, device)
+        if self.param and self.uid is None:
+            self.uid = self.param
 
         self._attr_device_class = DEVICE_CLASSES.get(self.uid)
 
@@ -79,6 +80,8 @@ class XSensor(XEntity, SensorEntity):
             # by default all sensors with units is measurement sensors
             self._attr_state_class = SensorStateClass.MEASUREMENT
             self._attr_native_unit_of_measurement = UNITS[self.uid]
+
+        XEntity.__init__(self, ewelink, device)
 
         reporting = device.get("reporting", {}).get(self.uid)
         if reporting:
@@ -88,29 +91,30 @@ class XSensor(XEntity, SensorEntity):
 
     def set_state(self, params: dict = None, value: float = None):
         if params:
-            try:
-                value = float(params[self.param])
-                if self.multiply:
-                    value *= self.multiply
-                if self.round is not None:
-                    # convert to int when round is zero
-                    value = round(value, self.round or None)
-            except (TypeError, ValueError):
-                pass
+            value = params[self.param]
+            if self.native_unit_of_measurement and isinstance(value, str):
+                value = float(value)
+            if self.multiply:
+                value *= self.multiply
+            if self.round is not None:
+                # convert to int when round is zero
+                value = round(value, self.round or None)
 
         if self.report_ts is not None:
             ts = time.time()
 
-            if (ts - self.report_ts < self.report_mint) or (
-                    ts - self.report_ts < self.report_maxt and
-                    value is not None and
-                    self._attr_native_value is not None and
-                    abs(value - self._attr_native_value) <= self.report_delta
-            ):
-                self.report_value = value
-                return
+            try:
+                if (ts - self.report_ts < self.report_mint) or (
+                        ts - self.report_ts < self.report_maxt and
+                        abs(value - self.native_value) <= self.report_delta
+                ):
+                    self.report_value = value
+                    return
 
-            self.report_value = None
+                self.report_value = None
+            except Exception:
+                pass
+
             self.report_ts = ts
 
         self._attr_native_value = value

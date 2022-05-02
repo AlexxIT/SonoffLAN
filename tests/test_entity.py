@@ -1155,3 +1155,29 @@ def test_thermostat():
     assert therm.state_attributes == {
         'current_temperature': 29, 'temperature': 20, 'preset_mode': 'manual'
     }
+
+
+def test_custom_sensors():
+    devices.get_spec = devices.get_spec_wrapper(
+        devices.get_spec, ["staMac", "bssid", "host"]
+    )
+
+    entities = get_entitites({
+        'extra': {'uiid': 1},
+        'params': {
+            'staMac': '11:22:33:AA:BB:CC',
+            "bssid": "00:00:00:00:00:00"
+        },
+    })
+
+    sensor: XSensor = next(e for e in entities if e.uid == "staMac")
+    assert sensor.state == "11:22:33:AA:BB:CC"
+
+    sensor: XSensor = next(e for e in entities if e.uid == "bssid")
+    assert sensor.state == "00:00:00:00:00:00"
+
+    sensor: XSensor = next(e for e in entities if e.uid == "host")
+    assert sensor.state is None
+
+    sensor.internal_update({"host": "192.168.1.123"})
+    assert sensor.state == "192.168.1.123"

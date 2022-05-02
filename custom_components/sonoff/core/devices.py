@@ -246,6 +246,19 @@ def get_custom_spec(classes: list, device_class):
     return classes
 
 
+def get_spec_wrapper(func, sensors: list):
+    def wrapped(device: dict) -> list:
+        classes = func(device)
+        for uid in sensors:
+            if (uid in device["params"] or uid == "host") and all(
+                    cls.param != uid and cls.uid != uid for cls in classes
+            ):
+                classes.append(spec(XSensor, param=uid))
+        return classes
+
+    return wrapped
+
+
 def set_default_class(device_class: str):
     XSwitch.__bases__ = XSwitches.__bases__ = (
         XEntity, LightEntity if device_class == "light" else SwitchEntity
