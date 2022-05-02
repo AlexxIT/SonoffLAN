@@ -37,11 +37,24 @@ class XBinarySensor(XEntity, BinarySensorEntity):
 # noinspection PyAbstractClass
 class XWiFiDoor(XBinarySensor):
     params = {"switch"}
-
     _attr_device_class = BinarySensorDeviceClass.DOOR
 
     def set_state(self, params: dict):
         self._attr_is_on = params['switch'] == 'on'
+
+    def internal_available(self) -> bool:
+        # device with buggy online status
+        return self.ewelink.cloud.online
+
+
+class XWiFiDoorBattery(XWiFiDoor):
+    params = {"battery"}
+    uid = "battery_low"
+    _attr_device_class = BinarySensorDeviceClass.BATTERY
+
+    def set_state(self, params: dict):
+        # device["devConfig"]["lowVolAlarm"] = 2.3
+        self._attr_is_on = params["battery"] < 2.3
 
 
 # noinspection PyAbstractClass

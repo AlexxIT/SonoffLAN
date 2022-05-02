@@ -543,6 +543,7 @@ def test_rfbridge():
 def test_wifi_sensor():
     entities = get_entitites({
         "extra": {"uiid": 102},
+        "online": False,
         "params": {
             "actionTime": "2020-05-20T08:43:33.151Z",
             "battery": 3,
@@ -561,6 +562,19 @@ def test_wifi_sensor():
     sensor: XBinarySensor = entities[0]
     assert sensor.state == "off"
     assert sensor.device_class == BinarySensorDeviceClass.WINDOW
+    assert sensor.available is False
+
+    sensor.ewelink.cloud.online = True
+    sensor.ewelink.cloud.dispatcher_send(SIGNAL_CONNECTED)
+    assert sensor.available is True
+
+    sensor: XBinarySensor = entities[1]
+    assert sensor.state == "off"
+    assert sensor.entity_id == "sonoff.sonoff_1000123abc_battery_low"
+    assert sensor.name == "Device1 Battery Low"
+
+    sensor.internal_update({"battery": 2.1})
+    assert sensor.state == "on"
 
 
 def test_zigbee_button():
