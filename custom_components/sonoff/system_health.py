@@ -32,9 +32,12 @@ async def system_health_info(hass: HomeAssistant) -> dict[str, Any]:
                 cloud_total += 1
                 if registry.cloud.online and device["online"]:
                     cloud_online += 1
-            if "host" in device:
+            # localtype - all discovered local devices
+            # host - all online local devices (maybe encrypted)
+            # params - all local unencrypted devices
+            if "localtype" in device:
                 local_total += 1
-                if "params" in device:
+                if "host" in device and "params" in device:
                     local_online += 1
 
     integration = hass.data["integrations"][DOMAIN]
