@@ -1013,7 +1013,7 @@ def test_ns_panel():
         }
     })
 
-    for uid in ("1", "2", "temperature"):
+    for uid in ("1", "2"):
         assert any(e.uid == uid for e in entities)
 
     temp: XSensor = next(e for e in entities if e.uid == "outdoor_temp")
