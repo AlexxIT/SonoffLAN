@@ -6,3 +6,5 @@ CONF_DEVICEKEY = "devicekey"
 CONF_RFBRIDGE = "rfbridge"
 
 CONF_MODES = ["auto", "cloud", "local"]
+
+PRIVATE_KEYS = ('bindInfos', 'bssid', 'ssid', 'staMac', 'timers')

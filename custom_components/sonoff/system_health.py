@@ -13,7 +13,7 @@ from homeassistant.components import system_health
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant, callback
 
-from .core.const import DOMAIN
+from .core.const import DOMAIN, PRIVATE_KEYS
 
 
 @callback
@@ -63,9 +63,6 @@ async def setup_debug(hass: HomeAssistant, logger: Logger):
     info = await hass.helpers.system_info.async_get_system_info()
     info["sonoff_version"] = str(sonoff.version)
     logger.debug(f"SysInfo: {info}")
-
-
-PRIVATE_KEYS = ('bindInfos', 'bssid', 'ssid', 'staMac')
 
 
 class DebugView(logging.Handler, HomeAssistantView):
