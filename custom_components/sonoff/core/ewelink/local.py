@@ -147,6 +147,8 @@ class XServiceBrowser(AsyncServiceBrowser):
                     data = self.decode_text(record.text)
                     asyncio.create_task(self.handler(record.name, host, data))
 
+            except KeyError:
+                _LOGGER.debug(f"Can't find key in zeroconf cache: {key}")
             except StopIteration:
                 _LOGGER.debug(f"Can't find address for {key}")
             except Exception as e:
