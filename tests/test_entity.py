@@ -835,9 +835,9 @@ def test_diy_device():
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
 
     reg.local.dispatcher_send(SIGNAL_UPDATE, {
-        "host": "192.168.1.123",
         "deviceid": DEVICEID,
-        "diy": "diy_plug",
+        "host": "192.168.1.123",
+        "localtype": "diy_plug",
         "params": {"switch": "on"}
     })
 
@@ -854,9 +854,9 @@ def test_unknown_diy():
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
 
     reg.local.dispatcher_send(SIGNAL_UPDATE, {
-        "host": "192.168.1.123",
         "deviceid": DEVICEID,
-        "diy": "dummy",
+        "host": "192.168.1.123",
+        "localtype": "dummy",
         "params": {"switch": "on"}
     })
 
@@ -881,9 +881,9 @@ def test_local_devicekey():
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
 
     reg.local.dispatcher_send(SIGNAL_UPDATE, {
-        "host": "192.168.1.123",
         "deviceid": DEVICEID,
-        "diy": "diy_plug",
+        "host": "192.168.1.123",
+        "localtype": "diy_plug",
         "iv": "3PgYPjEuE4qCoZOTsPE2xg==",
         "data": "t9YKDAK3nnURqivGN0evtaS+Yj4M6b6NUV+ptJlMTOQ=",
     })

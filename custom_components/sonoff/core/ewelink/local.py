@@ -187,9 +187,9 @@ class XRegistryLocal(XRegistryBase):
         ])
 
         msg = {
-            "host": host,
             "deviceid": data["id"],
-            "diy": data["type"],
+            "host": host,
+            "localtype": data["type"],
             "seq": data.get("seq"),
         }
 

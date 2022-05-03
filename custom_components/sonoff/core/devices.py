@@ -11,7 +11,7 @@ XEntity properties:
 
 Developer can change global properties of existing classes via spec function.
 """
-
+from .ewelink import XDevice
 from ..binary_sensor import *
 from ..climate import XClimateTH, XClimateNS, XThermostat
 from ..cover import XCover, XCoverDualR3
@@ -280,9 +280,9 @@ DIY = {
 }
 
 
-def setup_diy(device: dict) -> dict:
+def setup_diy(device: dict) -> XDevice:
     try:
-        uiid, brand, model = DIY[device["diy"]]
+        uiid, brand, model = DIY[device["localtype"]]
         device["name"] = model
         device["brandName"] = brand
         device["extra"] = {"uiid": uiid}
@@ -290,6 +290,6 @@ def setup_diy(device: dict) -> dict:
     except Exception:
         device["name"] = "Unknown DIY"
         device["extra"] = {"uiid": 0}
-        device["productModel"] = device["diy"]
+        device["productModel"] = device["localtype"]
     device["online"] = False
     return device
