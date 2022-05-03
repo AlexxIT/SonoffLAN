@@ -180,9 +180,6 @@ POW_UI_ACTIVE = {
 
 def get_spec(device: dict) -> list:
     uiid = device["extra"]["uiid"]
-    # DualR3 in cover mode
-    if uiid in (126, 165) and device["params"].get("workMode") == 2:
-        return [XCoverDualR3, RSSI]
 
     if uiid in DEVICES:
         classes = DEVICES[uiid]
@@ -192,6 +189,11 @@ def get_spec(device: dict) -> list:
         classes = SPEC_4CH
     else:
         classes = [XUnknown]
+
+    # DualR3 in cover mode
+    if uiid in (126, 165) and device["params"].get("workMode") == 2:
+        classes = [cls for cls in classes if XSwitches not in cls.__bases__]
+        classes.append(XCoverDualR3)
 
     if "device_class" in device:
         classes = get_custom_spec(classes, device["device_class"])

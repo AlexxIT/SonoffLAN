@@ -11,7 +11,7 @@ from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
 from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
 from custom_components.sonoff.core.ewelink.base import *
-from custom_components.sonoff.cover import XCover
+from custom_components.sonoff.cover import XCover, XCoverDualR3
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import *
 from custom_components.sonoff.sensor import XSensor, XRemoteButton, XUnknown
@@ -340,7 +340,7 @@ def test_dual_r3():
         'extra': {'uiid': 126},
         'params': {
             'version': 7,
-            'workMode': 1,
+            'workMode': 2,
             'motorSwMode': 2,
             'motorSwReverse': 0,
             'outputReverse': 0,
@@ -395,6 +395,12 @@ def test_dual_r3():
 
     volt: XSensor = next(e for e in entities if e.uid == "voltage_1")
     assert volt.state == 247.62
+
+    assert all(not isinstance(e, XSwitches) for e in entities)
+
+    cover = next(e for e in entities if isinstance(e, XCoverDualR3))
+    assert cover.state == "closed"
+    assert cover.state_attributes == {"current_position": 0}
 
 
 def test_diffuser():
