@@ -58,38 +58,29 @@ Almost any single or multi-channel Switch working in the eWeLink application wil
 
 These devices work both on a local network and through the cloud.
 
-- [Sonoff Basic](https://www.itead.cc/sonoff-wifi-wireless-switch.html) fw 3.0.1
-- [Sonoff Basic R2](https://www.itead.cc/sonoff-wifi-wireless-switch-1.html)
-- [Sonoff Basic R3](https://www.itead.cc/sonoff-basicr3-wifi-diy-smart-switch.html)
-- [Sonoff RFR3](https://www.itead.cc/sonoff-rfr3.html)
-- [Sonoff Mini](https://www.itead.cc/sonoff-mini.html) (no need use DIY-mode) fw 3.3.0
-- [Sonoff TH](https://www.itead.cc/sonoff-th.html) (support Thermostat) fw 3.5.0
-- [Sonoff 4CH Pro R2](https://www.itead.cc/sonoff-4ch-pro.html) fw 3.3.0
-- [Sonoff 4CH Pro R3](https://www.itead.cc/smart-home/sonoff-4ch-r3-pro-r3.html) fw 3.3.0
-- [Sonoff Pow R2](https://www.itead.cc/sonoff-pow-r2.html) (show power consumption)
-- [Sonoff Micro](https://www.itead.cc/sonoff-micro-5v-usb-smart-adaptor.html) fw 3.4.0
+- Sonoff Basic, [BASICR2](https://itead.cc/product/sonoff-basicr2/), [BASICR3](https://itead.cc/product/sonoff-basicr3-wifi-diy-smart-switch/), [RFR2](https://itead.cc/product/sonoff-rf/), [RFR3](https://itead.cc/product/sonoff-rfr3/)
+- [Sonoff Mini](https://itead.cc/product/sonoff-mini/), [MINI R3](https://itead.cc/product/sonoff-minir3-smart-switch/) (no need use DIY-mode)
+- [Sonoff Micro](https://itead.cc/product/sonoff-micro-5v-usb-smart-adaptor/)
+- [Sonoff TH10/TH16](https://itead.cc/product/sonoff-th/) (support Thermostat)
+- Sonoff 4CH, 4CHR2, [4CHR3 & 4CHPROR3](https://itead.cc/product/sonoff-4ch-r3-pro-r3/)
+- Sonoff POW, [POWR2](https://itead.cc/product/sonoff-pow-r2/) (show power consumption)
+- [Sonoff DUALR3/DUALR3 Lite](https://itead.cc/product/sonoff-dualr3/)
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) fw 3.5.0
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0, 3.5.0
 - [Sonoff G1](https://www.itead.cc/sonoff-g1.html) fw 3.5.0
 - [Sonoff Dual](https://www.itead.cc/sonoff-dual.html)
-- [Sonoff iFan02](https://www.itead.cc/sonoff-ifan02-wifi-smart-ceiling-fan-with-light.html) (light and fan with speed control) fw 3.3.0
-- [Sonoff iFan03 and iFan04](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) fw 3.4.0
-- [Sonoff S20](https://www.itead.cc/smart-socket.html)
-- [Sonoff S26](https://www.itead.cc/sonoff-s26-wifi-smart-plug.html)
-- [Sonoff S31](https://www.itead.cc/sonoff-s31.html) (show power consumption)
-- [Sonoff S55](https://www.itead.cc/sonoff-s55.html)
+- Sonoff iFan02, iFan03, [iFan04](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) fw 3.4.0
+- Sonoff S20, [S26](https://itead.cc/product/sonoff-s26-wifi-smart-plug/), [S31](https://itead.cc/product/sonoff-s31/), [S55](https://itead.cc/product/sonoff-s55/)
 - [Sonoff SV](https://www.itead.cc/sonoff-sv.html) fw 3.0.1
-- [Sonoff T1](https://www.itead.cc/sonoff-t1.html)
-- [Sonoff TX](https://www.itead.cc/sonoff-tx-series-wifi-smart-wall-switches.html)
+- Sonoff T1, [TX Series](https://itead.cc/product/sonoff-tx-series-wifi-smart-wall-switches/)
 - [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
 - [Sonoff IW100/IW101](https://www.itead.cc/sonoff-iw100-iw101.html)
 - [Sonoff Slampher R2](https://www.itead.cc/sonoff-slampher-r2.html)
 - [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
 - [Sonoff RE5V1C](https://www.itead.cc/sonoff-re5v1c.html)
+- [Sonoff NSPanel](https://itead.cc/product/sonoff-nspanel-smart-scene-wall-switch/)
 - [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line) fw 3.3.0
-- [Smart Circuit Breaker](https://www.aliexpress.com/item/4000454408211.html)
-- [Smart Circuit Breaker](https://www.aliexpress.com/item/4000351300288.html)
-- [Smart Circuit Breaker](https://www.aliexpress.com/item/4000077475264.html)
+- [Smart Circuit Breaker](https://www.aliexpress.com/item/4000454408211.html), [link](https://www.aliexpress.com/item/4000351300288.html), [link](https://www.aliexpress.com/item/4000077475264.html)
 - [Smart Timer Switch](https://www.aliexpress.com/item/4000189016383.html)
 - [Eachen WiFi Smart Touch](https://ewelink.eachen.cc/product/eachen-single-live-wall-switch-us-ac-l123ewelink-app/) fw 3.3.0
 
@@ -99,8 +90,12 @@ These devices only work through the cloud!
 
 - [Sonoff L1](https://www.itead.cc/sonoff-l1-smart-led-light-strip.html) (color, brightness, effects) fw 2.7.0
 - [Sonoff B1](https://www.itead.cc/sonoff-b1.html) (color, brightness, color temp) fw 2.6.0
+- Sonoff B02, B05-B, B05-BL
 - [Sonoff SC](https://www.itead.cc/sonoff-sc.html) (five sensors) fw 2.7.0
 - [Sonoff DW2](https://www.itead.cc/sonoff-dw2.html)
+- [Sonoff SwitchMan R5](https://itead.cc/product/sonoff-switchman-scene-controller-r5/)
+- [Sonoff S-MATE](https://sonoff.tech/product/diy-smart-switch/s-mate/)
+- [Sonoff S40](https://itead.cc/product/sonoff-iplug-series-wi-fi-smart-plug-s40-s40-lite/)
 - [King Art - King Q4 Cover](https://www.aliexpress.com/item/32956776611.html) (pause, position) fw 2.7.0
 - [KING-M4](https://www.aliexpress.com/item/33013358523.html) (brightness) fw 2.7.0
 - [Eachen WiFi Door/Window Sensor](https://ewelink.eachen.cc/product/eachen-wifi-smart-door-window-sensor-wdw-ewelink/)
@@ -136,6 +131,8 @@ Configuration > [Integrations](https://my.home-assistant.io/redirect/integration
 You can setup multiple integrations with different ewelink accounts.
 
 ## Additional options
+
+These settings are made via **GUI**:
 
 Configuration > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > Configure
 
@@ -174,6 +171,8 @@ http://192.168.1.123:8123/api/sonoff/c8503fee-88fb-4a18-84d9-abb782bf0aa7?q=1000
 By default component loads cloud devices **only for current active Home** in ewelink application. If there is only one Home in the account, it shouldn't be a problem. Otherwise you can select one or multiple Homes to load devices from.
 
 ## Custom device_class
+
+These settings are made via [YAML](https://www.home-assistant.io/docs/configuration/).
 
 **Important**. DeviceID is always 10 symbols string from entity_id or eWeLink app.
 
