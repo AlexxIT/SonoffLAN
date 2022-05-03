@@ -75,6 +75,10 @@ class XFan(XEntity, FanEntity):
             param = {1: "off"}
             params_lan = {"fan": "off"}
         param = [{"outlet": k, "switch": v} for k, v in param.items()]
+        # fan_light - iFan03 and iFan04 using new LAN API
+        # strip - iFan02 using old LAN API (same as cloud)
+        if self.device.get("localtype") != "fan_light":
+            params_lan = None
         await self.ewelink.send(self.device, {"switches": param}, params_lan)
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
