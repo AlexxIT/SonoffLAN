@@ -221,7 +221,7 @@ class XRegistry(XRegistryBase):
             ts = time.time()
 
             for device in devices:
-                if not device["online"] or device.get("pow_ts", 0) > ts:
+                if not device.get("online") or device.get("pow_ts", 0) > ts:
                     continue
 
                 dt, params = POW_UI_ACTIVE[device["extra"]["uiid"]]

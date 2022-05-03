@@ -291,5 +291,5 @@ def setup_diy(device: dict) -> XDevice:
         device["name"] = "Unknown DIY"
         device["extra"] = {"uiid": 0}
         device["productModel"] = device["localtype"]
-    device["online"] = False
+    # device["online"] = False
     return device

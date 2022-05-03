@@ -88,7 +88,7 @@ class XEntity(Entity):
         pass
 
     def internal_available(self) -> bool:
-        return (self.ewelink.cloud.online and self.device["online"]) or \
+        return (self.ewelink.cloud.online and self.device.get("online")) or \
                (self.ewelink.local.online and "host" in self.device)
 
     def internal_update(self, params: dict = None):
