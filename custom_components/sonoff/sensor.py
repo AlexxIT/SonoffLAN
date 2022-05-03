@@ -173,8 +173,7 @@ class XEnergySensor(XEntity, SensorEntity):
         value = params[self.param]
         try:
             self._attr_native_value = round(
-                int(value[0:2], 16) + int(value[2:4], 16) * 0.01 +
-                int(value[4:6], 16) * 0.0001, 2
+                int(value[0:2], 16) + int(value[3] + value[5]) * 0.01, 2
             )
         except Exception:
             pass

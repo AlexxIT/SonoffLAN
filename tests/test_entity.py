@@ -1,8 +1,5 @@
-import asyncio
-
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity
-from homeassistant.const import *
 from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
@@ -14,7 +11,7 @@ from custom_components.sonoff.core.ewelink.base import *
 from custom_components.sonoff.cover import XCover, XCoverDualR3
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import *
-from custom_components.sonoff.sensor import XSensor, XRemoteButton, XUnknown
+from custom_components.sonoff.sensor import *
 from custom_components.sonoff.switch import *
 
 DEVICEID = "1000123abc"
@@ -1183,3 +1180,14 @@ def test_custom_sensors():
 
     sensor.internal_update({"host": "192.168.1.123"})
     assert sensor.state == "192.168.1.123"
+
+
+def test_pow_energy():
+    entities = get_entitites({
+        'extra': {'uiid': 32},
+        'params': {},
+    })
+
+    energy = next(e for e in entities if isinstance(e, XEnergySensor))
+    energy.internal_update({'hundredDaysKwhData': '010005020503020307...'})
+    assert energy.state == 1.05
