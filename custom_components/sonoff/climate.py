@@ -127,7 +127,6 @@ class XClimateTH(XEntity, ClimateEntity):
 class XClimateNS(XEntity, ClimateEntity):
     params = {"ATCEnable", "ATCMode", "temperature", "tempCorrection"}
 
-    _attr_entity_registry_enabled_default = False
     _attr_hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT_COOL, HVAC_MODE_AUTO]
     _attr_max_temp = 31
     _attr_min_temp = 16

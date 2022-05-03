@@ -186,7 +186,7 @@ class XEnergySensor(XEntity, SensorEntity):
             await self.ewelink.cloud.send(self.device, self.get_params)
 
 
-class XNSOutdoorTemp(XSensor):
+class XOutdoorTempNS(XSensor):
     param = "HMI_outdoorTemp"
     uid = "outdoor_temp"
 
