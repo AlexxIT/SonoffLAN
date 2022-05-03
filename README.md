@@ -130,9 +130,22 @@ Configuration > [Integrations](https://my.home-assistant.io/redirect/integration
 
 You can setup multiple integrations with different ewelink accounts.
 
-## Additional options
+## Issues
 
-These settings are made via **GUI**:
+Before posting new issue:
+
+1. Check the number of online devices on the [System Health page](https://my.home-assistant.io/redirect/info/)
+2. Check warning and errors on the [Logs page](https://my.home-assistant.io/redirect/logs/)
+3. Check **debug logs** on the [Debug page](#debug-page) (must be enabled in integration options)
+4. Check **open and closed** [issues](https://github.com/AlexxIT/SonoffLAN/issues?q=is%3Aissue)
+5. Share integration [diagnostics](https://www.home-assistant.io/integrations/diagnostics/):
+
+- All devices: Configuration > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > 3 dots > Download diagnostics
+- One device: Configuration > [Devices](https://my.home-assistant.io/redirect/devices/) > Device > Download diagnostics
+
+*There is no private data, but you can delete anything you think is private.*
+
+## Configuration UI
 
 Configuration > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > Configure
 
@@ -154,13 +167,7 @@ Devices in DIY mode can be used without ewelink credentials because their protoc
 
 ### Debug page
 
-If you have any problems with Ingegration:
-
-1. Check the number of online devices on the [info page](https://my.home-assistant.io/redirect/info/)
-2. Check warning and errors on the [logs page](https://my.home-assistant.io/redirect/logs/)
-3. Enable **Debug page** option and check logs on the [info page](https://my.home-assistant.io/redirect/info/)
-
-Debug page shows only Integration logs and removes all private data. You can filter log and enable auto refresh (in seconds).
+A link to the debug page can be found on the [System Health page](https://my.home-assistant.io/redirect/info/). Debug page shows only Integration logs and removes all private data. You can filter log and enable auto refresh (in seconds).
 
 ```
 http://192.168.1.123:8123/api/sonoff/c8503fee-88fb-4a18-84d9-abb782bf0aa7?q=1000xxxxxx&r=2
@@ -170,11 +177,13 @@ http://192.168.1.123:8123/api/sonoff/c8503fee-88fb-4a18-84d9-abb782bf0aa7?q=1000
 
 By default component loads cloud devices **only for current active Home** in ewelink application. If there is only one Home in the account, it shouldn't be a problem. Otherwise you can select one or multiple Homes to load devices from.
 
-## Custom device_class
+## Configuration YAML
 
 These settings are made via [YAML](https://www.home-assistant.io/docs/configuration/).
 
 **Important**. DeviceID is always 10 symbols string from entity_id or eWeLink app.
+
+### Custom device_class
 
 You can convert all switches into light by default:
 
@@ -251,7 +260,7 @@ sonoff:
       device_class: shutter
 ```
 
-## Custom devices
+### Custom devices
 
 ```yaml
 sonoff:
@@ -259,9 +268,10 @@ sonoff:
     1000xxxxxx:
       name: Device name from YAML  # optional rewrite device name
       host: 192.168.1.123  # optional force device IP-address
+      devicekey: xxx  # optional encription key (downloaded automatically from the cloud)
 ```
 
-## Custom sensors
+### Custom sensors
 
 If you want some additional device attributes as sensors:
 
@@ -270,7 +280,7 @@ sonoff:
   sensors: [staMac, bssid, host]
 ```
 
-## Preventing DB size growth
+### Preventing DB size growth
 
 Pow devices may send a lot of data every second. You can reduce the amount of processed data.
 
