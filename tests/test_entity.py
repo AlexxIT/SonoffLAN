@@ -553,15 +553,11 @@ def test_wifi_sensor():
             "switch": "off",
             "type": 4
         }
-    }, {
-        "devices": {
-            DEVICEID: {"device_class": "window"}
-        }
     })
 
     sensor: XBinarySensor = entities[0]
     assert sensor.state == "off"
-    assert sensor.device_class == BinarySensorDeviceClass.WINDOW
+    assert sensor.device_class == BinarySensorDeviceClass.DOOR
     assert sensor.available is False
 
     sensor.ewelink.cloud.online = True

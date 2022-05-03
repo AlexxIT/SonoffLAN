@@ -29,9 +29,9 @@ DEVICE_CLASSES = {cls.value: cls for cls in BinarySensorDeviceClass}
 class XBinarySensor(XEntity, BinarySensorEntity):
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
-        self._attr_device_class = DEVICE_CLASSES.get(
-            device.get("device_class")
-        )
+        device_class = device.get("device_class")
+        if device_class in DEVICE_CLASSES:
+            self._attr_device_class = DEVICE_CLASSES[device_class]
 
 
 # noinspection PyAbstractClass
