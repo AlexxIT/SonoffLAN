@@ -23,6 +23,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
 
 DEVICE_CLASSES = {
     "battery": SensorDeviceClass.BATTERY,
+    "battery_voltage": SensorDeviceClass.VOLTAGE,
     "current": SensorDeviceClass.CURRENT,
     "current_1": SensorDeviceClass.CURRENT,
     "current_2": SensorDeviceClass.CURRENT,
@@ -40,6 +41,7 @@ DEVICE_CLASSES = {
 
 UNITS = {
     "battery": PERCENTAGE,
+    "battery_voltage": ELECTRIC_POTENTIAL_VOLT,
     "current": ELECTRIC_CURRENT_AMPERE,
     "current_1": ELECTRIC_CURRENT_AMPERE,
     "current_2": ELECTRIC_CURRENT_AMPERE,
@@ -202,6 +204,15 @@ class XOutdoorTempNS(XSensor):
             }
         except Exception:
             pass
+
+
+class XWiFiDoorBattery(XSensor):
+    param = "battery"
+    uid = "battery_voltage"
+
+    def internal_available(self) -> bool:
+        # device with buggy online status
+        return self.ewelink.cloud.online
 
 
 BUTTON_STATES = ["single", "double", "hold"]

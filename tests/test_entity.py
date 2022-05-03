@@ -1,6 +1,5 @@
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity
-from homeassistant.core import Config
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
@@ -15,19 +14,6 @@ from custom_components.sonoff.sensor import *
 from custom_components.sonoff.switch import *
 
 DEVICEID = "1000123abc"
-
-
-class DummyHass:
-    def __init__(self):
-        # noinspection PyTypeChecker
-        self.config = Config(None)
-        self.data = {}
-
-        self.states = self
-        self.async_set = lambda *args: None
-
-        self.bus = self
-        self.async_fire = lambda *args: None
 
 
 class DummyRegistry(XRegistry):
@@ -62,7 +48,8 @@ def get_entitites(device: dict, config: dict = None) -> list:
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
     reg.setup_devices([device])
 
-    hass = DummyHass()
+    asyncio.get_running_loop = lambda: None
+    hass = HomeAssistant()
     for entity in entities:
         entity.hass = hass
 
@@ -559,21 +546,29 @@ def test_wifi_sensor():
     })
 
     sensor: XBinarySensor = entities[0]
-    assert sensor.state == "off"
-    assert sensor.device_class == BinarySensorDeviceClass.DOOR
-    assert sensor.available is False
+    sensor.async_write_ha_state()
+    state = sensor.hass.states.get(sensor.entity_id)
+    assert state.state == "unavailable"
+    assert state.attributes == {
+        'device_class': 'door', 'friendly_name': 'Device1'
+    }
 
     sensor.ewelink.cloud.online = True
     sensor.ewelink.cloud.dispatcher_send(SIGNAL_CONNECTED)
-    assert sensor.available is True
+    state = sensor.hass.states.get(sensor.entity_id)
+    assert state.state == "off"
 
-    sensor: XBinarySensor = entities[1]
-    assert sensor.state == "off"
-    assert sensor.entity_id == "sonoff.sonoff_1000123abc_battery_low"
-    assert sensor.name == "Device1 Battery Low"
+    sensor: XSensor = next(e for e in entities if e.uid == "battery_voltage")
+    state = sensor.hass.states.get(sensor.entity_id)
+    assert state.state == "3"
 
     sensor.internal_update({"battery": 2.1})
-    assert sensor.state == "on"
+    state = sensor.hass.states.get(sensor.entity_id)
+    assert state.state == "2.1"
+    assert state.attributes == {
+        'state_class': 'measurement', 'unit_of_measurement': 'V',
+        'device_class': 'voltage', 'friendly_name': 'Device1 Battery Voltage'
+    }
 
 
 def test_zigbee_button():

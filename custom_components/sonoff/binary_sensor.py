@@ -47,16 +47,6 @@ class XWiFiDoor(XBinarySensor):
         return self.ewelink.cloud.online
 
 
-class XWiFiDoorBattery(XWiFiDoor):
-    params = {"battery"}
-    uid = "battery_low"
-    _attr_device_class = BinarySensorDeviceClass.BATTERY
-
-    def set_state(self, params: dict):
-        # device["devConfig"]["lowVolAlarm"] = 2.3
-        self._attr_is_on = params["battery"] < 2.3
-
-
 # noinspection PyAbstractClass
 class XZigbeeMotion(XBinarySensor):
     params = {"motion", "online"}
