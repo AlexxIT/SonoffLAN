@@ -229,7 +229,7 @@ sonoff:
       name: Sonoff T1 3C
 ```
 
-You can control multiple light zones with single multi-channel device (e.g. Sonoff 4CH Pow):
+You can control multiple light zones with single multi-channel device (e.g. Sonoff 4CH):
 
 ```yaml
 sonoff:
@@ -239,7 +239,7 @@ sonoff:
         - switch: 1  # entity 1 (channel 1)
         - light: [2, 3]  # entity 2 (channels 2 and 3)
         - fan: 4  # entity 3 (channel 4)
-      name: Sonoff 4CH Pow
+      name: Sonoff 4CH
 ```
 
 You can change `device_class` for [Binary Sensor](https://www.home-assistant.io/integrations/binary_sensor/):
@@ -319,15 +319,14 @@ Thermostat can be controlled only with **Cloud** connection. Main switch and TH 
 
 Support power, current and voltage sensors via LAN and Cloud connections. Also support energy (consumption) sensor only with **Cloud** connection. Energy data loads from cloud every hour.
 
-You can also setup a sensor, that will collect energy data locally by Hass:
+You can also setup a [integration sensor](https://www.home-assistant.io/integrations/integration/#energy), that will collect energy data locally by Hass:
 
 ```yaml
 sensor:
   - platform: integration
     source: sensor.sonoff_1000xxxxxx_power
-    name: Dishwasher
+    name: energy_spent
     unit_prefix: k
-    unit: kWh
     round: 2
 ```
 
