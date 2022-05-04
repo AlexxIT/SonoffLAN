@@ -34,20 +34,24 @@ class XRegistry(XRegistryBase):
         from ..devices import get_spec
 
         for device in devices:
-            deviceid = device["deviceid"]
+            did = device["deviceid"]
             try:
-                device.update(self.config["devices"][deviceid])
+                device.update(self.config["devices"][did])
             except Exception:
                 pass
 
-            uiid = device['extra']['uiid']
-            _LOGGER.debug(f"{deviceid} UIID {uiid:04} | %s", device["params"])
+            try:
+                uiid = device['extra']['uiid']
+                _LOGGER.debug(f"{did} UIID {uiid:04} | %s", device["params"])
 
-            spec = get_spec(device)
-            entities = [cls(self, device) for cls in spec]
-            self.dispatcher_send(SIGNAL_ADD_ENTITIES, entities)
+                spec = get_spec(device)
+                entities = [cls(self, device) for cls in spec]
+                self.dispatcher_send(SIGNAL_ADD_ENTITIES, entities)
 
-            self.devices[deviceid] = device
+                self.devices[did] = device
+
+            except Exception as e:
+                _LOGGER.warning(f"{did} !! can't setup device", exc_info=e)
 
     async def stop(self, *args):
         self.devices.clear()
