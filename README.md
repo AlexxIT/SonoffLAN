@@ -138,7 +138,7 @@ Before posting new issue:
 2. Check warning and errors on the [Logs page](https://my.home-assistant.io/redirect/logs/)
 3. Check **debug logs** on the [Debug page](#debug-page) (must be enabled in integration options)
 4. Check **open and closed** [issues](https://github.com/AlexxIT/SonoffLAN/issues?q=is%3Aissue)
-5. Share integration [diagnostics](https://www.home-assistant.io/integrations/diagnostics/):
+5. Share integration [diagnostics](https://www.home-assistant.io/integrations/diagnostics/) (supported from Hass v2022.2):
 
 - All devices: Configuration > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > 3 dots > Download diagnostics
 - One device: Configuration > [Devices](https://my.home-assistant.io/redirect/devices/) > Device > Download diagnostics
