@@ -23,6 +23,8 @@ async def async_setup_entry(hass, config_entry, add_entities):
 
 # noinspection PyAbstractClass
 class XRemote(XEntity, RemoteEntity):
+    _attr_is_on = True
+
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
 
@@ -47,7 +49,7 @@ class XRemote(XEntity, RemoteEntity):
 
     def set_state(self, params: dict):
         # skip full cloud state update
-        if "init" in params:
+        if not self.is_on or "init" in params:
             return
 
         for param, ts in params.items():
@@ -100,3 +102,11 @@ class XRemote(XEntity, RemoteEntity):
         await self.ewelink.send(self.device, {
             "cmd": "capture", "rfChl": int(command[0])
         })
+
+    async def turn_on(self, **kwargs) -> None:
+        self._attr_is_on = True
+        self._async_write_ha_state()
+
+    async def turn_off(self, **kwargs) -> None:
+        self._attr_is_on = False
+        self._async_write_ha_state()
