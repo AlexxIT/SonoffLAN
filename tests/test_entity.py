@@ -1,6 +1,7 @@
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
+from homeassistant.helpers.entity import Entity
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
@@ -44,6 +45,7 @@ def get_entitites(device: dict, config: dict = None) -> list:
     asyncio.create_task = lambda _: None
 
     reg = DummyRegistry()
+    reg.cloud.online = True
     reg.config = config
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
     reg.setup_devices([device])
@@ -51,7 +53,10 @@ def get_entitites(device: dict, config: dict = None) -> list:
     asyncio.get_running_loop = lambda: None
     hass = HomeAssistant()
     for entity in entities:
+        if not isinstance(entity, Entity):
+            continue
         entity.hass = hass
+        entity.async_write_ha_state()
 
     return entities
 
@@ -108,23 +113,17 @@ def test_available():
         'params': {'switch': 'on'},
     })
     switch: XSwitch = entities[0]
-    assert switch.available is False
-    assert switch.state == "on"
-
-    switch.ewelink.cloud.online = True
-    switch.ewelink.cloud.dispatcher_send(SIGNAL_CONNECTED)
+    assert switch.hass.states.get(switch.entity_id).state == "on"
 
     # only cloud online changed
     msg = {"deviceid": DEVICEID, "params": {"online": False}}
     switch.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, msg)
-    assert switch.available is False
-    assert switch.state == "on"
+    assert switch.hass.states.get(switch.entity_id).state == "unavailable"
 
     # cloud state changed (also change available)
     msg = {"deviceid": DEVICEID, "params": {"switch": "off"}}
     switch.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, msg)
-    assert switch.available is True
-    assert switch.state == "off"
+    assert switch.hass.states.get(switch.entity_id).state == "off"
 
 
 def test_nospec():
@@ -546,21 +545,14 @@ def test_wifi_sensor():
     })
 
     sensor: XBinarySensor = entities[0]
-    sensor.async_write_ha_state()
     state = sensor.hass.states.get(sensor.entity_id)
-    assert state.state == "unavailable"
+    assert state.state == "off"
     assert state.attributes == {
         'device_class': 'door', 'friendly_name': 'Device1'
     }
 
-    sensor.ewelink.cloud.online = True
-    sensor.ewelink.cloud.dispatcher_send(SIGNAL_CONNECTED)
-    state = sensor.hass.states.get(sensor.entity_id)
-    assert state.state == "off"
-
     sensor: XSensor = next(e for e in entities if e.uid == "battery_voltage")
-    state = sensor.hass.states.get(sensor.entity_id)
-    assert state.state == "3"
+    assert sensor.hass.states.get(sensor.entity_id).state == "3"
 
     sensor.internal_update({"battery": 2.1})
     state = sensor.hass.states.get(sensor.entity_id)
@@ -569,6 +561,10 @@ def test_wifi_sensor():
         'state_class': 'measurement', 'unit_of_measurement': 'V',
         'device_class': 'voltage', 'friendly_name': 'Device1 Battery Voltage'
     }
+
+    sensor.ewelink.cloud.online = False
+    sensor.ewelink.cloud.dispatcher_send(SIGNAL_CONNECTED)
+    assert sensor.hass.states.get(sensor.entity_id).state == "unavailable"
 
 
 def test_zigbee_button():
@@ -1008,28 +1004,53 @@ def test_ns_panel():
     for uid in ("1", "2"):
         assert any(e.uid == uid for e in entities)
 
-    temp: XSensor = next(e for e in entities if e.uid == "outdoor_temp")
-    assert temp.state == 7
-    assert temp.extra_state_attributes == {"temp_min": 6, "temp_max": 17}
+    temp = next(e for e in entities if isinstance(e, XTemperatureNS))
+    state = temp.hass.states.get(temp.entity_id)
+    assert state.state == "18"
+    assert state.attributes == {
+        'state_class': 'measurement', 'unit_of_measurement': '°C',
+        'device_class': 'temperature', 'friendly_name': 'Device1 Temperature'
+    }
 
-    clim: XClimateNS = next(e for e in entities if isinstance(e, XClimateNS))
-    assert clim.state == "off"
-    assert clim.state_attributes["current_temperature"] == 18
-    assert clim.state_attributes["temperature"] == 26
+    temp = next(e for e in entities if isinstance(e, XOutdoorTempNS))
+    state = temp.hass.states.get(temp.entity_id)
+    assert state.state == "7"
+    assert state.attributes == {
+        'state_class': 'measurement', 'temp_min': 6, 'temp_max': 17,
+        'unit_of_measurement': '°C', 'device_class': 'temperature',
+        'friendly_name': 'Device1 Outdoor Temp'
+    }
+
+    clim = next(e for e in entities if isinstance(e, XClimateNS))
+    state = clim.hass.states.get(clim.entity_id)
+    assert state.state == "off"
+    assert state.attributes == {
+        'hvac_modes': ['off', 'cool', 'auto'], 'min_temp': 16, 'max_temp': 31,
+        'target_temp_step': 1, 'current_temperature': 18, 'temperature': 26,
+        'friendly_name': 'Device1', 'supported_features': 1
+    }
 
     clim.internal_update({"tempCorrection": 2})
-    assert clim.state_attributes["current_temperature"] == 22
+    state = clim.hass.states.get(clim.entity_id)
+    assert state.attributes["current_temperature"] == 22
 
     clim.internal_update({"ATCEnable": 1})
-    assert clim.state == "cool"
+    state = clim.hass.states.get(clim.entity_id)
+    assert state.state == "cool"
 
     clim.internal_update({'ATCMode': 0, 'ATCExpect0': 22.22})
-    assert clim.state_attributes["temperature"] == 22.2
+    state = clim.hass.states.get(clim.entity_id)
+    assert state.attributes["temperature"] == 22.2
 
     clim.internal_update({'ATCMode': 1})
-    assert clim.state == "auto"
+    state = clim.hass.states.get(clim.entity_id)
+    assert state.state == "auto"
     # no target temperature
-    assert clim.state_attributes == {"current_temperature": 22}
+    assert state.attributes == {
+        'hvac_modes': ['off', 'cool', 'auto'], 'min_temp': 16, 'max_temp': 31,
+        'target_temp_step': 1, 'current_temperature': 22,
+        'friendly_name': 'Device1', 'supported_features': 0
+    }
 
 
 def test_cover():
