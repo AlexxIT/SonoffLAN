@@ -996,7 +996,6 @@ def test_ns_panel():
             ],
             'ATCExpect1': -999, 'HMI_dimOpen': 0,
             'only_device': {'ota': 'success', 'ota_fail_reason': 0},
-            'tempCorrection': -2,
             'cityStr': 'Sheffield'
         }
     })
@@ -1006,7 +1005,7 @@ def test_ns_panel():
 
     temp = next(e for e in entities if isinstance(e, XTemperatureNS))
     state = temp.hass.states.get(temp.entity_id)
-    assert state.state == "18"
+    assert state.state == "20"
     assert state.attributes == {
         'state_class': 'measurement', 'unit_of_measurement': '°C',
         'device_class': 'temperature', 'friendly_name': 'Device1 Temperature'
@@ -1026,13 +1025,13 @@ def test_ns_panel():
     assert state.state == "off"
     assert state.attributes == {
         'hvac_modes': ['off', 'cool', 'auto'], 'min_temp': 16, 'max_temp': 31,
-        'target_temp_step': 1, 'current_temperature': 18, 'temperature': 26,
+        'target_temp_step': 1, 'current_temperature': 20, 'temperature': 26,
         'friendly_name': 'Device1', 'supported_features': 1
     }
 
-    clim.internal_update({"tempCorrection": 2})
+    clim.internal_update({"tempCorrection": -2})
     state = clim.hass.states.get(clim.entity_id)
-    assert state.attributes["current_temperature"] == 22
+    assert state.attributes["current_temperature"] == 18
 
     clim.internal_update({"ATCEnable": 1})
     state = clim.hass.states.get(clim.entity_id)
@@ -1048,7 +1047,7 @@ def test_ns_panel():
     # no target temperature
     assert state.attributes == {
         'hvac_modes': ['off', 'cool', 'auto'], 'min_temp': 16, 'max_temp': 31,
-        'target_temp_step': 1, 'current_temperature': 22,
+        'target_temp_step': 1, 'current_temperature': 18,
         'friendly_name': 'Device1', 'supported_features': 0
     }
 

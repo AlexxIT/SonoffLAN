@@ -195,7 +195,7 @@ class XTemperatureNS(XSensor):
         if params:
             # cache updated in XClimateNS entity
             cache = self.device["params"]
-            value = cache["temperature"] + cache["tempCorrection"]
+            value = cache["temperature"] + cache.get("tempCorrection", 0)
         XSensor.set_state(self, value=value)
 
 
