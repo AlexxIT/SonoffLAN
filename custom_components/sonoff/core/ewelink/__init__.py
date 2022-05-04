@@ -192,6 +192,11 @@ class XRegistry(XRegistryBase):
                 _LOGGER.debug("Can't decrypt message", exc_info=e)
                 return
 
+        elif "devicekey" in device:
+            # unencripted device with devicekey in config, this means that the
+            # DIY device is still connected to the ewelink account
+            device.pop("devicekey")
+
         _LOGGER.debug(f"{did} <= Local3 | %s | {msg.get('seq', '')}", params)
 
         # msg from zeroconf ServiceStateChange.Removed
