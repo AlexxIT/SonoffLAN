@@ -211,10 +211,12 @@ class XRegistryLocal(XRegistryBase):
         # cmd for D1 and RF Bridge 433
         if params:
             command = params.get("cmd") or next(iter(params))
-        else:
-            # if we change dummy param - device will send full new status
+        elif "sledOnline" in device["params"]:
+            # device response with current status if we change any param
             command = "sledonline"
-            params = {"sledOnline": device["params"].get("sledOnline")}
+            params = {"sledOnline": device["params"]["sledOnline"]}
+        else:
+            return "noquery"
 
         if sequence is None:
             sequence = self.sequence()

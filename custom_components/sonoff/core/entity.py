@@ -105,3 +105,6 @@ class XEntity(Entity):
 
         if change and self.hass:
             self._async_write_ha_state()
+
+    async def async_update(self):
+        await self.ewelink.send(self.device)

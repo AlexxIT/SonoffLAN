@@ -89,7 +89,7 @@ class XSensor(XEntity, SensorEntity):
         if reporting:
             self.report_mint, self.report_maxt, self.report_delta = reporting
             self.report_ts = time.time()
-            self._attr_force_update = True
+            self._attr_should_poll = True
 
     def set_state(self, params: dict = None, value: float = None):
         if params:

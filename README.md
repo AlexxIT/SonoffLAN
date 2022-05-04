@@ -310,6 +310,22 @@ sonoff:
 - new "delayed" value will overwrite old one
 - "delayed" value will be checked for the above conditions every 30 seconds
 
+### Force update
+
+You can request actual device state and all its sensors manually at any time using `homeassistant.update_entity` service. Use it with any device entity except sensors. Use it with only one entity from each device.
+
+As example, you can create an automation for forced temperature updates for Sonoff TH:
+
+```yaml
+trigger:
+  - platform: time_pattern
+    minutes: '3'
+action:
+  - service: homeassistant.update_entity
+    target:
+      entity_id: switch.sonoff_1000xxxxxx
+```
+
 ## Sonoff TH
 
 Support optional [Climate](https://www.home-assistant.io/integrations/climate/) entity that controls Thermostat. You can control low and high temperature values and hvac modes:
