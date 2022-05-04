@@ -187,6 +187,18 @@ class XEnergySensor(XEntity, SensorEntity):
             await self.ewelink.cloud.send(self.device, self.get_params)
 
 
+class XTemperatureNS(XSensor):
+    params = {"temperature", "tempCorrection"}
+    uid = "temperature"
+
+    def set_state(self, params: dict = None, value: float = None):
+        if params:
+            # cache updated in XClimateNS entity
+            cache = self.device["params"]
+            value = cache["temperature"] + cache["tempCorrection"]
+        XSensor.set_state(self, value=value)
+
+
 class XOutdoorTempNS(XSensor):
     param = "HMI_outdoorTemp"
     uid = "outdoor_temp"

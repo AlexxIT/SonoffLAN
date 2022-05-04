@@ -136,7 +136,7 @@ DEVICES = {
     133: [
         # Humidity. ALWAYS 50... NSPanel DOESN'T HAVE HUMIDITY SENSOR
         # https://github.com/AlexxIT/SonoffLAN/issues/751
-        Switch1, Switch2, XClimateNS, XOutdoorTempNS,
+        Switch1, Switch2, XClimateNS, XTemperatureNS, XOutdoorTempNS,
     ],  # Sonoff NS Panel
     # https://github.com/AlexxIT/SonoffLAN/issues/766
     136: [XLightB05B, RSSI],  # Sonoff B05-BL
