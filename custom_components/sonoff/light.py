@@ -479,7 +479,7 @@ class XFanLight(XEntity, LightEntity):
 
     async def async_turn_on(self, **kwargs):
         params = {"switches": [{"outlet": 0, "switch": "on"}]}
-        if self.device.get("localtype") != "fan_light":
+        if self.device.get("localtype") == "fan_light":
             params_lan = {"light": "on"}
         else:
             params_lan = None
@@ -487,7 +487,7 @@ class XFanLight(XEntity, LightEntity):
 
     async def async_turn_off(self):
         params = {"switches": [{"outlet": 0, "switch": "off"}]}
-        if self.device.get("localtype") != "fan_light":
+        if self.device.get("localtype") == "fan_light":
             params_lan = {"light": "off"}
         else:
             params_lan = None
