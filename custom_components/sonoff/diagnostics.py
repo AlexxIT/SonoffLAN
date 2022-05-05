@@ -3,7 +3,7 @@ from homeassistant.const import CONF_USERNAME, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
-from .core.const import DOMAIN, PRIVATE_KEYS
+from .core.const import DOMAIN, PRIVATE_KEYS, source_hash
 from .core.ewelink import XRegistry
 
 
@@ -58,6 +58,7 @@ async def async_get_config_entry_diagnostics(
         errors = f"{type(e).__name__}: {e}"
 
     return {
+        "version": source_hash(),
         "cloud_auth": registry.cloud.auth is not None,
         "config": config,
         "options": options,
