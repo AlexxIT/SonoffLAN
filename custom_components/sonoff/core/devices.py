@@ -69,7 +69,12 @@ DEVICES = {
     2: SPEC_2CH,
     3: SPEC_3CH,
     4: SPEC_4CH,
-    5: SPEC_SWITCH,
+    5: [
+        XSwitch, LED, RSSI,
+        spec(XSensor, param="power"),
+        spec(XEnergySensor, param="hundredDaysKwhData", uid="energy",
+             get_params={"hundredDaysKwh": "get"}),
+    ],  # Sonoff POW (first)
     6: SPEC_SWITCH,
     7: SPEC_2CH,  # Sonoff T1 2CH
     8: SPEC_3CH,  # Sonoff T1 3CH
@@ -100,7 +105,7 @@ DEVICES = {
         spec(XSensor, param="voltage"),
         spec(XEnergySensor, param="hundredDaysKwhData", uid="energy",
              get_params={"hundredDaysKwh": "get"}),
-    ],  # Sonoff Pow
+    ],  # Sonoff POWR2
     34: [
         XFan, XFanLight, LED, RSSI,
     ],  # Sonoff iFan02 and iFan03
@@ -171,6 +176,7 @@ DEVICES = {
 # Pow devices sends sensors data via Cloud only in uiActive mode
 # UUID, refresh time in seconds, params payload
 POW_UI_ACTIVE = {
+    5: (3600, {"uiActive": 7200}),
     32: (3600, {"uiActive": 7200}),
     126: (3600, {"uiActive": {"all": 1, "time": 7200}}),
     182: (0, {"uiActive": 180}),  # maximum for this model

@@ -63,7 +63,7 @@ These devices work both on a local network and through the cloud.
 - [Sonoff Micro](https://itead.cc/product/sonoff-micro-5v-usb-smart-adaptor/)
 - [Sonoff TH10/TH16](https://itead.cc/product/sonoff-th/) (support Thermostat)
 - Sonoff 4CH, 4CHR2, [4CHR3 & 4CHPROR3](https://itead.cc/product/sonoff-4ch-r3-pro-r3/)
-- Sonoff POW, [POWR2](https://itead.cc/product/sonoff-pow-r2/) (show power consumption)
+- Sonoff [POWR2](https://itead.cc/product/sonoff-pow-r2/) (show power consumption)
 - [Sonoff DUALR3/DUALR3 Lite](https://itead.cc/product/sonoff-dualr3/)
 - [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) fw 3.5.0
 - [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0, 3.5.0
@@ -88,6 +88,7 @@ These devices work both on a local network and through the cloud.
 
 These devices only work through the cloud!
 
+- Sonoff POW (first) fw 2.6.1
 - [Sonoff L1](https://www.itead.cc/sonoff-l1-smart-led-light-strip.html) (color, brightness, effects) fw 2.7.0
 - [Sonoff B1](https://www.itead.cc/sonoff-b1.html) (color, brightness, color temp) fw 2.6.0
 - Sonoff B02, B05-B, B05-BL

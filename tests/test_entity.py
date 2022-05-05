@@ -1197,9 +1197,9 @@ def test_custom_sensors():
     assert sensor.state == "192.168.1.123"
 
 
-def test_pow_energy():
+def test_pow1_energy():
     entities = get_entitites({
-        'extra': {'uiid': 32},
+        'extra': {'uiid': 5},
         'params': {},
     })
 
