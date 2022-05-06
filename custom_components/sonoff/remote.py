@@ -103,10 +103,10 @@ class XRemote(XEntity, RemoteEntity):
             "cmd": "capture", "rfChl": int(command[0])
         })
 
-    async def turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs) -> None:
         self._attr_is_on = True
         self._async_write_ha_state()
 
-    async def turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs) -> None:
         self._attr_is_on = False
         self._async_write_ha_state()
