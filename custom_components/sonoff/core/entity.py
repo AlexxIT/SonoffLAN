@@ -10,6 +10,7 @@ _LOGGER = logging.getLogger(__name__)
 
 ENTITY_CATEGORIES = {
     "battery": EntityCategory.DIAGNOSTIC,
+    "battery_voltage": EntityCategory.DIAGNOSTIC,
     "led": EntityCategory.CONFIG,
     "rssi": EntityCategory.DIAGNOSTIC,
 }
