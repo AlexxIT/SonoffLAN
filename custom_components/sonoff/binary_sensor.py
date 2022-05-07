@@ -3,7 +3,10 @@ import asyncio
 from homeassistant.components.binary_sensor import BinarySensorEntity, \
     BinarySensorDeviceClass
 from homeassistant.components.script import ATTR_LAST_TRIGGERED
+from homeassistant.const import STATE_ON
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.util import dt
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -114,6 +117,23 @@ class XRemoteSensor(BinarySensorEntity, RestoreEntity):
         await asyncio.sleep(delay)
         self._attr_is_on = False
         self._async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        # restore previous sensor state
+        # if sensor has timeout - restore remaining timer and check expired
+        restore = await self.async_get_last_state()
+        if not restore:
+            return
+
+        self._attr_is_on = restore.state == STATE_ON
+
+        if self.is_on and self.timeout:
+            ts = restore.attributes[ATTR_LAST_TRIGGERED]
+            left = self.timeout - (dt.utcnow() - dt.parse_datetime(ts)).seconds
+            if left > 0:
+                self.task = asyncio.create_task(self.clear_state(left))
+            else:
+                self._attr_is_on = False
 
     async def async_will_remove_from_hass(self):
         if self.task:
