@@ -80,34 +80,21 @@ class XWater(XBinarySensor):
 
 
 # noinspection PyAbstractClass
-class XRemoteSensor(BinarySensorEntity):
+class XRemoteSensor(BinarySensorEntity, RestoreEntity):
+    _attr_is_on = False
     task: asyncio.Task = None
 
-    def __init__(self, ewelink: XRegistry, bridge: dict, sensor: dict):
+    def __init__(self, ewelink: XRegistry, bridge: dict, child: dict):
         self.ewelink = ewelink
-        self.channel = next(iter(sensor['buttonName'][0]))
+        self.channel = child["channel"]
+        self.timeout = child.get("timeout", 120)
 
-        name = sensor["name"]
-        try:
-            item = ewelink.config["rfbridge"][name]
-
-            self.timeout = item.get("timeout", 120)
-            self._attr_device_class = DEVICE_CLASSES.get(
-                item.get("device_class")
-            )
-            self._attr_name = item.get("name", name)
-
-            if "payload_off" in item:
-                XRemoteSensorOff.sensors[item["payload_off"]] = self
-        except Exception:
-            self.timeout = 120
-            self._attr_name = name
-
+        self._attr_device_class = DEVICE_CLASSES.get(child.get("device_class"))
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, bridge['deviceid'])}
         )
         self._attr_extra_state_attributes = {}
-        self._attr_is_on = False
+        self._attr_name = child["name"]
         self._attr_unique_id = f"{bridge['deviceid']}_{self.channel}"
 
         self.entity_id = DOMAIN + "." + self._attr_unique_id
@@ -134,11 +121,9 @@ class XRemoteSensor(BinarySensorEntity):
 
 
 class XRemoteSensorOff:
-    sensors = {}
-
-    def __init__(self, channel: str, name: str, sensor: XRemoteSensor):
-        self.channel = channel
-        self.name = name
+    def __init__(self, child: dict, sensor: XRemoteSensor):
+        self.channel = child["channel"]
+        self.name = child["name"]
         self.sensor = sensor
 
     # noinspection PyProtectedMember

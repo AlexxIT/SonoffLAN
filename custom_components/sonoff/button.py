@@ -19,18 +19,16 @@ async def async_setup_entry(hass, config_entry, add_entities):
 # supported in Hass v2021.12
 # noinspection PyAbstractClass
 class XRemoteButton(ButtonEntity):
-    def __init__(self, ewelink: XRegistry, bridge: dict, button: dict):
+    def __init__(self, ewelink: XRegistry, bridge: dict, child: dict):
         self.ewelink = ewelink
         self.bridge = bridge
-
-        for k, v in button.items():
-            self.channel = k
-            self._attr_name = v
+        self.channel = child["channel"]
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, bridge["deviceid"])}
         )
         self._attr_extra_state_attributes = {}
+        self._attr_name = child["name"]
         self._attr_unique_id = f"{bridge['deviceid']}_{self.channel}"
 
         self.entity_id = DOMAIN + "." + self._attr_unique_id
