@@ -5,6 +5,7 @@ from typing import Dict, Union
 from homeassistant.components.remote import RemoteEntity, ATTR_DELAY_SECS, \
     DEFAULT_DELAY_SECS
 from homeassistant.const import ATTR_COMMAND
+from homeassistant.helpers.entity import Entity
 
 from .binary_sensor import XRemoteSensor, XRemoteSensorOff
 from .button import XRemoteButton
@@ -139,6 +140,18 @@ class XRemote(XEntity, RemoteEntity):
                 "entity_id": self.entity_id, "ts": ts,
             }
             self.hass.bus.async_fire("sonoff.remote", data)
+
+    def internal_available(self) -> bool:
+        available = XEntity.internal_available(self)
+        if self.childs and self.available != available:
+            # update available for all entity childs
+            for child in self.childs.values():
+                if not isinstance(child, Entity):
+                    continue
+                child._attr_available = available
+                if child.hass:
+                    child._async_write_ha_state()
+        return available
 
     async def async_send_command(self, command, **kwargs):
         delay = kwargs.get(ATTR_DELAY_SECS, DEFAULT_DELAY_SECS)
