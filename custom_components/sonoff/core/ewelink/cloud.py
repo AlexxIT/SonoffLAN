@@ -40,6 +40,11 @@ DATA_ERROR = {
     None: 'unknown'
 }
 
+APP = [
+    ("oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq", "6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM"),
+    ("R8Oq3y0eSZSYdKccHlrQzT1ACCOUT9Gv", "1ve5Qk9GXfUhKAn1svnKwpAlxXkMarru")
+]
+
 
 class AuthError(Exception):
     pass
@@ -74,9 +79,6 @@ class ResponseWaiter:
 
 
 class XRegistryCloud(ResponseWaiter, XRegistryBase):
-    appid = 'oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq'
-    appsecret = '6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM'
-
     auth: dict = None
     devices: dict = None
     last_ts = 0
@@ -98,7 +100,15 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     def headers(self) -> dict:
         return {"Authorization": "Bearer " + self.auth["at"]}
 
-    async def login(self, username: str, password: str) -> bool:
+    @property
+    def token(self) -> str:
+        return self.region + ":" + self.auth["at"]
+
+    async def login(self, username: str, password: str, app=0) -> bool:
+        if username == "token":
+            self.region, token = password.split(":")
+            return await self.login_token(token, 1)
+
         # https://coolkit-technologies.github.io/eWeLink-API/#/en/DeveloperGuideV2
         payload = {
             "password": password,
@@ -111,15 +121,15 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         else:
             payload["phoneNumber"] = "+" + username
 
+        appid, appsecret = APP[app]
+
         hex_dig = hmac.new(
-            self.appsecret.encode(),
-            json.dumps(payload).encode(),
-            digestmod=hashlib.sha256
+            appsecret.encode(), json.dumps(payload).encode(), hashlib.sha256
         ).digest()
 
         headers = {
             "Authorization": "Sign " + base64.b64encode(hex_dig).decode(),
-            "X-CK-Appid": self.appid,
+            "X-CK-Appid": appid,
         }
         r = await self.session.post(
             self.host + "/v2/user/login", json=payload, headers=headers,
@@ -140,6 +150,23 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             raise AuthError(resp["msg"])
 
         self.auth = resp["data"]
+        self.auth["appid"] = appid
+
+        return True
+
+    async def login_token(self, token: str, app: int = 0) -> bool:
+        appid = APP[app][0]
+        headers = {"Authorization": "Bearer " + token, "X-CK-Appid": appid}
+        r = await self.session.get(
+            self.host + "/v2/user/profile", headers=headers, timeout=10
+        )
+        resp = await r.json()
+        if resp["error"] != 0:
+            raise AuthError(resp["msg"])
+
+        self.auth = resp["data"]
+        self.auth["at"] = token
+        self.auth["appid"] = appid
 
         return True
 
@@ -275,7 +302,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 "action": "userOnline",
                 "at": self.auth["at"],
                 "apikey": self.auth["user"]["apikey"],
-                "appid": self.appid,
+                "appid": self.auth["appid"],
                 "nonce": str(int(ts / 100)),
                 "ts": int(ts),
                 "userAgent": "app",

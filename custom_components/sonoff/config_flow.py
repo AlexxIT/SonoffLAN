@@ -39,7 +39,7 @@ def form(
 
 class SonoffLANFlowHandler(ConfigFlow, domain=DOMAIN):
     @property
-    @lru_cache(maxsize=0)
+    @lru_cache(maxsize=1)
     def cloud(self):
         session = async_get_clientsession(self.hass)
         return XRegistryCloud(session)
@@ -57,7 +57,17 @@ class SonoffLANFlowHandler(ConfigFlow, domain=DOMAIN):
             username = data.get(CONF_USERNAME)
             password = data.get(CONF_PASSWORD)
 
-            if await self.async_set_unique_id(username):
+            entry = await self.async_set_unique_id(username)
+            if entry:
+                if password == "token":
+                    # a special way to share a user's token
+                    await self.cloud.login(
+                        entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD], 1
+                    )
+                    return form(self, "user", schema, data, template={
+                        "error": "Token: " + self.cloud.token
+                    })
+
                 return form(self, "user", schema, data, error="exists")
 
             try:
