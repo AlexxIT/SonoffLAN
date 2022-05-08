@@ -194,7 +194,7 @@ class XEnergySensor(XEntity, SensorEntity):
 
     async def async_update(self):
         ts = time.time()
-        if ts > self.next_ts and self.ewelink.cloud.online:
+        if ts > self.next_ts and self.available and self.ewelink.cloud.online:
             self.next_ts = ts + self.report_dt
             await self.ewelink.cloud.send(self.device, self.get_params)
 
