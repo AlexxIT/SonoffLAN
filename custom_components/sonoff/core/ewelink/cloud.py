@@ -133,7 +133,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         }
         r = await self.session.post(
             self.host + "/v2/user/login", json=payload, headers=headers,
-            timeout=10
+            timeout=30
         )
         resp = await r.json()
 
@@ -142,7 +142,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             self.region = resp["data"]["region"]
             r = await self.session.post(
                 self.host + "/v2/user/login", json=payload, headers=headers,
-                timeout=10
+                timeout=30
             )
             resp = await r.json()
 
@@ -158,7 +158,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         appid = APP[app][0]
         headers = {"Authorization": "Bearer " + token, "X-CK-Appid": appid}
         r = await self.session.get(
-            self.host + "/v2/user/profile", headers=headers, timeout=10
+            self.host + "/v2/user/profile", headers=headers, timeout=30
         )
         resp = await r.json()
         if resp["error"] != 0:
@@ -172,7 +172,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
 
     async def get_homes(self) -> dict:
         r = await self.session.get(
-            self.host + "/v2/family", headers=self.headers, timeout=10
+            self.host + "/v2/family", headers=self.headers, timeout=30
         )
         resp = await r.json()
         return {i["id"]: i["name"] for i in resp["data"]["familyList"]}
@@ -182,7 +182,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         for home in homes or [None]:
             r = await self.session.get(
                 self.host + "/v2/device/thing",
-                headers=self.headers, timeout=10,
+                headers=self.headers, timeout=30,
                 params={"num": 0, "familyid": home} if home else {"num": 0}
             )
             resp = await r.json()
