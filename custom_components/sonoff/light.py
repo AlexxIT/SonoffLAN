@@ -122,7 +122,13 @@ class XLightD1(XLight):
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
         if brightness:
-            return {"mode": 0, "brightness": conv(brightness, 1, 255, 0, 100)}
+            # brightness can be only with switch=on in one message (error 400)
+            # the purpose of the mode is unclear
+            # max brightness=100 (error 400)
+            return {
+                "brightness": conv(brightness, 1, 255, 0, 100),
+                "mode": 0, "switch": "on",
+            }
 
 
 ###############################################################################
