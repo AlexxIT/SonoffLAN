@@ -288,6 +288,22 @@ sonoff:
   sensors: [staMac, bssid, host]
 ```
 
+### Force update
+
+You can request actual device state and all its sensors manually at any time using `homeassistant.update_entity` service. Use it with any device entity except sensors. Use it with only one entity from each device.
+
+As example, you can create an automation for forced temperature updates for Sonoff TH:
+
+```yaml
+trigger:
+  - platform: time_pattern
+    minutes: '3'
+action:
+  - service: homeassistant.update_entity
+    target:
+      entity_id: switch.sonoff_1000xxxxxx
+```
+
 ### Preventing DB size growth
 
 Pow devices may send a lot of data every second. You can reduce the amount of processed data.
@@ -312,34 +328,6 @@ sonoff:
 - any used value will erase "delayed" value
 - new "delayed" value will overwrite old one
 - "delayed" value will be checked for the above conditions every 30 seconds
-
-### Force update
-
-You can request actual device state and all its sensors manually at any time using `homeassistant.update_entity` service. Use it with any device entity except sensors. Use it with only one entity from each device.
-
-As example, you can create an automation for forced temperature updates for Sonoff TH:
-
-```yaml
-trigger:
-  - platform: time_pattern
-    minutes: '3'
-action:
-  - service: homeassistant.update_entity
-    target:
-      entity_id: switch.sonoff_1000xxxxxx
-```
-
-## Sonoff TH
-
-Support optional [Climate](https://www.home-assistant.io/integrations/climate/) entity that controls Thermostat. You can control low and high temperature values and hvac modes:
-
-- **heat** - lower temp enable switch, higher temp disable switch
-- **cool** - lower temp disable switch, higher temp enable switch
-- **dry** - change control by **humidity** with previous low/high switch settings
-
-In `dry` mode, the Thermostat controls and displays Humidity. But the units are displayed as temperature (Hass limitation).
-
-Thermostat can be controlled only with **Cloud** connection. Main switch and TH sensors support LAN and Cloud connections.
 
 ## Sonoff Pow
 
@@ -371,6 +359,18 @@ sensor:
     unit_prefix: k
     round: 2
 ```
+
+## Sonoff TH
+
+Support optional [Climate](https://www.home-assistant.io/integrations/climate/) entity that controls Thermostat. You can control low and high temperature values and hvac modes:
+
+- **heat** - lower temp enable switch, higher temp disable switch
+- **cool** - lower temp disable switch, higher temp enable switch
+- **dry** - change control by **humidity** with previous low/high switch settings
+
+In `dry` mode, the Thermostat controls and displays Humidity. But the units are displayed as temperature (Hass limitation).
+
+Thermostat can be controlled only with **Cloud** connection. Main switch and TH sensors support LAN and Cloud connections.
 
 ## Sonoff RF Bridge 433
 
