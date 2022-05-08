@@ -292,6 +292,8 @@ sonoff:
 
 Pow devices may send a lot of data every second. You can reduce the amount of processed data.
 
+For multi-channel devices use `power_1`, `current_2`, etc.
+
 ```yaml
 sonoff:
   devices:
@@ -341,7 +343,23 @@ Thermostat can be controlled only with **Cloud** connection. Main switch and TH 
 
 ## Sonoff Pow
 
-Support power, current and voltage sensors via LAN and Cloud connections. Also support energy (consumption) sensor only with **Cloud** connection. Energy data loads from cloud every hour.
+Support power, current and voltage sensors via LAN and Cloud connections. Also support energy (consumption) sensor only with **Cloud** connection.
+
+By default energy data loads from cloud every hour. You can change interval via YAML and add history data to sensor attributes (max size - 30 days, disable - 0). For multi-channel devices use `energy_1`, `energy_2`.
+
+```yaml
+sonoff:
+  devices:
+    1000xxxxxx:
+      reporting:
+        energy: [3600, 10]  # update interval (seconds), history size (days)
+
+template:
+  - sensor:
+      - name: "10 days consumpion"
+        unit_of_measurement: "kWh"
+        state: "{{ (state_attr('sensor.sonoff_1000xxxxxx_energy', 'history') or [])|sum }}"
+```
 
 You can also setup a [integration sensor](https://www.home-assistant.io/integrations/integration/#energy), that will collect energy data locally by Hass:
 

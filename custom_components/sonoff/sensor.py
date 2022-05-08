@@ -171,19 +171,31 @@ class XEnergySensor(XEntity, SensorEntity):
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_should_poll = True
 
+    def __init__(self, ewelink: XRegistry, device: dict):
+        XEntity.__init__(self, ewelink, device)
+        self.report_dt, self.report_history = \
+            device.get("reporting", {}).get(self.uid) or (3600, 0)
+
     def set_state(self, params: dict):
         value = params[self.param]
         try:
-            self._attr_native_value = round(
-                int(value[0:2], 16) + int(value[3] + value[5]) * 0.01, 2
-            )
+            history = [
+                round(int(value[i:i + 2], 16) +
+                      int(value[i + 3] + value[i + 5]) * 0.01, 2)
+                for i in range(0, len(value), 6)
+            ]
+            self._attr_native_value = history[0]
+            if self.report_history:
+                self._attr_extra_state_attributes = {
+                    "history": history[0:self.report_history]
+                }
         except Exception:
             pass
 
     async def async_update(self):
         ts = time.time()
         if ts > self.next_ts and self.ewelink.cloud.online:
-            self.next_ts = ts + 3600
+            self.next_ts = ts + self.report_dt
             await self.ewelink.cloud.send(self.device, self.get_params)
 
 
