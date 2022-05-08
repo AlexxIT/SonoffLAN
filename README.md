@@ -374,17 +374,56 @@ Thermostat can be controlled only with **Cloud** connection. Main switch and TH 
 
 ## Sonoff RF Bridge 433
 
+RF Bridge support learning up to 64 signals (16 x 4 buttons).
+
 **Video HOWTO from @KPeyanski**
 
 [![Automatic Calls and Messages from Home Assistant, Sonoff RF Bridge and Smoke Detectors](https://img.youtube.com/vi/QD1K7s01cak/mqdefault.jpg)](https://www.youtube.com/watch?v=QD1K7s01cak?t=284)
 
-**Important**. Integration v3 supports automatic creation of sensors for RF Bridge. All buttons will be created as [Button entity](https://www.home-assistant.io/integrations/button/). All sensors will be created as [Binary entity](https://www.home-assistant.io/integrations/binary_sensor/).
+**Important**. Integration v3 supports automatic creation of sensors for RF Bridge. All **buttons** will be created as [Button entity](https://www.home-assistant.io/integrations/button/). All **alarms** will be created as [Binary sensor](https://www.home-assistant.io/integrations/binary_sensor/).
 
 Both button and binary sensor has `last_triggered` attribute with the time of the last signal received. You can use it in automations.
 
-Binary sensor will stay in `on` state during **120 seconds** by default. Each new signal will reset the timer.
+Binary sensor will stay in `on` state during **120 seconds** by default. Each new signal will reset the timer. Binary sensor support restore state between Hass restarts.
 
-You can read more about configuring and using this bridge in [wiki](https://github.com/AlexxIT/SonoffLAN/wiki/RF-Bridge).
+If you has door sensor with two states (for open and for closed state) like [this one](https://www.banggood.com/10Pcs-GS-WDS07-Wireless-Door-Magnetic-Strip-433MHz-for-Security-Alarm-Home-System-p-1597356.html?cur_warehouse=CN), you can config `payload_off` as in the example below. Also disable the timeout if you do not need it in this case (with `timeout: 0` option).
+
+You can use any `device_class` that is supported in [Binary Sensor](https://www.home-assistant.io/integrations/binary_sensor/). With `device_class: button` you can convert sensor to button.
+
+**PIR Sensor**
+
+```yaml
+sonoff:
+  rfbridge:
+    PIR Sensor 1:  # button/alarm name in eWeLink application
+      device_class: motion
+      timeout: 60  # optional (default 120), timeout in seconds for auto turn off
+```
+
+**Single State Sensor**
+
+```yaml
+sonoff:
+  rfbridge:
+    Door Sensor 1:  # button/alarm name in eWeLink application
+      name: Door Sensor  # optional, you can change sensor name
+      device_class: door  # e.g. door, window
+      timeout: 5
+```
+
+**Dual State Sensor**
+
+```yaml
+sonoff:
+  rfbridge:
+    Sensor1:  # button/alarm name in eWeLink application (open signal)
+      name: Window Sensor  # optional, you can change sensor name
+      device_class: window  # e.g. door, window
+      timeout: 0  # disable auto close timeout
+      payload_off: Sensor2  # button/alarm name in eWeLink application (close signal)
+```
+
+You can read more about using this bridge in [wiki](https://github.com/AlexxIT/SonoffLAN/wiki/RF-Bridge).
 
 ## Sonoff GK-200MP2-B Camera
 
