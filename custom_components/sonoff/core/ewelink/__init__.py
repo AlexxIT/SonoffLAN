@@ -115,7 +115,14 @@ class XRegistry(XRegistryBase):
         assert "switches" in params
 
         if "params_bulk" in device:
-            device["params_bulk"]["switches"] += params["switches"]
+            for new in params["switches"]:
+                for old in device["params_bulk"]["switches"]:
+                    # check on duplicates
+                    if new["outlet"] == old["outlet"]:
+                        old["switch"] = new["switch"]
+                        break
+                else:
+                    device["params_bulk"]["switches"].append(new)
             return
 
         device["params_bulk"] = params
