@@ -482,7 +482,9 @@ def test_rfbridge():
             "fwVersion": "3.4.0",
             "init": 1,
             "rfChl": 0,
-            "rfList": [],
+            "rfList": [
+                {"rfChl": 0, "rfVal": "xxx"}, {"rfChl": 1, "rfVal": "xxx"}
+            ],
             "rfTrig0": "2020-05-10T19:29:43.000Z",
             "rfTrig1": 0,
             "rssi": -55,
@@ -501,6 +503,10 @@ def test_rfbridge():
                 "buttonName": [{"1": "Button1"}],
                 "name": "Alarm2",
                 "remote_type": "6"
+            }, {
+                "buttonName": [{"2": "Button1"}],
+                "name": "Alarm3",
+                "remote_type": "6"
             }]
         }
     }, {
@@ -513,7 +519,12 @@ def test_rfbridge():
         }
     })
 
-    alarm: XRemoteSensor = next(e for e in entities if e.name == "Custom1")
+    assert len(entities) == 5
+
+    alarm: XRemoteSensor = next(
+        e for e in entities
+        if isinstance(e, XRemoteSensor) and e.name == "Custom1"
+    )
     assert alarm.state == "off"
 
     alarm.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
@@ -848,7 +859,7 @@ def test_unknown_diy():
         "params": {"switch": "on"}
     })
 
-    switch: XSwitch = entities[0]
+    switch: XSwitch = next(e for e in entities if isinstance(e, XSwitch))
     assert switch.name == "Unknown DIY"
     assert switch.device_info["model"] == "dummy"
     assert switch.state == "on"
