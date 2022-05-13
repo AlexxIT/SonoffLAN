@@ -1212,8 +1212,15 @@ def test_pow1_energy():
     entities = get_entitites({
         'extra': {'uiid': 5},
         'params': {},
+    }, {
+        "devices": {
+            DEVICEID: {
+                "reporting": {"energy": [3600, 2]}
+            }
+        }
     })
 
     energy = next(e for e in entities if isinstance(e, XEnergySensor))
-    energy.internal_update({'hundredDaysKwhData': '010005020503020307...'})
+    energy.internal_update({'hundredDaysKwhData': '010005020503020307'})
     assert energy.state == 1.05
+    assert energy.extra_state_attributes == {"history": [1.05, 2.53]}
