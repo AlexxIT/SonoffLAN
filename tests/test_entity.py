@@ -1063,35 +1063,95 @@ def test_ns_panel():
     }
 
 
-def test_cover():
+# noinspection DuplicatedCode
+def test_cover_binthen():
     # https://github.com/AlexxIT/SonoffLAN/issues/768
     # https://github.com/AlexxIT/SonoffLAN/issues/792
     entities = get_entitites({
-        'extra': {'uiid': 11},
-        'params': {'switch': 'off', 'setclose': 100}
+        "extra": {"uiid": 11, "model": "PSF-BTA-GL"},
+        "brandName": "BINTHEN", "productModel": "BCM Series",
+        "params": {
+            "fwVersion": "3.4.3", "switch": "on", "sequence": "1652414713000",
+            "setclose": 0
+        }
     })
 
     cover: XCover = entities[0]
-    assert cover.state == "closed"
-    assert cover.state_attributes["current_position"] == 0
-
-    cover.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
-        "deviceid": DEVICEID, "params": {"setclose": 30}
-    })
-    assert cover.state == "opening"
-    assert cover.state_attributes["current_position"] == 0
-
-    cover.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
-        "deviceid": DEVICEID, "params": {"sequence": "123", "setclose": 30}
-    })
     assert cover.state == "open"
-    assert cover.state_attributes["current_position"] == 70
+    assert cover.state_attributes["current_position"] == 100
 
-    cover.ewelink.cloud.dispatcher_send(SIGNAL_UPDATE, {
-        "deviceid": DEVICEID, "params": {"switch": "off"}
-    })
+    # close command from app
+    cover.internal_update({"switch": "off"})
     assert cover.state == "closing"
-    assert cover.state_attributes["current_position"] == 70
+    assert cover.state_attributes["current_position"] == 100
+
+    # pause command from app
+    cover.internal_update({"switch": "pause"})
+    # instant response from conver on pause command
+    cover.internal_update({'sequence': '1652428225841', 'setclose': 18})
+    assert cover.state == "open"
+    assert cover.state_attributes["current_position"] == 82
+
+    # position command from app
+    cover.internal_update({'setclose': 38})
+    assert cover.state == "closing"
+    assert cover.state_attributes["current_position"] == 82
+
+    # response from cover after finish action
+    cover.internal_update({'sequence': '1652428259464', 'setclose': 38})
+    assert cover.state == "open"
+    assert cover.state_attributes["current_position"] == 62
+
+    # open command from app
+    cover.internal_update({'switch': 'on'})
+    assert cover.state == "opening"
+
+    # response from cover after finish action
+    cover.internal_update({'sequence': '1652428292268', 'setclose': 0})
+    assert cover.state == "open"
+
+
+# noinspection DuplicatedCode
+def test_cover_kingart():
+    entities = get_entitites({
+        "extra": {"uiid": 11, "model": "PSF-BTA-GL"},
+        "brandName": "KingArt", "productModel": "KING-Q4",
+        "params": {"fwVersion": "3.4.3", "switch": "on", "setclose": 0}
+    })
+
+    cover: XCover = entities[0]
+    assert cover.state == "open"
+    assert cover.state_attributes["current_position"] == 100
+
+    # close command from app
+    cover.internal_update({"switch": "off"})
+    assert cover.state == "closing"
+    assert cover.state_attributes["current_position"] == 100
+
+    # pause command from app
+    cover.internal_update({"switch": "pause"})
+    # instant response from conver on pause command
+    cover.internal_update({'switch': 'pause', 'setclose': 9})
+    assert cover.state == "open"
+    assert cover.state_attributes["current_position"] == 91
+
+    # position command from app
+    cover.internal_update({'setclose': 21})
+    assert cover.state == "closing"
+    assert cover.state_attributes["current_position"] == 91
+
+    # response from cover after finish action
+    cover.internal_update({'switch': 'off', 'setclose': 21})
+    assert cover.state == "open"
+    assert cover.state_attributes["current_position"] == 79
+
+    # open command from app
+    cover.internal_update({'switch': 'on'})
+    assert cover.state == "opening"
+
+    # response from cover after finish action
+    cover.internal_update({'switch': 'on', 'setclose': 0})
+    assert cover.state == "open"
 
 
 def test_light_22():
