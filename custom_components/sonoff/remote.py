@@ -58,7 +58,11 @@ def rfbridge_childs(remotes: list, config: dict = None):
             childs[channel] = child
 
     for ch, name in duals.items():
-        ch_off = next(k for k, v in childs.items() if v["name"] == name)
+        try:
+            ch_off = next(k for k, v in childs.items() if v["name"] == name)
+        except StopIteration:
+            _LOGGER.warning("Can't find payload_off: " + name)
+            continue
         # move off channel to end of the dict
         childs[ch_off] = childs.pop(ch_off)
         childs[ch_off]["channel_on"] = ch

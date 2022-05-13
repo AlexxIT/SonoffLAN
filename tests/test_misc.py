@@ -2,11 +2,7 @@ import asyncio
 
 from custom_components.sonoff.core.ewelink import XRegistry, XDevice
 
-
-def save_to(store: list):
-    return lambda *args, **kwargs: store.append({
-        **dict(enumerate(args)), **kwargs
-    })
+from . import save_to
 
 
 def test_bulk():

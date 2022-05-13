@@ -4,6 +4,7 @@ from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.entity import Entity
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
+from custom_components.sonoff import remote
 from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
 from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
@@ -13,6 +14,7 @@ from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import *
 from custom_components.sonoff.sensor import *
 from custom_components.sonoff.switch import *
+from . import save_to
 
 DEVICEID = "1000123abc"
 
@@ -475,6 +477,9 @@ def test_sonoff_pow():
 
 
 def test_rfbridge():
+    logger_warning = []
+    remote._LOGGER.warning = save_to(logger_warning)
+
     entities = get_entitites({
         "extra": {"uiid": 28},
         "params": {
@@ -515,9 +520,12 @@ def test_rfbridge():
                 "name": "Custom1",
                 "timeout": 0,
                 "payload_off": "Alarm2"
-            }
+            },
+            "Alarm3": {"payload_off": "dummy"}
         }
     })
+
+    assert logger_warning[0][0] == "Can't find payload_off: dummy"
 
     assert len(entities) == 5
 
