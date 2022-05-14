@@ -152,7 +152,7 @@ class XRegistry(XRegistryBase):
         for deviceid in self.devices.keys():
             self.dispatcher_send(deviceid)
 
-        if self.cloud.online and not self.task or self.task.done():
+        if self.cloud.online and (not self.task or self.task.done()):
             self.task = asyncio.create_task(self.pow_helper())
 
     def cloud_update(self, msg: dict):
