@@ -20,6 +20,7 @@ from ..light import *
 from ..remote import XRemote
 from ..sensor import *
 from ..switch import *
+from ..number import XPulseWidth
 
 # supported custom device_class
 DEVICE_CLASS = {
@@ -56,8 +57,10 @@ XSensor100 = spec(XSensor, multiply=0.01, round=2)
 Battery = spec(XSensor, param="battery")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
+PULSE = spec(XToggle, param="pulse", enabled=False)
+PULSEWIDTH = spec(XPulseWidth, param="pulseWidth", enabled=False)
 
-SPEC_SWITCH = [XSwitch, LED, RSSI]
+SPEC_SWITCH = [XSwitch, LED, RSSI, PULSE, PULSEWIDTH]
 SPEC_1CH = [Switch1, LED, RSSI]
 SPEC_2CH = [Switch1, Switch2, LED, RSSI]
 SPEC_3CH = [Switch1, Switch2, Switch3, LED, RSSI]

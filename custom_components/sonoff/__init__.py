@@ -27,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [
     "binary_sensor", "button", "climate", "cover", "fan", "light", "remote",
-    "sensor", "switch"
+    "sensor", "switch", "number"
 ]
 
 CONFIG_SCHEMA = vol.Schema({
