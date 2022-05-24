@@ -1,0 +1,36 @@
+{
+  "config": {
+    "error": {
+      "exists": "To konto jest już skonfigurowane",
+      "template": "{error}"
+    },
+    "step": {
+      "user": {
+        "description": "Wprowadź dane uwierzytelniające do [konta eWeLink](https://www.ewelink.cc/en/) credentials",
+        "data": {
+          "username": "Email lub telefon (którykolwiek dla trybu DIY)",
+          "password": "Hasło (pozostaw puste dla trybu DIY)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "mode": "Tryb (zaleca się auto dla większości użytkowników)",
+          "homes": "Domy (pozostaw odznacznone dla domu \"current\")",
+          "debug": "Strona debugowania (Konfiguracja > Kondycja systemu)"
+        }
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "version": "Wersja",
+      "cloud_online": "Urządzenia w chmurze dostępne",
+      "local_online": "Urządzenia lokalne dostępne",
+      "debug": "Strona debugowania"
+    }
+  }
+}
