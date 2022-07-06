@@ -277,8 +277,8 @@ class XLightL1(XLight):
 B02_MODE_PAYLOADS = {
     "nightLight": {"br": 5, "ct": 0},
     "read": {"br": 50, "ct": 0},
-    "computer": {"br": 20, "ct": 255},
-    "bright": {"br": 100, "ct": 255},
+    "computer": {"br": 20, "ct": 100},
+    "bright": {"br": 100, "ct": 100},
 }
 
 
@@ -321,7 +321,7 @@ class XLightB02(XLight):
             self._attr_brightness = conv(state["br"], 1, 100, 1, 255)
         if "ct" in state:
             self._attr_color_temp = conv(
-                state["ct"], 0, 255, self.max_mireds, self.min_mireds
+                state["ct"], 0, 100, self.max_mireds, self.min_mireds
             )
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
@@ -332,7 +332,7 @@ class XLightB02(XLight):
                     "br": conv(brightness or self.brightness, 1, 255, 1, 100),
                     "ct": conv(
                         color_temp or self.color_temp, self.max_mireds,
-                        self.min_mireds, 0, 255
+                        self.min_mireds, 0, 100
                     )
                 }
             }
@@ -382,7 +382,7 @@ class XLightB05B(XLightB02):
 
         if "ct" in state:
             self._attr_color_temp = conv(
-                state["ct"], 0, 255, self.max_mireds, self.min_mireds
+                state["ct"], 0, 100, self.max_mireds, self.min_mireds
             )
 
         if 'r' in state or 'g' in state or 'b' in state:
@@ -397,7 +397,7 @@ class XLightB05B(XLightB02):
                 "white": {
                     'br': conv(brightness or self.brightness, 1, 255, 1, 100),
                     'ct': conv(
-                        color_temp, self.max_mireds, self.min_mireds, 0, 255
+                        color_temp, self.max_mireds, self.min_mireds, 0, 100
                     )
                 }
             }
