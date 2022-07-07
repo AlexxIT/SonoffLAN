@@ -176,6 +176,9 @@ DEVICES = {
     165: [Switch1, Switch2, RSSI],  # DualR3 Lite, without power consumption
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)
     177: [XRemoteButton],  # Sonoff S-Mate
+    181: [
+        XSwitchTH, XClimateTH, XTemperatureTH, XHumidityTH, LED, RSSI,
+    ],  # Sonoff THR320D or THR316D
     182: [
         Switch1, LED, RSSI,
         spec(XSensor, param="current"),
