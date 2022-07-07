@@ -110,21 +110,23 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             return await self.login_token(token, 1)
 
         # https://coolkit-technologies.github.io/eWeLink-API/#/en/DeveloperGuideV2
-        payload = {
-            "password": password,
-            "countryCode": "+86",
-        }
+        payload = {}
         if "@" in username:
             payload["email"] = username
         elif username.startswith("+"):
             payload["phoneNumber"] = username
         else:
             payload["phoneNumber"] = "+" + username
+        payload.update({
+            "password": password,
+            "countryCode": "+86",
+        })
 
         appid, appsecret = APP[app]
 
+        json_payload = json.dumps(payload, separators=(',',':')).encode()
         hex_dig = hmac.new(
-            appsecret.encode(), json.dumps(payload).encode(), hashlib.sha256
+            appsecret.encode(), json_payload, hashlib.sha256
         ).digest()
 
         headers = {
