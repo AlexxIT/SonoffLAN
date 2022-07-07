@@ -239,10 +239,16 @@ class XRegistryLocal(XRegistryBase):
                 f"http://{device['host']}:8081/zeroconf/{command}",
                 json=payload, headers={'Connection': 'close'}, timeout=timeout
             )
+
+            if command == 'info':
+                # better don't read response on info command
+                # https://github.com/AlexxIT/SonoffLAN/issues/871
+                _LOGGER.debug(f"{log} <= info: {r.status}")
+                return 'online'
+
             resp = await r.json()
             err = resp['error']
-            # no problem with any response from device for info command
-            if err == 0 or command == 'info':
+            if err == 0:
                 _LOGGER.debug(f"{log} <= {resp}")
                 return 'online'
             else:
