@@ -110,31 +110,30 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             return await self.login_token(token, 1)
 
         # https://coolkit-technologies.github.io/eWeLink-API/#/en/DeveloperGuideV2
-        payload = {}
+        payload = {
+            "password": password,
+            "countryCode": "+86",
+        }
         if "@" in username:
             payload["email"] = username
         elif username.startswith("+"):
             payload["phoneNumber"] = username
         else:
             payload["phoneNumber"] = "+" + username
-        payload.update({
-            "password": password,
-            "countryCode": "+86",
-        })
 
         appid, appsecret = APP[app]
 
-        json_payload = json.dumps(payload, separators=(',',':')).encode()
-        hex_dig = hmac.new(
-            appsecret.encode(), json_payload, hashlib.sha256
-        ).digest()
+        # ensure POST payload and Sign payload will be same
+        data = json.dumps(payload).encode()
+        hex_dig = hmac.new(appsecret.encode(), data, hashlib.sha256).digest()
 
         headers = {
             "Authorization": "Sign " + base64.b64encode(hex_dig).decode(),
+            "Content-Type": "application/json",
             "X-CK-Appid": appid,
         }
         r = await self.session.post(
-            self.host + "/v2/user/login", json=payload, headers=headers,
+            self.host + "/v2/user/login", data=data, headers=headers,
             timeout=30
         )
         resp = await r.json()
@@ -143,7 +142,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         if resp["error"] == 10004:
             self.region = resp["data"]["region"]
             r = await self.session.post(
-                self.host + "/v2/user/login", json=payload, headers=headers,
+                self.host + "/v2/user/login", data=data, headers=headers,
                 timeout=30
             )
             resp = await r.json()
