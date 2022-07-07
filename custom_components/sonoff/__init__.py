@@ -21,7 +21,7 @@ from .core.ewelink import (
     SIGNAL_ADD_ENTITIES
 )
 from .core.ewelink.camera import XCameras
-from .core.ewelink.cloud import AuthError
+from .core.ewelink.cloud import AuthError, APP
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,6 +32,8 @@ PLATFORMS = [
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
+        vol.Optional(CONF_APPID): cv.string,
+        vol.Optional(CONF_APPSECRET): cv.string,
         vol.Optional(CONF_USERNAME): cv.string,
         vol.Optional(CONF_PASSWORD): cv.string,
         vol.Optional(CONF_DEFAULT_CLASS): cv.string,
@@ -67,6 +69,8 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     # load optional global registry config
     if DOMAIN in config:
         XRegistry.config = conf = config[DOMAIN]
+        if CONF_APPID in conf and CONF_APPSECRET in conf:
+            APP[0] = (conf[CONF_APPID], conf[CONF_APPSECRET])
         if CONF_DEFAULT_CLASS in conf:
             core_devices.set_default_class(conf.pop(CONF_DEFAULT_CLASS))
         if CONF_SENSORS in conf:
