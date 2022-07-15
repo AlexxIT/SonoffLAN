@@ -81,12 +81,12 @@ class XCover(XEntity, CoverEntity):
 
 # noinspection PyAbstractClass
 class XCoverDualR3(XCover):
-    params = {"currLocation", "motorTurn"}
+    params = {"location", "motorTurn"}
 
     def set_state(self, params: dict):
-        if "currLocation" in params:
+        if "location" in params:
             # 0 - closed, 100 - opened
-            self._attr_current_cover_position = params["currLocation"]
+            self._attr_current_cover_position = params["location"]
             self._attr_is_closed = self._attr_current_cover_position == 0
 
         if "motorTurn" in params:
