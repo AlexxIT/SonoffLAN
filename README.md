@@ -175,7 +175,7 @@ Devices in DIY mode can be used without ewelink credentials because their protoc
 
 ### Debug page
 
-A link to the debug page can be found on the [System Health page](https://my.home-assistant.io/redirect/info/). Debug page shows only Integration logs and removes all private data. You can filter log and enable auto refresh (in seconds).
+A link to the debug page can be found on the [System Health page](https://my.home-assistant.io/redirect/system_health/). Debug page shows only Integration logs and removes all private data. You can filter log and enable auto refresh (in seconds).
 
 ```
 http://192.168.1.123:8123/api/sonoff/c8503fee-88fb-4a18-84d9-abb782bf0aa7?q=1000xxxxxx&r=2
