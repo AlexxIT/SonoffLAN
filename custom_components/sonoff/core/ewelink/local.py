@@ -14,7 +14,7 @@ import aiohttp
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
-from zeroconf import Zeroconf, DNSText, DNSAddress, current_time_millis
+from zeroconf import Zeroconf, DNSText, DNSService, DNSAddress, current_time_millis
 from zeroconf.asyncio import AsyncServiceBrowser
 
 from .base import XRegistryBase, XDevice, SIGNAL_CONNECTED, SIGNAL_UPDATE
@@ -96,63 +96,83 @@ class XServiceBrowser(AsyncServiceBrowser):
             data[k.decode()] = v.decode()
         return data
 
-    def async_update_records(self, zc, now: float, records: list) -> None:
-        for record, old_record in records:
-            try:
-                # old_record - skip previous seen record
+def async_update_records(self, zc, now: float, records: list) -> None:
+        try:
+            # Create dictionary to store matching TXT and SRV records by key
+            foundRecords = {}
+            for record, old_record in records:
+                # old_record - skip previous seen txt record
                 # record.ttl <= 1 - skip previous (old) cached records
-                # process only DNSText records with our suffix
-                if old_record or record.ttl <= 1 or \
-                        not isinstance(record, DNSText) or \
-                        not record.key.endswith(self.suffix):
+                # process only DNSText or DNSService records with our suffix
+                # Skip address records, we get the hostname from the srv record
+                if (old_record and isinstance(record, DNSText)) or record.ttl <= 1 or \
+                        not (isinstance(record, DNSText) or isinstance(record, DNSService)) or \
+                        not record.key.endswith(self.suffix) or \
+                        isinstance(record, DNSAddress):
                     continue
 
-                if not record.is_expired(now):
-                    address = next(
-                        r.address for r, _ in records
-                        if isinstance(r, DNSAddress) and
-                        # check without `local.` tail
-                        record.name.startswith(r.name[:-6])
-                    )
-                    host = str(ipaddress.ip_address(address))
-                    data = self.decode_text(record.text)
-                    asyncio.create_task(self.handler(record.name, host, data))
-                else:
-                    asyncio.create_task(self.handler(record.name))
+                # Insert empty dictionary into foundRecords for each record key encountered
+                foundRecords.setdefault(record.key, {})
+                # Store matching DNSService record
+                if isinstance(record, DNSService):
+                    foundRecords[record.key].setdefault('srv', record)
+                # Store matching DNSText record
+                if isinstance(record, DNSText):
+                    foundRecords[record.key].setdefault('txt', record)
 
-            except StopIteration:
-                _LOGGER.debug(f"Can't find address for {record.name}")
-            except Exception as e:
-                _LOGGER.warning("Can't process zeroconf", exc_info=e)
+                # If both records have been found for a key
+                if 'srv' in foundRecords[record.key] and 'txt' in foundRecords[record.key]:
+                    found = foundRecords[record.key]
+                    if not (found['srv'].is_expired(now) and found['txt'].is_expired(now)):
+                        name = found['txt'].name
+                        host = found['srv'].server_key
+                        data = self.decode_text(found['txt'].text)
+                        asyncio.create_task(self.handler(name, host, data))
+                    else:
+                        asyncio.create_task(self.handler(record.name))
+
+        except Exception as e:
+            _LOGGER.warning("Can't process zeroconf", exc_info=e)
 
         AsyncServiceBrowser.async_update_records(self, zc, now, records)
 
     def restore_from_cache(self):
         now = current_time_millis()
         cache: dict = self.zc.cache.cache
-        for key, records in cache.items():
-            try:
+        try:
+            # Create dictionary to store matching TXT and SRV records by key
+            foundRecords = {}
+            for key, records in cache.items():
                 if not key.endswith(self.suffix):
                     continue
                 for record in records.keys():
-                    if not isinstance(record, DNSText) or \
-                            record.is_expired(now):
+                    if not (isinstance(record, DNSText) or isinstance(record, DNSService)):
                         continue
-                    key = record.key.split(".", 1)[0] + ".local."
-                    address = next(
-                        r.address for r in cache[key].keys()
-                        if isinstance(r, DNSAddress)
-                    )
-                    host = str(ipaddress.ip_address(address))
-                    data = self.decode_text(record.text)
-                    asyncio.create_task(self.handler(record.name, host, data))
+                    # Insert empty dictionary into foundRecords for each record key encountered
+                    foundRecords.setdefault(record.key, {})
+                    # Store matching DNSService record
+                    if isinstance(record, DNSService):
+                        foundRecords[record.key].setdefault('srv', record)
+                    # Store matching DNSText record
+                    if isinstance(record, DNSText):
+                        foundRecords[record.key].setdefault('txt', record)
 
-            except KeyError:
-                _LOGGER.debug(f"Can't find key in zeroconf cache: {key}")
-            except StopIteration:
-                _LOGGER.debug(f"Can't find address for {key}")
-            except Exception as e:
-                _LOGGER.warning("Can't restore zeroconf cache", exc_info=e)
+                    # If both records have been found for a key
+                    if 'srv' in foundRecords[record.key] and 'txt' in foundRecords[record.key]:
+                        found = foundRecords[record.key]
+                        if (found['srv'].is_expired(now) or found['txt'].is_expired(now)):
+                            continue
+
+                        key = record.key.split(".", 1)[0] + ".local."
+                        name = found['txt'].name
+                        host = found['srv'].server_key
+                        data = self.decode_text(found['txt'].text)
+                        asyncio.create_task(self.handler(name, host, data))
+
+        except KeyError:
+            _LOGGER.debug(f"Can't find key in zeroconf cache: {key}")
+        except Exception as e:
+            _LOGGER.warning("Can't restore zeroconf cache", exc_info=e)
 
 
 class XRegistryLocal(XRegistryBase):
