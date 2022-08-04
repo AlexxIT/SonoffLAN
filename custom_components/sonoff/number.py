@@ -23,7 +23,7 @@ class XNumber(XEntity, NumberEntity):
     multiply: float = None
     round: int = None
 
-    def set_state(self, params: dict):
+    def set_native_value(self, params: dict):
         value = params[self.param]
         if self.multiply:
             value *= self.multiply
@@ -32,7 +32,7 @@ class XNumber(XEntity, NumberEntity):
             value = round(value, self.round or None)
         self._attr_value = value
 
-    async def async_set_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
         if self.multiply:
             value /= self.multiply
         await self.ewelink.send(self.device, {self.param: int(value)})
@@ -47,7 +47,7 @@ class XPulseWidth(XEntity, NumberEntity):
     def set_state(self, params: dict):
         self._attr_value = params["pulseWidth"] / 1000
 
-    async def async_set_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
         """
         we need to send {'pulse': 'on'}  in order to also set the pilseWidth
         else it'll reject the command
