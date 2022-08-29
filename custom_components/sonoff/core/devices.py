@@ -232,7 +232,7 @@ def get_spec(device: dict) -> list:
         classes = [XUnknown]
 
     # DualR3 in cover mode
-    if uiid in (126, 165) and device["params"].get("workMode") == 2:
+    if uiid in [126, 165] and device["params"].get("workMode") == 2:
         classes = [cls for cls in classes if XSwitches not in cls.__bases__]
         classes.append(XCoverDualR3)
 
