@@ -236,6 +236,10 @@ def get_spec(device: dict) -> list:
         classes = [cls for cls in classes if XSwitches not in cls.__bases__]
         classes.append(XCoverDualR3)
 
+    # NSPanel Climate disable without switch configuration
+    if uiid in [133] and not device["params"].get("HMI_ATCDevice"):
+        classes = [cls for cls in classes if XClimateNS not in cls.__bases__]
+
     if "device_class" in device:
         classes = get_custom_spec(classes, device["device_class"])
 
