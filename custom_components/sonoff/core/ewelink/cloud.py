@@ -314,7 +314,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             await self.ws.send_json(payload)
 
             resp = await self.ws.receive_json()
-            if resp["error"] != 0:
+            if "error" in resp and resp["error"] != 0:
                 raise Exception(resp)
 
             return True
