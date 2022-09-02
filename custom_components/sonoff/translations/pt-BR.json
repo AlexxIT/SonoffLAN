@@ -20,7 +20,7 @@
         "data": {
           "mode": "Modo (automático é recomendado para a maioria dos usuários)",
           "homes": "Casas (deixe desmarcado para Casa \"atual\")",
-          "debug": "Página de depuração (Configuração > Opções > Informações)"
+          "debug": "Página de depuração (Integração > Menus > Problemas conhecidos)"
         }
       }
     }
@@ -29,8 +29,7 @@
     "info": {
       "version": "Versão",
       "cloud_online": "Dispositivos de nuvem online",
-      "local_online": "Dispositivos locais online",
-      "debug": "Página de depuração"
+      "local_online": "Dispositivos locais online"
     }
   }
 }

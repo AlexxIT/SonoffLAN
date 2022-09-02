@@ -20,7 +20,7 @@
         "data": {
           "mode": "Tryb (auto jest rekomendowany dla większości użytkowników)",
           "homes": "Domy (pozostaw nie zaznaczone dla \"obecnego\")",
-          "debug": "Strona debugowania (Konfiguracja > System > Kondycja systemu"
+          "debug": "Strona debugowania (Integracja > Menu > Znane problemy)"
         }
       }
     }
@@ -29,8 +29,7 @@
     "info": {
       "version": "Wersja",
       "cloud_online": "Urządzenie chmurowe online",
-      "local_online": "Urzadzenia lokalne online",
-      "debug": "Strona debugowania"
+      "local_online": "Urzadzenia lokalne online"
     }
   }
 }

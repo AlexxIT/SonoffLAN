@@ -20,7 +20,7 @@
         "data": {
           "mode": "Mode (auto is recommended for most users)",
           "homes": "Homes (leave unchecked for \"current\" Home)",
-          "debug": "Debug page (Configuration > System Health)"
+          "debug": "Debug page (Integration > Menu > Known issues)"
         }
       }
     }
@@ -29,8 +29,7 @@
     "info": {
       "version": "Version",
       "cloud_online": "Cloud devices online",
-      "local_online": "Local devices online",
-      "debug": "Debug page"
+      "local_online": "Local devices online"
     }
   }
 }

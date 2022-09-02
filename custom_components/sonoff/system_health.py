@@ -6,7 +6,6 @@ import uuid
 from collections import deque
 from datetime import datetime
 from logging import Logger
-from typing import Any
 
 from aiohttp import web
 from homeassistant.components import system_health
@@ -47,11 +46,6 @@ async def system_health_info(hass: HomeAssistant):
         "local_online": f"{local_online} / {local_total}",
     }
 
-    if DebugView.url:
-        info["debug"] = {
-            "type": "failed", "error": "", "more_info": DebugView.url
-        }
-
     return info
 
 
@@ -63,6 +57,8 @@ async def setup_debug(hass: HomeAssistant, logger: Logger):
     info = await hass.helpers.system_info.async_get_system_info()
     info[DOMAIN + "_version"] = f"{integration.version} ({source_hash()})"
     logger.debug(f"SysInfo: {info}")
+
+    integration.manifest["issue_tracker"] = view.url
 
 
 class DebugView(logging.Handler, HomeAssistantView):
