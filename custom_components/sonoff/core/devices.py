@@ -188,6 +188,14 @@ DEVICES = {
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
     ],  # Sonoff S40
+    190: [
+        Switch1, LED, RSSI,
+        spec(XSensor100, param="current"),
+        spec(XSensor100, param="power"),
+        spec(XSensor100, param="voltage"),
+        spec(XEnergySensor, param="hundredDaysKwhData", uid="energy",
+             get_params={"hundredDaysKwh": "get"}),
+    ],  # Sonoff POWR3
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
     1770: [
