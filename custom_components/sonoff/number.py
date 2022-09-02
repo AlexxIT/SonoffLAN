@@ -39,7 +39,6 @@ class XNumber(XEntity, NumberEntity):
 
 
 class XPulseWidth(XEntity, NumberEntity):
-    
     _attr_max_value = 36000
     _attr_min_value = 0.5
     _attr_step = 0.5
@@ -54,4 +53,6 @@ class XPulseWidth(XEntity, NumberEntity):
         also, since value is in (float) seconds, ensure we send milliseconds
         in 500 multiples (int(value / .5) * 500)
         """
-        await self.ewelink.send(self.device, {"pulse": "on", "pulseWidth": int(value / .5) * 500})
+        await self.ewelink.send(
+            self.device, {"pulse": "on", "pulseWidth": int(value / .5) * 500}
+        )
