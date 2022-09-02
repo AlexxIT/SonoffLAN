@@ -152,8 +152,7 @@ class XHumidityTH(XSensor):
     def set_state(self, params: dict = None, value: float = None):
         try:
             value = params.get("currentHumidity") or params["humidity"]
-            # we need integer, because cloud always int, and local not
-            value = round(float(value))
+            value = float(value)
             # filter zero values
             # https://github.com/AlexxIT/SonoffLAN/issues/110
             if value != 0:
