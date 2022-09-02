@@ -1,4 +1,5 @@
 from homeassistant.components.number import NumberEntity
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -32,21 +33,26 @@ class XNumber(XEntity, NumberEntity):
             value = round(value, self.round or None)
         self._attr_value = value
 
-    async def async_set_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
         if self.multiply:
             value /= self.multiply
         await self.ewelink.send(self.device, {self.param: int(value)})
 
+    # backward compatibility fix
+    if (MAJOR_VERSION, MINOR_VERSION) < (2022, 8):
+        async def async_set_value(self, value: float) -> None:
+            await self.async_set_native_value(value)
+
 
 class XPulseWidth(XEntity, NumberEntity):
-    _attr_max_value = 36000
-    _attr_min_value = 0.5
-    _attr_step = 0.5
+    _attr_native_max_value = 36000
+    _attr_native_min_value = 0.5
+    _attr_native_step = 0.5
 
     def set_state(self, params: dict):
         self._attr_value = params["pulseWidth"] / 1000
 
-    async def async_set_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
         """
         we need to send {'pulse': 'on'}  in order to also set the pilseWidth
         else it'll reject the command
@@ -56,3 +62,12 @@ class XPulseWidth(XEntity, NumberEntity):
         await self.ewelink.send(
             self.device, {"pulse": "on", "pulseWidth": int(value / .5) * 500}
         )
+
+    # backward compatibility fix
+    if (MAJOR_VERSION, MINOR_VERSION) < (2022, 8):
+        _attr_max_value = 36000
+        _attr_min_value = 0.5
+        _attr_step = 0.5
+
+        async def async_set_value(self, value: float) -> None:
+            await self.async_set_native_value(value)
