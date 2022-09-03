@@ -17,10 +17,10 @@ from ..climate import XClimateTH, XClimateNS, XThermostat
 from ..cover import XCover, XCoverDualR3
 from ..fan import XFan, XDiffuserFan, XToggleFan
 from ..light import *
+from ..number import XPulseWidth
 from ..remote import XRemote
 from ..sensor import *
 from ..switch import *
-from ..number import XPulseWidth
 
 # supported custom device_class
 DEVICE_CLASS = {
@@ -175,6 +175,7 @@ DEVICES = {
     # https://github.com/AlexxIT/SonoffLAN/issues/766
     136: [XLightB05B, RSSI],  # Sonoff B05-BL
     137: [XLightL1, RSSI],
+    154: [XWiFiDoor, XWiFiDoorBattery, RSSI],
     162: SPEC_3CH,  # https://github.com/AlexxIT/SonoffLAN/issues/659
     165: [Switch1, Switch2, RSSI],  # DualR3 Lite, without power consumption
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)
