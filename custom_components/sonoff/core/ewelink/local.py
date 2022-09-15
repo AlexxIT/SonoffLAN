@@ -231,12 +231,17 @@ class XRegistryLocal(XRegistryBase):
         if 'devicekey' in device:
             payload = encrypt(payload, device['devicekey'])
 
+        if 'port' in device:
+            port = device['port']
+        else:
+            port = 8081
+
         log = f"{device['deviceid']} => Local4 | {params}"
 
         try:
             # noinspection HttpUrlsUsage
             r = await self.session.post(
-                f"http://{device['host']}:8081/zeroconf/{command}",
+                f"http://{device['host']}:{port}/zeroconf/{command}",
                 json=payload, headers={'Connection': 'close'}, timeout=timeout
             )
 

@@ -22,6 +22,7 @@ class XDevice(TypedDict, total=False):
 
     localtype: Optional[str]  # exist for local DIY device type
     host: Optional[str]  # required for local
+    port: Optional[int]  # optional for local
     devicekey: Optional[str]  # required for encrypted local devices (not DIY)
 
     params_bulk: Optional[dict]  # helper for send_bulk commands
