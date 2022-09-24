@@ -145,7 +145,7 @@ DEVICES = {
     44: [XLightD1, RSSI],  # Sonoff D1
     57: [XLight57, RSSI],  # Mosquito Killer Lamp
     59: [XLightL1, RSSI],  # Sonoff LED (only cloud)
-    # 66: switch1,  # ZigBee Bridge
+    66: [RSSI],  # ZigBee Bridge
     77: SPEC_1CH,  # Sonoff Micro
     78: SPEC_1CH,  # https://github.com/AlexxIT/SonoffLAN/issues/615
     81: SPEC_1CH,
@@ -179,6 +179,8 @@ DEVICES = {
     154: [XWiFiDoor, Battery, RSSI],  # DW2-Wi-Fi-L
     162: SPEC_3CH,  # https://github.com/AlexxIT/SonoffLAN/issues/659
     165: [Switch1, Switch2, RSSI],  # DualR3 Lite, without power consumption
+    # https://github.com/AlexxIT/SonoffLAN/issues/857
+    168: [RSSI],  # new ZBBridge-P
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)
     177: [XRemoteButton],  # Sonoff S-Mate
     181: [
