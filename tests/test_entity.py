@@ -12,6 +12,7 @@ from custom_components.sonoff.core.ewelink.base import *
 from custom_components.sonoff.cover import XCover, XCoverDualR3
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import *
+from custom_components.sonoff.number import XPulseWidth, XNumber
 from custom_components.sonoff.sensor import *
 from custom_components.sonoff.switch import *
 from . import save_to
@@ -1292,3 +1293,24 @@ def test_pow1_energy():
     energy.internal_update({'hundredDaysKwhData': '010005020503020307'})
     assert energy.state == 1.05
     assert energy.extra_state_attributes == {"history": [1.05, 2.53]}
+
+
+def test_backward_number():
+    entities = get_entitites({
+        'extra': {'uiid': 1},
+        'params': {'pulseWidth': 3000},
+    })
+
+    pulse = next(e for e in entities if isinstance(e, XPulseWidth))
+    assert pulse.state == 3.0
+    assert pulse.step == 0.5
+    assert pulse.min_value == 0.5
+    assert pulse.max_value == 36000
+
+    # noinspection PyTypeChecker
+    reg: DummyRegistry = pulse.ewelink
+    if "__getattribute__" in XNumber.__dict__:
+        coro = pulse.async_set_value(5)
+    else:
+        coro = pulse.async_set_native_value(5)
+    assert reg.call(coro)[1] == {'pulse': 'on', 'pulseWidth': 5000}
