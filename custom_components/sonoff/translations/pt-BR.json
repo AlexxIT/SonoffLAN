@@ -29,7 +29,8 @@
     "info": {
       "version": "Versão",
       "cloud_online": "Dispositivos de nuvem online",
-      "local_online": "Dispositivos locais online"
+      "local_online": "Dispositivos locais online",
+      "debug": "Página de depuração"
     }
   }
 }

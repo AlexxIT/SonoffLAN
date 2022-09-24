@@ -46,6 +46,11 @@ async def system_health_info(hass: HomeAssistant):
         "local_online": f"{local_online} / {local_total}",
     }
 
+    if DebugView.url:
+        info["debug"] = {
+            "type": "failed", "error": "", "more_info": DebugView.url
+        }
+
     return info
 
 

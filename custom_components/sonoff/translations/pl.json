@@ -29,7 +29,8 @@
     "info": {
       "version": "Wersja",
       "cloud_online": "Urządzenie chmurowe online",
-      "local_online": "Urzadzenia lokalne online"
+      "local_online": "Urzadzenia lokalne online",
+      "debug": "Strona debugowania"
     }
   }
 }
