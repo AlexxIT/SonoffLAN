@@ -7,6 +7,15 @@ from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 
+# https://github.com/home-assistant/core/blob/2022.7.0/homeassistant/components/number/__init__.py
+BACKWARD = {
+    "_attr_max_value": "_attr_native_max_value",
+    "_attr_min_value": "_attr_native_min_value",
+    "_attr_step": "_attr_native_step",
+    "_attr_value": "_attr_native_value",
+    "async_set_value": "async_set_native_value",
+}
+
 
 async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
@@ -31,7 +40,7 @@ class XNumber(XEntity, NumberEntity):
         if self.round is not None:
             # convert to int when round is zero
             value = round(value, self.round or None)
-        self._attr_value = value
+        self._attr_native_value = value
 
     async def async_set_native_value(self, value: float) -> None:
         if self.multiply:
@@ -39,18 +48,22 @@ class XNumber(XEntity, NumberEntity):
         await self.ewelink.send(self.device, {self.param: int(value)})
 
     # backward compatibility fix
-    if (MAJOR_VERSION, MINOR_VERSION) < (2022, 8):
-        async def async_set_value(self, value: float) -> None:
-            await self.async_set_native_value(value)
+    if (MAJOR_VERSION, MINOR_VERSION) < (2022, 7):
+        # fix Hass v2021.12 empty attribute bug
+        _attr_native_value = None
+
+        def __getattribute__(self, name: str):
+            name = BACKWARD.get(name, name)
+            return super().__getattribute__(name)
 
 
-class XPulseWidth(XEntity, NumberEntity):
+class XPulseWidth(XNumber):
     _attr_native_max_value = 36000
     _attr_native_min_value = 0.5
     _attr_native_step = 0.5
 
     def set_state(self, params: dict):
-        self._attr_value = params["pulseWidth"] / 1000
+        self._attr_native_value = params["pulseWidth"] / 1000
 
     async def async_set_native_value(self, value: float) -> None:
         """
@@ -62,12 +75,3 @@ class XPulseWidth(XEntity, NumberEntity):
         await self.ewelink.send(
             self.device, {"pulse": "on", "pulseWidth": int(value / .5) * 500}
         )
-
-    # backward compatibility fix
-    if (MAJOR_VERSION, MINOR_VERSION) < (2022, 8):
-        _attr_max_value = 36000
-        _attr_min_value = 0.5
-        _attr_step = 0.5
-
-        async def async_set_value(self, value: float) -> None:
-            await self.async_set_native_value(value)
