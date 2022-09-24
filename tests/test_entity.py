@@ -414,6 +414,11 @@ def test_diffuser():
     light = next(e for e in entitites if isinstance(e, XDiffuserLight))
     assert light.state == "off"
 
+    water = next(e for e in entitites if isinstance(e, XBinarySensor))
+    assert water.state == "off"
+    assert water.device_class is None
+    assert water.unique_id == "1000123abc_water"
+
 
 def test_sonoff_sc():
     entities = get_entitites({
@@ -677,6 +682,36 @@ def test_zigbee_motion():
         "deviceid": DEVICEID, "params": {'online': False}
     })
     assert motion.state == "off"
+
+
+def test_zigbee_door():
+    entities = get_entitites({
+        "extra": {"uiid": 3026},
+        "params": {
+            "lock": 0,
+            "battery": 100
+        }
+    })
+
+    lock: XBinarySensor = entities[0]
+    assert lock.state == "off"
+    assert lock.device_class.value == "door"
+    assert lock.unique_id == "1000123abc_lock"
+
+
+def test_zigbee_water():
+    entities = get_entitites({
+        "extra": {"uiid": 4026},
+        "params": {
+            "water": 1,
+            "battery": 100
+        }
+    })
+
+    water: XBinarySensor = entities[0]
+    assert water.state == "on"
+    assert water.device_class.value == "moisture"
+    assert water.entity_id.endswith(".sonoff_1000123abc_water")
 
 
 def test_default_class():
