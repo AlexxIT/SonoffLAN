@@ -14,7 +14,8 @@ import aiohttp
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
-from zeroconf import Zeroconf, DNSText, DNSAddress, current_time_millis
+from zeroconf import Zeroconf, DNSText, DNSAddress, DNSService, \
+    current_time_millis
 from zeroconf.asyncio import AsyncServiceBrowser
 
 from .base import XRegistryBase, XDevice, SIGNAL_CONNECTED, SIGNAL_UPDATE
@@ -97,6 +98,13 @@ class XServiceBrowser(AsyncServiceBrowser):
         return data
 
     def async_update_records(self, zc, now: float, records: list) -> None:
+        # in normal situation we receive:
+        #   1. DNSPointer (prt) - useless
+        #   2. DNSText (txt) - has text array (key=value)
+        #   3. DNSService (srv) - has port, usual 8081
+        #   4. DNSAddress (a) - has IP-address
+        # but some devices may not send IP-address
+        #   https://github.com/AlexxIT/SonoffLAN/issues/839
         for record, old_record in records:
             try:
                 # old_record - skip previous seen record
@@ -108,20 +116,26 @@ class XServiceBrowser(AsyncServiceBrowser):
                     continue
 
                 if not record.is_expired(now):
-                    address = next(
-                        r.address for r, _ in records
-                        if isinstance(r, DNSAddress) and
-                        # check without `local.` tail
-                        record.name.startswith(r.name[:-6])
-                    )
-                    host = str(ipaddress.ip_address(address))
+                    key = record.key[:18]
+                    host = None
+                    port = None
+                    for r, _ in records:
+                        if r.key[:18] != key:
+                            continue
+                        if isinstance(r, DNSAddress):
+                            host = str(ipaddress.ip_address(r.address))
+                        elif isinstance(r, DNSService):
+                            port = r.port
+
+                    # support empty host and different port
+                    if host:
+                        host += f":{port}"
+
                     data = self.decode_text(record.text)
                     asyncio.create_task(self.handler(record.name, host, data))
                 else:
                     asyncio.create_task(self.handler(record.name))
 
-            except StopIteration:
-                _LOGGER.debug(f"Can't find address for {record.name}")
             except Exception as e:
                 _LOGGER.warning("Can't process zeroconf", exc_info=e)
 
@@ -134,23 +148,26 @@ class XServiceBrowser(AsyncServiceBrowser):
             try:
                 if not key.endswith(self.suffix):
                     continue
+
                 for record in records.keys():
                     if not isinstance(record, DNSText) or \
                             record.is_expired(now):
                         continue
-                    key = record.key.split(".", 1)[0] + ".local."
-                    address = next(
-                        r.address for r in cache[key].keys()
-                        if isinstance(r, DNSAddress)
-                    )
-                    host = str(ipaddress.ip_address(address))
+
+                    host = None
+
+                    key = record.key[:18] + ".local."
+                    if key in cache:
+                        for r in cache[key].keys():
+                            if isinstance(r, DNSAddress):
+                                host = str(ipaddress.ip_address(r.address))
+                        for r in records.keys():
+                            if isinstance(r, DNSService):
+                                host += f":{r.port}"
+
                     data = self.decode_text(record.text)
                     asyncio.create_task(self.handler(record.name, host, data))
 
-            except KeyError:
-                _LOGGER.debug(f"Can't find key in zeroconf cache: {key}")
-            except StopIteration:
-                _LOGGER.debug(f"Can't find address for {key}")
             except Exception as e:
                 _LOGGER.warning("Can't restore zeroconf cache", exc_info=e)
 
@@ -176,7 +193,7 @@ class XRegistryLocal(XRegistryBase):
     async def _process_zeroconf(
             self, name: str, host: str = None, data: dict = None
     ):
-        if host is None:
+        if data is None:
             # TTL of record 5 minutes
             msg = {"deviceid": name[8:18], "params": {"online": False}}
             self.dispatcher_send(SIGNAL_UPDATE, msg)
@@ -188,10 +205,12 @@ class XRegistryLocal(XRegistryBase):
 
         msg = {
             "deviceid": data["id"],
-            "host": host,
             "localtype": data["type"],
             "seq": data.get("seq"),
         }
+
+        if host:
+            msg["host"] = host
 
         if data.get("encrypt"):
             msg["data"] = raw
@@ -236,7 +255,7 @@ class XRegistryLocal(XRegistryBase):
         try:
             # noinspection HttpUrlsUsage
             r = await self.session.post(
-                f"http://{device['host']}:8081/zeroconf/{command}",
+                f"http://{device['host']}/zeroconf/{command}",
                 json=payload, headers={'Connection': 'close'}, timeout=timeout
             )
 
