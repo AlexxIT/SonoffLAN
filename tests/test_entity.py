@@ -50,7 +50,7 @@ def get_entitites(device: dict, config: dict = None) -> list:
     reg.cloud.online = True
     reg.config = config
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
-    reg.setup_devices([device])
+    entities += reg.setup_devices([device])
 
     asyncio.get_running_loop = lambda: None
     hass = HomeAssistant()
@@ -86,7 +86,7 @@ def test_simple_switch():
             'staMac': '11:22:33:AA:BB:CC'
         },
     })
-    assert len(entities) == 3
+    assert len(entities) == 5
 
     switch: XSwitch = entities[0]
     assert switch.name == "Kitchen"
