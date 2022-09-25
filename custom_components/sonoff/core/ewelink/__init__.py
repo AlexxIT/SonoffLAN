@@ -59,6 +59,10 @@ class XRegistry(XRegistryBase):
 
         return entities
 
+    @property
+    def online(self) -> bool:
+        return self.cloud.online is not None or self.local.online
+
     async def stop(self, *args):
         self.devices.clear()
         self.dispatcher.clear()

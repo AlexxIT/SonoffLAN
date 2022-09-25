@@ -211,6 +211,12 @@ async def internal_normal_setup(hass: HomeAssistant, entry: ConfigEntry):
 async def internal_cache_setup(
         hass: HomeAssistant, entry: ConfigEntry, devices: list = None
 ):
+    registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
+
+    # this may only happen if async_setup_entry will fail
+    if registry.online:
+        await async_unload_entry(hass, entry)
+
     await asyncio.gather(*[
         hass.config_entries.async_forward_entry_setup(entry, domain)
         for domain in PLATFORMS
@@ -223,7 +229,6 @@ async def internal_cache_setup(
             # 16 devices loaded from the Cloud Server
             _LOGGER.debug(f"{len(devices)} devices loaded from Cache")
 
-    registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
     if devices:
         devices = internal_unique_devices(entry.entry_id, devices)
         entities = registry.setup_devices(devices)

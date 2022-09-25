@@ -1,5 +1,8 @@
 {
   "config": {
+    "abort": {
+      "reauth_successful": "Re-authentication was successful"
+    },
     "error": {
       "exists": "This account is already configured",
       "template": "{error}"

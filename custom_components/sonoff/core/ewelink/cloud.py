@@ -8,7 +8,7 @@ import hmac
 import json
 import logging
 import time
-from typing import List
+from typing import List, Optional
 
 from aiohttp import ClientConnectorError, WSMessage, ClientWebSocketResponse
 
@@ -252,9 +252,9 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         if self.task:
             self.task.cancel()
 
-        self.set_online(False)
+        self.set_online(None)
 
-    def set_online(self, value: bool):
+    def set_online(self, value: Optional[bool]):
         _LOGGER.debug(f"CLOUD {self.online} => {value}")
         if self.online == value:
             return
