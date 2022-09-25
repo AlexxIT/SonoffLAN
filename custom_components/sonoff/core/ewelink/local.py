@@ -117,14 +117,12 @@ class XServiceBrowser(AsyncServiceBrowser):
 
                 if not record.is_expired(now):
                     key = record.key[:18]
-                    host = None
+                    host = key + ".local."
                     port = None
                     for r, _ in records:
                         if r.key[:18] != key:
                             continue
-                        if isinstance(r, DNSAddress):
-                            host = str(ipaddress.ip_address(r.address))
-                        elif isinstance(r, DNSService):
+                        if isinstance(r, DNSService):
                             port = r.port
 
                     # support empty host and different port
@@ -154,13 +152,9 @@ class XServiceBrowser(AsyncServiceBrowser):
                             record.is_expired(now):
                         continue
 
-                    host = None
-
                     key = record.key[:18] + ".local."
+                    host = key
                     if key in cache:
-                        for r in cache[key].keys():
-                            if isinstance(r, DNSAddress):
-                                host = str(ipaddress.ip_address(r.address))
                         for r in records.keys():
                             if isinstance(r, DNSService):
                                 host += f":{r.port}"
