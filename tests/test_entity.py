@@ -9,7 +9,7 @@ from custom_components.sonoff.binary_sensor import XRemoteSensor, XBinarySensor
 from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
 from custom_components.sonoff.core.ewelink.base import *
-from custom_components.sonoff.cover import XCover, XCoverDualR3
+from custom_components.sonoff.cover import XCover, XCoverDualR3, XZigbeeCover
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import *
 from custom_components.sonoff.number import XPulseWidth, XNumber
@@ -712,6 +712,31 @@ def test_zigbee_water():
     assert water.state == "on"
     assert water.device_class.value == "moisture"
     assert water.entity_id.endswith(".sonoff_1000123abc_water")
+
+
+def test_zigbee_cover():
+    entities = get_entitites({
+        "extra": {"uiid": 1514},
+        "params": {
+            "battery": 50,
+            "curPercent": 100,
+            "curtainAction": "open"
+        }
+    })
+
+    cover: XZigbeeCover = entities[0]
+    assert cover.state == "closed"
+    assert cover.state_attributes["current_position"] == 0
+
+    cover.internal_update({"curtainAction": "open"})
+    assert cover.state == "closed"
+
+    cover.internal_update({"curPercent": 85})
+    assert cover.state == "open"
+    assert cover.state_attributes["current_position"] == 15
+
+    battery: XSensor = entities[1]
+    assert battery.state == 100
 
 
 def test_default_class():

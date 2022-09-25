@@ -14,7 +14,7 @@ Developer can change global properties of existing classes via spec function.
 from .ewelink import XDevice
 from ..binary_sensor import *
 from ..climate import XClimateTH, XClimateNS, XThermostat
-from ..cover import XCover, XCoverDualR3
+from ..cover import XCover, XCoverDualR3, XZigbeeCover
 from ..fan import XFan, XDiffuserFan, XToggleFan
 from ..light import *
 from ..number import XPulseWidth
@@ -205,6 +205,8 @@ DEVICES = {
     ],  # Sonoff POWR3
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
+    # https://github.com/AlexxIT/SonoffLAN/issues/972
+    1514: [XZigbeeCover, spec(XSensor, param="battery", multiply=2)],
     1770: [
         spec(XSensor100, param="temperature"),
         spec(XSensor100, param="humidity"),
