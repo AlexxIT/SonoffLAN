@@ -140,6 +140,7 @@ DEVICES = {
         spec(XEnergySensor, param="hundredDaysKwhData", uid="energy",
              get_params={"hundredDaysKwh": "get"}),
     ],  # Sonoff POWR2
+    33: [XLightL1, RSSI],  # https://github.com/AlexxIT/SonoffLAN/issues/985
     34: [
         XFan, XFanLight, LED, RSSI,
     ],  # Sonoff iFan02 and iFan03
