@@ -1374,3 +1374,19 @@ def test_backward_number():
     else:
         coro = pulse.async_set_native_value(5)
     assert reg.call(coro)[1] == {'pulse': 'on', 'pulseWidth': 5000}
+
+
+def test_spm():
+    entities = get_entitites({
+        "extra": {"uiid": 130},
+        "params": {
+            "current_00": 11,
+            "current_01": 22,
+            "current_02": 33,
+            "current_03": 44,
+        },
+    })
+
+    current: XSensor = [e for e in entities if e.uid.startswith("current")][-1]
+    assert current.state == 0.44
+    assert current.device_class.value == "current"
