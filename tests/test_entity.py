@@ -1387,6 +1387,7 @@ def test_spm():
         },
     })
 
-    current: XSensor = [e for e in entities if e.uid.startswith("current")][-1]
+    current: XSensor = next(e for e in entities if e.uid == "current_4")
     assert current.state == 0.44
     assert current.device_class.value == "current"
+    assert current.unit_of_measurement == "A"

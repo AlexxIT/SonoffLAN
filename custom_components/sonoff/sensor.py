@@ -69,10 +69,10 @@ class XSensor(XEntity, SensorEntity):
             else self.uid
         self._attr_device_class = DEVICE_CLASSES.get(default_class)
 
-        if self.uid in UNITS:
+        if default_class in UNITS:
             # by default all sensors with units is measurement sensors
             self._attr_state_class = SensorStateClass.MEASUREMENT
-            self._attr_native_unit_of_measurement = UNITS[self.uid]
+            self._attr_native_unit_of_measurement = UNITS[default_class]
 
         XEntity.__init__(self, ewelink, device)
 
