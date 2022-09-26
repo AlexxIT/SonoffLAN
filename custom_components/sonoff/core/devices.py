@@ -237,6 +237,8 @@ POW_UI_ACTIVE = {
     126: (3600, {"uiActive": {"all": 1, "time": 7200}}),
     130: (3600, {"uiActive": {"all": 1, "time": 7200}}),
     182: (0, {"uiActive": 180}),  # maximum for this model
+    # https://github.com/AlexxIT/SonoffLAN/issues/978
+    190: (0, {"uiActive": 180}),  # haven't check real maximum
 }
 
 
