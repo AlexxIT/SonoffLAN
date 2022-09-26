@@ -118,7 +118,7 @@ class XServiceBrowser(AsyncServiceBrowser):
                 if not record.is_expired(now):
                     key = record.key[:18]
                     host = key + ".local."
-                    port = None
+                    port = "8081"
                     for r, _ in records:
                         if r.key[:18] != key:
                             continue
@@ -154,10 +154,15 @@ class XServiceBrowser(AsyncServiceBrowser):
 
                     key = record.key[:18] + ".local."
                     host = key
+                    port = "8081"
+
                     if key in cache:
                         for r in records.keys():
                             if isinstance(r, DNSService):
-                                host += f":{r.port}"
+                                port = r.port
+
+                    if host:
+                        host += f":{port}"
 
                     data = self.decode_text(record.text)
                     asyncio.create_task(self.handler(record.name, host, data))
