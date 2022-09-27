@@ -126,7 +126,8 @@ DEVICES = {
     22: [XLightB1, RSSI],  # Sonoff B1 (only cloud)
     # https://github.com/AlexxIT/SonoffLAN/issues/173
     25: [
-        XDiffuserFan, XDiffuserLight, spec(XBinarySensor, param="water"), RSSI,
+        XDiffuserFan, XDiffuserLight, RSSI,
+        spec(XBinarySensor, param="water", uid=""),
     ],  # Diffuser
     28: [XRemote, LED, RSSI],  # Sonoff RF Brigde 433
     29: SPEC_2CH,
@@ -214,9 +215,14 @@ DEVICES = {
     ],  # ZCL_HA_DEVICEID_TEMPERATURE_SENSOR
     2026: [XZigbeeMotion, Battery],  # ZIGBEE_MOBILE_SENSOR
     # ZIGBEE_DOOR_AND_WINDOW_SENSOR
-    3026: [spec(XBinarySensor, param="lock", default_class="door"), Battery],
+    3026: [
+        # backward compatibility for unique_id
+        spec(XBinarySensor, param="lock", uid="", default_class="door"),
+        Battery,
+    ],
     4026: [
-        spec(XBinarySensor, param="water", default_class="moisture"), Battery,
+        spec(XBinarySensor, param="water", uid="", default_class="moisture"),
+        Battery,
     ],  # https://github.com/AlexxIT/SonoffLAN/issues/852
     4256: [
         spec(XZigbeeSwitches, channel=0, uid="1"),

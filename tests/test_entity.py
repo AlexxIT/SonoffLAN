@@ -417,7 +417,7 @@ def test_diffuser():
     water = next(e for e in entitites if isinstance(e, XBinarySensor))
     assert water.state == "off"
     assert water.device_class is None
-    assert water.unique_id == "1000123abc_water"
+    assert water.unique_id == DEVICEID
 
 
 def test_sonoff_sc():
@@ -696,7 +696,7 @@ def test_zigbee_door():
     lock: XBinarySensor = entities[0]
     assert lock.state == "off"
     assert lock.device_class.value == "door"
-    assert lock.unique_id == "1000123abc_lock"
+    assert lock.unique_id == DEVICEID
 
 
 def test_zigbee_water():
@@ -711,7 +711,7 @@ def test_zigbee_water():
     water: XBinarySensor = entities[0]
     assert water.state == "on"
     assert water.device_class.value == "moisture"
-    assert water.entity_id.endswith(".sonoff_1000123abc_water")
+    assert water.unique_id == DEVICEID
 
 
 def test_zigbee_cover():
