@@ -136,6 +136,7 @@ class XClimateNS(XEntity, ClimateEntity):
     _attr_min_temp = 16
     _attr_temperature_unit = TEMP_CELSIUS
     _attr_target_temperature_step = 1
+    _attr_supported_features = 0 | SUPPORT_TARGET_TEMPERATURE
 
     def set_state(self, params: dict):
         cache = self.device["params"]
