@@ -171,9 +171,12 @@ class XClimateNS(XEntity, ClimateEntity):
         if not hvac_mode:
             return
 
-        if hvac_mode in (HVAC_MODE_AUTO, HVAC_MODE_OFF):
+        if hvac_mode in (HVAC_MODE_AUTO):
             self._attr_hvac_mode = hvac_mode
             self._attr_supported_features = 0
+        elif hvac_mode in (HVAC_MODE_OFF):
+            self._attr_hvac_mode = hvac_mode
+            self._attr_supported_features = SUPPORT_TARGET_TEMPERATURE
         elif hvac_mode in (HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_HEAT_COOL):
             self._attr_hvac_mode = self._attr_hvac_modes[1]
             self._attr_supported_features = SUPPORT_TARGET_TEMPERATURE
@@ -205,14 +208,15 @@ class XClimateNS(XEntity, ClimateEntity):
             return
 
         # Set manual operation and temperature
-        params = {
-            "ATCMode": 0,   
+        params = self.get_params(hvac_mode)
+        params.update({
+            "ATCMode": 0,
             "ATCExpect0": temperature,
-        }
+        })
 
         await self.ewelink.cloud.send(self.device, params)
         self._attr_target_temperature = temperature
-        self.set_hvac_attr(self._attr_hvac_modes[1])
+        self.set_hvac_attr(hvac_mode)
         self._async_write_ha_state()
 
 
