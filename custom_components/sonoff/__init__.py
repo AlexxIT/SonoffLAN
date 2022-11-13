@@ -16,13 +16,7 @@ from . import system_health
 from .core import backward
 from .core import devices as core_devices
 from .core.const import *
-from .core.ewelink import (
-    SIGNAL_ADD_ENTITIES,
-    SIGNAL_CONNECTED,
-    XRegistry,
-    XRegistryCloud,
-    XRegistryLocal,
-)
+from .core.ewelink import SIGNAL_ADD_ENTITIES, SIGNAL_CONNECTED, XRegistry
 from .core.ewelink.camera import XCameras
 from .core.ewelink.cloud import APP, AuthError
 

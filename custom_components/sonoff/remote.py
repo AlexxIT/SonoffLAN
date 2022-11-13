@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Dict, Union
+from typing import Union
 
 from homeassistant.components.remote import (
     ATTR_DELAY_SECS,

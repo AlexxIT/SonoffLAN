@@ -8,7 +8,7 @@ import hmac
 import json
 import logging
 import time
-from typing import List, Optional
+from typing import Optional
 
 from aiohttp import ClientConnectorError, ClientWebSocketResponse, WSMessage
 

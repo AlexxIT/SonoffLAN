@@ -4,7 +4,7 @@ import socket
 import time
 from dataclasses import dataclass
 from threading import Thread
-from typing import Dict, Union
+from typing import Union
 
 _LOGGER = logging.getLogger(__name__)
 

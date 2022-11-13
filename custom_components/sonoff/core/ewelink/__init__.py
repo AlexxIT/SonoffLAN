@@ -1,13 +1,12 @@
 import asyncio
 import logging
 import time
-from typing import Dict, List
 
 from aiohttp import ClientSession
 
 from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
 from .cloud import XRegistryCloud
-from .local import XRegistryLocal, decrypt
+from .local import XRegistryLocal
 
 _LOGGER = logging.getLogger(__name__)
 
