@@ -16,12 +16,14 @@ repos:
     rev: v3.2.2
     hooks:
       - id: pyupgrade
-        args: ["--py37-plus"]
+        args: ["--py39-plus"]
   - repo: https://github.com/timothycrosley/isort
     rev: 5.10.1
     hooks:
       - id: isort
+        args: ["--profile", "black"]
   - repo: https://github.com/pycqa/flake8
     rev: 5.0.4
     hooks:
       - id: flake8
+        args: ["--max-line-length=88", "--extend-ignore=E203,W503"]
