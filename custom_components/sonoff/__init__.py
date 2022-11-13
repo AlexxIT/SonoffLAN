@@ -4,7 +4,18 @@ import logging
 import voluptuous as vol
 from homeassistant.components import zeroconf
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry, ConfigEntryState
-from homeassistant.const import *
+from homeassistant.const import (
+    CONF_DEVICE_CLASS,
+    CONF_DEVICES,
+    CONF_MODE,
+    CONF_NAME,
+    CONF_PASSWORD,
+    CONF_PAYLOAD_OFF,
+    CONF_SENSORS,
+    CONF_TIMEOUT,
+    CONF_USERNAME,
+    EVENT_HOMEASSISTANT_STOP,
+)
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
@@ -15,7 +26,14 @@ from homeassistant.helpers.storage import Store
 from . import system_health
 from .core import backward
 from .core import devices as core_devices
-from .core.const import *
+from .core.const import (
+    CONF_APPID,
+    CONF_APPSECRET,
+    CONF_DEFAULT_CLASS,
+    CONF_DEVICEKEY,
+    CONF_RFBRIDGE,
+    DOMAIN,
+)
 from .core.ewelink import SIGNAL_ADD_ENTITIES, SIGNAL_CONNECTED, XRegistry
 from .core.ewelink.camera import XCameras
 from .core.ewelink.cloud import APP, AuthError

@@ -1,5 +1,16 @@
+import asyncio
+import time
+
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity
+from homeassistant.components.light import (
+    COLOR_MODE_COLOR_TEMP,
+    COLOR_MODE_RGB,
+    LightEntity,
+)
+from homeassistant.components.switch import SwitchEntity
+from homeassistant.const import TEMP_FAHRENHEIT
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.entity import Entity
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
@@ -8,14 +19,33 @@ from custom_components.sonoff import remote
 from custom_components.sonoff.binary_sensor import XBinarySensor, XRemoteSensor
 from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
-from custom_components.sonoff.core.ewelink.base import *
+from custom_components.sonoff.core.entity import XEntity
+from custom_components.sonoff.core.ewelink import (
+    SIGNAL_ADD_ENTITIES,
+    SIGNAL_CONNECTED,
+    SIGNAL_UPDATE,
+    XRegistry,
+)
 from custom_components.sonoff.cover import XCover, XCoverDualR3, XZigbeeCover
 from custom_components.sonoff.fan import XFan
-from custom_components.sonoff.light import *
+from custom_components.sonoff.light import (
+    UIID22_MODES,
+    XDiffuserLight,
+    XLightB1,
+    XLightGroup,
+    XLightL1,
+)
 from custom_components.sonoff.number import XNumber, XPulseWidth
-from custom_components.sonoff.sensor import *
-from custom_components.sonoff.switch import *
+from custom_components.sonoff.sensor import (
+    XEnergySensor,
+    XOutdoorTempNS,
+    XRemoteButton,
+    XSensor,
+    XTemperatureNS,
+    XUnknown,
+)
 
+from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle, XZigbeeSwitches
 from . import save_to
 
 DEVICEID = "1000123abc"

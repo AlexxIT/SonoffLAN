@@ -11,15 +11,43 @@ XEntity properties:
 
 Developer can change global properties of existing classes via spec function.
 """
-from ..binary_sensor import *
+
+from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.light import LightEntity
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.switch import SwitchEntity
+
+from ..binary_sensor import XBinarySensor, XWiFiDoor, XZigbeeMotion
 from ..climate import XClimateNS, XClimateTH, XThermostat
+from ..core.entity import XEntity
 from ..cover import XCover, XCoverDualR3, XZigbeeCover
 from ..fan import XDiffuserFan, XFan, XToggleFan
-from ..light import *
+from ..light import (
+    XDiffuserLight,
+    XDimmer,
+    XFanLight,
+    XLight57,
+    XLightB1,
+    XLightB02,
+    XLightB05B,
+    XLightD1,
+    XLightGroup,
+    XLightL1,
+)
 from ..number import XPulseWidth
 from ..remote import XRemote
-from ..sensor import *
-from ..switch import *
+from ..sensor import (
+    XEnergySensor,
+    XHumidityTH,
+    XOutdoorTempNS,
+    XRemoteButton,
+    XSensor,
+    XTemperatureNS,
+    XTemperatureTH,
+    XUnknown,
+    XWiFiDoorBattery,
+)
+from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle, XZigbeeSwitches
 from .ewelink import XDevice
 
 # supported custom device_class

@@ -322,7 +322,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             _LOGGER.warning(f"Cloud WS Connection error: {e}")
 
         except Exception as e:
-            _LOGGER.error(f"Cloud WS exception", exc_info=e)
+            _LOGGER.error("Cloud WS exception", exc_info=e)
 
         return False
 
