@@ -1,8 +1,6 @@
 # Control Sonoff Devices from Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
-[![Donate](https://img.shields.io/badge/donate-Coffee-yellow.svg)](https://www.buymeacoffee.com/AlexxIT)
-[![Donate](https://img.shields.io/badge/donate-Yandex-red.svg)](https://money.yandex.ru/to/41001428278477)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 
 Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devices with [eWeLink](https://www.ewelink.cc/en/) (original) firmware over LAN and/or Cloud.
 
@@ -47,7 +45,7 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 
 There is another great component by [@peterbuga](https://github.com/peterbuga/HASS-sonoff-ewelink), that works with cloud servers.
 
-Thanks to [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant) and [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.  
+Thanks to [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant) and [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.
 Thanks to [@michthom](https://github.com/michthom) and [@EpicLPer](https://github.com/EpicLPer) for researching the local Sonoff Camera protocol.
 
 ## Tested Devices
@@ -175,7 +173,9 @@ Devices in DIY mode can be used without ewelink credentials because their protoc
 
 ### Debug page
 
-A link to the debug page can be found on the [System Health page](https://my.home-assistant.io/redirect/info/). Debug page shows only Integration logs and removes all private data. You can filter log and enable auto refresh (in seconds).
+Enable debug page in integration options. Reload integrations page. Open: Integraion > Menu > Known issues.
+
+Debug page shows only integration logs and removes some private data. You can filter log and enable auto refresh (in seconds).
 
 ```
 http://192.168.1.123:8123/api/sonoff/c8503fee-88fb-4a18-84d9-abb782bf0aa7?q=1000xxxxxx&r=2

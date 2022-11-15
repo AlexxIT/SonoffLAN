@@ -1,8 +1,8 @@
-from homeassistant.components.cover import CoverEntity, CoverDeviceClass
+from homeassistant.components.cover import CoverDeviceClass, CoverEntity
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
-from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
+from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 
@@ -11,7 +11,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
     ewelink.dispatcher_connect(
         SIGNAL_ADD_ENTITIES,
-        lambda x: add_entities([e for e in x if isinstance(e, CoverEntity)])
+        lambda x: add_entities([e for e in x if isinstance(e, CoverEntity)]),
     )
 
 
@@ -25,9 +25,7 @@ class XCover(XEntity, CoverEntity):
 
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
-        self._attr_device_class = DEVICE_CLASSES.get(
-            device.get("device_class")
-        )
+        self._attr_device_class = DEVICE_CLASSES.get(device.get("device_class"))
 
     def set_state(self, params: dict):
         # => command to cover from mobile app
@@ -111,3 +109,26 @@ class XCoverDualR3(XCover):
 
     async def async_set_cover_position(self, position: int, **kwargs):
         await self.ewelink.send(self.device, {"location": position})
+
+
+# noinspection PyAbstractClass
+class XZigbeeCover(XCover):
+    params = {"curPercent", "curtainAction"}
+
+    def set_state(self, params: dict):
+        if "curPercent" in params:
+            # reversed position: HA closed at 0, eWeLink closed at 100
+            self._attr_current_cover_position = 100 - params["curPercent"]
+            self._attr_is_closed = self._attr_current_cover_position == 0
+
+    async def async_stop_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {"curtainAction": "pause"})
+
+    async def async_open_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {"curtainAction": "open"})
+
+    async def async_close_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {"curtainAction": "close"})
+
+    async def async_set_cover_position(self, position: int, **kwargs):
+        await self.ewelink.send(self.device, {"openPercent": 100 - position})

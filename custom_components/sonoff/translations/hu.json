@@ -1,0 +1,39 @@
+{
+  "config": {
+    "abort": {
+      "reauth_successful": "Az újrahitelesítés sikeresen megtörtént"
+    },
+    "error": {
+      "exists": "Ez a fiók már be van állítva",
+      "template": "{error}"
+    },
+    "step": {
+      "user": {
+        "description": "Adja meg [eWeLink](https://www.ewelink.cc/hu/) fiókadatait",
+        "data": {
+          "username": "E-mail vagy telefonszám (bármelyik DIY mód esetén)",
+          "password": "Jelszó (hagyja üresen DIY mód estén)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "mode": "Üzemmód (az automatikus ajánlott a legtöbb felhasználó számára)",
+          "homes": "eWelink otthonok (hagyja üresen a \"My Home / Otthonom\" opciót)",
+          "debug": "Debug oldal (Integrációk > Sonoff \"hamburger\" menü > Ismert hibák)"
+        }
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "version": "Verzió",
+      "cloud_online": "Felhő eszközök online",
+      "local_online": "Helyi eszközök online",
+      "debug": "Debug oldal"
+    }
+  }
+}

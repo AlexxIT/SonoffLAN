@@ -1,9 +1,16 @@
-from homeassistant.components.light import *
+from homeassistant.components.light import (
+    COLOR_MODE_BRIGHTNESS,
+    COLOR_MODE_COLOR_TEMP,
+    COLOR_MODE_ONOFF,
+    COLOR_MODE_RGB,
+    SUPPORT_EFFECT,
+    LightEntity,
+)
 from homeassistant.util import color
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
-from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
+from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 
@@ -12,7 +19,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
     ewelink.dispatcher_connect(
         SIGNAL_ADD_ENTITIES,
-        lambda x: add_entities([e for e in x if isinstance(e, LightEntity)])
+        lambda x: add_entities([e for e in x if isinstance(e, LightEntity)]),
     )
 
 
@@ -40,15 +47,20 @@ class XLight(XEntity, LightEntity):
 
     def set_state(self, params: dict):
         if self.param in params:
-            self._attr_is_on = params[self.param] == 'on'
+            self._attr_is_on = params[self.param] == "on"
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
         pass
 
     async def async_turn_on(
-            self, brightness: int = None, color_temp: int = None,
-            rgb_color=None, xy_color=None, hs_color=None, effect: str = None,
-            **kwargs
+        self,
+        brightness: int = None,
+        color_temp: int = None,
+        rgb_color=None,
+        xy_color=None,
+        hs_color=None,
+        effect: str = None,
+        **kwargs
     ) -> None:
         if brightness == 0:
             await self.async_turn_off()
@@ -70,9 +82,7 @@ class XLight(XEntity, LightEntity):
                 await self.ewelink.send(
                     self.device, {self.param: "on"}, query_cloud=False
                 )
-            await self.ewelink.send(
-                self.device, params, {"cmd": "dimmable", **params}
-            )
+            await self.ewelink.send(self.device, params, {"cmd": "dimmable", **params})
         else:
             await self.ewelink.send(self.device, {self.param: "on"})
 
@@ -87,8 +97,8 @@ class XDimmer(XLight):
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
-        if 'bright' in params:
-            self._attr_brightness = conv(params['bright'], 10, 100, 1, 255)
+        if "bright" in params:
+            self._attr_brightness = conv(params["bright"], 10, 100, 1, 255)
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
         if brightness:
@@ -102,12 +112,12 @@ class XLight57(XLight):
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
-        if 'channel0' in params:
-            self._attr_brightness = conv(params['channel0'], 25, 255, 1, 255)
+        if "channel0" in params:
+            self._attr_brightness = conv(params["channel0"], 25, 255, 1, 255)
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
         if brightness:
-            return {'channel0': str(conv(brightness, 1, 255, 25, 255))}
+            return {"channel0": str(conv(brightness, 1, 255, 25, 255))}
 
 
 # noinspection PyAbstractClass, UIID44
@@ -117,8 +127,8 @@ class XLightD1(XLight):
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
-        if 'brightness' in params:
-            self._attr_brightness = conv(params['brightness'], 0, 100, 1, 255)
+        if "brightness" in params:
+            self._attr_brightness = conv(params["brightness"], 0, 100, 1, 255)
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
         if brightness:
@@ -127,7 +137,8 @@ class XLightD1(XLight):
             # max brightness=100 (error 400)
             return {
                 "brightness": conv(brightness, 1, 255, 0, 100),
-                "mode": 0, "switch": "on",
+                "mode": 0,
+                "switch": "on",
             }
 
 
@@ -137,21 +148,41 @@ class XLightD1(XLight):
 
 UIID22_MODES = {
     "Good Night": {
-        "channel0": "0", "channel1": "0", "channel2": "189", "channel3": "118",
-        "channel4": "0", "zyx_mode": 3, "type": "middle"
+        "channel0": "0",
+        "channel1": "0",
+        "channel2": "189",
+        "channel3": "118",
+        "channel4": "0",
+        "zyx_mode": 3,
+        "type": "middle",
     },
     "Reading": {
-        "channel0": "0", "channel1": "0", "channel2": "255", "channel3": "255",
-        "channel4": "255", "zyx_mode": 4, "type": "middle"
+        "channel0": "0",
+        "channel1": "0",
+        "channel2": "255",
+        "channel3": "255",
+        "channel4": "255",
+        "zyx_mode": 4,
+        "type": "middle",
     },
     "Party": {
-        "channel0": "0", "channel1": "0", "channel2": "207", "channel3": "56",
-        "channel4": "3", "zyx_mode": 5, "type": "middle"
+        "channel0": "0",
+        "channel1": "0",
+        "channel2": "207",
+        "channel3": "56",
+        "channel4": "3",
+        "zyx_mode": 5,
+        "type": "middle",
     },
     "Leisure": {
-        "channel0": "0", "channel1": "0", "channel2": "56", "channel3": "85",
-        "channel4": "179", "zyx_mode": 6, "type": "middle"
-    }
+        "channel0": "0",
+        "channel1": "0",
+        "channel2": "56",
+        "channel3": "85",
+        "channel4": "179",
+        "zyx_mode": 6,
+        "type": "middle",
+    },
 }
 
 
@@ -170,7 +201,7 @@ class XLightB1(XLight):
     def set_state(self, params: dict):
         XLight.set_state(self, params)
 
-        if 'zyx_mode' in params:
+        if "zyx_mode" in params:
             mode = params["zyx_mode"]  # 1-6
             if mode == 1:
                 self._attr_color_mode = COLOR_MODE_COLOR_TEMP
@@ -183,8 +214,8 @@ class XLightB1(XLight):
 
         if self.color_mode == COLOR_MODE_COLOR_TEMP:
             # from 25 to 255
-            cold = int(params['channel0'])
-            warm = int(params['channel1'])
+            cold = int(params["channel0"])
+            warm = int(params["channel1"])
             if warm == 0:
                 self._attr_color_temp = 1
             elif cold == warm:
@@ -195,8 +226,9 @@ class XLightB1(XLight):
 
         else:
             self._attr_rgb_color = (
-                int(params['channel2']), int(params['channel3']),
-                int(params['channel4'])
+                int(params["channel2"]),
+                int(params["channel3"]),
+                int(params["channel4"]),
             )
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
@@ -214,15 +246,21 @@ class XLightB1(XLight):
                 raise NotImplementedError
 
             return {
-                **params, 'channel2': '0', 'channel3': '0', 'channel4': '0',
-                'zyx_mode': 1
+                **params,
+                "channel2": "0",
+                "channel3": "0",
+                "channel4": "0",
+                "zyx_mode": 1,
             }
 
         if rgb_color:
             return {
-                'channel0': '0', 'channel1': '0',
-                'channel2': str(rgb_color[0]), 'channel3': str(rgb_color[1]),
-                'channel4': str(rgb_color[2]), 'zyx_mode': 2,
+                "channel0": "0",
+                "channel1": "0",
+                "channel2": str(rgb_color[0]),
+                "channel3": str(rgb_color[1]),
+                "channel4": str(rgb_color[2]),
+                "zyx_mode": 2,
             }
 
         if effect:
@@ -236,9 +274,18 @@ class XLightL1(XLight):
 
     _attr_color_mode = COLOR_MODE_RGB
     _attr_effect_list = [
-        "Colorful Gradient", "Colorful Breath", "DIY Gradient", "DIY Pulse",
-        "DIY Breath", "DIY Strobe", "RGB Gradient", "DIY Gradient",
-        "RGB Breath", "RGB Strobe", "Music"
+        "Colorful",
+        "Colorful Gradient",
+        "Colorful Breath",
+        "DIY Gradient",
+        "DIY Pulse",
+        "DIY Breath",
+        "DIY Strobe",
+        "RGB Gradient",
+        "DIY Gradient",
+        "RGB Breath",
+        "RGB Strobe",
+        "Music",
     ]
     # support on/off, brightness, RGB
     _attr_supported_color_modes = {COLOR_MODE_RGB}
@@ -247,30 +294,36 @@ class XLightL1(XLight):
     def set_state(self, params: dict):
         XLight.set_state(self, params)
 
-        if 'bright' in params:
-            self._attr_brightness = conv(params['bright'], 1, 100, 1, 255)
-        if 'colorR' in params and 'colorG' in params and 'colorB':
+        if "bright" in params:
+            self._attr_brightness = conv(params["bright"], 1, 100, 1, 255)
+        if "colorR" in params and "colorG" in params and "colorB":
             self._attr_rgb_color = (
-                params['colorR'], params['colorG'], params['colorB']
+                params["colorR"],
+                params["colorG"],
+                params["colorB"],
             )
-        if 'mode' in params:
-            mode = params['mode'] - 2  # 1=Colorful, skip it
+        if "mode" in params:
+            mode = params["mode"] - 1  # 1=Colorful, don't skip it
             self._attr_effect = self.effect_list[mode] if mode >= 0 else None
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
         if effect:
-            mode = self.effect_list.index(effect) + 2
-            return {'mode': mode, "switch": "on"}
+            mode = self.effect_list.index(effect) + 1
+            return {"mode": mode, "switch": "on"}
         if brightness or rgb_color:
             # support bright and color in one command
             params = {"mode": 1}
             if brightness:
                 params["bright"] = conv(brightness, 1, 255, 1, 100)
             if rgb_color:
-                params.update({
-                    "colorR": rgb_color[0], "colorG": rgb_color[1],
-                    "colorB": rgb_color[2], "light_type": 1
-                })
+                params.update(
+                    {
+                        "colorR": rgb_color[0],
+                        "colorG": rgb_color[1],
+                        "colorB": rgb_color[2],
+                        "light_type": 1,
+                    }
+                )
             return params
 
 
@@ -331,10 +384,13 @@ class XLightB02(XLight):
                 "white": {
                     "br": conv(brightness or self.brightness, 1, 255, 1, 100),
                     "ct": conv(
-                        color_temp or self.color_temp, self.max_mireds,
-                        self.min_mireds, 0, 100
-                    )
-                }
+                        color_temp or self.color_temp,
+                        self.max_mireds,
+                        self.min_mireds,
+                        0,
+                        100,
+                    ),
+                },
             }
         if effect:
             return {"ltype": effect, effect: B02_MODE_PAYLOADS[effect]}
@@ -342,14 +398,14 @@ class XLightB02(XLight):
 
 # Taken straight from the debug mode and the eWeLink app
 B05_MODE_PAYLOADS = {
-    'bright': {'r': 255, 'g': 255, 'b': 255, 'br': 100},
-    'goodNight': {'r': 254, 'g': 254, 'b': 126, 'br': 25},
-    'read': {'r': 255, 'g': 255, 'b': 255, 'br': 60},
-    'nightLight': {'r': 255, 'g': 242, 'b': 226, 'br': 5},
-    'party': {'r': 254, 'g': 132, 'b': 0, 'br': 45, 'tf': 1, 'sp': 1},
-    'leisure': {'r': 0, 'g': 40, 'b': 254, 'br': 55, 'tf': 1, 'sp': 1},
-    'soft': {'r': 38, 'g': 254, 'b': 0, 'br': 20, 'tf': 1, 'sp': 1},
-    'colorful': {'r': 255, 'g': 0, 'b': 0, 'br': 100, 'tf': 1, 'sp': 1},
+    "bright": {"r": 255, "g": 255, "b": 255, "br": 100},
+    "goodNight": {"r": 254, "g": 254, "b": 126, "br": 25},
+    "read": {"r": 255, "g": 255, "b": 255, "br": 60},
+    "nightLight": {"r": 255, "g": 242, "b": 226, "br": 5},
+    "party": {"r": 254, "g": 132, "b": 0, "br": 45, "tf": 1, "sp": 1},
+    "leisure": {"r": 0, "g": 40, "b": 254, "br": 55, "tf": 1, "sp": 1},
+    "soft": {"r": 38, "g": 254, "b": 0, "br": 20, "tf": 1, "sp": 1},
+    "colorful": {"r": 255, "g": 0, "b": 0, "br": 100, "tf": 1, "sp": 1},
 }
 
 
@@ -385,9 +441,11 @@ class XLightB05B(XLightB02):
                 state["ct"], 0, 100, self.max_mireds, self.min_mireds
             )
 
-        if 'r' in state or 'g' in state or 'b' in state:
+        if "r" in state or "g" in state or "b" in state:
             self._attr_rgb_color = (
-                state.get('r', 0), state.get('g', 0), state.get('b', 0)
+                state.get("r", 0),
+                state.get("g", 0),
+                state.get("b", 0),
             )
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
@@ -395,19 +453,19 @@ class XLightB05B(XLightB02):
             return {
                 "ltype": "white",
                 "white": {
-                    'br': conv(brightness or self.brightness, 1, 255, 1, 100),
-                    'ct': conv(
-                        color_temp, self.max_mireds, self.min_mireds, 0, 100
-                    )
-                }
+                    "br": conv(brightness or self.brightness, 1, 255, 1, 100),
+                    "ct": conv(color_temp, self.max_mireds, self.min_mireds, 0, 100),
+                },
             }
         if rgb_color:
             return {
                 "ltype": "color",
                 "color": {
-                    'br': conv(brightness or self.brightness, 1, 255, 1, 100),
-                    'r': rgb_color[0], 'g': rgb_color[1], 'b': rgb_color[2],
-                }
+                    "br": conv(brightness or self.brightness, 1, 255, 1, 100),
+                    "r": rgb_color[0],
+                    "g": rgb_color[1],
+                    "b": rgb_color[2],
+                },
             }
         if brightness:
             if self.color_mode == COLOR_MODE_COLOR_TEMP:
@@ -430,6 +488,7 @@ class XLightGroup(XEntity, LightEntity):
     The sequence of channels is important. The first channels will be turned on
     at low brightness.
     """
+
     params = {"switches"}
     channels: list = None
 
@@ -440,7 +499,8 @@ class XLightGroup(XEntity, LightEntity):
 
     def set_state(self, params: dict):
         cnt = sum(
-            1 for i in params["switches"]
+            1
+            for i in params["switches"]
             if i["outlet"] in self.channels and i["switch"] == "on"
         )
         if cnt:
@@ -508,14 +568,14 @@ class XDiffuserLight(XEntity, LightEntity):
     _attr_supported_features = SUPPORT_EFFECT
 
     def set_state(self, params: dict):
-        if 'lightswitch' in params:
-            self._attr_is_on = params['lightswitch'] == 1
+        if "lightswitch" in params:
+            self._attr_is_on = params["lightswitch"] == 1
 
-        if 'lightbright' in params:
-            self._attr_brightness = conv(params['lightbright'], 0, 100, 1, 255)
+        if "lightbright" in params:
+            self._attr_brightness = conv(params["lightbright"], 0, 100, 1, 255)
 
-        if 'lightmode' in params:
-            mode = params['lightmode']
+        if "lightmode" in params:
+            mode = params["lightmode"]
             if mode == 1:
                 # support on/off
                 self._attr_color_mode = COLOR_MODE_ONOFF
@@ -529,36 +589,40 @@ class XDiffuserLight(XEntity, LightEntity):
                 self._attr_color_mode = COLOR_MODE_BRIGHTNESS
                 self._attr_supported_color_modes = {COLOR_MODE_BRIGHTNESS}
 
-        if 'lightRcolor' in params:
+        if "lightRcolor" in params:
             self._attr_rgb_color = (
-                params['lightRcolor'], params['lightGcolor'],
-                params['lightBcolor']
+                params["lightRcolor"],
+                params["lightGcolor"],
+                params["lightBcolor"],
             )
 
     async def async_turn_on(
-            self, brightness: int = None, rgb_color=None, effect: str = None,
-            **kwargs
+        self, brightness: int = None, rgb_color=None, effect: str = None, **kwargs
     ) -> None:
         params = {}
 
         if effect is not None:
-            params['lightmode'] = mode = self.effect.index(effect) + 1
+            params["lightmode"] = mode = self.effect.index(effect) + 1
             if mode == 2 and rgb_color is None:
                 rgb_color = self._attr_rgb_color
 
         if brightness is not None:
-            params['lightbright'] = conv(brightness, 1, 255, 0, 100)
+            params["lightbright"] = conv(brightness, 1, 255, 0, 100)
 
         if rgb_color is not None:
-            params.update({
-                'lightmode': 2, 'lightRcolor': rgb_color[0],
-                'lightGcolor': rgb_color[1], 'lightBcolor': rgb_color[2]
-            })
+            params.update(
+                {
+                    "lightmode": 2,
+                    "lightRcolor": rgb_color[0],
+                    "lightGcolor": rgb_color[1],
+                    "lightBcolor": rgb_color[2],
+                }
+            )
 
         if not params:
-            params['lightswitch'] = 1
+            params["lightswitch"] = 1
 
         await self.ewelink.send(self.device, params)
 
     async def async_turn_off(self, **kwargs) -> None:
-        await self.ewelink.send(self.device, {'lightswitch': 0})
+        await self.ewelink.send(self.device, {"lightswitch": 0})

@@ -1,13 +1,12 @@
 import asyncio
 import logging
 import time
-from typing import Dict, List, Callable
 
 from aiohttp import ClientSession
 
-from .base import XRegistryBase, XDevice, SIGNAL_UPDATE, SIGNAL_CONNECTED
+from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
 from .cloud import XRegistryCloud
-from .local import XRegistryLocal, decrypt
+from .local import XRegistryLocal
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ class XRegistry(XRegistryBase):
     def __init__(self, session: ClientSession):
         super().__init__(session)
 
-        self.devices: Dict[str, XDevice] = {}
+        self.devices: dict[str, XDevice] = {}
 
         self.cloud = XRegistryCloud(session)
         self.cloud.dispatcher_connect(SIGNAL_CONNECTED, self.cloud_connected)
@@ -30,7 +29,7 @@ class XRegistry(XRegistryBase):
         self.local = XRegistryLocal(session)
         self.local.dispatcher_connect(SIGNAL_UPDATE, self.local_update)
 
-    def setup_devices(self, devices: List[XDevice]) -> list:
+    def setup_devices(self, devices: list[XDevice]) -> list:
         from ..devices import get_spec
 
         entities = []
@@ -39,11 +38,13 @@ class XRegistry(XRegistryBase):
             did = device["deviceid"]
             try:
                 device.update(self.config["devices"][did])
+                if "host" in device and ":" not in device["host"]:
+                    device["host"] += ":8081"
             except Exception:
                 pass
 
             try:
-                uiid = device['extra']['uiid']
+                uiid = device["extra"]["uiid"]
                 _LOGGER.debug(f"{did} UIID {uiid:04} | %s", device["params"])
 
                 # at this moment entities can catch signals with device_id and
@@ -57,6 +58,10 @@ class XRegistry(XRegistryBase):
 
         return entities
 
+    @property
+    def online(self) -> bool:
+        return self.cloud.online is not None or self.local.online
+
     async def stop(self, *args):
         self.devices.clear()
         self.dispatcher.clear()
@@ -68,8 +73,11 @@ class XRegistry(XRegistryBase):
             self.task.cancel()
 
     async def send(
-            self, device: XDevice, params: dict = None,
-            params_lan: dict = None, query_cloud: bool = True
+        self,
+        device: XDevice,
+        params: dict = None,
+        params_lan: dict = None,
+        query_cloud: bool = True,
     ):
         """Send command to device with LAN and Cloud. Usual params are same.
 
@@ -83,17 +91,17 @@ class XRegistry(XRegistryBase):
         """
         seq = self.sequence()
 
-        can_local = self.local.online and device.get('host')
-        can_cloud = self.cloud.online and device.get('online')
+        can_local = self.local.online and device.get("host")
+        can_cloud = self.cloud.online and device.get("online")
 
         if can_local and can_cloud:
             # try to send a command locally (wait no more than a second)
             ok = await self.local.send(device, params_lan or params, seq, 1)
 
             # otherwise send a command through the cloud
-            if ok != 'online':
+            if ok != "online":
                 ok = await self.cloud.send(device, params, seq)
-                if ok != 'online':
+                if ok != "online":
                     asyncio.create_task(self.check_offline(device))
                 elif query_cloud and params:
                     # force update device actual status
@@ -101,7 +109,7 @@ class XRegistry(XRegistryBase):
 
         elif can_local:
             ok = await self.local.send(device, params_lan or params, seq, 5)
-            if ok != 'online':
+            if ok != "online":
                 asyncio.create_task(self.check_offline(device))
 
         elif can_cloud:
@@ -197,6 +205,7 @@ class XRegistry(XRegistryBase):
                     return
 
             from ..devices import setup_diy
+
             device = setup_diy(msg)
             entities = self.setup_devices([device])
             self.dispatcher_send(SIGNAL_ADD_ENTITIES, entities)
@@ -215,7 +224,9 @@ class XRegistry(XRegistryBase):
             # DIY device is still connected to the ewelink account
             device.pop("devicekey")
 
-        _LOGGER.debug(f"{did} <= Local3 | %s | {msg.get('seq', '')}", params)
+        tag = "Local3" if "host" in msg else "Local0"
+
+        _LOGGER.debug(f"{did} <= {tag} | %s | {msg.get('seq', '')}", params)
 
         # msg from zeroconf ServiceStateChange.Removed
         if params.get("online") is False:
@@ -225,7 +236,8 @@ class XRegistry(XRegistryBase):
         if "sledOnline" in params:
             device["params"]["sledOnline"] = params["sledOnline"]
 
-        if device.get("host") != msg.get("host"):
+        # we can get data from device, but without host
+        if "host" in msg and device.get("host") != msg["host"]:
             # params for custom sensor
             device["host"] = params["host"] = msg["host"]
             device["localtype"] = msg["localtype"]
@@ -237,7 +249,8 @@ class XRegistry(XRegistryBase):
 
         # collect pow devices
         devices = [
-            device for device in self.devices.values()
+            device
+            for device in self.devices.values()
             if "extra" in device and device["extra"]["uiid"] in POW_UI_ACTIVE
         ]
         if not devices:
