@@ -265,6 +265,8 @@ DEVICES = {
         XTemperatureNS,
         XOutdoorTempNS,
     ],  # Sonoff NS Panel
+    # https://github.com/AlexxIT/SonoffLAN/issues/1026
+    135: [XLightB02, RSSI],  # Sonoff B02-BL
     # https://github.com/AlexxIT/SonoffLAN/issues/766
     136: [XLightB05B, RSSI],  # Sonoff B05-BL
     137: [XLightL1, RSSI],
