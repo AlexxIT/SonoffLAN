@@ -17,7 +17,6 @@ from homeassistant.components.light import LightEntity
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 
-from .ewelink import XDevice
 from ..binary_sensor import XBinarySensor, XWiFiDoor, XZigbeeMotion
 from ..climate import XClimateNS, XClimateTH, XThermostat
 from ..core.entity import XEntity
@@ -39,6 +38,7 @@ from ..number import XPulseWidth
 from ..remote import XRemote
 from ..sensor import (
     XEnergySensor,
+    XEnergySensorDualR3,
     XHumidityTH,
     XOutdoorTempNS,
     XRemoteButton,
@@ -47,9 +47,9 @@ from ..sensor import (
     XTemperatureTH,
     XUnknown,
     XWiFiDoorBattery,
-    XEnergySensorDualR3,
 )
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle, XZigbeeSwitches
+from .ewelink import XDevice
 
 # supported custom device_class
 DEVICE_CLASS = {
