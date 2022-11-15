@@ -14,11 +14,10 @@ import aiohttp
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
-from zeroconf import Zeroconf, DNSText, DNSAddress, DNSService, \
-    current_time_millis
+from zeroconf import DNSAddress, DNSService, DNSText, Zeroconf, current_time_millis
 from zeroconf.asyncio import AsyncServiceBrowser
 
-from .base import XRegistryBase, XDevice, SIGNAL_CONNECTED, SIGNAL_UPDATE
+from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,6 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 # some venv users don't have Crypto.Util.Padding
 # I don't know why pycryptodome is not installed on their systems
 # https://github.com/AlexxIT/SonoffLAN/issues/129
+
 
 def pad(data_to_pad: bytes, block_size: int):
     padding_len = block_size - len(data_to_pad) % block_size
@@ -39,35 +39,35 @@ def unpad(padded_data: bytes, block_size: int):
 
 
 def encrypt(payload: dict, devicekey: str):
-    devicekey = devicekey.encode('utf-8')
+    devicekey = devicekey.encode("utf-8")
 
     hash_ = MD5.new()
     hash_.update(devicekey)
     key = hash_.digest()
 
     iv = get_random_bytes(16)
-    plaintext = json.dumps(payload['data']).encode('utf-8')
+    plaintext = json.dumps(payload["data"]).encode("utf-8")
 
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
     padded = pad(plaintext, AES.block_size)
     ciphertext = cipher.encrypt(padded)
 
-    payload['encrypt'] = True
-    payload['data'] = base64.b64encode(ciphertext).decode('utf-8')
-    payload['iv'] = base64.b64encode(iv).decode('utf-8')
+    payload["encrypt"] = True
+    payload["data"] = base64.b64encode(ciphertext).decode("utf-8")
+    payload["iv"] = base64.b64encode(iv).decode("utf-8")
 
     return payload
 
 
 def decrypt(payload: dict, devicekey: str):
-    devicekey = devicekey.encode('utf-8')
+    devicekey = devicekey.encode("utf-8")
 
     hash_ = MD5.new()
     hash_.update(devicekey)
     key = hash_.digest()
 
-    cipher = AES.new(key, AES.MODE_CBC, iv=base64.b64decode(payload['iv']))
-    ciphertext = base64.b64decode(payload['data'])
+    cipher = AES.new(key, AES.MODE_CBC, iv=base64.b64decode(payload["iv"]))
+    ciphertext = base64.b64decode(payload["data"])
     padded = cipher.decrypt(ciphertext)
     return unpad(padded, AES.block_size)
 
@@ -92,7 +92,7 @@ class XServiceBrowser(AsyncServiceBrowser):
         end = len(text)
         while i < end:
             j = text[i] + 1
-            k, v = text[i + 1:i + j].split(b"=", 1)
+            k, v = text[i + 1 : i + j].split(b"=", 1)
             i += j
             data[k.decode()] = v.decode()
         return data
@@ -110,9 +110,12 @@ class XServiceBrowser(AsyncServiceBrowser):
                 # old_record - skip previous seen record
                 # record.ttl <= 1 - skip previous (old) cached records
                 # process only DNSText records with our suffix
-                if old_record or record.ttl <= 1 or \
-                        not isinstance(record, DNSText) or \
-                        not record.key.endswith(self.suffix):
+                if (
+                    old_record
+                    or record.ttl <= 1
+                    or not isinstance(record, DNSText)
+                    or not record.key.endswith(self.suffix)
+                ):
                     continue
 
                 if not record.is_expired(now):
@@ -150,8 +153,7 @@ class XServiceBrowser(AsyncServiceBrowser):
                     continue
 
                 for record in records.keys():
-                    if not isinstance(record, DNSText) or \
-                            record.is_expired(now):
+                    if not isinstance(record, DNSText) or record.is_expired(now):
                         continue
 
                     host = None
@@ -190,18 +192,14 @@ class XRegistryLocal(XRegistryBase):
         self.online = False
         await self.browser.async_cancel()
 
-    async def _process_zeroconf(
-            self, name: str, host: str = None, data: dict = None
-    ):
+    async def _process_zeroconf(self, name: str, host: str = None, data: dict = None):
         if data is None:
             # TTL of record 5 minutes
             msg = {"deviceid": name[8:18], "params": {"online": False}}
             self.dispatcher_send(SIGNAL_UPDATE, msg)
             return
 
-        raw = ''.join([
-            data[f'data{i}'] for i in range(1, 5, 1) if f'data{i}' in data
-        ])
+        raw = "".join([data[f"data{i}"] for i in range(1, 5, 1) if f"data{i}" in data])
 
         msg = {
             "deviceid": data["id"],
@@ -221,8 +219,11 @@ class XRegistryLocal(XRegistryBase):
         self.dispatcher_send(SIGNAL_UPDATE, msg)
 
     async def send(
-            self, device: XDevice, params: dict = None, sequence: str = None,
-            timeout: int = 5
+        self,
+        device: XDevice,
+        params: dict = None,
+        sequence: str = None,
+        timeout: int = 5,
     ):
         # known commands for DIY: switch, startup, pulse, sledonline
         # other commands: switch, switches, transmit, dimmable, light, fan
@@ -244,11 +245,11 @@ class XRegistryLocal(XRegistryBase):
             "sequence": sequence,
             "deviceid": device["deviceid"],
             "selfApikey": "123",
-            "data": params
+            "data": params,
         }
 
-        if 'devicekey' in device:
-            payload = encrypt(payload, device['devicekey'])
+        if "devicekey" in device:
+            payload = encrypt(payload, device["devicekey"])
 
         log = f"{device['deviceid']} => Local4 | {params}"
 
@@ -256,40 +257,45 @@ class XRegistryLocal(XRegistryBase):
             # noinspection HttpUrlsUsage
             r = await self.session.post(
                 f"http://{device['host']}/zeroconf/{command}",
-                json=payload, headers={'Connection': 'close'}, timeout=timeout
+                json=payload,
+                headers={"Connection": "close"},
+                timeout=timeout,
             )
 
-            if command == 'info':
+            if command == "info":
                 # better don't read response on info command
                 # https://github.com/AlexxIT/SonoffLAN/issues/871
                 _LOGGER.debug(f"{log} <= info: {r.status}")
-                return 'online'
+                return "online"
 
             resp = await r.json()
-            err = resp['error']
+            err = resp["error"]
             if err == 0:
                 _LOGGER.debug(f"{log} <= {resp}")
-                return 'online'
+                return "online"
             else:
                 _LOGGER.warning(f"{log} <= {resp}")
                 return f"E#{err}"
 
         except asyncio.TimeoutError:
             _LOGGER.debug(f"{log} !! Timeout {timeout}")
-            return 'timeout'
+            return "timeout"
 
         except aiohttp.ClientConnectorError as e:
             _LOGGER.debug(f"{log} !! Can't connect: {e}")
             return "E#CON"
 
-        except (aiohttp.ClientOSError, aiohttp.ServerDisconnectedError,
-                asyncio.CancelledError) as e:
+        except (
+            aiohttp.ClientOSError,
+            aiohttp.ServerDisconnectedError,
+            asyncio.CancelledError,
+        ) as e:
             _LOGGER.debug(log, exc_info=e)
-            return 'E#COS'
+            return "E#COS"
 
         except Exception as e:
             _LOGGER.error(log, exc_info=e)
-            return 'E#???'
+            return "E#???"
 
     @staticmethod
     def decrypt_msg(msg: dict, devicekey: str = None) -> dict:

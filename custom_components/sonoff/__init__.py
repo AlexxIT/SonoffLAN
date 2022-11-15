@@ -3,58 +3,93 @@ import logging
 
 import voluptuous as vol
 from homeassistant.components import zeroconf
-from homeassistant.config_entries import ConfigEntry, ConfigEntryState, \
-    SOURCE_IMPORT
-from homeassistant.const import *
+from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry, ConfigEntryState
+from homeassistant.const import (
+    CONF_DEVICE_CLASS,
+    CONF_DEVICES,
+    CONF_MODE,
+    CONF_NAME,
+    CONF_PASSWORD,
+    CONF_PAYLOAD_OFF,
+    CONF_SENSORS,
+    CONF_TIMEOUT,
+    CONF_USERNAME,
+    EVENT_HOMEASSISTANT_STOP,
+)
 from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import async_get as device_registry
 from homeassistant.helpers.storage import Store
 
 from . import system_health
-from .core import backward, devices as core_devices
-from .core.const import *
-from .core.ewelink import (
-    XRegistry, XRegistryCloud, XRegistryLocal, SIGNAL_CONNECTED,
-    SIGNAL_ADD_ENTITIES
+from .core import backward
+from .core import devices as core_devices
+from .core.const import (
+    CONF_APPID,
+    CONF_APPSECRET,
+    CONF_DEFAULT_CLASS,
+    CONF_DEVICEKEY,
+    CONF_RFBRIDGE,
+    DOMAIN,
 )
+from .core.ewelink import SIGNAL_ADD_ENTITIES, SIGNAL_CONNECTED, XRegistry
 from .core.ewelink.camera import XCameras
-from .core.ewelink.cloud import AuthError, APP
+from .core.ewelink.cloud import APP, AuthError
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [
-    "binary_sensor", "button", "climate", "cover", "fan", "light", "remote",
-    "sensor", "switch", "number"
+    "binary_sensor",
+    "button",
+    "climate",
+    "cover",
+    "fan",
+    "light",
+    "remote",
+    "sensor",
+    "switch",
+    "number",
 ]
 
-CONFIG_SCHEMA = vol.Schema({
-    DOMAIN: vol.Schema({
-        vol.Optional(CONF_APPID): cv.string,
-        vol.Optional(CONF_APPSECRET): cv.string,
-        vol.Optional(CONF_USERNAME): cv.string,
-        vol.Optional(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_DEFAULT_CLASS): cv.string,
-        vol.Optional(CONF_SENSORS): cv.ensure_list,
-        vol.Optional(CONF_RFBRIDGE): {
-            cv.string: vol.Schema({
-                vol.Optional(CONF_NAME): cv.string,
-                vol.Optional(CONF_DEVICE_CLASS): cv.string,
-                vol.Optional(CONF_TIMEOUT, default=120): cv.positive_int,
-                vol.Optional(CONF_PAYLOAD_OFF): cv.string
-            }, extra=vol.ALLOW_EXTRA),
-        },
-        vol.Optional(CONF_DEVICES): {
-            cv.string: vol.Schema({
-                vol.Optional(CONF_NAME): cv.string,
-                vol.Optional(CONF_DEVICE_CLASS): vol.Any(str, list),
-                vol.Optional(CONF_DEVICEKEY): cv.string,
-            }, extra=vol.ALLOW_EXTRA),
-        },
-    }, extra=vol.ALLOW_EXTRA),
-}, extra=vol.ALLOW_EXTRA)
+CONFIG_SCHEMA = vol.Schema(
+    {
+        DOMAIN: vol.Schema(
+            {
+                vol.Optional(CONF_APPID): cv.string,
+                vol.Optional(CONF_APPSECRET): cv.string,
+                vol.Optional(CONF_USERNAME): cv.string,
+                vol.Optional(CONF_PASSWORD): cv.string,
+                vol.Optional(CONF_DEFAULT_CLASS): cv.string,
+                vol.Optional(CONF_SENSORS): cv.ensure_list,
+                vol.Optional(CONF_RFBRIDGE): {
+                    cv.string: vol.Schema(
+                        {
+                            vol.Optional(CONF_NAME): cv.string,
+                            vol.Optional(CONF_DEVICE_CLASS): cv.string,
+                            vol.Optional(CONF_TIMEOUT, default=120): cv.positive_int,
+                            vol.Optional(CONF_PAYLOAD_OFF): cv.string,
+                        },
+                        extra=vol.ALLOW_EXTRA,
+                    ),
+                },
+                vol.Optional(CONF_DEVICES): {
+                    cv.string: vol.Schema(
+                        {
+                            vol.Optional(CONF_NAME): cv.string,
+                            vol.Optional(CONF_DEVICE_CLASS): vol.Any(str, list),
+                            vol.Optional(CONF_DEVICEKEY): cv.string,
+                        },
+                        extra=vol.ALLOW_EXTRA,
+                    ),
+                },
+            },
+            extra=vol.ALLOW_EXTRA,
+        ),
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 UNIQUE_DEVICES = {}
 
@@ -85,7 +120,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         # import ewelink account from YAML (first time)
         data = {
             CONF_USERNAME: XRegistry.config[CONF_USERNAME],
-            CONF_PASSWORD: XRegistry.config[CONF_PASSWORD]
+            CONF_PASSWORD: XRegistry.config[CONF_PASSWORD],
         }
         if not hass.config_entries.async_entries(DOMAIN):
             coro = hass.config_entries.flow.async_init(
@@ -100,7 +135,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         :param call: `device` - required param, all other params - optional
         """
         params = dict(call.data)
-        deviceid = str(params.pop('device'))
+        deviceid = str(params.pop("device"))
 
         if len(deviceid) == 10:
             registry = next(
@@ -111,12 +146,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             await registry.send(device, params)
 
         elif len(deviceid) == 6:
-            await cameras.send(deviceid, params['cmd'])
+            await cameras.send(deviceid, params["cmd"])
 
         else:
             _LOGGER.error(f"Wrong deviceid {deviceid}")
 
-    hass.services.async_register(DOMAIN, 'send_command', send_command)
+    hass.services.async_register(DOMAIN, "send_command", send_command)
 
     return True
 
@@ -209,7 +244,7 @@ async def internal_normal_setup(hass: HomeAssistant, entry: ConfigEntry):
 
 
 async def internal_cache_setup(
-        hass: HomeAssistant, entry: ConfigEntry, devices: list = None
+    hass: HomeAssistant, entry: ConfigEntry, devices: list = None
 ):
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
 
@@ -217,10 +252,12 @@ async def internal_cache_setup(
     if registry.online:
         await async_unload_entry(hass, entry)
 
-    await asyncio.gather(*[
-        hass.config_entries.async_forward_entry_setup(entry, domain)
-        for domain in PLATFORMS
-    ])
+    await asyncio.gather(
+        *[
+            hass.config_entries.async_forward_entry_setup(entry, domain)
+            for domain in PLATFORMS
+        ]
+    )
 
     if devices is None:
         store = Store(hass, 1, f"{DOMAIN}/{entry.data['username']}.json")
@@ -274,13 +311,14 @@ def internal_unique_devices(uid: str, devices: list) -> list:
     To avoid duplicates.
     """
     return [
-        device for device in devices
+        device
+        for device in devices
         if UNIQUE_DEVICES.setdefault(device["deviceid"], uid) == uid
     ]
 
 
 async def async_remove_config_entry_device(
-        hass: HomeAssistant, entry: ConfigEntry, device
+    hass: HomeAssistant, entry: ConfigEntry, device
 ) -> bool:
     device_registry(hass).async_remove_device(device.id)
     return True

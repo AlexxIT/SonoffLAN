@@ -17,7 +17,7 @@ from .core.const import DOMAIN, PRIVATE_KEYS, source_hash
 
 @callback
 def async_register(
-        hass: HomeAssistant, register: system_health.SystemHealthRegistration
+    hass: HomeAssistant, register: system_health.SystemHealthRegistration
 ) -> None:
     register.async_register_info(system_health_info)
 
@@ -47,9 +47,7 @@ async def system_health_info(hass: HomeAssistant):
     }
 
     if DebugView.url:
-        info["debug"] = {
-            "type": "failed", "error": "", "more_info": DebugView.url
-        }
+        info["debug"] = {"type": "failed", "error": "", "more_info": DebugView.url}
 
     return info
 
@@ -68,6 +66,7 @@ async def setup_debug(hass: HomeAssistant, logger: Logger):
 
 class DebugView(logging.Handler, HomeAssistantView):
     """Class generate web page with component debug logs."""
+
     name = DOMAIN
     requires_auth = False
 
@@ -105,23 +104,23 @@ class DebugView(logging.Handler, HomeAssistantView):
         try:
             lines = self.text
 
-            if 'q' in request.query:
-                reg = re.compile(fr"({request.query['q']})", re.IGNORECASE)
+            if "q" in request.query:
+                reg = re.compile(rf"({request.query['q']})", re.IGNORECASE)
                 lines = [p for p in lines if reg.search(p)]
 
-            if 't' in request.query:
-                tail = int(request.query['t'])
+            if "t" in request.query:
+                tail = int(request.query["t"])
                 lines = lines[-tail:]
 
             body = "\n".join(lines)
-            r = request.query.get('r', '')
+            r = request.query.get("r", "")
 
             return web.Response(
-                text='<!DOCTYPE html><html>'
-                     f'<head><meta http-equiv="refresh" content="{r}"></head>'
-                     f'<body><pre>{body}</pre></body>'
-                     '</html>',
-                content_type="text/html"
+                text="<!DOCTYPE html><html>"
+                f'<head><meta http-equiv="refresh" content="{r}"></head>'
+                f"<body><pre>{body}</pre></body>"
+                "</html>",
+                content_type="text/html",
             )
         except Exception:
             return web.Response(status=500)

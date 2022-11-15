@@ -4,7 +4,7 @@ from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityCategory
 
 from .const import DOMAIN
-from .ewelink import XRegistry, XDevice
+from .ewelink import XDevice, XRegistry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,19 +68,20 @@ class XEntity(Entity):
         # domain will be replaced in entity_registry.async_generate_entity_id
         self.entity_id = f"{DOMAIN}.{DOMAIN}_{self._attr_unique_id}"
 
-        deviceid: str = device['deviceid']
-        params: dict = device['params']
+        deviceid: str = device["deviceid"]
+        params: dict = device["params"]
 
-        connections = {(CONNECTION_NETWORK_MAC, params['staMac'])} \
-            if "staMac" in params else None
+        connections = (
+            {(CONNECTION_NETWORK_MAC, params["staMac"])} if "staMac" in params else None
+        )
 
         self._attr_device_info = DeviceInfo(
             connections=connections,
             identifiers={(DOMAIN, deviceid)},
-            manufacturer=device.get('brandName'),
-            model=device.get('productModel'),
+            manufacturer=device.get("brandName"),
+            model=device.get("productModel"),
             name=device["name"],
-            sw_version=params.get('fwVersion'),
+            sw_version=params.get("fwVersion"),
         )
 
         try:
@@ -93,8 +94,9 @@ class XEntity(Entity):
         pass
 
     def internal_available(self) -> bool:
-        return (self.ewelink.cloud.online and self.device.get("online")) or \
-               (self.ewelink.local.online and "host" in self.device)
+        return (self.ewelink.cloud.online and self.device.get("online")) or (
+            self.ewelink.local.online and "host" in self.device
+        )
 
     def internal_update(self, params: dict = None):
         available = self.internal_available()

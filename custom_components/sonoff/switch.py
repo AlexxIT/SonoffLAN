@@ -2,7 +2,7 @@ from homeassistant.components.switch import SwitchEntity
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
-from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
+from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 
@@ -11,7 +11,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
     ewelink.dispatcher_connect(
         SIGNAL_ADD_ENTITIES,
-        lambda x: add_entities([e for e in x if isinstance(e, SwitchEntity)])
+        lambda x: add_entities([e for e in x if isinstance(e, SwitchEntity)]),
     )
 
 
@@ -38,8 +38,7 @@ class XSwitches(XEntity, SwitchEntity):
         XEntity.__init__(self, ewelink, device)
 
         try:
-            self._attr_name = \
-                device["tags"]["ck_channel_name"][str(self.channel)]
+            self._attr_name = device["tags"]["ck_channel_name"][str(self.channel)]
         except KeyError:
             pass
         # backward compatibility
@@ -47,9 +46,7 @@ class XSwitches(XEntity, SwitchEntity):
 
     def set_state(self, params: dict):
         try:
-            params = next(
-                i for i in params["switches"] if i["outlet"] == self.channel
-            )
+            params = next(i for i in params["switches"] if i["outlet"] == self.channel)
             self._attr_is_on = params["switch"] == "on"
         except StopIteration:
             pass
@@ -81,7 +78,8 @@ class XZigbeeSwitches(XSwitches):
         # https://github.com/AlexxIT/SonoffLAN/issues/714
         switches = [
             {"outlet": self.channel, "switch": "on"}
-            if switch["outlet"] == self.channel else switch
+            if switch["outlet"] == self.channel
+            else switch
             for switch in self.device["params"]["switches"]
         ]
         await self.ewelink.send(self.device, {"switches": switches})
@@ -89,7 +87,8 @@ class XZigbeeSwitches(XSwitches):
     async def async_turn_off(self):
         switches = [
             {"outlet": self.channel, "switch": "off"}
-            if switch["outlet"] == self.channel else switch
+            if switch["outlet"] == self.channel
+            else switch
             for switch in self.device["params"]["switches"]
         ]
         await self.ewelink.send(self.device, {"switches": switches})
