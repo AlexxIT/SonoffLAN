@@ -450,8 +450,13 @@ def test_dual_r3():
                 "getKwh_01": 2,
                 "calibration": 1,
             },
+    }, {
+        "devices": {
+            DEVICEID: {
+                "reporting": {"energy_1": [3600, 3]}
+            }
         }
-    )
+    })
 
     volt: XSensor = next(e for e in entities if e.uid == "voltage_1")
     assert volt.state == 247.62
@@ -461,6 +466,18 @@ def test_dual_r3():
     cover = next(e for e in entities if isinstance(e, XCoverDualR3))
     assert cover.state == "closed"
     assert cover.state_attributes == {"current_position": 0}
+
+    # Get history if we use reporting
+    energy_1: XEnergySensor_DualR3 = next(e for e in entities if e.uid == "energy_1")
+    energy_1.internal_update({'kwhHistories_00': '0034007412340000'})
+    assert energy_1.state == 0.34
+    assert energy_1.extra_state_attributes == {"history": [0.34, 0.74, 12.34]}
+
+    # Skip history if we don't use reporting
+    energy_2: XEnergySensor_DualR3 = next(e for e in entities if e.uid == "energy_2")
+    energy_2.internal_update({'kwhHistories_01': '0201000000000000'})
+    assert energy_2.state == 2.01
+    assert energy_2.extra_state_attributes == None
 
 
 def test_diffuser():

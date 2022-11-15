@@ -206,6 +206,24 @@ class XEnergySensor(XEntity, SensorEntity):
             await self.ewelink.cloud.send(self.device, self.get_params)
 
 
+class XEnergySensor_DualR3(XEnergySensor, SensorEntity):
+    def set_state(self, params: dict):
+        value = params[self.param]
+        try:
+            history = [
+                round(int(value[i:i + 2], 10) +
+                    int(value[i + 2] + value[i + 3]) * 0.01, 2)
+                for i in range(0, len(value), 4)
+            ]
+            self._attr_native_value = history[0]
+            if self.report_history:
+                self._attr_extra_state_attributes = {
+                    "history": history[0:self.report_history]
+                }
+        except Exception:
+            pass
+
+
 class XTemperatureNS(XSensor):
     params = {"temperature", "tempCorrection"}
     uid = "temperature"

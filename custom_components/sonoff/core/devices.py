@@ -118,6 +118,15 @@ Energy3 = spec(
 Energy4 = spec(
     XEnergySensor, param="kwhHistories_01", uid="energy_4", get_params={"getKwh_03": 2}
 )
+Energy1_DualR3 = spec(
+    XEnergySensor_DualR3, param="kwhHistories_00", uid="energy_1",
+    get_params={"getKwh_00": 2}
+)
+Energy2_DualR3 = spec(
+    XEnergySensor_DualR3, param="kwhHistories_01", uid="energy_2",
+    get_params={"getKwh_01": 2}
+)
+
 
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
 DEVICES = {
@@ -207,17 +216,8 @@ DEVICES = {
     104: [XLightB05B, RSSI],  # Sonoff B05-B RGB+CCT color bulb
     107: SPEC_1CH,
     126: [
-        Switch1,
-        Switch2,
-        RSSI,
-        Current1,
-        Current2,
-        Voltage1,
-        Voltage2,
-        Power1,
-        Power2,
-        Energy1,
-        Energy2,
+        Switch1, Switch2, RSSI, Current1, Current2, Voltage1, Voltage2,
+        Power1, Power2, Energy1_DualR3, Energy2_DualR3,
     ],  # Sonoff DualR3
     127: [XThermostat],  # https://github.com/AlexxIT/SonoffLAN/issues/358
     128: [LED],  # SPM-Main
@@ -295,6 +295,7 @@ DEVICES = {
     ],  # Sonoff POWR3
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
+    1257: [spec(XLightD1, base="light")], # ZigbeeWhiteLight
     # https://github.com/AlexxIT/SonoffLAN/issues/972
     1514: [XZigbeeCover, spec(XSensor, param="battery", multiply=2)],
     1770: [
