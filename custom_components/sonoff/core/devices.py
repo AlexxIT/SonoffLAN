@@ -276,6 +276,7 @@ DEVICES = {
     165: [Switch1, Switch2, RSSI],  # DualR3 Lite, without power consumption
     # https://github.com/AlexxIT/SonoffLAN/issues/857
     168: [RSSI],  # new ZBBridge-P
+    173: [XLightL1, RSSI],  # Sonoff L3-5M-P
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)
     177: [XRemoteButton],  # Sonoff S-Mate
     181: [
