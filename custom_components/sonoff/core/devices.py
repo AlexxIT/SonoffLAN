@@ -94,6 +94,15 @@ Energy4 = spec(
     XEnergySensor, param="kwhHistories_01", uid="energy_4",
     get_params={"getKwh_03": 2}
 )
+Energy1_DualR3 = spec(
+    XEnergySensor_DualR3, param="kwhHistories_00", uid="energy_1",
+    get_params={"getKwh_00": 2}
+)
+Energy2_DualR3 = spec(
+    XEnergySensor_DualR3, param="kwhHistories_01", uid="energy_2",
+    get_params={"getKwh_01": 2}
+)
+
 
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
 DEVICES = {
@@ -162,7 +171,7 @@ DEVICES = {
     107: SPEC_1CH,
     126: [
         Switch1, Switch2, RSSI, Current1, Current2, Voltage1, Voltage2,
-        Power1, Power2, Energy1, Energy2,
+        Power1, Power2, Energy1_DualR3, Energy2_DualR3,
     ],  # Sonoff DualR3
     127: [XThermostat],  # https://github.com/AlexxIT/SonoffLAN/issues/358
     128: [LED],  # SPM-Main
