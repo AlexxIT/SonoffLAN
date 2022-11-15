@@ -454,7 +454,8 @@ DIY = {
     "th_plug": [15, "SONOFF", "TH DIY"],
     "rf": [28, "SONOFF", "RFBridge DIY"],
     "fan_light": [34, "SONOFF", "iFan DIY"],
-    "light": [44, "SONOFF", "D1 DIY"],
+    "light": [44, "SONOFF", "D1 DIY"],  # don't known if light exist
+    "diylight": [44, "SONOFF", "D1 DIY"],
     "switch_radar": [77, "SONOFF", "Micro DIY"],
     "multifun_switch": [126, "SONOFF", "DualR3 DIY"],
 }
