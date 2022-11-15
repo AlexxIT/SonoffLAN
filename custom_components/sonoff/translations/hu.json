@@ -21,7 +21,7 @@
     "step": {
       "init": {
         "data": {
-          "mode":  "Üzemmód (az automatikus ajánlott a legtöbb felhasználó számára)",
+          "mode": "Üzemmód (az automatikus ajánlott a legtöbb felhasználó számára)",
           "homes": "eWelink otthonok (hagyja üresen a \"My Home / Otthonom\" opciót)",
           "debug": "Debug oldal (Integrációk > Sonoff \"hamburger\" menü > Ismert hibák)"
         }
