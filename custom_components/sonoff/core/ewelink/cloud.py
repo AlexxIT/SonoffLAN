@@ -8,11 +8,11 @@ import hmac
 import json
 import logging
 import time
-from typing import List, Optional
+from typing import Optional
 
-from aiohttp import ClientConnectorError, WSMessage, ClientWebSocketResponse
+from aiohttp import ClientConnectorError, ClientWebSocketResponse, WSMessage
 
-from .base import XRegistryBase, XDevice, SIGNAL_CONNECTED, SIGNAL_UPDATE
+from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,17 +33,12 @@ WS = {
     "eu": "https://eu-dispa.coolkit.cc/dispatch/app",
 }
 
-DATA_ERROR = {
-    0: 'online',
-    503: 'offline',
-    504: 'timeout',
-    None: 'unknown'
-}
+DATA_ERROR = {0: "online", 503: "offline", 504: "timeout", None: "unknown"}
 
 APP = [
     # ("oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq", "6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM"),
     ("KOBxGJna5qkk3JLXw3LHLX3wSNiPjAVi", "4v0sv6X5IM2ASIBiNDj6kGmSfxo40w7n"),
-    ("R8Oq3y0eSZSYdKccHlrQzT1ACCOUT9Gv", "1ve5Qk9GXfUhKAn1svnKwpAlxXkMarru")
+    ("R8Oq3y0eSZSYdKccHlrQzT1ACCOUT9Gv", "1ve5Qk9GXfUhKAn1svnKwpAlxXkMarru"),
 ]
 
 
@@ -53,6 +48,7 @@ class AuthError(Exception):
 
 class ResponseWaiter:
     """Class wait right sequences in response messages."""
+
     _waiters = {}
 
     def _set_response(self, sequence: str, error: int) -> bool:
@@ -73,7 +69,7 @@ class ResponseWaiter:
             # remove future from waiters, in very rare cases, we can send two
             # commands with the same sequence
             self._waiters.pop(sequence, None)
-            return 'timeout'
+            return "timeout"
 
         # remove future from waiters and return result
         return self._waiters.pop(sequence).result()
@@ -134,8 +130,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             "X-CK-Appid": appid,
         }
         r = await self.session.post(
-            self.host + "/v2/user/login", data=data, headers=headers,
-            timeout=30
+            self.host + "/v2/user/login", data=data, headers=headers, timeout=30
         )
         resp = await r.json()
 
@@ -143,8 +138,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         if resp["error"] == 10004:
             self.region = resp["data"]["region"]
             r = await self.session.post(
-                self.host + "/v2/user/login", data=data, headers=headers,
-                timeout=30
+                self.host + "/v2/user/login", data=data, headers=headers, timeout=30
             )
             resp = await r.json()
 
@@ -179,13 +173,14 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         resp = await r.json()
         return {i["id"]: i["name"] for i in resp["data"]["familyList"]}
 
-    async def get_devices(self, homes: list = None) -> List[dict]:
+    async def get_devices(self, homes: list = None) -> list[dict]:
         devices = []
         for home in homes or [None]:
             r = await self.session.get(
                 self.host + "/v2/device/thing",
-                headers=self.headers, timeout=30,
-                params={"num": 0, "familyid": home} if home else {"num": 0}
+                headers=self.headers,
+                timeout=30,
+                params={"num": 0, "familyid": home} if home else {"num": 0},
             )
             resp = await r.json()
             if resp["error"] != 0:
@@ -193,14 +188,18 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             # item type: 1 - user device, 2 - shared device, 3 - user group,
             # 5 - share device (home)
             devices += [
-                i["itemData"] for i in resp["data"]["thingList"]
+                i["itemData"]
+                for i in resp["data"]["thingList"]
                 if i["itemType"] != 3  # skip groups
             ]
         return devices
 
     async def send(
-            self, device: XDevice, params: dict = None, sequence: str = None,
-            timeout: int = 5
+        self,
+        device: XDevice,
+        params: dict = None,
+        sequence: str = None,
+        timeout: int = 5,
     ):
         """With params - send new state to device, without - request device
         state. With zero timeout - won't wait response.
@@ -226,7 +225,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             # another account
             "apikey": device["apikey"],
             "selfApikey": self.auth["user"]["apikey"],
-            "deviceid": device['deviceid'],
+            "deviceid": device["deviceid"],
             "params": params or [],
             "userAgent": "app",
             "sequence": sequence,
@@ -240,10 +239,10 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 # wait for response with same sequence
                 return await self._wait_response(sequence, timeout)
         except ConnectionResetError:
-            return 'offline'
+            return "offline"
         except Exception as e:
             _LOGGER.error(log, exc_info=e)
-            return 'E#???'
+            return "E#???"
 
     def start(self):
         self.task = asyncio.create_task(self.run_forever())
@@ -323,7 +322,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             _LOGGER.warning(f"Cloud WS Connection error: {e}")
 
         except Exception as e:
-            _LOGGER.error(f"Cloud WS exception", exc_info=e)
+            _LOGGER.error("Cloud WS exception", exc_info=e)
 
         return False
 

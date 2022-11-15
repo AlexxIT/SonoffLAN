@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Callable, Dict, List, Optional, TypedDict
+from typing import Callable, Optional, TypedDict
 
 from aiohttp import ClientSession
 
@@ -29,7 +29,7 @@ class XDevice(TypedDict, total=False):
 
 
 class XRegistryBase:
-    dispatcher: Dict[str, List[Callable]] = None
+    dispatcher: dict[str, list[Callable]] = None
     _sequence: int = 0
 
     def __init__(self, session: ClientSession):

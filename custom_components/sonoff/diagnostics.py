@@ -1,5 +1,5 @@
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_USERNAME, CONF_PASSWORD
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
@@ -7,9 +7,7 @@ from .core.const import DOMAIN, PRIVATE_KEYS, source_hash
 from .core.ewelink import XRegistry
 
 
-async def async_get_config_entry_diagnostics(
-        hass: HomeAssistant, entry: ConfigEntry
-):
+async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigEntry):
     try:
         if XRegistry.config:
             config = XRegistry.config.copy()
@@ -25,9 +23,7 @@ async def async_get_config_entry_diagnostics(
     except Exception as e:
         config = f"{type(e).__name__}: {e}"
 
-    options = {
-        k: len(v) if k == "homes" else v for k, v in entry.options.items()
-    }
+    options = {k: len(v) if k == "homes" else v for k, v in entry.options.items()}
 
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
     try:
@@ -41,9 +37,12 @@ async def async_get_config_entry_diagnostics(
                 "model": device.get("productModel"),
                 "online": device.get("online"),
                 "localtype": device.get("localtype"),
-            } if "params" in device else {
+            }
+            if "params" in device
+            else {
                 "localtype": device.get("localtype"),
-            } for did, device in registry.devices.items()
+            }
+            for did, device in registry.devices.items()
         }
     except Exception as e:
         devices = f"{type(e).__name__}: {e}"
@@ -68,7 +67,7 @@ async def async_get_config_entry_diagnostics(
 
 
 async def async_get_device_diagnostics(
-        hass: HomeAssistant, entry: ConfigEntry, device: DeviceEntry
+    hass: HomeAssistant, entry: ConfigEntry, device: DeviceEntry
 ):
     did = next(i[1] for i in device.identifiers if i[0] == DOMAIN)
     info = await async_get_config_entry_diagnostics(hass, entry)

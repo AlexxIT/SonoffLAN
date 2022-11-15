@@ -3,7 +3,7 @@ from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
-from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
+from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 
@@ -21,7 +21,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
     ewelink.dispatcher_connect(
         SIGNAL_ADD_ENTITIES,
-        lambda x: add_entities([e for e in x if isinstance(e, NumberEntity)])
+        lambda x: add_entities([e for e in x if isinstance(e, NumberEntity)]),
     )
 
 
@@ -30,6 +30,7 @@ class XNumber(XEntity, NumberEntity):
     """
     customizable number entity for simple 'params'
     """
+
     multiply: float = None
     round: int = None
 
@@ -73,5 +74,5 @@ class XPulseWidth(XNumber):
         in 500 multiples (int(value / .5) * 500)
         """
         await self.ewelink.send(
-            self.device, {"pulse": "on", "pulseWidth": int(value / .5) * 500}
+            self.device, {"pulse": "on", "pulseWidth": int(value / 0.5) * 500}
         )

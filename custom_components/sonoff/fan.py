@@ -1,9 +1,12 @@
-from homeassistant.components.fan import FanEntity, SUPPORT_SET_SPEED, \
-    SUPPORT_PRESET_MODE
+from homeassistant.components.fan import (
+    SUPPORT_PRESET_MODE,
+    SUPPORT_SET_SPEED,
+    FanEntity,
+)
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
-from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
+from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 
@@ -12,7 +15,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
     ewelink.dispatcher_connect(
         SIGNAL_ADD_ENTITIES,
-        lambda x: add_entities([e for e in x if isinstance(e, FanEntity)])
+        lambda x: add_entities([e for e in x if isinstance(e, FanEntity)]),
     )
 
 
@@ -53,8 +56,9 @@ class XFan(XEntity, FanEntity):
                 mode = SPEED_HIGH
 
         self._attr_percentage = int(
-            self._attr_preset_modes.index(mode or SPEED_OFF) /
-            self._attr_speed_count * 100
+            self._attr_preset_modes.index(mode or SPEED_OFF)
+            / self._attr_speed_count
+            * 100
         )
         self._attr_preset_mode = mode
 
@@ -83,8 +87,7 @@ class XFan(XEntity, FanEntity):
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         percentage = int(
-            self._attr_preset_modes.index(preset_mode) /
-            self._attr_speed_count * 100
+            self._attr_preset_modes.index(preset_mode) / self._attr_speed_count * 100
         )
         await self.async_set_percentage(percentage)
 

@@ -1,7 +1,9 @@
 import asyncio
 
-from homeassistant.components.binary_sensor import BinarySensorEntity, \
-    BinarySensorDeviceClass
+from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
+    BinarySensorEntity,
+)
 from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.const import STATE_ON
 from homeassistant.helpers.entity import DeviceInfo
@@ -10,7 +12,7 @@ from homeassistant.util import dt
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
-from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
+from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 
@@ -18,9 +20,8 @@ PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
     ewelink.dispatcher_connect(
-        SIGNAL_ADD_ENTITIES, lambda x: add_entities(
-            [e for e in x if isinstance(e, BinarySensorEntity)]
-        )
+        SIGNAL_ADD_ENTITIES,
+        lambda x: add_entities([e for e in x if isinstance(e, BinarySensorEntity)]),
     )
 
 
@@ -49,7 +50,7 @@ class XWiFiDoor(XBinarySensor):
     _attr_device_class = BinarySensorDeviceClass.DOOR
 
     def set_state(self, params: dict):
-        self._attr_is_on = params['switch'] == 'on'
+        self._attr_is_on = params["switch"] == "on"
 
     def internal_available(self) -> bool:
         # device with buggy online status
@@ -63,7 +64,7 @@ class XZigbeeMotion(XBinarySensor):
 
     def set_state(self, params: dict):
         if "motion" in params:
-            self._attr_is_on = params['motion'] == 1
+            self._attr_is_on = params["motion"] == 1
         elif params.get("online") is False:
             # Fix stuck in `on` state after bridge goes to unavailable
             # https://github.com/AlexxIT/SonoffLAN/pull/425
@@ -81,9 +82,7 @@ class XRemoteSensor(BinarySensorEntity, RestoreEntity):
         self.timeout = child.get("timeout", 120)
 
         self._attr_device_class = DEVICE_CLASSES.get(child.get("device_class"))
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, bridge['deviceid'])}
-        )
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, bridge["deviceid"])})
         self._attr_extra_state_attributes = {}
         self._attr_name = child["name"]
         self._attr_unique_id = f"{bridge['deviceid']}_{self.channel}"

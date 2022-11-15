@@ -1,10 +1,20 @@
 from homeassistant.components.climate import ClimateEntity
-from homeassistant.components.climate.const import *
+from homeassistant.components.climate.const import (
+    HVAC_MODE_AUTO,
+    HVAC_MODE_COOL,
+    HVAC_MODE_DRY,
+    HVAC_MODE_HEAT,
+    HVAC_MODE_HEAT_COOL,
+    HVAC_MODE_OFF,
+    SUPPORT_PRESET_MODE,
+    SUPPORT_TARGET_TEMPERATURE,
+    SUPPORT_TARGET_TEMPERATURE_RANGE,
+)
 from homeassistant.const import TEMP_CELSIUS
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
-from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
+from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 
@@ -13,7 +23,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
     ewelink.dispatcher_connect(
         SIGNAL_ADD_ENTITIES,
-        lambda x: add_entities([e for e in x if isinstance(e, ClimateEntity)])
+        lambda x: add_entities([e for e in x if isinstance(e, ClimateEntity)]),
     )
 
 
@@ -23,9 +33,7 @@ class XClimateTH(XEntity, ClimateEntity):
 
     _attr_entity_registry_enabled_default = False
     _attr_hvac_mode = None
-    _attr_hvac_modes = [
-        HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_DRY
-    ]
+    _attr_hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_DRY]
     _attr_max_temp = 99
     _attr_min_temp = 1
     _attr_supported_features = SUPPORT_TARGET_TEMPERATURE_RANGE
@@ -55,50 +63,55 @@ class XClimateTH(XEntity, ClimateEntity):
 
         try:
             if self.hvac_mode != HVAC_MODE_DRY:
-                value = float(
-                    params.get("currentTemperature") or params["temperature"]
-                )
+                value = float(params.get("currentTemperature") or params["temperature"])
                 value = round(value, 1)
             else:
-                value = int(
-                    params.get("currentHumidity") or params["humidity"]
-                )
+                value = int(params.get("currentHumidity") or params["humidity"])
             self._attr_current_temperature = value
         except Exception:
             pass
 
     def get_targets(self, heat: bool) -> list:
-        return [{
-            "targetHigh": str(self.target_temperature_high),
-            "reaction": {"switch": "off" if heat else "on"}
-        }, {
-            "targetLow": str(self.target_temperature_low),
-            "reaction": {"switch": "on" if heat else "off"}
-        }]
+        return [
+            {
+                "targetHigh": str(self.target_temperature_high),
+                "reaction": {"switch": "off" if heat else "on"},
+            },
+            {
+                "targetLow": str(self.target_temperature_low),
+                "reaction": {"switch": "on" if heat else "off"},
+            },
+        ]
 
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:
         if hvac_mode == HVAC_MODE_HEAT:
             params = {
-                "mainSwitch": "on", "deviceType": "temperature",
-                "targets": self.get_targets(True)
+                "mainSwitch": "on",
+                "deviceType": "temperature",
+                "targets": self.get_targets(True),
             }
         elif hvac_mode == HVAC_MODE_COOL:
             params = {
-                "mainSwitch": "on", "deviceType": "temperature",
-                "targets": self.get_targets(False)
+                "mainSwitch": "on",
+                "deviceType": "temperature",
+                "targets": self.get_targets(False),
             }
         elif hvac_mode == HVAC_MODE_DRY:
             params = {
-                "mainSwitch": "on", "deviceType": "humidity",
-                "targets": self.get_targets(self.is_aux_heat)
+                "mainSwitch": "on",
+                "deviceType": "humidity",
+                "targets": self.get_targets(self.is_aux_heat),
             }
         else:
             params = {"mainSwitch": "off", "deviceType": "normal"}
         await self.ewelink.cloud.send(self.device, params)
 
     async def async_set_temperature(
-            self, hvac_mode: str = None, target_temp_high: float = None,
-            target_temp_low: float = None, **kwargs
+        self,
+        hvac_mode: str = None,
+        target_temp_high: float = None,
+        target_temp_low: float = None,
+        **kwargs
     ) -> None:
         heat = self.is_aux_heat
         if hvac_mode is None:
@@ -115,20 +128,32 @@ class XClimateTH(XEntity, ClimateEntity):
             params = {"mainSwitch": "off", "deviceType": "normal"}
 
         if target_temp_high is not None and target_temp_low is not None:
-            params["targets"] = [{
-                "targetHigh": str(target_temp_high),
-                "reaction": {"switch": "off" if heat else "on"}
-            }, {
-                "targetLow": str(target_temp_low),
-                "reaction": {"switch": "on" if heat else "off"}
-            }]
+            params["targets"] = [
+                {
+                    "targetHigh": str(target_temp_high),
+                    "reaction": {"switch": "off" if heat else "on"},
+                },
+                {
+                    "targetLow": str(target_temp_low),
+                    "reaction": {"switch": "on" if heat else "off"},
+                },
+            ]
 
         await self.ewelink.cloud.send(self.device, params)
 
 
 # noinspection PyAbstractClass
 class XClimateNS(XEntity, ClimateEntity):
-    params = {"ATCEnable", "ATCMode", "ATCExpect0", "HMI_ATCDevice", "ATCEnable", "ATCMode", "temperature", "tempCorrection"}
+    params = {
+        "ATCEnable",
+        "ATCMode",
+        "ATCExpect0",
+        "HMI_ATCDevice",
+        "ATCEnable",
+        "ATCMode",
+        "temperature",
+        "tempCorrection",
+    }
 
     _attr_entity_registry_enabled_default = False
     _attr_hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT_COOL, HVAC_MODE_AUTO]
@@ -164,8 +189,9 @@ class XClimateNS(XEntity, ClimateEntity):
         # correction could be optional
         # https://github.com/AlexxIT/SonoffLAN/issues/812
         if "temperature" in params or "tempCorrection" in params:
-            self._attr_current_temperature = \
-                cache["temperature"] + cache.get("tempCorrection", 0)
+            self._attr_current_temperature = cache["temperature"] + cache.get(
+                "tempCorrection", 0
+            )
 
     def set_hvac_attr(self, hvac_mode: str) -> None:
         if not hvac_mode:
@@ -202,17 +228,19 @@ class XClimateNS(XEntity, ClimateEntity):
         self._async_write_ha_state()
 
     async def async_set_temperature(
-            self, temperature: float = None, hvac_mode: str = None, **kwargs
+        self, temperature: float = None, hvac_mode: str = None, **kwargs
     ) -> None:
         if temperature is None:
             return
 
         # Set manual operation and temperature
         params = self.get_params(hvac_mode)
-        params.update({
-            "ATCMode": 0,
-            "ATCExpect0": temperature,
-        })
+        params.update(
+            {
+                "ATCMode": 0,
+                "ATCExpect0": temperature,
+            }
+        )
 
         await self.ewelink.cloud.send(self.device, params)
         self._attr_target_temperature = temperature
@@ -262,8 +290,11 @@ class XThermostat(XEntity, ClimateEntity):
         await self.ewelink.send(self.device, {"workMode": i})
 
     async def async_set_temperature(
-            self, temperature: float = None, hvac_mode: str = None,
-            preset_mode: str = None, **kwargs
+        self,
+        temperature: float = None,
+        hvac_mode: str = None,
+        preset_mode: str = None,
+        **kwargs
     ) -> None:
         if hvac_mode is None:
             params = {}

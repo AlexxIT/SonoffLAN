@@ -1,14 +1,26 @@
 import asyncio
 import time
 
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, \
-    SensorStateClass
-from homeassistant.const import *
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
+from homeassistant.const import (
+    DEVICE_CLASS_TIMESTAMP,
+    ELECTRIC_CURRENT_AMPERE,
+    ELECTRIC_POTENTIAL_VOLT,
+    ENERGY_KILO_WATT_HOUR,
+    PERCENTAGE,
+    POWER_WATT,
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+    TEMP_CELSIUS,
+)
 from homeassistant.util import dt
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
-from .core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
+from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 
@@ -17,7 +29,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
     ewelink: XRegistry = hass.data[DOMAIN][config_entry.entry_id]
     ewelink.dispatcher_connect(
         SIGNAL_ADD_ENTITIES,
-        lambda x: add_entities([e for e in x if isinstance(e, SensorEntity)])
+        lambda x: add_entities([e for e in x if isinstance(e, SensorEntity)]),
     )
 
 
@@ -51,6 +63,7 @@ class XSensor(XEntity, SensorEntity):
     needed. Also class can filter incoming values using zigbee-like reporting
     logic: min report interval, max report interval, reportable change value.
     """
+
     multiply: float = None
     round: int = None
 
@@ -64,9 +77,9 @@ class XSensor(XEntity, SensorEntity):
         if self.param and self.uid is None:
             self.uid = self.param
 
-        default_class = self.uid[:-2] \
-            if self.uid.endswith(("_1", "_2", "_3", "_4")) \
-            else self.uid
+        default_class = (
+            self.uid[:-2] if self.uid.endswith(("_1", "_2", "_3", "_4")) else self.uid
+        )
         self._attr_device_class = DEVICE_CLASSES.get(default_class)
 
         if default_class in UNITS:
@@ -98,8 +111,8 @@ class XSensor(XEntity, SensorEntity):
 
             try:
                 if (ts - self.report_ts < self.report_mint) or (
-                        ts - self.report_ts < self.report_maxt and
-                        abs(value - self.native_value) <= self.report_delta
+                    ts - self.report_ts < self.report_maxt
+                    and abs(value - self.native_value) <= self.report_delta
                 ):
                     self.report_value = value
                     return
@@ -164,21 +177,24 @@ class XEnergySensor(XEntity, SensorEntity):
 
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
-        self.report_dt, self.report_history = \
-            device.get("reporting", {}).get(self.uid) or (3600, 0)
+        self.report_dt, self.report_history = device.get("reporting", {}).get(
+            self.uid
+        ) or (3600, 0)
 
     def set_state(self, params: dict):
         value = params[self.param]
         try:
             history = [
-                round(int(value[i:i + 2], 16) +
-                      int(value[i + 3] + value[i + 5]) * 0.01, 2)
+                round(
+                    int(value[i : i + 2], 16) + int(value[i + 3] + value[i + 5]) * 0.01,
+                    2,
+                )
                 for i in range(0, len(value), 6)
             ]
             self._attr_native_value = history[0]
             if self.report_history:
                 self._attr_extra_state_attributes = {
-                    "history": history[0:self.report_history]
+                    "history": history[0 : self.report_history]
                 }
         except Exception:
             pass
@@ -188,6 +204,26 @@ class XEnergySensor(XEntity, SensorEntity):
         if ts > self.next_ts and self.available and self.ewelink.cloud.online:
             self.next_ts = ts + self.report_dt
             await self.ewelink.cloud.send(self.device, self.get_params)
+
+
+class XEnergySensorDualR3(XEnergySensor, SensorEntity):
+    def set_state(self, params: dict):
+        value = params[self.param]
+        try:
+            history = [
+                round(
+                    int(value[i : i + 2], 10) + int(value[i + 2] + value[i + 3]) * 0.01,
+                    2,
+                )
+                for i in range(0, len(value), 4)
+            ]
+            self._attr_native_value = history[0]
+            if self.report_history:
+                self._attr_extra_state_attributes = {
+                    "history": history[0 : self.report_history]
+                }
+        except Exception:
+            pass
 
 
 class XTemperatureNS(XSensor):
@@ -215,7 +251,7 @@ class XOutdoorTempNS(XSensor):
             mint, maxt = value["range"].split(",")
             self._attr_extra_state_attributes = {
                 "temp_min": int(mint),
-                "temp_max": int(maxt)
+                "temp_max": int(maxt),
             }
         except Exception:
             pass
@@ -242,12 +278,13 @@ class XRemoteButton(XEntity, SensorEntity):
     def set_state(self, params: dict):
         button = params.get("outlet")
         key = BUTTON_STATES[params["key"]]
-        self._attr_native_value = f"button_{button + 1}_{key}" \
-            if button is not None else key
+        self._attr_native_value = (
+            f"button_{button + 1}_{key}" if button is not None else key
+        )
         asyncio.create_task(self.clear_state())
 
     async def clear_state(self):
-        await asyncio.sleep(.5)
+        await asyncio.sleep(0.5)
         self._attr_native_value = ""
         self._async_write_ha_state()
 

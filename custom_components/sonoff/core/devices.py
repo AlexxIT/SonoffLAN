@@ -11,16 +11,45 @@ XEntity properties:
 
 Developer can change global properties of existing classes via spec function.
 """
+
+from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.light import LightEntity
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.switch import SwitchEntity
+
 from .ewelink import XDevice
-from ..binary_sensor import *
-from ..climate import XClimateTH, XClimateNS, XThermostat
+from ..binary_sensor import XBinarySensor, XWiFiDoor, XZigbeeMotion
+from ..climate import XClimateNS, XClimateTH, XThermostat
+from ..core.entity import XEntity
 from ..cover import XCover, XCoverDualR3, XZigbeeCover
-from ..fan import XFan, XDiffuserFan, XToggleFan
-from ..light import *
+from ..fan import XDiffuserFan, XFan, XToggleFan
+from ..light import (
+    XDiffuserLight,
+    XDimmer,
+    XFanLight,
+    XLight57,
+    XLightB1,
+    XLightB02,
+    XLightB05B,
+    XLightD1,
+    XLightGroup,
+    XLightL1,
+)
 from ..number import XPulseWidth
 from ..remote import XRemote
-from ..sensor import *
-from ..switch import *
+from ..sensor import (
+    XEnergySensor,
+    XHumidityTH,
+    XOutdoorTempNS,
+    XRemoteButton,
+    XSensor,
+    XTemperatureNS,
+    XTemperatureTH,
+    XUnknown,
+    XWiFiDoorBattery,
+    XEnergySensorDualR3,
+)
+from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle, XZigbeeSwitches
 
 # supported custom device_class
 DEVICE_CLASS = {
@@ -41,7 +70,7 @@ def spec(cls, base: str = None, enabled: bool = None, **kwargs) -> type:
     if enabled is not None:
         kwargs["_attr_entity_registry_enabled_default"] = enabled
     if base:
-        bases = cls.__mro__[-len(XSwitch.__mro__)::-1]
+        bases = cls.__mro__[-len(XSwitch.__mro__) :: -1]
         bases = {k: v for b in bases for k, v in b.__dict__.items()}
         return type(cls.__name__, DEVICE_CLASS[base], {**bases, **kwargs})
     return type(cls.__name__, (cls,), {**cls.__dict__, **kwargs})
@@ -79,20 +108,28 @@ Power2 = spec(XSensor100, param="actPow_01", uid="power_2")
 Power3 = spec(XSensor100, param="actPow_02", uid="power_3")
 Power4 = spec(XSensor100, param="actPow_03", uid="power_4")
 Energy1 = spec(
-    XEnergySensor, param="kwhHistories_00", uid="energy_1",
-    get_params={"getKwh_00": 2}
+    XEnergySensor, param="kwhHistories_00", uid="energy_1", get_params={"getKwh_00": 2}
 )
 Energy2 = spec(
-    XEnergySensor, param="kwhHistories_01", uid="energy_2",
-    get_params={"getKwh_01": 2}
+    XEnergySensor, param="kwhHistories_01", uid="energy_2", get_params={"getKwh_01": 2}
 )
 Energy3 = spec(
-    XEnergySensor, param="kwhHistories_01", uid="energy_3",
-    get_params={"getKwh_02": 2}
+    XEnergySensor, param="kwhHistories_01", uid="energy_3", get_params={"getKwh_02": 2}
 )
 Energy4 = spec(
-    XEnergySensor, param="kwhHistories_01", uid="energy_4",
-    get_params={"getKwh_03": 2}
+    XEnergySensor, param="kwhHistories_01", uid="energy_4", get_params={"getKwh_03": 2}
+)
+Energy1_DualR3 = spec(
+    XEnergySensorDualR3,
+    param="kwhHistories_00",
+    uid="energy_1",
+    get_params={"getKwh_00": 2},
+)
+Energy2_DualR3 = spec(
+    XEnergySensorDualR3,
+    param="kwhHistories_01",
+    uid="energy_2",
+    get_params={"getKwh_01": 2},
 )
 
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
@@ -102,10 +139,16 @@ DEVICES = {
     3: SPEC_3CH,
     4: SPEC_4CH,
     5: [
-        XSwitch, LED, RSSI,
+        XSwitch,
+        LED,
+        RSSI,
         spec(XSensor, param="power"),
-        spec(XEnergySensor, param="hundredDaysKwhData", uid="energy",
-             get_params={"hundredDaysKwh": "get"}),
+        spec(
+            XEnergySensor,
+            param="hundredDaysKwhData",
+            uid="energy",
+            get_params={"hundredDaysKwh": "get"},
+        ),
     ],  # Sonoff POW (first)
     6: SPEC_SWITCH,
     7: SPEC_2CH,  # Sonoff T1 2CH
@@ -114,7 +157,12 @@ DEVICES = {
     11: [XCover, LED, RSSI],  # King Art - King Q4 Cover (only cloud)
     14: SPEC_SWITCH,  # Sonoff Basic (3rd party)
     15: [
-        XSwitchTH, XClimateTH, XTemperatureTH, XHumidityTH, LED, RSSI,
+        XSwitchTH,
+        XClimateTH,
+        XTemperatureTH,
+        XHumidityTH,
+        LED,
+        RSSI,
     ],  # Sonoff TH16
     18: [
         spec(XSensor, param="temperature"),
@@ -126,7 +174,9 @@ DEVICES = {
     22: [XLightB1, RSSI],  # Sonoff B1 (only cloud)
     # https://github.com/AlexxIT/SonoffLAN/issues/173
     25: [
-        XDiffuserFan, XDiffuserLight, RSSI,
+        XDiffuserFan,
+        XDiffuserLight,
+        RSSI,
         spec(XBinarySensor, param="water", uid=""),
     ],  # Diffuser
     28: [XRemote, LED, RSSI],  # Sonoff RF Brigde 433
@@ -134,16 +184,25 @@ DEVICES = {
     30: SPEC_3CH,
     31: SPEC_4CH,
     32: [
-        XSwitch, LED, RSSI,
+        XSwitch,
+        LED,
+        RSSI,
         spec(XSensor, param="current"),
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
-        spec(XEnergySensor, param="hundredDaysKwhData", uid="energy",
-             get_params={"hundredDaysKwh": "get"}),
+        spec(
+            XEnergySensor,
+            param="hundredDaysKwhData",
+            uid="energy",
+            get_params={"hundredDaysKwh": "get"},
+        ),
     ],  # Sonoff POWR2
     33: [XLightL1, RSSI],  # https://github.com/AlexxIT/SonoffLAN/issues/985
     34: [
-        XFan, XFanLight, LED, RSSI,
+        XFan,
+        XFanLight,
+        LED,
+        RSSI,
     ],  # Sonoff iFan02 and iFan03
     36: [XDimmer, RSSI],  # KING-M4 (dimmer, only cloud)
     44: [XLightD1, RSSI],  # Sonoff D1
@@ -161,21 +220,53 @@ DEVICES = {
     104: [XLightB05B, RSSI],  # Sonoff B05-B RGB+CCT color bulb
     107: SPEC_1CH,
     126: [
-        Switch1, Switch2, RSSI, Current1, Current2, Voltage1, Voltage2,
-        Power1, Power2, Energy1, Energy2,
+        Switch1,
+        Switch2,
+        RSSI,
+        Current1,
+        Current2,
+        Voltage1,
+        Voltage2,
+        Power1,
+        Power2,
+        Energy1_DualR3,
+        Energy2_DualR3,
     ],  # Sonoff DualR3
     127: [XThermostat],  # https://github.com/AlexxIT/SonoffLAN/issues/358
     128: [LED],  # SPM-Main
     130: [
-        Switch1, Switch2, Switch3, Switch4, Current1, Current2, Current3,
-        Current4, Voltage1, Voltage2, Voltage3, Voltage4, Power1, Power2,
-        Power3, Power4, Energy1, Energy2, Energy3, Energy4
+        Switch1,
+        Switch2,
+        Switch3,
+        Switch4,
+        Current1,
+        Current2,
+        Current3,
+        Current4,
+        Voltage1,
+        Voltage2,
+        Voltage3,
+        Voltage4,
+        Power1,
+        Power2,
+        Power3,
+        Power4,
+        Energy1,
+        Energy2,
+        Energy3,
+        Energy4,
     ],  # SPM-4Relay, https://github.com/AlexxIT/SonoffLAN/issues/658
     133: [
         # Humidity. ALWAYS 50... NSPanel DOESN'T HAVE HUMIDITY SENSOR
         # https://github.com/AlexxIT/SonoffLAN/issues/751
-        Switch1, Switch2, XClimateNS, XTemperatureNS, XOutdoorTempNS,
+        Switch1,
+        Switch2,
+        XClimateNS,
+        XTemperatureNS,
+        XOutdoorTempNS,
     ],  # Sonoff NS Panel
+    # https://github.com/AlexxIT/SonoffLAN/issues/1026
+    135: [XLightB02, RSSI],  # Sonoff B02-BL
     # https://github.com/AlexxIT/SonoffLAN/issues/766
     136: [XLightB05B, RSSI],  # Sonoff B05-BL
     137: [XLightL1, RSSI],
@@ -185,27 +276,42 @@ DEVICES = {
     165: [Switch1, Switch2, RSSI],  # DualR3 Lite, without power consumption
     # https://github.com/AlexxIT/SonoffLAN/issues/857
     168: [RSSI],  # new ZBBridge-P
+    173: [XLightL1, RSSI],  # Sonoff L3-5M-P
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)
     177: [XRemoteButton],  # Sonoff S-Mate
     181: [
-        XSwitchTH, XClimateTH, XTemperatureTH, XHumidityTH, LED, RSSI,
+        XSwitchTH,
+        XClimateTH,
+        XTemperatureTH,
+        XHumidityTH,
+        LED,
+        RSSI,
     ],  # Sonoff THR320D or THR316D
     182: [
-        Switch1, LED, RSSI,
+        Switch1,
+        LED,
+        RSSI,
         spec(XSensor, param="current"),
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
     ],  # Sonoff S40
     190: [
-        Switch1, LED, RSSI,
+        Switch1,
+        LED,
+        RSSI,
         spec(XSensor100, param="current"),
         spec(XSensor100, param="power"),
         spec(XSensor100, param="voltage"),
-        spec(XEnergySensor, param="hundredDaysKwhData", uid="energy",
-             get_params={"hundredDaysKwh": "get"}),
+        spec(
+            XEnergySensor,
+            param="hundredDaysKwhData",
+            uid="energy",
+            get_params={"hundredDaysKwh": "get"},
+        ),
     ],  # Sonoff POWR3
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
+    1257: [spec(XLightD1, base="light")],  # ZigbeeWhiteLight
     # https://github.com/AlexxIT/SonoffLAN/issues/972
     1514: [XZigbeeCover, spec(XSensor, param="battery", multiply=2)],
     1770: [
@@ -300,9 +406,7 @@ def get_custom_spec(classes: list, device_class):
         for i, sub_class in enumerate(device_class):
             # 2. simple multichannel
             if isinstance(sub_class, str):
-                classes.append(spec(
-                    base, channel=i, uid=str(i + 1), base=sub_class
-                ))
+                classes.append(spec(base, channel=i, uid=str(i + 1), base=sub_class))
 
             elif isinstance(sub_class, dict):
                 sub_class, i = next(iter(sub_class.items()))
@@ -310,14 +414,14 @@ def get_custom_spec(classes: list, device_class):
                 # 3. light with brightness
                 if isinstance(i, list) and sub_class == "light":
                     chs = [x - 1 for x in i]
-                    uid = ''.join(str(x) for x in i)
+                    uid = "".join(str(x) for x in i)
                     classes.append(spec(XLightGroup, channels=chs, uid=uid))
 
                 # 4. multichannel
                 elif isinstance(i, int):
-                    classes.append(spec(
-                        base, channel=(i - 1), uid=str(i), base=sub_class
-                    ))
+                    classes.append(
+                        spec(base, channel=(i - 1), uid=str(i), base=sub_class)
+                    )
 
     return classes
 
@@ -327,7 +431,7 @@ def get_spec_wrapper(func, sensors: list):
         classes = func(device)
         for uid in sensors:
             if (uid in device["params"] or uid == "host") and all(
-                    cls.param != uid and cls.uid != uid for cls in classes
+                cls.param != uid and cls.uid != uid for cls in classes
             ):
                 classes.append(spec(XSensor, param=uid))
         return classes
@@ -337,7 +441,8 @@ def get_spec_wrapper(func, sensors: list):
 
 def set_default_class(device_class: str):
     XSwitch.__bases__ = XSwitches.__bases__ = (
-        XEntity, LightEntity if device_class == "light" else SwitchEntity
+        XEntity,
+        LightEntity if device_class == "light" else SwitchEntity,
     )
 
 
@@ -350,7 +455,8 @@ DIY = {
     "th_plug": [15, "SONOFF", "TH DIY"],
     "rf": [28, "SONOFF", "RFBridge DIY"],
     "fan_light": [34, "SONOFF", "iFan DIY"],
-    "light": [44, "SONOFF", "D1 DIY"],
+    "light": [44, "SONOFF", "D1 DIY"],  # don't known if light exist
+    "diylight": [44, "SONOFF", "D1 DIY"],
     "switch_radar": [77, "SONOFF", "Micro DIY"],
     "multifun_switch": [126, "SONOFF", "DualR3 DIY"],
 }
