@@ -1,0 +1,39 @@
+{
+	"config": {
+		"abort": {
+			"reauth_successful": "تم إعادة التوثيق بنجاح"
+		},
+		"error": {
+			"exists": "هذا الحساب معدّ مسبقاً",
+			"template": "{error}"
+		},
+		"step": {
+			"user": {
+				"description": "(https://www.ewelink.cc/en/) ادخل بيانات اعتماد حساب الـ إويلينك الخاص بك",
+				"data": {
+					"username": "البريد الإلكتروني أو رقم الهاتف (ادخل اي شئ لوضع الـ DIY)",
+					"password": "الرمز السرّي (اتركه فارغاً لوضع الـ DIY)"
+				}
+			}
+		}
+	},
+	"options": {
+		"step": {
+			"init": {
+				"data": {
+					"mode": "الوضع (auto ينصح به لأغلب المستخدمين)",
+					"homes": "المنازل (اتركه فارغاً لاستخدام المنزل الحالي)",
+					"debug": "Debug صفحة الـ (Integration > Menu > Known issues)"
+				}
+			}
+		}
+	},
+	"system_health": {
+		"info": {
+			"version": "إصدار",
+			"cloud_online": "الأجهزة المتصلة عبر الإنترنت",
+			"local_online": "الاجهزة المتصلة محلياً",
+			"debug": "Debug صفحة الـ"
+		}
+	}
+}
