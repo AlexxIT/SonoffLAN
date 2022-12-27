@@ -37,6 +37,7 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
                 "model": device.get("productModel"),
                 "online": device.get("online"),
                 "localtype": device.get("localtype"),
+                "host": device.get("host"),
             }
             if "params" in device
             else {
