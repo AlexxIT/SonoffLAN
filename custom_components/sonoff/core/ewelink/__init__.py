@@ -236,11 +236,14 @@ class XRegistry(XRegistryBase):
         if "sledOnline" in params:
             device["params"]["sledOnline"] = params["sledOnline"]
 
-        # we can get data from device, but without host
-        if "host" in msg and device.get("host") != msg["host"]:
-            # params for custom sensor
-            device["host"] = params["host"] = msg["host"]
+        if "localtype" in msg and device.get("localtype") != msg.get("localtype"):
             device["localtype"] = msg["localtype"]
+
+        if not "host" in msg:
+            msg["host"] = f"ewelink_{did}.local:8081"
+
+        if device.get("host") != msg.get("host"):
+            device["host"] = params["host"] = msg["host"]
 
         self.dispatcher_send(did, params)
 
