@@ -116,6 +116,9 @@ class XRegistry(XRegistryBase):
             ok = await self.cloud.send(device, params, seq)
             if ok == "online" and query_cloud and params:
                 await self.cloud.send(device, timeout=0)
+            # check LAN status if local mode configured
+            if self.local.online: 
+                asyncio.create_task(self.check_offline(device))
 
         else:
             return
@@ -143,16 +146,18 @@ class XRegistry(XRegistryBase):
         return await self.send(device, device.pop("params_bulk"))
 
     async def check_offline(self, device: XDevice):
+        did = device["deviceid"]
         if not device.get("host"):
-            return
+            # try default if device already declared as offline
+            device["host"] = f"ewelink_{did}.local.:8081"
 
         ok = await self.local.send(device, {"cmd": "info"}, timeout=15)
         if ok == "online":
+            _LOGGER.debug(f"{did} !! Local4 | Device online")
             return
 
         device.pop("host", None)
 
-        did = device["deviceid"]
         _LOGGER.debug(f"{did} !! Local4 | Device offline")
         self.dispatcher_send(did)
 
@@ -177,9 +182,8 @@ class XRegistry(XRegistryBase):
         # process online change
         if "online" in params:
             device["online"] = params["online"]
-            # check if LAN online after cloud offline
-            if not device["online"] and device.get("host"):
-                asyncio.create_task(self.check_offline(device))
+            # check LAN status after cloud status changes
+            asyncio.create_task(self.check_offline(device))
 
         elif device["online"] is False:
             device["online"] = True
@@ -240,7 +244,7 @@ class XRegistry(XRegistryBase):
             device["localtype"] = msg["localtype"]
 
         if not "host" in msg:
-            msg["host"] = f"ewelink_{did}.local:8081"
+            msg["host"] = f"ewelink_{did}.local.:8081"
 
         if device.get("host") != msg.get("host"):
             device["host"] = params["host"] = msg["host"]
