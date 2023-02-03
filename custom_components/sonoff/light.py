@@ -432,7 +432,8 @@ class XLightB05B(XLightB02):
         if effect in self.effect_list:
             self._attr_effect = effect
 
-        state = params[effect]
+        # fix https://github.com/AlexxIT/SonoffLAN/issues/1093
+        state = params.get(effect) or B05_MODE_PAYLOADS.get(effect) or {}
         if "br" in state:
             self._attr_brightness = conv(state["br"], 1, 100, 1, 255)
 
