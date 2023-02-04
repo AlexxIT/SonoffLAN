@@ -111,7 +111,8 @@ class XRemote(XEntity, RemoteEntity):
 
     def set_state(self, params: dict):
         # skip full cloud state update
-        if not self.is_on or "init" in params:
+        # https://github.com/AlexxIT/SonoffLAN/issues/1101
+        if not self.is_on or "init" in params or not self.hass:
             return
 
         for param, ts in params.items():
