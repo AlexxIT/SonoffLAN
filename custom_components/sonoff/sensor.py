@@ -99,7 +99,11 @@ class XSensor(XEntity, SensorEntity):
         if params:
             value = params[self.param]
             if self.native_unit_of_measurement and isinstance(value, str):
-                value = float(value)
+                try:
+                    # https://github.com/AlexxIT/SonoffLAN/issues/1061
+                    value = float(value)
+                except Exception:
+                    return
             if self.multiply:
                 value *= self.multiply
             if self.round is not None:
