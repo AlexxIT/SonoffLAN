@@ -183,9 +183,12 @@ class XClimateNS(XEntity, ClimateEntity):
         # correction could be optional
         # https://github.com/AlexxIT/SonoffLAN/issues/812
         if "temperature" in params or "tempCorrection" in params:
-            self._attr_current_temperature = cache["temperature"] + cache.get(
-                "tempCorrection", 0
-            )
+            try:
+                # https://github.com/AlexxIT/SonoffLAN/issues/1100
+                self._attr_current_temperature = cache["temperature"]
+                self._attr_current_temperature += cache.get("tempCorrection", 0)
+            except:
+                pass
 
     @staticmethod
     def get_params(hvac_mode: str) -> dict:
