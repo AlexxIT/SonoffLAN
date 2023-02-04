@@ -448,18 +448,19 @@ def set_default_class(device_class: str):
     )
 
 
+# Cloud: NSPanel
 DIY = {
     # DIY type, UIID, Brand, Model/Name
-    "plug": [1, None, "Single Channel DIY"],
-    "strip": [4, None, "Multi Channel DIY"],
+    "plug": [1, None, "Single Channel DIY"],  # POWR316
+    "strip": [4, None, "Multi Channel DIY"],  # 4CHPROR3
     "diy_plug": [1, "SONOFF", "MINI DIY"],
-    "enhanced_plug": [5, "SONOFF", "POW DIY"],
-    "th_plug": [15, "SONOFF", "TH DIY"],
+    "enhanced_plug": [5, "SONOFF", "POW DIY"],  # POWR2
+    "th_plug": [15, "SONOFF", "TH DIY"],  # TH16R2
     "rf": [28, "SONOFF", "RFBridge DIY"],
     "fan_light": [34, "SONOFF", "iFan DIY"],
-    "light": [44, "SONOFF", "D1 DIY"],  # don't known if light exist
+    "light": [44, "SONOFF", "D1 DIY"],  # don't know if light exist
     "diylight": [44, "SONOFF", "D1 DIY"],
-    "switch_radar": [77, "SONOFF", "Micro DIY"],
+    "switch_radar": [77, "SONOFF", "Micro DIY"],  # Micro
     "multifun_switch": [126, "SONOFF", "DualR3 DIY"],
 }
 
