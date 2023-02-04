@@ -304,7 +304,11 @@ class XLightL1(XLight):
             )
         if "mode" in params:
             mode = params["mode"] - 1  # 1=Colorful, don't skip it
-            self._attr_effect = self.effect_list[mode] if mode >= 0 else None
+            try:
+                # https://github.com/AlexxIT/SonoffLAN/issues/1102
+                self._attr_effect = self.effect_list[mode]
+            except Exception:
+                self._attr_effect = None
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
         if effect:
