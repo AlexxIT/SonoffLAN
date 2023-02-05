@@ -191,27 +191,34 @@ class XRegistry(XRegistryBase):
         did: str = msg["deviceid"]
         device: XDevice = self.devices.get(did)
         params: dict = msg.get("params")
+        # check device in known devices list
         if not device:
+            # check payload already decrypted (DIY devices)
             if not params:
                 try:
+                    # try to decrypt payload if we have right key in config
                     msg["params"] = params = self.local.decrypt_msg(
                         msg, self.config["devices"][did]["devicekey"]
                     )
                 except Exception:
                     _LOGGER.debug(f"{did} !! skip setup for encrypted device")
+                    # save device to known list, so no more decrypt tries
                     self.devices[did] = msg
                     return
 
             from ..devices import setup_diy
 
+            # setup new device as DIY device
             device = setup_diy(msg)
             entities = self.setup_devices([device])
             self.dispatcher_send(SIGNAL_ADD_ENTITIES, entities)
 
         elif not params:
             if "devicekey" not in device:
+                # this is known device with encrypted payload but without devicekey
                 return
             try:
+                # decrypt payload for known device with devicekey
                 params = self.local.decrypt_msg(msg, device["devicekey"])
             except Exception as e:
                 _LOGGER.debug("Can't decrypt message", exc_info=e)
