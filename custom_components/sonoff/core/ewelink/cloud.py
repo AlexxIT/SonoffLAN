@@ -82,7 +82,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     online = None
     region = "eu"
 
-    task: asyncio.Task = None
+    task: Optional[asyncio.Task] = None
     ws: ClientWebSocketResponse = None
 
     @property
@@ -250,6 +250,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     async def stop(self):
         if self.task:
             self.task.cancel()
+            self.task = None
 
         self.set_online(None)
 
