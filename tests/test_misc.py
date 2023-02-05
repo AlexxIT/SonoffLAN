@@ -1,7 +1,6 @@
 import asyncio
 
 from custom_components.sonoff.core.ewelink import XDevice, XRegistry
-
 from . import save_to
 
 
