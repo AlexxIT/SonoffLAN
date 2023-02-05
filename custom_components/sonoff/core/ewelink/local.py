@@ -8,14 +8,13 @@ import base64
 import ipaddress
 import json
 import logging
-from typing import Callable
 
 import aiohttp
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
-from zeroconf import DNSAddress, DNSService, DNSText, Zeroconf, current_time_millis
-from zeroconf.asyncio import AsyncServiceBrowser
+from zeroconf import Zeroconf, ServiceStateChange
+from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo
 
 from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
 
@@ -72,118 +71,15 @@ def decrypt(payload: dict, devicekey: str):
     return unpad(padded, AES.block_size)
 
 
-class XServiceBrowser(AsyncServiceBrowser):
-    """Default ServiceBrowser have problems with processing messages. So we
-    will process them manually.
-    """
-
-    def __init__(self, zeroconf: Zeroconf, type_: str, handler: Callable):
-        super().__init__(zeroconf, type_, [self.default_handler])
-        self.handler = handler
-        self.suffix = "." + type_
-
-    def default_handler(self, zeroconf, service_type, name, state_change):
-        pass
-
-    @staticmethod
-    def decode_text(text: bytes):
-        data = {}
-        i = 0
-        end = len(text)
-        while i < end:
-            j = text[i] + 1
-            k, v = text[i + 1 : i + j].split(b"=", 1)
-            i += j
-            data[k.decode()] = v.decode()
-        return data
-
-    def async_update_records(self, zc, now: float, records: list) -> None:
-        # in normal situation we receive:
-        #   1. DNSPointer (prt) - useless
-        #   2. DNSText (txt) - has text array (key=value)
-        #   3. DNSService (srv) - has port, usual 8081
-        #   4. DNSAddress (a) - has IP-address
-        # but some devices may not send IP-address
-        #   https://github.com/AlexxIT/SonoffLAN/issues/839
-        for record, old_record in records:
-            try:
-                # old_record - skip previous seen record
-                # record.ttl <= 1 - skip previous (old) cached records
-                # process only DNSText records with our suffix
-                if (
-                    old_record
-                    or record.ttl <= 1
-                    or not isinstance(record, DNSText)
-                    or not record.key.endswith(self.suffix)
-                ):
-                    continue
-
-                if not record.is_expired(now):
-                    key = record.key[:18]
-                    host = None
-                    port = None
-                    for r, _ in records:
-                        if r.key[:18] != key:
-                            continue
-                        if isinstance(r, DNSAddress):
-                            host = str(ipaddress.ip_address(r.address))
-                        elif isinstance(r, DNSService):
-                            port = r.port
-
-                    # support empty host and different port
-                    if host:
-                        host += f":{port}"
-
-                    data = self.decode_text(record.text)
-                    asyncio.create_task(self.handler(record.name, host, data))
-                else:
-                    asyncio.create_task(self.handler(record.name))
-
-            except Exception as e:
-                _LOGGER.warning("Can't process zeroconf", exc_info=e)
-
-        AsyncServiceBrowser.async_update_records(self, zc, now, records)
-
-    def restore_from_cache(self):
-        now = current_time_millis()
-        cache: dict = self.zc.cache.cache
-        for key, records in cache.items():
-            try:
-                if not key.endswith(self.suffix):
-                    continue
-
-                for record in records.keys():
-                    if not isinstance(record, DNSText) or record.is_expired(now):
-                        continue
-
-                    host = None
-
-                    key = record.key[:18] + ".local."
-                    if key in cache:
-                        for r in cache[key].keys():
-                            if isinstance(r, DNSAddress):
-                                host = str(ipaddress.ip_address(r.address))
-                        for r in records.keys():
-                            if isinstance(r, DNSService):
-                                host += f":{r.port}"
-
-                    data = self.decode_text(record.text)
-                    asyncio.create_task(self.handler(record.name, host, data))
-
-            except Exception as e:
-                _LOGGER.warning("Can't restore zeroconf cache", exc_info=e)
-
-
 class XRegistryLocal(XRegistryBase):
-    browser: XServiceBrowser = None
+    browser: AsyncServiceBrowser = None
     online: bool = False
 
     def start(self, zeroconf: Zeroconf):
-        self.browser = XServiceBrowser(
-            zeroconf, "_ewelink._tcp.local.", self._process_zeroconf
+        self.browser = AsyncServiceBrowser(
+            zeroconf, "_ewelink._tcp.local.", [self._handler1]
         )
         self.online = True
-        self.browser.restore_from_cache()
         self.dispatcher_send(SIGNAL_CONNECTED)
 
     async def stop(self):
@@ -192,12 +88,49 @@ class XRegistryLocal(XRegistryBase):
         self.online = False
         await self.browser.async_cancel()
 
-    async def _process_zeroconf(self, name: str, host: str = None, data: dict = None):
-        if data is None:
-            # TTL of record 5 minutes
+    def _handler1(
+        self,
+        zeroconf: Zeroconf,
+        service_type: str,
+        name: str,
+        state_change: ServiceStateChange,
+    ):
+        """Step 1. Receive change event from zeroconf."""
+        if state_change == ServiceStateChange.Removed:
             msg = {"deviceid": name[8:18], "params": {"online": False}}
             self.dispatcher_send(SIGNAL_UPDATE, msg)
             return
+
+        asyncio.create_task(self._handler2(zeroconf, service_type, name))
+
+    async def _handler2(self, zeroconf: Zeroconf, service_type: str, name: str):
+        """Step 2. Request additional info about add and update event from device."""
+        try:
+            info = AsyncServiceInfo(service_type, name)
+            if not await info.async_request(zeroconf, 3000) or not info.properties:
+                _LOGGER.debug(f"{name[8:18]} <= Local0 | Can't get zeroconf info")
+                return
+
+            # support update with empty host and host without port
+            host = None
+            for addr in info.addresses:
+                # zeroconf lib should return IPv4, but better check anyway
+                addr = ipaddress.IPv4Address(addr)
+                host = f"{addr}:{info.port}" if info.port else str(addr)
+                break
+
+            data = {
+                k.decode(): v.decode() if isinstance(v, bytes) else v
+                for k, v in info.properties.items()
+            }
+
+            self._handler3(host, data)
+
+        except Exception as e:
+            _LOGGER.debug(f"{name[8:18]} <= Local0 | Zeroconf error", exc_info=e)
+
+    def _handler3(self, host: str, data: dict):
+        """Step 3. Process new data from device."""
 
         raw = "".join([data[f"data{i}"] for i in range(1, 5, 1) if f"data{i}" in data])
 
