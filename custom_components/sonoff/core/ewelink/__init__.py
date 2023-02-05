@@ -38,8 +38,6 @@ class XRegistry(XRegistryBase):
             did = device["deviceid"]
             try:
                 device.update(self.config["devices"][did])
-                if "host" in device and ":" not in device["host"]:
-                    device["host"] += ":8081"
             except Exception:
                 pass
 

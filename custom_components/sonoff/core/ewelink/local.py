@@ -254,9 +254,13 @@ class XRegistryLocal(XRegistryBase):
         log = f"{device['deviceid']} => Local4 | {params}"
 
         try:
+            host = device["host"]
+            if ":" not in host:
+                host += ":8081"  # default port, some devices may have another
+
             # noinspection HttpUrlsUsage
             r = await self.session.post(
-                f"http://{device['host']}/zeroconf/{command}",
+                f"http://{host}/zeroconf/{command}",
                 json=payload,
                 headers={"Connection": "close"},
                 timeout=timeout,
