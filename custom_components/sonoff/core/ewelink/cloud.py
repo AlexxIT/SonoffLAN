@@ -283,7 +283,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 msg: WSMessage
                 async for msg in self.ws:
                     resp = json.loads(msg.data)
-                    await self._process_ws_msg(resp)
+                    asyncio.create_task(self._process_ws_msg(resp))
             except Exception as e:
                 _LOGGER.warning("Cloud processing error", exc_info=e)
 
