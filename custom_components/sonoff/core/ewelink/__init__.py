@@ -11,6 +11,7 @@ from .local import XRegistryLocal
 _LOGGER = logging.getLogger(__name__)
 
 SIGNAL_ADD_ENTITIES = "add_entities"
+LOCAL_TTL = 60
 
 
 class XRegistry(XRegistryBase):
@@ -27,6 +28,7 @@ class XRegistry(XRegistryBase):
         self.cloud.dispatcher_connect(SIGNAL_UPDATE, self.cloud_update)
 
         self.local = XRegistryLocal(session)
+        self.local.dispatcher_connect(SIGNAL_CONNECTED, self.local_connected)
         self.local.dispatcher_connect(SIGNAL_UPDATE, self.local_update)
 
     def setup_devices(self, devices: list[XDevice]) -> list:
@@ -144,8 +146,9 @@ class XRegistry(XRegistryBase):
         if not device.get("host"):
             return
 
-        ok = await self.local.send(device, {"cmd": "info"}, timeout=15)
+        ok = await self.local.send(device, {"cmd": "info"}, timeout=10)
         if ok == "online":
+            device["local_ts"] = time.time() + LOCAL_TTL
             return
 
         device.pop("host", None)
@@ -158,8 +161,12 @@ class XRegistry(XRegistryBase):
         for deviceid in self.devices.keys():
             self.dispatcher_send(deviceid)
 
-        if self.cloud.online and (not self.task or self.task.done()):
-            self.task = asyncio.create_task(self.pow_helper())
+        if not self.task:
+            self.task = asyncio.create_task(self.run_forever())
+
+    def local_connected(self):
+        if not self.task:
+            self.task = asyncio.create_task(self.run_forever())
 
     def cloud_update(self, msg: dict):
         did = msg["deviceid"]
@@ -247,34 +254,37 @@ class XRegistry(XRegistryBase):
             device["host"] = params["host"] = msg["host"]
             device["localtype"] = msg["localtype"]
 
+        device["local_ts"] = time.time() + LOCAL_TTL
+
         self.dispatcher_send(did, params)
 
-    async def pow_helper(self):
+    async def run_forever(self):
         from ..devices import POW_UI_ACTIVE
 
         # collect pow devices
-        devices = [
+        pow_devices = [
             device
             for device in self.devices.values()
             if "extra" in device and device["extra"]["uiid"] in POW_UI_ACTIVE
         ]
-        if not devices:
-            return
 
         while True:
-            if not self.cloud.online:
-                await asyncio.sleep(60)
-                continue
-
             ts = time.time()
 
-            for device in devices:
-                if not device.get("online") or device.get("pow_ts", 0) > ts:
-                    continue
+            if self.cloud.online:
+                for device in pow_devices:
+                    if not device.get("online") or device.get("pow_ts", 0) > ts:
+                        continue
 
-                dt, params = POW_UI_ACTIVE[device["extra"]["uiid"]]
-                device["pow_ts"] = ts + dt
-                await self.cloud.send(device, params, timeout=0)
+                    dt, params = POW_UI_ACTIVE[device["extra"]["uiid"]]
+                    device["pow_ts"] = ts + dt
+                    asyncio.create_task(self.cloud.send(device, params, timeout=0))
 
-            # sleep for 150 seconds (because minimal uiActive - 180 seconds)
-            await asyncio.sleep(150)
+            if self.local.online:
+                for device in self.devices.values():
+                    if "local_ts" not in device or device["local_ts"] > ts:
+                        continue
+                    device.pop("local_ts")
+                    asyncio.create_task(self.check_offline(device))
+
+            await asyncio.sleep(15)
