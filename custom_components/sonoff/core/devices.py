@@ -12,8 +12,6 @@ XEntity properties:
 Developer can change global properties of existing classes via spec function.
 """
 
-import logging
-
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.light import LightEntity
 from homeassistant.components.sensor import SensorEntity
@@ -72,7 +70,6 @@ def spec(cls, base: str = None, enabled: bool = None, **kwargs) -> type:
     If `base` param provided - can change Entity base class for cls. So it can
     be added to different Hass domain.
     """
-
     if enabled is not None:
         kwargs["_attr_entity_registry_enabled_default"] = enabled
     if base:
@@ -402,7 +399,6 @@ def get_custom_spec(classes: list, device_class):
          - fan: 4  # entity 3 (channel 4)
     """
     # 1. single channel
-    
     if isinstance(device_class, str):
         if device_class in DEVICE_CLASS:
             classes = [spec(classes[0], base=device_class)] + classes[1:]
