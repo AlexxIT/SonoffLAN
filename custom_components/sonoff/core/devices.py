@@ -12,6 +12,8 @@ XEntity properties:
 Developer can change global properties of existing classes via spec function.
 """
 
+import logging
+
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.light import LightEntity
 from homeassistant.components.sensor import SensorEntity
@@ -22,7 +24,7 @@ from ..binary_sensor import XBinarySensor, XWiFiDoor, XZigbeeMotion
 from ..climate import XClimateNS, XClimateTH, XThermostat
 from ..core.entity import XEntity
 from ..cover import XCover, XCoverDualR3, XZigbeeCover
-from ..fan import XDiffuserFan, XFan, XToggleFan
+from ..fan import XDiffuserFan, XFan, XToggleFan, XFanDualR3
 from ..light import (
     XDiffuserLight,
     XDimmer,
@@ -51,10 +53,13 @@ from ..sensor import (
 )
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle, XZigbeeSwitches
 
+_LOGGER = logging.getLogger(__name__)
+
 # supported custom device_class
 DEVICE_CLASS = {
     "binary_sensor": (XEntity, BinarySensorEntity),
     "fan": (XToggleFan,),  # using custom class for overriding is_on function
+    "dualfan": (XFanDualR3,),
     "light": (XEntity, LightEntity),
     "sensor": (XEntity, SensorEntity),
     "switch": (XEntity, SwitchEntity),
@@ -67,6 +72,7 @@ def spec(cls, base: str = None, enabled: bool = None, **kwargs) -> type:
     If `base` param provided - can change Entity base class for cls. So it can
     be added to different Hass domain.
     """
+
     if enabled is not None:
         kwargs["_attr_entity_registry_enabled_default"] = enabled
     if base:
@@ -371,7 +377,7 @@ def get_spec(device: dict) -> list:
     # DualR3 in cover mode
     if uiid in [126, 165] and device["params"].get("workMode") == 2:
         classes = [cls for cls in classes if XSwitches not in cls.__bases__]
-        classes.append(XCoverDualR3)
+        classes.insert(0, XCoverDualR3)
 
     # NSPanel Climate disable without switch configuration
     if uiid in [133] and not device["params"].get("HMI_ATCDevice"):
@@ -396,6 +402,7 @@ def get_custom_spec(classes: list, device_class):
          - fan: 4  # entity 3 (channel 4)
     """
     # 1. single channel
+    
     if isinstance(device_class, str):
         if device_class in DEVICE_CLASS:
             classes = [spec(classes[0], base=device_class)] + classes[1:]
