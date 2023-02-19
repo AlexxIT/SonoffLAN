@@ -151,8 +151,6 @@ class XRegistry(XRegistryBase):
             device["local_ts"] = time.time() + LOCAL_TTL
             return
 
-        device.pop("host", None)
-
         did = device["deviceid"]
         _LOGGER.debug(f"{did} !! Local4 | Device offline")
         self.dispatcher_send(did)
@@ -284,7 +282,6 @@ class XRegistry(XRegistryBase):
                 for device in self.devices.values():
                     if "local_ts" not in device or device["local_ts"] > ts:
                         continue
-                    device.pop("local_ts")
                     asyncio.create_task(self.check_offline(device))
 
             await asyncio.sleep(15)
