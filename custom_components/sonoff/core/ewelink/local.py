@@ -97,8 +97,6 @@ class XRegistryLocal(XRegistryBase):
     ):
         """Step 1. Receive change event from zeroconf."""
         if state_change == ServiceStateChange.Removed:
-            msg = {"deviceid": name[8:18], "params": {"online": False}}
-            self.dispatcher_send(SIGNAL_UPDATE, msg)
             return
 
         asyncio.create_task(self._handler2(zeroconf, service_type, name))
