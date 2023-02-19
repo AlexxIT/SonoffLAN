@@ -238,7 +238,7 @@ class XRegistry(XRegistryBase):
 
         tag = "Local3" if "host" in msg else "Local0"
 
-        _LOGGER.debug(f"{did} <= {tag} | %s | {msg.get('seq', '')}", params)
+        _LOGGER.debug(f"{did} <= {tag} | {msg.get('host','')} | %s | {msg.get('seq', '')}", params)
 
         # msg from zeroconf ServiceStateChange.Removed
         if params.get("online") is False:
