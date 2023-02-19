@@ -116,6 +116,9 @@ class XRegistry(XRegistryBase):
             ok = await self.cloud.send(device, params, seq)
             if ok == "online" and query_cloud and params:
                 await self.cloud.send(device, timeout=0)
+            # check LAN status if local mode configured
+            if self.local.online: 
+                asyncio.create_task(self.check_offline(device))
 
         else:
             return
@@ -182,9 +185,8 @@ class XRegistry(XRegistryBase):
         # process online change
         if "online" in params:
             device["online"] = params["online"]
-            # check if LAN online after cloud offline
-            if not device["online"] and device.get("host"):
-                asyncio.create_task(self.check_offline(device))
+            # check if LAN online after cloud status change
+            asyncio.create_task(self.check_offline(device))
 
         elif device["online"] is False:
             device["online"] = True
