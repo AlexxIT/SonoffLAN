@@ -91,7 +91,7 @@ class XRegistry(XRegistryBase):
         """
         seq = self.sequence()
 
-        can_local = self.local.online and device.get("host")
+        can_local = self.local.online and device.get("local")
         can_cloud = self.cloud.online and device.get("online")
 
         if can_local and can_cloud:
@@ -149,8 +149,10 @@ class XRegistry(XRegistryBase):
         ok = await self.local.send(device, {"cmd": "info"}, timeout=10)
         if ok == "online":
             device["local_ts"] = time.time() + LOCAL_TTL
+            device["local"] = True
             return
 
+        device["local"] = False
         did = device["deviceid"]
         _LOGGER.debug(f"{did} !! Local4 | Device offline")
         self.dispatcher_send(did)
@@ -253,6 +255,7 @@ class XRegistry(XRegistryBase):
             device["localtype"] = msg["localtype"]
 
         device["local_ts"] = time.time() + LOCAL_TTL
+        device["local"] = True
 
         self.dispatcher_send(did, params)
 
