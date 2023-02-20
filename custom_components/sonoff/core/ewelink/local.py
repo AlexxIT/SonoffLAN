@@ -117,6 +117,9 @@ class XRegistryLocal(XRegistryBase):
                 host = f"{addr}:{info.port}" if info.port else str(addr)
                 break
 
+            if not host and info.server:
+                host = info.server
+
             data = {
                 k.decode(): v.decode() if isinstance(v, bytes) else v
                 for k, v in info.properties.items()
