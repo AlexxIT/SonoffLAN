@@ -111,17 +111,11 @@ class XRegistryLocal(XRegistryBase):
 
             # support update with empty host and host without port
             host = None
-            if info.server:
-                host = info.server
-            else:			
-                for addr in info.addresses:
-                    # zeroconf lib should return IPv4, but better check anyway
-                    host = str(ipaddress.IPv4Address(addr))
-                    break
-
-            if host:
-                port = str(info.port) if info.port else "8081"
-                host += ":" + port
+            for addr in info.addresses:
+                # zeroconf lib should return IPv4, but better check anyway
+                addr = ipaddress.IPv4Address(addr)
+                host = f"{addr}:{info.port}" if info.port else str(addr)
+                break
 
             data = {
                 k.decode(): v.decode() if isinstance(v, bytes) else v
