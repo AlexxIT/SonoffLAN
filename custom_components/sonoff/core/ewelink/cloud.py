@@ -83,7 +83,12 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     region = "eu"
 
     task: Optional[asyncio.Task] = None
+    task_hb: Optional[asyncio.Task] = None
+
     ws: ClientWebSocketResponse = None
+
+    ws_hbInterval = 90
+    ws_hb = 0
 
     @property
     def host(self) -> str:
@@ -246,11 +251,17 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
 
     def start(self):
         self.task = asyncio.create_task(self.run_forever())
+        # add heartbeat task
+        self.task_hb = asyncio.create_task(self.run_ws_heartbeat())
 
     async def stop(self):
         if self.task:
             self.task.cancel()
             self.task = None
+        # add heartbeat task
+        if self.task_hb:
+            self.task_hb.cancel()
+            self.task_hb = None
 
         self.set_online(None)
 
@@ -260,6 +271,20 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             return
         self.online = value
         self.dispatcher_send(SIGNAL_CONNECTED)
+
+	# add heartbeat task
+    async def run_ws_heartbeat(self):
+        while True:
+            await asyncio.sleep(7)
+            if self.ws_hb == 1:
+                await asyncio.sleep(self.ws_hbInterval)
+                try:
+                    self.ws.ping()
+                    _LOGGER.debug(f"CLOUD send ws heartbeat OK")
+                except Exception as e:
+                    _LOGGER.warning("CLOUD send ws heartbeat error", exc_info=e)
+                
+
 
     async def run_forever(self):
         fails = 0
@@ -317,6 +342,30 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             if "error" in resp and resp["error"] != 0:
                 raise Exception(resp)
 
+            # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=websocket-handshake
+            # Obtain the persistent connection address to be connected from [HTTP: Dispatchservice], 
+            # and concatenate it into: "wss://IP:port/api/ws", so as to establish a persistent connection. After the handshake is successful, 
+            # you need to send the string "ping" to the server periodically (see the hbInterval field for the interval) to keep the heartbeat, 
+            # otherwise the device will be forced to go offline by the server.
+			#            Response example:
+			#            {
+			#			  "error": 0,
+			#			  "apikey": "User APIKEY",
+			#			  "config": {
+			#				"hb": 1,   --Heartbeat interval, in seconds. The client needs to add 7 to this value as the interval to send keep the ping heartbeat alive.If it is not offered, the heartbeat interval will be 90 seconds by default.
+			#				"hbInterval": 145 ---Heartbeat, whether to send heartbeats to keep alive.0: No, 1: Yes
+			#			  },
+			#			  "sequence": "Millisecond-level timestamp , Example: 1571141530100" // Same as sent
+			#			}
+            if "config" in resp:
+                if "hb" in resp["config"] and resp["config"]["hb"] == 1:
+                    self.ws_hb = 1
+                    _LOGGER.debug(f"Cloud WS ws_hb {self.ws_hb}")
+                    if "hbInterval" in resp["config"]:
+                        self.ws_hbInterval = resp["config"]["hbInterval"]
+                        _LOGGER.debug(f"Cloud WS hbInterval {self.ws_hbInterval}")
+                        # self.session._ws_ping_interval = self.ws_hbInterval+7
+                        
             return True
 
         except ClientConnectorError as e:
