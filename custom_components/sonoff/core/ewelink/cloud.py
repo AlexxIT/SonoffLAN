@@ -319,8 +319,12 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             resp = await r.json()
 
             # we can use IP, but using domain because security
+            # heartbeat=90 may cause the frequency of aiohttp's automatic sending of Ping messages to change, 
+            # which may affect the stability of the WebSocket connection. 
+            # It is recommended to still use a boolean value to enable or disable heartbeat messages when setting the heartbeat parameter, 
+            # or to use the PingPong heartbeat manager to customize the heartbeat interval time.
             self.ws = await self.session.ws_connect(
-                f"wss://{resp['domain']}:{resp['port']}/api/ws", heartbeat=90
+                f"wss://{resp['domain']}:{resp['port']}/api/ws", heartbeat=True
             )
 
             # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=websocket-handshake
