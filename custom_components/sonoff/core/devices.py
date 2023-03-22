@@ -235,10 +235,10 @@ DEVICES = {
     127: [XThermostat],  # https://github.com/AlexxIT/SonoffLAN/issues/358
     128: [LED],  # SPM-Main
     130: [
-        Switch1,
-        Switch2,
-        Switch3,
-        Switch4,
+        spec(XZigbeeSwitches, channel=0, uid="1"),
+        spec(XZigbeeSwitches, channel=1, uid="2"),
+        spec(XZigbeeSwitches, channel=2, uid="3"),
+        spec(XZigbeeSwitches, channel=3, uid="4"),
         Current1,
         Current2,
         Current3,
@@ -462,6 +462,7 @@ DIY = {
     "diylight": [44, "SONOFF", "D1 DIY"],
     "switch_radar": [77, "SONOFF", "Micro DIY"],  # Micro
     "multifun_switch": [126, "SONOFF", "DualR3 DIY"],
+    "meter": [130, "SONOFF", "SPM-4RELAY"],  # not DIY
 }
 
 
