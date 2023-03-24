@@ -56,17 +56,6 @@ class XRegistry(XRegistryBase):
             except Exception as e:
                 _LOGGER.warning(f"{did} !! can't setup device", exc_info=e)
 
-        # SPM devices uses devicekey from parent module
-        for did, device in self.devices.items():
-            try:
-                if "parentid" not in device["params"]:
-                    continue
-                pid = device["params"]["parentid"]
-                parent = self.devices[pid]
-                device["devicekey"] = parent["devicekey"]
-            except Exception as e:
-                _LOGGER.warning(f"{did} !! can't process parent", exc_info=e)
-
         return entities
 
     @property
