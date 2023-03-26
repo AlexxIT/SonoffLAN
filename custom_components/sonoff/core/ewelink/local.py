@@ -117,8 +117,8 @@ class XRegistryLocal(XRegistryBase):
                 host = f"{addr}:{info.port}" if info.port else str(addr)
                 break
 
-            if not host and info.server:
-                host = info.server
+            if not host and info.server and info.port:
+                host = f"{info.server}:{info.port}"
 
             data = {
                 k.decode(): v.decode() if isinstance(v, bytes) else v
@@ -185,7 +185,7 @@ class XRegistryLocal(XRegistryBase):
         if "devicekey" in device:
             payload = encrypt(payload, device["devicekey"])
 
-        log = f"{device['deviceid']} => Local4 | {device.get('host','')} | {params}"
+        log = f"{device['deviceid']} => Local4 | {device.get('host', '')} | {params}"
 
         try:
             host = device["host"]

@@ -116,9 +116,6 @@ class XRegistry(XRegistryBase):
             ok = await self.cloud.send(device, params, seq)
             if ok == "online" and query_cloud and params:
                 await self.cloud.send(device, timeout=0)
-            # check LAN status if local mode configured
-            if self.local.online: 
-                asyncio.create_task(self.check_offline(device))
 
         else:
             return
@@ -149,13 +146,14 @@ class XRegistry(XRegistryBase):
         if not device.get("host"):
             return
 
-        ok = await self.local.send(device, {"cmd": "info"}, timeout=10)
+        ok = await self.local.send(device, {"cmd": "info"}, timeout=5)
         if ok == "online":
             device["local_ts"] = time.time() + LOCAL_TTL
             device["local"] = True
             return
 
         device["local"] = False
+
         did = device["deviceid"]
         _LOGGER.debug(f"{did} !! Local4 | Device offline")
         self.dispatcher_send(did)
@@ -240,12 +238,10 @@ class XRegistry(XRegistryBase):
 
         tag = "Local3" if "host" in msg else "Local0"
 
-        _LOGGER.debug(f"{did} <= {tag} | {msg.get('host','')} | %s | {msg.get('seq', '')}", params)
-
-        # msg from zeroconf ServiceStateChange.Removed
-        if params.get("online") is False:
-            asyncio.create_task(self.check_offline(device))
-            return
+        _LOGGER.debug(
+            f"{did} <= {tag} | {msg.get('host', '')} | %s | {msg.get('seq', '')}",
+            params,
+        )
 
         if "sledOnline" in params:
             device["params"]["sledOnline"] = params["sledOnline"]
