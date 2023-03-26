@@ -34,6 +34,7 @@ from ..light import (
     XLightD1,
     XLightGroup,
     XLightL1,
+    XLightL3,
 )
 from ..number import XPulseWidth
 from ..remote import XRemote
@@ -235,10 +236,10 @@ DEVICES = {
     127: [XThermostat],  # https://github.com/AlexxIT/SonoffLAN/issues/358
     128: [LED],  # SPM-Main
     130: [
-        spec(XZigbeeSwitches, channel=0, uid="1"),
-        spec(XZigbeeSwitches, channel=1, uid="2"),
-        spec(XZigbeeSwitches, channel=2, uid="3"),
-        spec(XZigbeeSwitches, channel=3, uid="4"),
+        Switch1,
+        Switch2,
+        Switch3,
+        Switch4,
         Current1,
         Current2,
         Current3,
@@ -278,7 +279,7 @@ DEVICES = {
     165: [Switch1, Switch2, RSSI],  # DualR3 Lite, without power consumption
     # https://github.com/AlexxIT/SonoffLAN/issues/857
     168: [RSSI],  # new ZBBridge-P
-    173: [XLightL1, RSSI],  # Sonoff L3-5M-P
+    173: [XLightL3, RSSI],  # Sonoff L3-5M-P
     174: [XRemoteButton],  # Sonoff R5 (6-key remote)
     177: [XRemoteButton],  # Sonoff S-Mate
     181: [
@@ -462,7 +463,6 @@ DIY = {
     "diylight": [44, "SONOFF", "D1 DIY"],
     "switch_radar": [77, "SONOFF", "Micro DIY"],  # Micro
     "multifun_switch": [126, "SONOFF", "DualR3 DIY"],
-    "meter": [130, "SONOFF", "SPM-4RELAY"],  # not DIY
 }
 
 
