@@ -34,6 +34,7 @@ from custom_components.sonoff.light import (
     XLightB1,
     XLightGroup,
     XLightL1,
+    XLightL3,
 )
 from custom_components.sonoff.number import XNumber, XPulseWidth
 from custom_components.sonoff.sensor import (
@@ -43,6 +44,7 @@ from custom_components.sonoff.sensor import (
     XSensor,
     XTemperatureNS,
     XUnknown,
+    XEnergySensorDualR3,
 )
 from custom_components.sonoff.switch import (
     XSwitch,
@@ -469,13 +471,13 @@ def test_dual_r3():
     assert cover.state_attributes == {"current_position": 0}
 
     # Get history if we use reporting
-    energy_1: XEnergySensor_DualR3 = next(e for e in entities if e.uid == "energy_1")
+    energy_1: XEnergySensorDualR3 = next(e for e in entities if e.uid == "energy_1")
     energy_1.internal_update({"kwhHistories_00": "0034007412340000"})
     assert energy_1.state == 0.34
     assert energy_1.extra_state_attributes == {"history": [0.34, 0.74, 12.34]}
 
     # Skip history if we don't use reporting
-    energy_2: XEnergySensor_DualR3 = next(e for e in entities if e.uid == "energy_2")
+    energy_2: XEnergySensorDualR3 = next(e for e in entities if e.uid == "energy_2")
     energy_2.internal_update({"kwhHistories_01": "0201000000000000"})
     assert energy_2.state == 2.01
     assert energy_2.extra_state_attributes == None
@@ -1527,3 +1529,30 @@ def test_spm():
     assert current.state == 0.44
     assert current.device_class.value == "current"
     assert current.unit_of_measurement == "A"
+
+
+def test_lx_entity():
+    entities = get_entitites({"extra": {"uiid": 33}})
+    light: XLightL1 = entities[0]
+
+    light.set_state({"mode": 4})
+    assert light.effect == "DIY Gradient"
+
+    payload = light.get_params(None, None, None, "RGB Pulse")
+    assert payload == {"mode": 9, "switch": "on"}
+
+    entities = get_entitites({"extra": {"uiid": 173}})
+    light: XLightL3 = entities[0]
+
+    light.set_state({"rhythmMode": 2})
+    assert light.effect == "Dynamic Music"
+
+    payload = light.get_params(None, None, None, "Classic Music")
+    assert payload == {
+        "switch": "on",
+        "mode": 4,
+        "rhythmMode": 0,
+        "rhythmSensitive": 100,
+        "bright": 100,
+        "light_type": 1,
+    }
