@@ -97,8 +97,6 @@ class XRegistryLocal(XRegistryBase):
     ):
         """Step 1. Receive change event from zeroconf."""
         if state_change == ServiceStateChange.Removed:
-            msg = {"deviceid": name[8:18], "params": {"online": False}}
-            self.dispatcher_send(SIGNAL_UPDATE, msg)
             return
 
         asyncio.create_task(self._handler2(zeroconf, service_type, name))
@@ -118,6 +116,9 @@ class XRegistryLocal(XRegistryBase):
                 addr = ipaddress.IPv4Address(addr)
                 host = f"{addr}:{info.port}" if info.port else str(addr)
                 break
+
+            if not host and info.server:
+                host = info.server
 
             data = {
                 k.decode(): v.decode() if isinstance(v, bytes) else v
@@ -184,7 +185,7 @@ class XRegistryLocal(XRegistryBase):
         if "devicekey" in device:
             payload = encrypt(payload, device["devicekey"])
 
-        log = f"{device['deviceid']} => Local4 | {params}"
+        log = f"{device['deviceid']} => Local4 | {device.get('host','')} | {params}"
 
         try:
             host = device["host"]

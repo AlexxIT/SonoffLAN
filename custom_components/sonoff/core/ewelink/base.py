@@ -20,6 +20,7 @@ class XDevice(TypedDict, total=False):
     online: Optional[bool]  # required for cloud
     apikey: Optional[str]  # required for cloud
 
+    local: Optional[str]  # required for local
     localtype: Optional[str]  # exist for local DIY device type
     host: Optional[str]  # required for local
     devicekey: Optional[str]  # required for encrypted local devices (not DIY)
