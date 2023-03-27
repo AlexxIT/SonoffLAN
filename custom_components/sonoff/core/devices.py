@@ -52,8 +52,6 @@ from ..sensor import (
 )
 from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle, XZigbeeSwitches
 
-_LOGGER = logging.getLogger(__name__)
-
 # supported custom device_class
 DEVICE_CLASS = {
     "binary_sensor": (XEntity, BinarySensorEntity),
