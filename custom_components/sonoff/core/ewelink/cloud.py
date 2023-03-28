@@ -324,7 +324,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             # It is recommended to still use a boolean value to enable or disable heartbeat messages when setting the heartbeat parameter, 
             # or to use the PingPong heartbeat manager to customize the heartbeat interval time.
             self.ws = await self.session.ws_connect(
-                f"wss://{resp['domain']}:{resp['port']}/api/ws", heartbeat=True
+                f"wss://{resp['domain']}:{resp['port']}/api/ws", heartbeat=None
             )
 
             # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=websocket-handshake
