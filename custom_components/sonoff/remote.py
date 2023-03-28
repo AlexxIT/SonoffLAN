@@ -168,14 +168,16 @@ class XRemote(XEntity, RemoteEntity):
 
             # cmd param for local and for cloud mode
             await self.ewelink.send(
-                self.device, {"cmd": "transmit", "rfChl": int(channel)}
+                self.device,
+                {"cmd": "transmit", "rfChl": int(channel)},
+                cmd_lan="transmit",
             )
 
     async def async_learn_command(self, **kwargs):
         command = kwargs[ATTR_COMMAND]
         # cmd param for local and for cloud mode
         await self.ewelink.send(
-            self.device, {"cmd": "capture", "rfChl": int(command[0])}
+            self.device, {"cmd": "capture", "rfChl": int(command[0])}, cmd_lan="capture"
         )
 
     async def async_turn_on(self, **kwargs) -> None:

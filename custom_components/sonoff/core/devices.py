@@ -342,21 +342,6 @@ DEVICES = {
     ],
 }
 
-# Pow devices sends sensors data via Cloud only in uiActive mode
-# - Sonoff POW1 fw 2.6.1 UIID5 sends power data even without uiActive
-# - Sonoff S40 fw 1.1.0 UIID182 has very low uiActive maximum
-# - Sonoff DualR3 fw 1.4.0 UIID126 has another uiActive format
-# UUID, refresh time in seconds, params payload
-POW_UI_ACTIVE = {
-    5: (3600, {"uiActive": 7200}),
-    32: (3600, {"uiActive": 7200}),
-    126: (3600, {"uiActive": {"all": 1, "time": 7200}}),
-    130: (3600, {"uiActive": {"all": 1, "time": 7200}}),
-    182: (0, {"uiActive": 180}),  # maximum for this model
-    # https://github.com/AlexxIT/SonoffLAN/issues/978
-    190: (0, {"uiActive": 180}),  # haven't check real maximum
-}
-
 
 def get_spec(device: dict) -> list:
     uiid = device["extra"]["uiid"]

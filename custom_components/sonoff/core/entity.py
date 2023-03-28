@@ -122,4 +122,10 @@ class XEntity(Entity):
         self.internal_update(None)
 
     async def async_update(self):
-        await self.ewelink.send(self.device)
+        if led := self.device["params"].get("sledOnline"):
+            # device response with current status if we change any param
+            await self.ewelink.send(
+                self.device, params_lan={"sledOnline": led}, cmd_lan="sledonline"
+            )
+        else:
+            await self.ewelink.send(self.device)

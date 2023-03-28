@@ -159,30 +159,23 @@ class XRegistryLocal(XRegistryBase):
         self,
         device: XDevice,
         params: dict = None,
+        command: str = None,
         sequence: str = None,
         timeout: int = 5,
     ):
         # known commands for DIY: switch, startup, pulse, sledonline
         # other commands: switch, switches, transmit, dimmable, light, fan
 
-        # cmd for D1 and RF Bridge 433
-        if params:
-            command = params.get("cmd") or next(iter(params))
-        elif "sledOnline" in device["params"]:
-            # device response with current status if we change any param
-            command = "sledonline"
-            params = {"sledOnline": device["params"]["sledOnline"]}
-        else:
-            return "noquery"
-
-        if sequence is None:
-            sequence = self.sequence()
+        if command is None:
+            if params is None:
+                return "noquery"
+            command = next(iter(params))
 
         payload = {
-            "sequence": sequence,
+            "sequence": sequence or self.sequence(),
             "deviceid": device["deviceid"],
             "selfApikey": "123",
-            "data": params,
+            "data": params or {},
         }
 
         if "devicekey" in device:

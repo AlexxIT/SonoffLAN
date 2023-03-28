@@ -37,5 +37,7 @@ class XRemoteButton(ButtonEntity):
 
     async def async_press(self):
         await self.ewelink.send(
-            self.bridge, {"cmd": "transmit", "rfChl": int(self.channel)}
+            self.bridge,
+            {"cmd": "transmit", "rfChl": int(self.channel)},
+            cmd_lan="transmit",
         )
