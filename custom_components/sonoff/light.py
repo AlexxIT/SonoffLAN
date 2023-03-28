@@ -36,6 +36,7 @@ def conv(value: int, a1: int, a2: int, b1: int, b2: int) -> int:
 # Category 1. XLight base (brightness)
 ###############################################################################
 
+
 # https://developers.home-assistant.io/docs/core/entity/light/
 # noinspection PyAbstractClass
 class XLight(XEntity, LightEntity):
@@ -272,21 +273,24 @@ class XLightL1(XLight):
     params = {"switch", "bright", "colorR", "mode"}
     param = "switch"
 
+    modes = {
+        "Colorful": {"mode": 1, "switch": "on"},
+        "Colorful Gradient": {"mode": 2, "switch": "on"},
+        "Colorful Breath": {"mode": 3, "switch": "on"},
+        "DIY Gradient": {"mode": 4, "switch": "on"},
+        "DIY Pulse": {"mode": 5, "switch": "on"},
+        "DIY Breath": {"mode": 6, "switch": "on"},
+        "DIY Strobe": {"mode": 7, "switch": "on"},
+        "RGB Gradient": {"mode": 8, "switch": "on"},
+        "RGB Pulse": {"mode": 9, "switch": "on"},
+        "RGB Breath": {"mode": 10, "switch": "on"},
+        "RGB Strobe": {"mode": 11, "switch": "on"},
+        "Music": {"mode": 12, "switch": "on"},
+    }
+
     _attr_color_mode = COLOR_MODE_RGB
-    _attr_effect_list = [
-        "Colorful",
-        "Colorful Gradient",
-        "Colorful Breath",
-        "DIY Gradient",
-        "DIY Pulse",
-        "DIY Breath",
-        "DIY Strobe",
-        "RGB Gradient",
-        "DIY Gradient",
-        "RGB Breath",
-        "RGB Strobe",
-        "Music",
-    ]
+    _attr_effect_list = list(modes.keys())
+
     # support on/off, brightness, RGB
     _attr_supported_color_modes = {COLOR_MODE_RGB}
     _attr_supported_features = SUPPORT_EFFECT
@@ -303,17 +307,13 @@ class XLightL1(XLight):
                 params["colorB"],
             )
         if "mode" in params:
-            mode = params["mode"] - 1  # 1=Colorful, don't skip it
-            try:
-                # https://github.com/AlexxIT/SonoffLAN/issues/1102
-                self._attr_effect = self.effect_list[mode]
-            except Exception:
-                self._attr_effect = None
+            self._attr_effect = next(
+                (k for k, v in self.modes.items() if v["mode"] == params["mode"]), None
+            )
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
         if effect:
-            mode = self.effect_list.index(effect) + 1
-            return {"mode": mode, "switch": "on"}
+            return self.modes.get(effect)
         if brightness or rgb_color:
             # support bright and color in one command
             params = {"mode": 1}
@@ -329,6 +329,381 @@ class XLightL1(XLight):
                     }
                 )
             return params
+
+
+# noinspection PyAbstractClass
+class XLightL3(XLightL1):
+    modes = {
+        "Warm White": {
+            "switch": "on",
+            "mode": 2,
+            "speed07": 50,
+            "bright07": 100,
+            "light_type": 1,
+        },
+        "Magic Forward": {
+            "switch": "on",
+            "mode": 7,
+            "speed07": 50,
+            "bright07": 100,
+            "light_type": 1,
+        },
+        "Magic Back": {
+            "switch": "on",
+            "mode": 8,
+            "speed08": 50,
+            "bright08": 100,
+            "light_type": 1,
+        },
+        "7 Color Wave": {
+            "switch": "on",
+            "mode": 35,
+            "speed35": 50,
+            "bright35": 100,
+            "light_type": 1,
+        },
+        "7 Color Wave Back": {
+            "switch": "on",
+            "mode": 36,
+            "speed36": 50,
+            "bright36": 100,
+            "light_type": 1,
+        },
+        "RGB Wave": {
+            "switch": "on",
+            "mode": 37,
+            "speed37": 50,
+            "bright37": 100,
+            "light_type": 1,
+        },
+        "RGB Wave Back": {
+            "switch": "on",
+            "mode": 38,
+            "speed38": 50,
+            "bright38": 100,
+            "light_type": 1,
+        },
+        "YCP Wave": {
+            "switch": "on",
+            "mode": 39,
+            "speed39": 50,
+            "bright39": 100,
+            "light_type": 1,
+        },
+        "YCP Wave Back": {
+            "switch": "on",
+            "mode": 40,
+            "speed40": 50,
+            "bright40": 100,
+            "light_type": 1,
+        },
+        "7 Color Race": {
+            "switch": "on",
+            "mode": 29,
+            "speed29": 50,
+            "bright29": 100,
+            "light_type": 1,
+        },
+        "7 Color Race Back": {
+            "switch": "on",
+            "mode": 30,
+            "speed30": 50,
+            "bright30": 100,
+            "light_type": 1,
+        },
+        "RGB Race": {
+            "switch": "on",
+            "mode": 31,
+            "speed31": 50,
+            "bright31": 100,
+            "light_type": 1,
+        },
+        "RGB Race Back": {
+            "switch": "on",
+            "mode": 32,
+            "speed32": 50,
+            "bright32": 100,
+            "light_type": 1,
+        },
+        "YCP Race": {
+            "switch": "on",
+            "mode": 33,
+            "speed33": 50,
+            "bright33": 100,
+            "light_type": 1,
+        },
+        "YCP Race Back": {
+            "switch": "on",
+            "mode": 34,
+            "speed34": 50,
+            "bright34": 100,
+            "light_type": 1,
+        },
+        "7 Color Flush": {
+            "switch": "on",
+            "mode": 41,
+            "speed41": 50,
+            "bright41": 100,
+            "light_type": 1,
+        },
+        "7 Color Flush Back": {
+            "switch": "on",
+            "mode": 42,
+            "speed42": 50,
+            "bright42": 100,
+            "light_type": 1,
+        },
+        "RGB Flush": {
+            "switch": "on",
+            "mode": 43,
+            "speed43": 50,
+            "bright43": 100,
+            "light_type": 1,
+        },
+        "RGB Flush Back": {
+            "switch": "on",
+            "mode": 44,
+            "speed44": 50,
+            "bright44": 100,
+            "light_type": 1,
+        },
+        "YCP Flush": {
+            "switch": "on",
+            "mode": 45,
+            "speed45": 50,
+            "bright45": 100,
+            "light_type": 1,
+        },
+        "YCP Flush Back": {
+            "switch": "on",
+            "mode": 46,
+            "speed46": 50,
+            "bright46": 100,
+            "light_type": 1,
+        },
+        "7 Color Flush Close": {
+            "switch": "on",
+            "mode": 47,
+            "speed47": 50,
+            "bright47": 100,
+            "light_type": 1,
+        },
+        "7 Color Flush Open": {
+            "switch": "on",
+            "mode": 48,
+            "speed48": 50,
+            "bright48": 100,
+            "light_type": 1,
+        },
+        "RGB Flush Close": {
+            "switch": "on",
+            "mode": 49,
+            "speed49": 50,
+            "bright49": 100,
+            "light_type": 1,
+        },
+        "RGB Flush Open": {
+            "switch": "on",
+            "mode": 50,
+            "speed50": 50,
+            "bright50": 100,
+            "light_type": 1,
+        },
+        "YCP Flush Close": {
+            "switch": "on",
+            "mode": 51,
+            "speed51": 50,
+            "bright51": 100,
+            "light_type": 1,
+        },
+        "YCP Flush Open": {
+            "switch": "on",
+            "mode": 52,
+            "speed52": 50,
+            "bright52": 100,
+            "light_type": 1,
+        },
+        "Red Marquee": {
+            "switch": "on",
+            "mode": 22,
+            "speed22": 50,
+            "bright22": 100,
+            "light_type": 1,
+        },
+        "Green Marquee": {
+            "switch": "on",
+            "mode": 23,
+            "speed23": 50,
+            "bright23": 100,
+            "light_type": 1,
+        },
+        "Blue Marquee": {
+            "switch": "on",
+            "mode": 24,
+            "speed24": 50,
+            "bright24": 100,
+            "light_type": 1,
+        },
+        "Yellow Marquee": {
+            "switch": "on",
+            "mode": 25,
+            "speed25": 50,
+            "bright25": 100,
+            "light_type": 1,
+        },
+        "Cyan Marquee": {
+            "switch": "on",
+            "mode": 26,
+            "speed26": 50,
+            "bright26": 100,
+            "light_type": 1,
+        },
+        "Purple Marquee": {
+            "switch": "on",
+            "mode": 27,
+            "speed27": 50,
+            "bright27": 100,
+            "light_type": 1,
+        },
+        "White Marquee": {
+            "switch": "on",
+            "mode": 28,
+            "speed28": 50,
+            "bright28": 100,
+            "light_type": 1,
+        },
+        "7 Color Jump": {
+            "switch": "on",
+            "mode": 10,
+            "speed10": 50,
+            "bright10": 100,
+            "light_type": 1,
+        },
+        "RGB Jump": {
+            "switch": "on",
+            "mode": 11,
+            "speed11": 50,
+            "bright11": 100,
+            "light_type": 1,
+        },
+        "YCP Jump": {
+            "switch": "on",
+            "mode": 12,
+            "speed12": 50,
+            "bright12": 100,
+            "light_type": 1,
+        },
+        "7 Color Gradual": {
+            "switch": "on",
+            "mode": 16,
+            "speed16": 50,
+            "bright16": 100,
+            "light_type": 1,
+        },
+        "RY Gradual": {
+            "switch": "on",
+            "mode": 17,
+            "speed17": 50,
+            "bright17": 100,
+            "light_type": 1,
+        },
+        "RP Gradual": {
+            "switch": "on",
+            "mode": 18,
+            "speed18": 50,
+            "bright18": 100,
+            "light_type": 1,
+        },
+        "GC Gradual": {
+            "switch": "on",
+            "mode": 19,
+            "speed19": 50,
+            "bright19": 100,
+            "light_type": 1,
+        },
+        "GY Gradual": {
+            "switch": "on",
+            "mode": 20,
+            "speed20": 50,
+            "bright20": 100,
+            "light_type": 1,
+        },
+        "BP Gradual": {
+            "switch": "on",
+            "mode": 21,
+            "speed21": 50,
+            "bright21": 100,
+            "light_type": 1,
+        },
+        "7 Color Strobe": {
+            "switch": "on",
+            "mode": 13,
+            "speed13": 50,
+            "bright13": 100,
+            "light_type": 1,
+        },
+        "RGB Strobe": {
+            "switch": "on",
+            "mode": 14,
+            "speed14": 50,
+            "bright14": 100,
+            "light_type": 1,
+        },
+        "YCP Strobe": {
+            "switch": "on",
+            "mode": 15,
+            "speed15": 50,
+            "bright15": 100,
+            "light_type": 1,
+        },
+        "Classic Music": {
+            "switch": "on",
+            "mode": 4,
+            "rhythmMode": 0,
+            "rhythmSensitive": 100,
+            "bright": 100,
+            "light_type": 1,
+        },
+        "Soft Music": {
+            "switch": "on",
+            "mode": 4,
+            "rhythmMode": 1,
+            "rhythmSensitive": 100,
+            "bright": 100,
+            "light_type": 1,
+        },
+        "Dynamic Music": {
+            "switch": "on",
+            "mode": 4,
+            "rhythmMode": 2,
+            "rhythmSensitive": 100,
+            "bright": 100,
+            "light_type": 1,
+        },
+        "Disco Music": {
+            "switch": "on",
+            "mode": 4,
+            "rhythmMode": 3,
+            "rhythmSensitive": 100,
+            "bright": 100,
+            "light_type": 1,
+        },
+    }
+
+    _attr_effect_list = list(modes.keys())
+
+    def set_state(self, params: dict):
+        XLightL1.set_state(self, params)
+
+        if "rhythmMode" in params:
+            self._attr_effect = next(
+                (
+                    k
+                    for k, v in self.modes.items()
+                    if v.get("rhythmMode") == params["rhythmMode"]
+                ),
+                None,
+            )
 
 
 B02_MODE_PAYLOADS = {
@@ -484,6 +859,7 @@ class XLightB05B(XLightB02):
 ###############################################################################
 # Category 3. Other
 ###############################################################################
+
 
 # noinspection PyAbstractClass
 class XLightGroup(XEntity, LightEntity):
