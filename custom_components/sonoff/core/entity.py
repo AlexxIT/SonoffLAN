@@ -88,14 +88,19 @@ class XEntity(Entity):
             self.internal_update(params)
         except Exception as e:
             _LOGGER.error(f"Can't init device: {device}", exc_info=e)
+
         ewelink.dispatcher_connect(deviceid, self.internal_update)
+
+        if parent := device.get("parent"):
+            ewelink.dispatcher_connect(parent["deviceid"], self.internal_parent_update)
 
     def set_state(self, params: dict):
         pass
 
     def internal_available(self) -> bool:
-        return (self.ewelink.cloud.online and self.device.get("online")) or (
-            self.ewelink.local.online and self.device.get("local")
+        device = self.device.get("parent") or self.device
+        return (self.ewelink.cloud.online and device.get("online")) or (
+            self.ewelink.local.online and device.get("local")
         )
 
     def internal_update(self, params: dict = None):
@@ -112,6 +117,9 @@ class XEntity(Entity):
 
         if change and self.hass:
             self._async_write_ha_state()
+
+    def internal_parent_update(self, params: dict = None):
+        self.internal_update(None)
 
     async def async_update(self):
         await self.ewelink.send(self.device)

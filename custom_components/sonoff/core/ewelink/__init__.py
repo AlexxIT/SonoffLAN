@@ -37,6 +37,12 @@ class XRegistry(XRegistryBase):
         entities = []
 
         for device in devices:
+            parentid = device["params"].get("parentid")
+            if not parentid:
+                continue
+            parent = next((d for d in devices if d["deviceid"] == parentid), None)
+
+        for device in devices:
             did = device["deviceid"]
             try:
                 device.update(self.config["devices"][did])
@@ -46,6 +52,11 @@ class XRegistry(XRegistryBase):
             try:
                 uiid = device["extra"]["uiid"]
                 _LOGGER.debug(f"{did} UIID {uiid:04} | %s", device["params"])
+
+                if parentid := device["params"].get("parentid"):
+                    device["parent"] = next(
+                        d for d in devices if d["deviceid"] == parentid
+                    )
 
                 # at this moment entities can catch signals with device_id and
                 # update their states, but they can be added to hass later
@@ -91,26 +102,34 @@ class XRegistry(XRegistryBase):
         """
         seq = self.sequence()
 
-        can_local = self.local.online and device.get("local")
-        can_cloud = self.cloud.online and device.get("online")
+        if "parent" in device:
+            main_device = device["parent"]
+            if not params_lan:
+                params_lan = params.copy()
+            params_lan["subDevId"] = device["deviceid"]
+        else:
+            main_device = device
+
+        can_local = self.local.online and main_device.get("local")
+        can_cloud = self.cloud.online and main_device.get("online")
 
         if can_local and can_cloud:
             # try to send a command locally (wait no more than a second)
-            ok = await self.local.send(device, params_lan or params, seq, 1)
+            ok = await self.local.send(main_device, params_lan or params, seq, 1)
 
             # otherwise send a command through the cloud
             if ok != "online":
                 ok = await self.cloud.send(device, params, seq)
                 if ok != "online":
-                    asyncio.create_task(self.check_offline(device))
+                    asyncio.create_task(self.check_offline(main_device))
                 elif query_cloud and params:
                     # force update device actual status
                     await self.cloud.send(device, timeout=0)
 
         elif can_local:
-            ok = await self.local.send(device, params_lan or params, seq, 5)
+            ok = await self.local.send(main_device, params_lan or params, seq, 5)
             if ok != "online":
-                asyncio.create_task(self.check_offline(device))
+                asyncio.create_task(self.check_offline(main_device))
 
         elif can_cloud:
             ok = await self.cloud.send(device, params, seq)
@@ -236,6 +255,7 @@ class XRegistry(XRegistryBase):
             # DIY device is still connected to the ewelink account
             device.pop("devicekey")
 
+        did = msg["subdevid"]
         tag = "Local3" if "host" in msg else "Local0"
 
         _LOGGER.debug(
@@ -255,7 +275,12 @@ class XRegistry(XRegistryBase):
         device["local_ts"] = time.time() + LOCAL_TTL
         device["local"] = True
 
-        self.dispatcher_send(did, params)
+        if did == msg["deviceid"]:
+            self.dispatcher_send(did, params)
+        else:
+            # SPM-MAIN/SPM-4RELAY
+            self.dispatcher_send(msg["subdevid"], params)
+            self.dispatcher_send(did, None)
 
     async def run_forever(self):
         from ..devices import POW_UI_ACTIVE

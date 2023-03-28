@@ -103,40 +103,43 @@ class XRegistryLocal(XRegistryBase):
 
     async def _handler2(self, zeroconf: Zeroconf, service_type: str, name: str):
         """Step 2. Request additional info about add and update event from device."""
+        deviceid = name[8:18]
         try:
             info = AsyncServiceInfo(service_type, name)
             if not await info.async_request(zeroconf, 3000) or not info.properties:
-                _LOGGER.debug(f"{name[8:18]} <= Local0 | Can't get zeroconf info")
+                _LOGGER.debug(f"{deviceid} <= Local0 | Can't get zeroconf info")
                 return
 
             # support update with empty host and host without port
-            host = None
             for addr in info.addresses:
                 # zeroconf lib should return IPv4, but better check anyway
                 addr = ipaddress.IPv4Address(addr)
                 host = f"{addr}:{info.port}" if info.port else str(addr)
                 break
-
-            if not host and info.server and info.port:
-                host = f"{info.server}:{info.port}"
+            else:
+                if info.server and info.port:
+                    host = f"{info.server}:{info.port}"
+                else:
+                    host = None
 
             data = {
                 k.decode(): v.decode() if isinstance(v, bytes) else v
                 for k, v in info.properties.items()
             }
 
-            self._handler3(host, data)
+            self._handler3(deviceid, host, data)
 
         except Exception as e:
-            _LOGGER.debug(f"{name[8:18]} <= Local0 | Zeroconf error", exc_info=e)
+            _LOGGER.debug(f"{deviceid} <= Local0 | Zeroconf error", exc_info=e)
 
-    def _handler3(self, host: str, data: dict):
+    def _handler3(self, deviceid: str, host: str, data: dict):
         """Step 3. Process new data from device."""
 
         raw = "".join([data[f"data{i}"] for i in range(1, 5, 1) if f"data{i}" in data])
 
         msg = {
-            "deviceid": data["id"],
+            "deviceid": deviceid,
+            "subdevid": data["id"],
             "localtype": data["type"],
             "seq": data.get("seq"),
         }
