@@ -39,6 +39,7 @@ from custom_components.sonoff.light import (
 from custom_components.sonoff.number import XNumber, XPulseWidth
 from custom_components.sonoff.sensor import (
     XEnergySensor,
+    XEnergySensorDualR3,
     XOutdoorTempNS,
     XRemoteButton,
     XSensor,
@@ -480,7 +481,7 @@ def test_dual_r3():
     energy_2: XEnergySensorDualR3 = next(e for e in entities if e.uid == "energy_2")
     energy_2.internal_update({"kwhHistories_01": "0201000000000000"})
     assert energy_2.state == 2.01
-    assert energy_2.extra_state_attributes == None
+    assert energy_2.extra_state_attributes is None
 
 
 def test_diffuser():
