@@ -140,7 +140,7 @@ You can setup multiple integrations with different ewelink accounts.
 
 Before posting new issue:
 
-1. Check the number of online devices on the [System Health page](https://my.home-assistant.io/redirect/info/)
+1. Check the number of online devices on the [System Health page](https://my.home-assistant.io/redirect/system_health)
 2. Check warning and errors on the [Logs page](https://my.home-assistant.io/redirect/logs/)
 3. Check **debug logs** on the [Debug page](#debug-page) (must be enabled in integration options)
 4. Check **open and closed** [issues](https://github.com/AlexxIT/SonoffLAN/issues?q=is%3Aissue)

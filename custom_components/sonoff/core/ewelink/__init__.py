@@ -91,7 +91,7 @@ class XRegistry(XRegistryBase):
         """
         seq = self.sequence()
 
-        can_local = self.local.online and device.get("host")
+        can_local = self.local.online and device.get("local")
         can_cloud = self.cloud.online and device.get("online")
 
         if can_local and can_cloud:
@@ -146,12 +146,13 @@ class XRegistry(XRegistryBase):
         if not device.get("host"):
             return
 
-        ok = await self.local.send(device, {"cmd": "info"}, timeout=10)
+        ok = await self.local.send(device, {"cmd": "info"}, timeout=5)
         if ok == "online":
             device["local_ts"] = time.time() + LOCAL_TTL
+            device["local"] = True
             return
 
-        device.pop("host", None)
+        device["local"] = False
 
         did = device["deviceid"]
         _LOGGER.debug(f"{did} !! Local4 | Device offline")
@@ -182,9 +183,8 @@ class XRegistry(XRegistryBase):
         # process online change
         if "online" in params:
             device["online"] = params["online"]
-            # check if LAN online after cloud offline
-            if not device["online"] and device.get("host"):
-                asyncio.create_task(self.check_offline(device))
+            # check if LAN online after cloud status change
+            asyncio.create_task(self.check_offline(device))
 
         elif device["online"] is False:
             device["online"] = True
@@ -238,12 +238,10 @@ class XRegistry(XRegistryBase):
 
         tag = "Local3" if "host" in msg else "Local0"
 
-        _LOGGER.debug(f"{did} <= {tag} | %s | {msg.get('seq', '')}", params)
-
-        # msg from zeroconf ServiceStateChange.Removed
-        if params.get("online") is False:
-            asyncio.create_task(self.check_offline(device))
-            return
+        _LOGGER.debug(
+            f"{did} <= {tag} | {msg.get('host', '')} | %s | {msg.get('seq', '')}",
+            params,
+        )
 
         if "sledOnline" in params:
             device["params"]["sledOnline"] = params["sledOnline"]
@@ -255,6 +253,7 @@ class XRegistry(XRegistryBase):
             device["localtype"] = msg["localtype"]
 
         device["local_ts"] = time.time() + LOCAL_TTL
+        device["local"] = True
 
         self.dispatcher_send(did, params)
 
@@ -284,7 +283,6 @@ class XRegistry(XRegistryBase):
                 for device in self.devices.values():
                     if "local_ts" not in device or device["local_ts"] > ts:
                         continue
-                    device.pop("local_ts")
                     asyncio.create_task(self.check_offline(device))
 
             await asyncio.sleep(15)
