@@ -138,12 +138,14 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         deviceid = str(params.pop("device"))
 
         if len(deviceid) == 10:
-            registry = next(
+            registry: XRegistry = next(
                 r for r in hass.data[DOMAIN].values() if deviceid in r.devices
             )
             device = registry.devices[deviceid]
+            params_lan = params.pop("params_lan", None)
+            command_lan = params.pop("command_lan", None)
 
-            await registry.send(device, params)
+            await registry.send(device, params, params_lan, command_lan)
 
         elif len(deviceid) == 6:
             await cameras.send(deviceid, params["cmd"])
