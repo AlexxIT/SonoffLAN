@@ -222,8 +222,8 @@ class XRegistry(XRegistryBase):
         self.dispatcher_send(did, params)
 
     def local_update(self, msg: dict):
-        did: str = msg["deviceid"]
-        device: XDevice = self.devices.get(did)
+        mainid: str = msg["deviceid"]
+        device: XDevice = self.devices.get(mainid)
         params: dict = msg.get("params")
         # check device in known devices list
         if not device:
@@ -232,12 +232,12 @@ class XRegistry(XRegistryBase):
                 try:
                     # try to decrypt payload if we have right key in config
                     msg["params"] = params = self.local.decrypt_msg(
-                        msg, self.config["devices"][did]["devicekey"]
+                        msg, self.config["devices"][mainid]["devicekey"]
                     )
                 except Exception:
-                    _LOGGER.debug(f"{did} !! skip setup for encrypted device")
+                    _LOGGER.debug(f"{mainid} !! skip setup for encrypted device")
                     # save device to known list, so no more decrypt tries
-                    self.devices[did] = msg
+                    self.devices[mainid] = msg
                     return
 
             from ..devices import setup_diy
@@ -263,11 +263,12 @@ class XRegistry(XRegistryBase):
             # DIY device is still connected to the ewelink account
             device.pop("devicekey")
 
-        did = msg.get("subdevid", did)
+        # realid can be different from mainid for SPM-4RELAY
+        realid = msg.get("subdevid", mainid)
         tag = "Local3" if "host" in msg else "Local0"
 
         _LOGGER.debug(
-            f"{did} <= {tag} | {msg.get('host', '')} | %s | {msg.get('seq', '')}",
+            f"{realid} <= {tag} | {msg.get('host', '')} | %s | {msg.get('seq', '')}",
             params,
         )
 
@@ -283,12 +284,11 @@ class XRegistry(XRegistryBase):
         device["local_ts"] = time.time() + LOCAL_TTL
         device["local"] = True
 
-        if did == msg["deviceid"]:
-            self.dispatcher_send(did, params)
-        else:
-            # SPM-MAIN/SPM-4RELAY
-            self.dispatcher_send(msg["subdevid"], params)
-            self.dispatcher_send(did, None)
+        self.dispatcher_send(realid, params)
+
+        # send empty msg to main device for updating available flag
+        if realid != mainid:
+            self.dispatcher_send(mainid, None)
 
     async def run_forever(self):
         """This daemon function doing two things:
