@@ -196,20 +196,32 @@ class XRegistryLocal(XRegistryBase):
                 timeout=timeout,
             )
 
-            if command == "info":
-                # better don't read response on info command
-                # https://github.com/AlexxIT/SonoffLAN/issues/871
-                _LOGGER.debug(f"{log} <= info: {r.status}")
-                return "online"
+            try:
+                resp: dict = await r.json()
+                if resp["error"] == 0:
+                    _LOGGER.debug(f"{log} <= {resp}")
 
-            resp = await r.json()
-            err = resp["error"]
-            if err == 0:
-                _LOGGER.debug(f"{log} <= {resp}")
-                return "online"
-            else:
-                _LOGGER.warning(f"{log} <= {resp}")
-                return f"E#{err}"
+                    if resp.get("encrypt"):
+                        msg = {
+                            "deviceid": device["deviceid"],
+                            "localtype": device["localtype"],
+                            "seq": resp["seq"],
+                            "data": resp["data"],
+                            "iv": resp["iv"],
+                        }
+                        if params and params.get("subDevId"):
+                            msg["subdevid"] = params["subDevId"]
+                        self.dispatcher_send(SIGNAL_UPDATE, msg)
+
+                    return "online"
+
+                else:
+                    _LOGGER.debug(f"{log} <= {resp}")
+                    return "error"
+
+            except Exception as e:
+                _LOGGER.debug(f"{log} !! Can't read JSON {e}")
+                return "error"
 
         except asyncio.TimeoutError:
             _LOGGER.debug(f"{log} !! Timeout {timeout}")
