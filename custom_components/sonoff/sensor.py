@@ -246,6 +246,15 @@ class XEnergySensorPOWR3(XEnergySensor, SensorEntity):
         except Exception:
             return None
 
+    async def async_update(self):
+        ts = time.time()
+        if ts < self.next_ts or not self.available:
+            return
+        # POWR3 support LAN energy request (POST /zeroconf/getHoursKwh)
+        ok = await self.ewelink.send(self.device, self.get_params, timeout_lan=5)
+        if ok == "online":
+            self.next_ts = ts + self.report_dt
+
 
 class XTemperatureNS(XSensor):
     params = {"temperature", "tempCorrection"}

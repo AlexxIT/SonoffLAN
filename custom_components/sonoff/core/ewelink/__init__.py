@@ -84,6 +84,7 @@ class XRegistry(XRegistryBase):
         params_lan: dict = None,
         cmd_lan: str = None,
         query_cloud: bool = True,
+        timeout_lan: int = 1,
     ):
         """Send command to device with LAN and Cloud. Usual params are same.
 
@@ -95,6 +96,7 @@ class XRegistry(XRegistryBase):
         :param cmd_lan: optional if LAN command different
         :param query_cloud: optional query Cloud state after update state,
           ignored if params empty
+        :param timeout_lan: optional custom LAN timeout
         """
         seq = self.sequence()
 
@@ -112,7 +114,7 @@ class XRegistry(XRegistryBase):
         if can_local and can_cloud:
             # try to send a command locally (wait no more than a second)
             ok = await self.local.send(
-                main_device, params_lan or params, cmd_lan, seq, 1
+                main_device, params_lan or params, cmd_lan, seq, timeout_lan
             )
 
             # otherwise send a command through the cloud
@@ -126,7 +128,7 @@ class XRegistry(XRegistryBase):
 
         elif can_local:
             ok = await self.local.send(
-                main_device, params_lan or params, cmd_lan, seq, 5
+                main_device, params_lan or params, cmd_lan, seq
             )
             if ok != "online":
                 asyncio.create_task(self.check_offline(main_device))
