@@ -165,11 +165,19 @@ class XRegistry(XRegistryBase):
         if not device.get("host"):
             return
 
-        ok = await self.local.send(device, timeout=5, command="info")
-        if ok == "online":
-            device["local_ts"] = time.time() + LOCAL_TTL
-            device["local"] = True
-            return
+        for i in range(3):
+            if i > 0:
+                await asyncio.sleep(5)
+
+            ok = await self.local.send(device, command="getState")
+            if ok in ("online", "error"):
+                device["local_ts"] = time.time() + LOCAL_TTL
+                device["local"] = True
+                return
+
+            # just one try for the long lost
+            if time.time() > device.get("local_ts", 0) + LOCAL_TTL:
+                break
 
         device["local"] = False
 
