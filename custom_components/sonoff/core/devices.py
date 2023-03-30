@@ -133,6 +133,12 @@ Energy2_DualR3 = spec(
     uid="energy_2",
     get_params={"getKwh_01": 2},
 )
+EnergyPOW = spec(
+    XEnergySensor,
+    param="hundredDaysKwhData",
+    uid="energy",
+    get_params={"hundredDaysKwh": "get"},
+)
 
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
 DEVICES = {
@@ -145,12 +151,7 @@ DEVICES = {
         LED,
         RSSI,
         spec(XSensor, param="power"),
-        spec(
-            XEnergySensor,
-            param="hundredDaysKwhData",
-            uid="energy",
-            get_params={"hundredDaysKwh": "get"},
-        ),
+        EnergyPOW,
     ],  # Sonoff POW (first)
     6: SPEC_SWITCH,
     7: SPEC_2CH,  # Sonoff T1 2CH
@@ -192,12 +193,7 @@ DEVICES = {
         spec(XSensor, param="current"),
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
-        spec(
-            XEnergySensor,
-            param="hundredDaysKwhData",
-            uid="energy",
-            get_params={"hundredDaysKwh": "get"},
-        ),
+        EnergyPOW,
     ],  # Sonoff POWR2
     33: [XLightL1, RSSI],  # https://github.com/AlexxIT/SonoffLAN/issues/985
     34: [
@@ -298,6 +294,7 @@ DEVICES = {
         spec(XSensor, param="current"),
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
+        EnergyPOW,
     ],  # Sonoff S40
     190: [
         Switch1,
@@ -306,12 +303,7 @@ DEVICES = {
         spec(XSensor100, param="current"),
         spec(XSensor100, param="power"),
         spec(XSensor100, param="voltage"),
-        spec(
-            XEnergySensor,
-            param="hundredDaysKwhData",
-            uid="energy",
-            get_params={"hundredDaysKwh": "get"},
-        ),
+        EnergyPOW,
     ],  # Sonoff POWR3
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
