@@ -142,6 +142,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                 r for r in hass.data[DOMAIN].values() if deviceid in r.devices
             )
             device = registry.devices[deviceid]
+
+            # for debugging purposes
+            if v := params.get("set_device"):
+                device.update(v)
+                return
+
             params_lan = params.pop("params_lan", None)
             command_lan = params.pop("command_lan", None)
 
