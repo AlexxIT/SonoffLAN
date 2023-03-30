@@ -1,5 +1,6 @@
 import asyncio
 import time
+from typing import Union
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity
@@ -52,7 +53,7 @@ from custom_components.sonoff.switch import (
 from . import init, save_to, DEVICEID, DummyRegistry
 
 
-def get_entitites(device: dict, config: dict = None) -> list:
+def get_entitites(device: Union[dict, list], config: dict = None) -> list:
     return init(device, config)[1]
 
 
@@ -674,18 +675,24 @@ def test_zigbee_button():
 
 def test_sonoff_r5():
     entities = get_entitites(
-        {
-            "extra": {"uiid": 174},
-            "params": {
-                "subDevId": "7007ad88",
-                "parentid": "10015c1cfc",
-                "bleAddr": "7007AD88",
-                "outlet": 3,
-                "key": 0,
-                "count": 181,
-                "actionTime": "2022-04-11T13:51:08.986Z",
+        [
+            {
+                "extra": {"uiid": 174},
+                "params": {
+                    "subDevId": "7007ad88",
+                    "parentid": "10015c1cfc",
+                    "bleAddr": "7007AD88",
+                    "outlet": 3,
+                    "key": 0,
+                    "count": 181,
+                    "actionTime": "2022-04-11T13:51:08.986Z",
+                },
             },
-        }
+            {
+                "deviceid": "10015c1cfc",
+                "extra": {"uiid": 126},
+            },
+        ]
     )
 
     button: XRemoteButton = entities[0]
@@ -1077,7 +1084,7 @@ def test_temperature_convert():
     assert temp.state == 14.6
 
     temp.hass.config.units = IMPERIAL_SYSTEM
-    assert temp.state == 58.3
+    assert temp.state == "58.3"
     assert temp.unit_of_measurement == TEMP_FAHRENHEIT
 
 

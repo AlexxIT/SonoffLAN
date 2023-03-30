@@ -26,12 +26,14 @@ class DummyRegistry(XRegistry):
 
 # noinspection PyTypeChecker
 def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
-    device.setdefault("name", "Device1")
-    device.setdefault("deviceid", DEVICEID)
-    device.setdefault("online", True)
-    device.setdefault("extra", {"uiid": 0})
-    params = device.setdefault("params", {})
-    params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
+    devices = [device] if isinstance(device, dict) else device
+    for device in devices:
+        device.setdefault("name", "Device1")
+        device.setdefault("deviceid", DEVICEID)
+        device.setdefault("online", True)
+        device.setdefault("extra", {"uiid": 0})
+        params = device.setdefault("params", {})
+        params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
 
     asyncio.create_task = lambda _: None
     asyncio.get_running_loop = lambda: None
@@ -42,7 +44,7 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
     reg.cloud.online = True
     reg.config = config
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
-    entities += reg.setup_devices([device])
+    entities += reg.setup_devices(devices)
 
     hass = HomeAssistant()
     for entity in entities:
