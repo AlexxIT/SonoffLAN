@@ -323,6 +323,11 @@ DEVICES = {
         spec(XSensor100, param="humidity"),
         Battery,
     ],  # ZCL_HA_DEVICEID_TEMPERATURE_SENSOR
+    1771: [
+        spec(XSensor100, param="temperature"),
+        spec(XSensor100, param="humidity"),
+        Battery,
+    ],  # https://github.com/AlexxIT/SonoffLAN/issues/1150
     2026: [XZigbeeMotion, Battery],  # ZIGBEE_MOBILE_SENSOR
     # ZIGBEE_DOOR_AND_WINDOW_SENSOR
     3026: [
