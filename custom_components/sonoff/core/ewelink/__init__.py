@@ -298,43 +298,48 @@ class XRegistry(XRegistryBase):
         2. Ping LAN devices if they are silent for more than 1 minute
         """
         while True:
-            ts = time.time()
-
             for device in self.devices.values():
-                uiid = device["extra"]["uiid"]
-
-                # POW, POWR2, S40, POWR3 - one channel, only cloud update
-                if uiid in (5, 32, 182, 190):
-                    if self.cloud.online and device.get("online"):
-                        params = {"uiActive": 60}
-                        asyncio.create_task(self.cloud.send(device, params, timeout=0))
-
-                # DUALR3 - two channels, local and cloud update
-                elif uiid == 126:
-                    if self.local.online and device.get("local"):
-                        # empty params is OK
-                        asyncio.create_task(
-                            self.local.send(device, command="statistics")
-                        )
-                    elif self.cloud.online and device.get("online"):
-                        params = {"uiActive": {"all": 1, "time": 60}}
-                        asyncio.create_task(self.cloud.send(device, params, timeout=0))
-
-                # SPM-4Relay - four channels, separate update for each channel
-                elif uiid == 130:
-                    if self.local.online and device.get("local"):
-                        asyncio.create_task(self.update_spm_pow(device, False))
-                    if self.cloud.online and device.get("online"):
-                        asyncio.create_task(self.update_spm_pow(device, True))
-
-                # checks if device still available via LAN
-                if "local_ts" not in device or device["local_ts"] > ts:
-                    continue
-
-                if self.local.online:
-                    asyncio.create_task(self.check_offline(device))
+                try:
+                    self.update_device(device)
+                except Exception as e:
+                    _LOGGER.warning("run_forever", exc_info=e)
 
             await asyncio.sleep(30)
+
+    def update_device(self, device: XDevice):
+        if "extra" not in device:
+            return
+
+        uiid = device["extra"]["uiid"]
+
+        # POW, POWR2, S40, POWR3 - one channel, only cloud update
+        if uiid in (5, 32, 182, 190):
+            if self.cloud.online and device.get("online"):
+                params = {"uiActive": 60}
+                asyncio.create_task(self.cloud.send(device, params, timeout=0))
+
+        # DUALR3 - two channels, local and cloud update
+        elif uiid == 126:
+            if self.local.online and device.get("local"):
+                # empty params is OK
+                asyncio.create_task(self.local.send(device, command="statistics"))
+            elif self.cloud.online and device.get("online"):
+                params = {"uiActive": {"all": 1, "time": 60}}
+                asyncio.create_task(self.cloud.send(device, params, timeout=0))
+
+        # SPM-4Relay - four channels, separate update for each channel
+        elif uiid == 130:
+            if self.local.online and device.get("local"):
+                asyncio.create_task(self.update_spm_pow(device, False))
+            if self.cloud.online and device.get("online"):
+                asyncio.create_task(self.update_spm_pow(device, True))
+
+        # checks if device still available via LAN
+        if "local_ts" not in device or device["local_ts"] > time.time():
+            return
+
+        if self.local.online:
+            asyncio.create_task(self.check_offline(device))
 
     async def update_spm_pow(self, device: XDevice, cloud_mode: bool):
         for i in range(4):
