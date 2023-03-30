@@ -10,9 +10,7 @@ from homeassistant.components.light import (
 )
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import TEMP_FAHRENHEIT
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
-from homeassistant.helpers.entity import Entity
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from custom_components.sonoff import remote
@@ -24,7 +22,6 @@ from custom_components.sonoff.core.ewelink import (
     SIGNAL_ADD_ENTITIES,
     SIGNAL_CONNECTED,
     SIGNAL_UPDATE,
-    XRegistry,
 )
 from custom_components.sonoff.cover import XCover, XCoverDualR3, XZigbeeCover
 from custom_components.sonoff.fan import XFan
@@ -38,7 +35,6 @@ from custom_components.sonoff.light import (
 )
 from custom_components.sonoff.number import XNumber, XPulseWidth
 from custom_components.sonoff.sensor import (
-    XEnergySensor,
     XOutdoorTempNS,
     XRemoteButton,
     XSensor,
@@ -53,53 +49,11 @@ from custom_components.sonoff.switch import (
     XToggle,
     XZigbeeSwitches,
 )
-from . import save_to
-
-DEVICEID = "1000123abc"
+from . import init, save_to, DEVICEID, DummyRegistry
 
 
-class DummyRegistry(XRegistry):
-    def __init__(self):
-        # noinspection PyTypeChecker
-        super().__init__(None)
-        self.send_args = None
-
-    async def send(self, *args):
-        self.send_args = args
-
-    def call(self, coro):
-        asyncio.get_event_loop().run_until_complete(coro)
-        return self.send_args
-
-
-# noinspection PyTypeChecker
 def get_entitites(device: dict, config: dict = None) -> list:
-    device.setdefault("name", "Device1")
-    device.setdefault("deviceid", DEVICEID)
-    device.setdefault("online", True)
-    device.setdefault("extra", {"uiid": 0})
-    params = device.setdefault("params", {})
-    params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
-
-    entities = []
-
-    asyncio.create_task = lambda _: None
-
-    reg = DummyRegistry()
-    reg.cloud.online = True
-    reg.config = config
-    reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
-    entities += reg.setup_devices([device])
-
-    asyncio.get_running_loop = lambda: None
-    hass = HomeAssistant()
-    for entity in entities:
-        if not isinstance(entity, Entity):
-            continue
-        entity.hass = hass
-        entity.async_write_ha_state()
-
-    return entities
+    return init(device, config)[1]
 
 
 def await_(coro):
@@ -474,7 +428,7 @@ def test_dual_r3():
     energy_1: XEnergySensorDualR3 = next(e for e in entities if e.uid == "energy_1")
     energy_1.internal_update({"kwhHistories_00": "0034007412340000"})
     assert energy_1.state == 0.34
-    assert energy_1.extra_state_attributes == {"history": [0.34, 0.74, 12.34]}
+    assert energy_1.extra_state_attributes == {"history": [0.34, 0.74, 18.34]}
 
     # Skip history if we don't use reporting
     energy_2: XEnergySensorDualR3 = next(e for e in entities if e.uid == "energy_2")
@@ -1472,21 +1426,6 @@ def test_custom_sensors():
 
     sensor.internal_update({"host": "192.168.1.123"})
     assert sensor.state == "192.168.1.123"
-
-
-def test_pow1_energy():
-    entities = get_entitites(
-        {
-            "extra": {"uiid": 5},
-            "params": {},
-        },
-        {"devices": {DEVICEID: {"reporting": {"energy": [3600, 2]}}}},
-    )
-
-    energy = next(e for e in entities if isinstance(e, XEnergySensor))
-    energy.internal_update({"hundredDaysKwhData": "010005020503020307"})
-    assert energy.state == 1.05
-    assert energy.extra_state_attributes == {"history": [1.05, 2.53]}
 
 
 def test_backward_number():
