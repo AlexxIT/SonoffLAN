@@ -50,7 +50,14 @@ from ..sensor import (
     XWiFiDoorBattery,
     XEnergySensorDualR3,
 )
-from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle, XZigbeeSwitches
+from ..switch import (
+    XSwitch,
+    XSwitches,
+    XSwitchTH,
+    XToggle,
+    XZigbeeSwitches,
+    XSwitchPOWR3,
+)
 
 # supported custom device_class
 DEVICE_CLASS = {
@@ -297,7 +304,7 @@ DEVICES = {
         EnergyPOW,
     ],  # Sonoff S40
     190: [
-        Switch1,
+        XSwitchPOWR3,
         LED,
         RSSI,
         spec(XSensor100, param="current"),
