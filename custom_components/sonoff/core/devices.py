@@ -49,6 +49,7 @@ from ..sensor import (
     XUnknown,
     XWiFiDoorBattery,
     XEnergySensorDualR3,
+    XEnergySensorPOWR3,
 )
 from ..switch import (
     XSwitch,
@@ -116,30 +117,7 @@ Power1 = spec(XSensor100, param="actPow_00", uid="power_1")
 Power2 = spec(XSensor100, param="actPow_01", uid="power_2")
 Power3 = spec(XSensor100, param="actPow_02", uid="power_3")
 Power4 = spec(XSensor100, param="actPow_03", uid="power_4")
-Energy1 = spec(
-    XEnergySensor, param="kwhHistories_00", uid="energy_1", get_params={"getKwh_00": 2}
-)
-Energy2 = spec(
-    XEnergySensor, param="kwhHistories_01", uid="energy_2", get_params={"getKwh_01": 2}
-)
-Energy3 = spec(
-    XEnergySensor, param="kwhHistories_01", uid="energy_3", get_params={"getKwh_02": 2}
-)
-Energy4 = spec(
-    XEnergySensor, param="kwhHistories_01", uid="energy_4", get_params={"getKwh_03": 2}
-)
-Energy1_DualR3 = spec(
-    XEnergySensorDualR3,
-    param="kwhHistories_00",
-    uid="energy_1",
-    get_params={"getKwh_00": 2},
-)
-Energy2_DualR3 = spec(
-    XEnergySensorDualR3,
-    param="kwhHistories_01",
-    uid="energy_2",
-    get_params={"getKwh_01": 2},
-)
+
 EnergyPOW = spec(
     XEnergySensor,
     param="hundredDaysKwhData",
@@ -234,8 +212,18 @@ DEVICES = {
         Voltage2,
         Power1,
         Power2,
-        Energy1_DualR3,
-        Energy2_DualR3,
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_00",
+            uid="energy_1",
+            get_params={"getKwh_00": 2},
+        ),
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_01",
+            uid="energy_2",
+            get_params={"getKwh_01": 2},
+        ),
     ],  # Sonoff DualR3
     127: [XThermostat],  # https://github.com/AlexxIT/SonoffLAN/issues/358
     128: [LED],  # SPM-Main
@@ -256,10 +244,30 @@ DEVICES = {
         Power2,
         Power3,
         Power4,
-        Energy1,
-        Energy2,
-        Energy3,
-        Energy4,
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_00",
+            uid="energy_1",
+            get_params={"getKwh_00": 2},
+        ),
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_01",
+            uid="energy_2",
+            get_params={"getKwh_01": 2},
+        ),
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_01",
+            uid="energy_3",
+            get_params={"getKwh_02": 2},
+        ),
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_01",
+            uid="energy_4",
+            get_params={"getKwh_03": 2},
+        ),
     ],  # SPM-4Relay, https://github.com/AlexxIT/SonoffLAN/issues/658
     133: [
         # Humidity. ALWAYS 50... NSPanel DOESN'T HAVE HUMIDITY SENSOR
@@ -310,7 +318,12 @@ DEVICES = {
         spec(XSensor100, param="current"),
         spec(XSensor100, param="power"),
         spec(XSensor100, param="voltage"),
-        EnergyPOW,
+        spec(
+            XEnergySensorPOWR3,
+            param="hoursKwhData",
+            uid="energy",
+            get_params={"getHoursKwh": {"start": 0, "end": 24 * 30 - 1}},
+        ),
     ],  # Sonoff POWR3
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT

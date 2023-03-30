@@ -1,5 +1,6 @@
 import asyncio
 import time
+from typing import Optional
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -181,27 +182,35 @@ class XEnergySensor(XEntity, SensorEntity):
 
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
-        self.report_dt, self.report_history = device.get("reporting", {}).get(
-            self.uid
-        ) or (3600, 0)
+        reporting = device.get("reporting", {})
+        self.report_dt, self.report_history = reporting.get(self.uid) or (3600, 0)
 
-    def set_state(self, params: dict):
-        value = params[self.param]
+    @staticmethod
+    def decode_energy(value: str) -> Optional[list]:
         try:
-            history = [
+            return [
                 round(
-                    int(value[i : i + 2], 16) + int(value[i + 3] + value[i + 5]) * 0.01,
+                    int(value[i : i + 2], 16)
+                    + int(value[i + 3], 10) * 0.1
+                    + int(value[i + 5], 10) * 0.01,
                     2,
                 )
                 for i in range(0, len(value), 6)
             ]
-            self._attr_native_value = history[0]
-            if self.report_history:
-                self._attr_extra_state_attributes = {
-                    "history": history[0 : self.report_history]
-                }
         except Exception:
-            pass
+            return None
+
+    def set_state(self, params: dict):
+        history = self.decode_energy(params[self.param])
+        if not history:
+            return
+
+        self._attr_native_value = history[0]
+
+        if self.report_history:
+            self._attr_extra_state_attributes = {
+                "history": history[0 : self.report_history]
+            }
 
     async def async_update(self):
         ts = time.time()
@@ -211,23 +220,29 @@ class XEnergySensor(XEntity, SensorEntity):
 
 
 class XEnergySensorDualR3(XEnergySensor, SensorEntity):
-    def set_state(self, params: dict):
-        value = params[self.param]
+    @staticmethod
+    def decode_energy(value: str) -> Optional[list]:
         try:
-            history = [
+            return [
                 round(
-                    int(value[i : i + 2], 10) + int(value[i + 2] + value[i + 3]) * 0.01,
-                    2,
+                    int(value[i : i + 2], 16) + int(value[i + 2 : i + 4], 10) * 0.01, 2
                 )
                 for i in range(0, len(value), 4)
             ]
-            self._attr_native_value = history[0]
-            if self.report_history:
-                self._attr_extra_state_attributes = {
-                    "history": history[0 : self.report_history]
-                }
         except Exception:
-            pass
+            return None
+
+
+class XEnergySensorPOWR3(XEnergySensor, SensorEntity):
+    @staticmethod
+    def decode_energy(value: str) -> Optional[list]:
+        try:
+            return [
+                round(int(value[i], 16) + int(value[i + 1 : i + 3], 10) * 0.01, 2)
+                for i in range(0, len(value), 3)
+            ]
+        except Exception:
+            return None
 
 
 class XTemperatureNS(XSensor):
