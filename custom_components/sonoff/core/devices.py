@@ -318,6 +318,8 @@ DEVICES = {
         spec(XSensor100, param="current"),
         spec(XSensor100, param="power"),
         spec(XSensor100, param="voltage"),
+        spec(XSensor100, param="dayKwh", uid="energy_day"),
+        spec(XSensor100, param="monthKwh", uid="energy_month"),
         spec(
             XEnergySensorPOWR3,
             param="hoursKwhData",
