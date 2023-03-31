@@ -37,8 +37,6 @@ DEVICE_CLASSES = {
     "battery": SensorDeviceClass.BATTERY,
     "battery_voltage": SensorDeviceClass.VOLTAGE,
     "current": SensorDeviceClass.CURRENT,
-    "energy_day": SensorDeviceClass.ENERGY,
-    "energy_month": SensorDeviceClass.ENERGY,
     "humidity": SensorDeviceClass.HUMIDITY,
     "outdoor_temp": SensorDeviceClass.TEMPERATURE,
     "power": SensorDeviceClass.POWER,
@@ -51,8 +49,6 @@ UNITS = {
     "battery": PERCENTAGE,
     "battery_voltage": ELECTRIC_POTENTIAL_VOLT,
     "current": ELECTRIC_CURRENT_AMPERE,
-    "energy_day": ENERGY_KILO_WATT_HOUR,
-    "energy_month": ENERGY_KILO_WATT_HOUR,
     "humidity": PERCENTAGE,
     "outdoor_temp": TEMP_CELSIUS,
     "power": POWER_WATT,
@@ -257,6 +253,12 @@ class XEnergySensorPOWR3(XEnergySensor, SensorEntity):
         ok = await self.ewelink.send(self.device, self.get_params, timeout_lan=5)
         if ok == "online":
             self.next_ts = ts + self.report_dt
+
+
+class XEnergyTotal(XSensor):
+    _attr_device_class = SensorDeviceClass.ENERGY
+    _attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
+    _attr_state_class = SensorStateClass.TOTAL
 
 
 class XTemperatureNS(XSensor):

@@ -50,6 +50,7 @@ from ..sensor import (
     XWiFiDoorBattery,
     XEnergySensorDualR3,
     XEnergySensorPOWR3,
+    XEnergyTotal,
 )
 from ..switch import (
     XSwitch,
@@ -320,8 +321,10 @@ DEVICES = {
         spec(XSensor100, param="current"),
         spec(XSensor100, param="power"),
         spec(XSensor100, param="voltage"),
-        spec(XSensor100, param="dayKwh", uid="energy_day"),
-        spec(XSensor100, param="monthKwh", uid="energy_month"),
+        spec(XEnergyTotal, param="dayKwh", uid="energy_day", multiply=0.01, round=2),
+        spec(
+            XEnergyTotal, param="monthKwh", uid="energy_month", multiply=0.01, round=2
+        ),
         spec(
             XEnergySensorPOWR3,
             param="hoursKwhData",
