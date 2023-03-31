@@ -299,7 +299,6 @@ DEVICES = {
     177: [XRemoteButton],  # Sonoff S-Mate
     181: [
         XSwitchTH,
-        XClimateTH,
         XTemperatureTH,
         XHumidityTH,
         LED,
