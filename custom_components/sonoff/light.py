@@ -83,7 +83,9 @@ class XLight(XEntity, LightEntity):
                 await self.ewelink.send(
                     self.device, {self.param: "on"}, query_cloud=False
                 )
-            await self.ewelink.send(self.device, params, {"cmd": "dimmable", **params})
+            await self.ewelink.send(
+                self.device, params, {"cmd": "dimmable", **params}, cmd_lan="dimmable"
+            )
         else:
             await self.ewelink.send(self.device, {self.param: "on"})
 

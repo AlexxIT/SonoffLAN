@@ -210,11 +210,13 @@ class XClimateNS(XEntity, ClimateEntity):
     async def async_set_temperature(
         self, temperature: float = None, hvac_mode: str = None, **kwargs
     ) -> None:
-        params = self.get_params(hvac_mode)
         if temperature is not None:
-            params["ATCExpect0"] = temperature
-        if not params:
-            params["ATCEnable"] = 1
+            # https://github.com/AlexxIT/SonoffLAN/issues/1107
+            params = {"ATCMode": 0, "ATCExpect0": temperature}
+        elif hvac_mode is not None:
+            params = self.get_params(hvac_mode)
+        else:
+            params = {"ATCEnable": 1}
         await self.ewelink.cloud.send(self.device, params)
 
 

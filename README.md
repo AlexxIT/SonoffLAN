@@ -157,7 +157,7 @@ Configuration > [Integrations](https://my.home-assistant.io/redirect/integration
 
 ### Mode
 
-In `auto` mode component using both local and cloud connections to your devcies. If device could be reached via LAN - the local connection will be used. Otherwise the cloud connection will be used. This mode is recommended for most general user.
+In `auto` mode component using both local and cloud connections to your devcies. If device could be reached via LAN - the local connection will be used. Otherwise the cloud connection will be used.
 
 `local` mode or `cloud` mode will use only this type of connection.
 
@@ -169,7 +169,9 @@ Each time the integration starts, a list of user devices is loaded from cloud an
 
 `local` mode can't work without ewelink credentials because it needs devices encryption keys.
 
-Devices in DIY mode can be used without ewelink credentials because their protocol unencrypted. But the average user does not need to use devices in this mode.
+Devices in DIY mode can be used without ewelink credentials because their protocol unencrypted.
+
+It is **highly recommended** that you use `mode: auto` and do not use `mode: local` or DIY mode. Because the local protocol is not always stable and you will get a bad experience. Devices may sometimes disappear from the network or fail to respond to local requests. Also some POW and TH devices cannot update their sensors without a cloud connection.
 
 ### Debug page
 

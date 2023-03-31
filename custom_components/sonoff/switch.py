@@ -72,6 +72,17 @@ class XSwitchTH(XSwitch):
 
 
 # noinspection PyAbstractClass
+class XSwitchPOWR3(XSwitches):
+    async def async_turn_on(self):
+        params = {"switches": [{"outlet": 0, "switch": "on"}], "operSide": 1}
+        await self.ewelink.send(self.device, params)
+
+    async def async_turn_off(self):
+        params = {"switches": [{"outlet": 0, "switch": "off"}], "operSide": 1}
+        await self.ewelink.send(self.device, params)
+
+
+# noinspection PyAbstractClass
 class XZigbeeSwitches(XSwitches):
     async def async_turn_on(self, **kwargs):
         # zigbee switch should send all channels at once

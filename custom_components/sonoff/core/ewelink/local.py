@@ -103,40 +103,43 @@ class XRegistryLocal(XRegistryBase):
 
     async def _handler2(self, zeroconf: Zeroconf, service_type: str, name: str):
         """Step 2. Request additional info about add and update event from device."""
+        deviceid = name[8:18]
         try:
             info = AsyncServiceInfo(service_type, name)
             if not await info.async_request(zeroconf, 3000) or not info.properties:
-                _LOGGER.debug(f"{name[8:18]} <= Local0 | Can't get zeroconf info")
+                _LOGGER.debug(f"{deviceid} <= Local0 | Can't get zeroconf info")
                 return
 
             # support update with empty host and host without port
-            host = None
             for addr in info.addresses:
                 # zeroconf lib should return IPv4, but better check anyway
                 addr = ipaddress.IPv4Address(addr)
                 host = f"{addr}:{info.port}" if info.port else str(addr)
                 break
-
-            if not host and info.server and info.port:
-                host = f"{info.server}:{info.port}"
+            else:
+                if info.server and info.port:
+                    host = f"{info.server}:{info.port}"
+                else:
+                    host = None
 
             data = {
                 k.decode(): v.decode() if isinstance(v, bytes) else v
                 for k, v in info.properties.items()
             }
 
-            self._handler3(host, data)
+            self._handler3(deviceid, host, data)
 
         except Exception as e:
-            _LOGGER.debug(f"{name[8:18]} <= Local0 | Zeroconf error", exc_info=e)
+            _LOGGER.debug(f"{deviceid} <= Local0 | Zeroconf error", exc_info=e)
 
-    def _handler3(self, host: str, data: dict):
+    def _handler3(self, deviceid: str, host: str, data: dict):
         """Step 3. Process new data from device."""
 
         raw = "".join([data[f"data{i}"] for i in range(1, 5, 1) if f"data{i}" in data])
 
         msg = {
-            "deviceid": data["id"],
+            "deviceid": deviceid,
+            "subdevid": data["id"],
             "localtype": data["type"],
             "seq": data.get("seq"),
         }
@@ -156,30 +159,23 @@ class XRegistryLocal(XRegistryBase):
         self,
         device: XDevice,
         params: dict = None,
+        command: str = None,
         sequence: str = None,
         timeout: int = 5,
     ):
         # known commands for DIY: switch, startup, pulse, sledonline
         # other commands: switch, switches, transmit, dimmable, light, fan
 
-        # cmd for D1 and RF Bridge 433
-        if params:
-            command = params.get("cmd") or next(iter(params))
-        elif "sledOnline" in device["params"]:
-            # device response with current status if we change any param
-            command = "sledonline"
-            params = {"sledOnline": device["params"]["sledOnline"]}
-        else:
-            return "noquery"
-
-        if sequence is None:
-            sequence = self.sequence()
+        if command is None:
+            if params is None:
+                return "noquery"
+            command = next(iter(params))
 
         payload = {
-            "sequence": sequence,
+            "sequence": sequence or self.sequence(),
             "deviceid": device["deviceid"],
             "selfApikey": "123",
-            "data": params,
+            "data": params or {},
         }
 
         if "devicekey" in device:
@@ -200,20 +196,32 @@ class XRegistryLocal(XRegistryBase):
                 timeout=timeout,
             )
 
-            if command == "info":
-                # better don't read response on info command
-                # https://github.com/AlexxIT/SonoffLAN/issues/871
-                _LOGGER.debug(f"{log} <= info: {r.status}")
-                return "online"
+            try:
+                resp: dict = await r.json()
+                if resp["error"] == 0:
+                    _LOGGER.debug(f"{log} <= {resp}")
 
-            resp = await r.json()
-            err = resp["error"]
-            if err == 0:
-                _LOGGER.debug(f"{log} <= {resp}")
-                return "online"
-            else:
-                _LOGGER.warning(f"{log} <= {resp}")
-                return f"E#{err}"
+                    if resp.get("encrypt"):
+                        msg = {
+                            "deviceid": device["deviceid"],
+                            "localtype": device["localtype"],
+                            "seq": resp["seq"],
+                            "data": resp["data"],
+                            "iv": resp["iv"],
+                        }
+                        if params and params.get("subDevId"):
+                            msg["subdevid"] = params["subDevId"]
+                        self.dispatcher_send(SIGNAL_UPDATE, msg)
+
+                    return "online"
+
+                else:
+                    _LOGGER.debug(f"{log} <= {resp}")
+                    return "error"
+
+            except Exception as e:
+                _LOGGER.debug(f"{log} !! Can't read JSON {e}")
+                return "error"
 
         except asyncio.TimeoutError:
             _LOGGER.debug(f"{log} !! Timeout {timeout}")

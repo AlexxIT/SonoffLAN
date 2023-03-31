@@ -29,6 +29,8 @@ class XDevice(TypedDict, total=False):
     params_bulk: Optional[dict]  # helper for send_bulk commands
     pow_ts: Optional[float]  # required for pow devices with cloud connection
 
+    parent: Optional[dict]
+
 
 class XRegistryBase:
     dispatcher: dict[str, list[Callable]] = None

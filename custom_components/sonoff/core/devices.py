@@ -49,8 +49,16 @@ from ..sensor import (
     XUnknown,
     XWiFiDoorBattery,
     XEnergySensorDualR3,
+    XEnergySensorPOWR3,
 )
-from ..switch import XSwitch, XSwitches, XSwitchTH, XToggle, XZigbeeSwitches
+from ..switch import (
+    XSwitch,
+    XSwitches,
+    XSwitchTH,
+    XToggle,
+    XZigbeeSwitches,
+    XSwitchPOWR3,
+)
 
 # supported custom device_class
 DEVICE_CLASS = {
@@ -109,29 +117,12 @@ Power1 = spec(XSensor100, param="actPow_00", uid="power_1")
 Power2 = spec(XSensor100, param="actPow_01", uid="power_2")
 Power3 = spec(XSensor100, param="actPow_02", uid="power_3")
 Power4 = spec(XSensor100, param="actPow_03", uid="power_4")
-Energy1 = spec(
-    XEnergySensor, param="kwhHistories_00", uid="energy_1", get_params={"getKwh_00": 2}
-)
-Energy2 = spec(
-    XEnergySensor, param="kwhHistories_01", uid="energy_2", get_params={"getKwh_01": 2}
-)
-Energy3 = spec(
-    XEnergySensor, param="kwhHistories_01", uid="energy_3", get_params={"getKwh_02": 2}
-)
-Energy4 = spec(
-    XEnergySensor, param="kwhHistories_01", uid="energy_4", get_params={"getKwh_03": 2}
-)
-Energy1_DualR3 = spec(
-    XEnergySensorDualR3,
-    param="kwhHistories_00",
-    uid="energy_1",
-    get_params={"getKwh_00": 2},
-)
-Energy2_DualR3 = spec(
-    XEnergySensorDualR3,
-    param="kwhHistories_01",
-    uid="energy_2",
-    get_params={"getKwh_01": 2},
+
+EnergyPOW = spec(
+    XEnergySensor,
+    param="hundredDaysKwhData",
+    uid="energy",
+    get_params={"hundredDaysKwh": "get"},
 )
 
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
@@ -145,12 +136,7 @@ DEVICES = {
         LED,
         RSSI,
         spec(XSensor, param="power"),
-        spec(
-            XEnergySensor,
-            param="hundredDaysKwhData",
-            uid="energy",
-            get_params={"hundredDaysKwh": "get"},
-        ),
+        EnergyPOW,
     ],  # Sonoff POW (first)
     6: SPEC_SWITCH,
     7: SPEC_2CH,  # Sonoff T1 2CH
@@ -192,12 +178,7 @@ DEVICES = {
         spec(XSensor, param="current"),
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
-        spec(
-            XEnergySensor,
-            param="hundredDaysKwhData",
-            uid="energy",
-            get_params={"hundredDaysKwh": "get"},
-        ),
+        EnergyPOW,
     ],  # Sonoff POWR2
     33: [XLightL1, RSSI],  # https://github.com/AlexxIT/SonoffLAN/issues/985
     34: [
@@ -231,8 +212,18 @@ DEVICES = {
         Voltage2,
         Power1,
         Power2,
-        Energy1_DualR3,
-        Energy2_DualR3,
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_00",
+            uid="energy_1",
+            get_params={"getKwh_00": 2},
+        ),
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_01",
+            uid="energy_2",
+            get_params={"getKwh_01": 2},
+        ),
     ],  # Sonoff DualR3
     127: [XThermostat],  # https://github.com/AlexxIT/SonoffLAN/issues/358
     128: [LED],  # SPM-Main
@@ -253,10 +244,30 @@ DEVICES = {
         Power2,
         Power3,
         Power4,
-        Energy1,
-        Energy2,
-        Energy3,
-        Energy4,
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_00",
+            uid="energy_1",
+            get_params={"getKwh_00": 2},
+        ),
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_01",
+            uid="energy_2",
+            get_params={"getKwh_01": 2},
+        ),
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_01",
+            uid="energy_3",
+            get_params={"getKwh_02": 2},
+        ),
+        spec(
+            XEnergySensorDualR3,
+            param="kwhHistories_01",
+            uid="energy_4",
+            get_params={"getKwh_03": 2},
+        ),
     ],  # SPM-4Relay, https://github.com/AlexxIT/SonoffLAN/issues/658
     133: [
         # Humidity. ALWAYS 50... NSPanel DOESN'T HAVE HUMIDITY SENSOR
@@ -298,19 +309,22 @@ DEVICES = {
         spec(XSensor, param="current"),
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
+        EnergyPOW,
     ],  # Sonoff S40
     190: [
-        Switch1,
+        XSwitchPOWR3,
         LED,
         RSSI,
         spec(XSensor100, param="current"),
         spec(XSensor100, param="power"),
         spec(XSensor100, param="voltage"),
+        spec(XSensor100, param="dayKwh", uid="energy_day"),
+        spec(XSensor100, param="monthKwh", uid="energy_month"),
         spec(
-            XEnergySensor,
-            param="hundredDaysKwhData",
+            XEnergySensorPOWR3,
+            param="hoursKwhData",
             uid="energy",
-            get_params={"hundredDaysKwh": "get"},
+            get_params={"getHoursKwh": {"start": 0, "end": 24 * 30 - 1}},
         ),
     ],  # Sonoff POWR3
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
@@ -323,6 +337,11 @@ DEVICES = {
         spec(XSensor100, param="humidity"),
         Battery,
     ],  # ZCL_HA_DEVICEID_TEMPERATURE_SENSOR
+    1771: [
+        spec(XSensor100, param="temperature"),
+        spec(XSensor100, param="humidity"),
+        Battery,
+    ],  # https://github.com/AlexxIT/SonoffLAN/issues/1150
     2026: [XZigbeeMotion, Battery],  # ZIGBEE_MOBILE_SENSOR
     # ZIGBEE_DOOR_AND_WINDOW_SENSOR
     3026: [
@@ -340,21 +359,6 @@ DEVICES = {
         spec(XZigbeeSwitches, channel=2, uid="3"),
         spec(XZigbeeSwitches, channel=3, uid="4"),
     ],
-}
-
-# Pow devices sends sensors data via Cloud only in uiActive mode
-# - Sonoff POW1 fw 2.6.1 UIID5 sends power data even without uiActive
-# - Sonoff S40 fw 1.1.0 UIID182 has very low uiActive maximum
-# - Sonoff DualR3 fw 1.4.0 UIID126 has another uiActive format
-# UUID, refresh time in seconds, params payload
-POW_UI_ACTIVE = {
-    5: (3600, {"uiActive": 7200}),
-    32: (3600, {"uiActive": 7200}),
-    126: (3600, {"uiActive": {"all": 1, "time": 7200}}),
-    130: (3600, {"uiActive": {"all": 1, "time": 7200}}),
-    182: (0, {"uiActive": 180}),  # maximum for this model
-    # https://github.com/AlexxIT/SonoffLAN/issues/978
-    190: (0, {"uiActive": 180}),  # haven't check real maximum
 }
 
 
