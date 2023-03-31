@@ -731,6 +731,12 @@ class XLightB02(XLight):
     _attr_supported_color_modes = {COLOR_MODE_COLOR_TEMP}
     _attr_supported_features = SUPPORT_EFFECT
 
+    # ewelink specs
+    min_br = 1
+    max_br = 100
+    min_ct = 0
+    max_ct = 255
+
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
 
@@ -752,10 +758,10 @@ class XLightB02(XLight):
 
         state = params[self.effect]
         if "br" in state:
-            self._attr_brightness = conv(state["br"], 1, 100, 1, 255)
+            self._attr_brightness = conv(state["br"], self.min_br, self.max_br, 1, 255)
         if "ct" in state:
             self._attr_color_temp = conv(
-                state["ct"], 0, 255, self.max_mireds, self.min_mireds
+                state["ct"], self.min_ct, self.max_ct, self.max_mireds, self.min_mireds
             )
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
@@ -763,13 +769,15 @@ class XLightB02(XLight):
             return {
                 "ltype": "white",
                 "white": {
-                    "br": conv(brightness or self.brightness, 1, 255, 1, 100),
+                    "br": conv(
+                        brightness or self.brightness, 1, 255, self.min_br, self.max_br
+                    ),
                     "ct": conv(
                         color_temp or self.color_temp,
                         self.max_mireds,
                         self.min_mireds,
-                        0,
-                        255,
+                        self.min_ct,
+                        self.max_ct,
                     ),
                 },
             }
@@ -816,11 +824,11 @@ class XLightB05B(XLightB02):
         # fix https://github.com/AlexxIT/SonoffLAN/issues/1093
         state = params.get(effect) or B05_MODE_PAYLOADS.get(effect) or {}
         if "br" in state:
-            self._attr_brightness = conv(state["br"], 1, 100, 1, 255)
+            self._attr_brightness = conv(state["br"], self.min_br, self.max_br, 1, 255)
 
         if "ct" in state:
             self._attr_color_temp = conv(
-                state["ct"], 0, 255, self.max_mireds, self.min_mireds
+                state["ct"], self.min_ct, self.max_ct, self.max_mireds, self.min_mireds
             )
 
         if "r" in state or "g" in state or "b" in state:
@@ -835,15 +843,25 @@ class XLightB05B(XLightB02):
             return {
                 "ltype": "white",
                 "white": {
-                    "br": conv(brightness or self.brightness, 1, 255, 1, 100),
-                    "ct": conv(color_temp, self.max_mireds, self.min_mireds, 0, 255),
+                    "br": conv(
+                        brightness or self.brightness, 1, 255, self.min_br, self.max_br
+                    ),
+                    "ct": conv(
+                        color_temp,
+                        self.max_mireds,
+                        self.min_mireds,
+                        self.min_ct,
+                        self.max_ct,
+                    ),
                 },
             }
         if rgb_color:
             return {
                 "ltype": "color",
                 "color": {
-                    "br": conv(brightness or self.brightness, 1, 255, 1, 100),
+                    "br": conv(
+                        brightness or self.brightness, 1, 255, self.min_br, self.max_br
+                    ),
                     "r": rgb_color[0],
                     "g": rgb_color[1],
                     "b": rgb_color[2],

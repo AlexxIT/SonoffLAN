@@ -33,6 +33,7 @@ from custom_components.sonoff.light import (
     XLightGroup,
     XLightL1,
     XLightL3,
+    XLightB05B,
 )
 from custom_components.sonoff.number import XNumber, XPulseWidth
 from custom_components.sonoff.sensor import (
@@ -1502,3 +1503,33 @@ def test_lx_entity():
         "bright": 100,
         "light_type": 1,
     }
+
+
+def test_light_136():
+    # https://github.com/AlexxIT/SonoffLAN/pull/892
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 136},
+            "params": {
+                "bindInfos": "***",
+                "version": 8,
+                "rssi": -61,
+                "fwVersion": "1.4.1",
+                "switch": "on",
+                "ltype": "white",
+                "white": {"br": 100, "ct": 100},
+                "remoteCtrlList": [],
+                "lightScenes": [],
+                "ssid": "***",
+                "bssid": "***",
+                "mac": "***",
+                "color": {"br": 100, "r": 255, "g": 0, "b": 0},
+            },
+            "model": "B05-BL",
+        }
+    )
+
+    light: XLightB05B = entities[0]
+    assert light.state == "on"
+    assert light.state_attributes["brightness"] == 255
+    assert light.state_attributes["color_temp"] == light.min_mireds

@@ -281,7 +281,10 @@ DEVICES = {
     # https://github.com/AlexxIT/SonoffLAN/issues/1026
     135: [XLightB02, RSSI],  # Sonoff B02-BL
     # https://github.com/AlexxIT/SonoffLAN/issues/766
-    136: [XLightB05B, RSSI],  # Sonoff B05-BL
+    # https://github.com/AlexxIT/SonoffLAN/issues/890
+    # https://github.com/AlexxIT/SonoffLAN/pull/892
+    # https://github.com/AlexxIT/SonoffLAN/pull/1035
+    136: [spec(XLightB05B, min_ct=0, max_ct=100), RSSI],  # Sonoff B05-BL
     137: [XLightL1, RSSI],
     # https://github.com/AlexxIT/SonoffLAN/issues/623#issuecomment-1365841454
     138: SPEC_1CH,  # MINIR3
