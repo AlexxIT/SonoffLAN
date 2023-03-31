@@ -150,6 +150,7 @@ class XClimateNS(XEntity, ClimateEntity):
     _attr_hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT_COOL, HVAC_MODE_AUTO]
     _attr_max_temp = 31
     _attr_min_temp = 16
+    _attr_supported_features = 0
     _attr_temperature_unit = TEMP_CELSIUS
     _attr_target_temperature_step = 1
 
