@@ -8,7 +8,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    DEVICE_CLASS_TIMESTAMP,
     ELECTRIC_CURRENT_AMPERE,
     ELECTRIC_POTENTIAL_VOLT,
     ENERGY_KILO_WATT_HOUR,
@@ -324,7 +323,7 @@ class XRemoteButton(XEntity, SensorEntity):
 
 
 class XUnknown(XEntity, SensorEntity):
-    _attr_device_class = DEVICE_CLASS_TIMESTAMP
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
 
     def internal_update(self, params: dict = None):
         self._attr_native_value = dt.utcnow()
