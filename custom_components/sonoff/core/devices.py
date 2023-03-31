@@ -329,6 +329,8 @@ DEVICES = {
             get_params={"getHoursKwh": {"start": 0, "end": 24 * 30 - 1}},
         ),
     ],  # Sonoff POWR3
+    # https://github.com/AlexxIT/SonoffLAN/issues/984
+    195: [XTemperatureTH],  # NSPanel Pro
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
     1257: [spec(XLightD1, base="light")],  # ZigbeeWhiteLight
