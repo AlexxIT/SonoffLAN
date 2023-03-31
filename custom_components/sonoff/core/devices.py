@@ -461,7 +461,7 @@ DIY = {
     # DIY type, UIID, Brand, Model/Name
     "plug": [1, None, "Single Channel DIY"],  # POWR316
     "strip": [4, None, "Multi Channel DIY"],  # 4CHPROR3
-    "diy_plug": [1, "SONOFF", "MINI DIY"],
+    "diy_plug": [138, "SONOFF", "MINI DIY"],
     "enhanced_plug": [5, "SONOFF", "POW DIY"],  # POWR2
     "th_plug": [15, "SONOFF", "TH DIY"],  # TH16R2
     "rf": [28, "SONOFF", "RFBridge DIY"],
