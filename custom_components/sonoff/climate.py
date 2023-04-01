@@ -104,7 +104,7 @@ class XClimateTH(XEntity, ClimateEntity):
             }
         else:
             params = {"mainSwitch": "off", "deviceType": "normal"}
-        await self.ewelink.cloud.send(self.device, params)
+        await self.ewelink.send_cloud(self.device, params)
 
     async def async_set_temperature(
         self,
@@ -139,7 +139,7 @@ class XClimateTH(XEntity, ClimateEntity):
                 },
             ]
 
-        await self.ewelink.cloud.send(self.device, params)
+        await self.ewelink.send_cloud(self.device, params)
 
 
 # noinspection PyAbstractClass
@@ -213,7 +213,7 @@ class XClimateNS(XEntity, ClimateEntity):
 
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:
         params = self.get_params(hvac_mode)
-        await self.ewelink.cloud.send(self.device, params)
+        await self.ewelink.send_cloud(self.device, params)
 
     async def async_set_temperature(
         self, temperature: float = None, hvac_mode: str = None, **kwargs
@@ -225,7 +225,7 @@ class XClimateNS(XEntity, ClimateEntity):
             params = self.get_params(hvac_mode)
         else:
             params = {"ATCEnable": 1}
-        await self.ewelink.cloud.send(self.device, params)
+        await self.ewelink.send_cloud(self.device, params)
 
 
 # noinspection PyAbstractClass

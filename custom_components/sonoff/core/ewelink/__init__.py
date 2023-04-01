@@ -127,9 +127,7 @@ class XRegistry(XRegistryBase):
                     await self.cloud.send(device, timeout=0)
 
         elif can_local:
-            ok = await self.local.send(
-                main_device, params_lan or params, cmd_lan, seq
-            )
+            ok = await self.local.send(main_device, params_lan or params, cmd_lan, seq)
             if ok != "online":
                 asyncio.create_task(self.check_offline(main_device))
 
@@ -162,6 +160,13 @@ class XRegistry(XRegistryBase):
         await asyncio.sleep(0.1)
 
         return await self.send(device, device.pop("params_bulk"))
+
+    async def send_cloud(self, device: XDevice, params: dict = None, query=True):
+        if not self.cloud.online or not device.get("online"):
+            return
+        ok = await self.cloud.send(device, params)
+        if ok == "online" and query and params:
+            await self.cloud.send(device, timeout=0)
 
     async def check_offline(self, device: XDevice):
         if not device.get("host"):

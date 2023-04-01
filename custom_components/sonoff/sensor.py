@@ -215,7 +215,7 @@ class XEnergySensor(XEntity, SensorEntity):
         ts = time.time()
         if ts < self.next_ts or not self.available or not self.ewelink.cloud.online:
             return
-        ok = await self.ewelink.cloud.send(self.device, self.get_params)
+        ok = await self.ewelink.send_cloud(self.device, self.get_params, query=False)
         if ok == "online":
             self.next_ts = ts + self.report_dt
 
