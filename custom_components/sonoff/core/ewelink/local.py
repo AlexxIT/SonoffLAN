@@ -201,7 +201,7 @@ class XRegistryLocal(XRegistryBase):
                 if resp["error"] == 0:
                     _LOGGER.debug(f"{log} <= {resp}")
 
-                    if resp.get("encrypt"):
+                    if "iv" in resp:
                         msg = {
                             "deviceid": device["deviceid"],
                             "localtype": device["localtype"],
