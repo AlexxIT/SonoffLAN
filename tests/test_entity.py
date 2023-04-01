@@ -965,7 +965,7 @@ def test_diy_device():
         {
             "deviceid": DEVICEID,
             "host": "192.168.1.123",
-            "localtype": "diy_plug",
+            "localtype": "plug",
             "params": {"switch": "on"},
         },
     )
