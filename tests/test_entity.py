@@ -1533,3 +1533,44 @@ def test_light_136():
     assert light.state == "on"
     assert light.state_attributes["brightness"] == 255
     assert light.state_attributes["color_temp"] == light.min_mireds
+
+
+def test_minir4():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 138},
+            "params": {
+                "version": 8,
+                "init": 1,
+                "rst_reason": 1,
+                "rst_cnt": 1,
+                "fwVersion": "1.0.1",
+                "rssi": -35,
+                "sledOnline": "on",
+                "swMode": 2,
+                "swCtrlReverse": "off",
+                "relaySeparation": 1,
+                "switches": [
+                    {"outlet": 0, "switch": "on"},
+                    {"outlet": 1, "switch": "off"},
+                    {"outlet": 2, "switch": "off"},
+                    {"outlet": 3, "switch": "off"},
+                ],
+                "configure": [
+                    {"outlet": 0, "startup": "off", "enableDelay": 0, "width": 22000}
+                ],
+                "pulses": [
+                    {"outlet": 0, "pulse": "off", "switch": "off", "width": 500}
+                ],
+                "addSubDevState": "off",
+                "addTimeOut": 10,
+            },
+            "model": "MINIR4",
+        }
+    )
+
+    switch: SwitchEntity = next(e for e in entities if e.uid == "1")
+    assert switch.state == "on"
+
+    switch: SwitchEntity = next(e for e in entities if e.uid == "detach")
+    assert switch.state == "on"

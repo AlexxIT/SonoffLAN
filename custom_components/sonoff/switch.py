@@ -116,3 +116,20 @@ class XToggle(XEntity, SwitchEntity):
 
     async def async_turn_off(self):
         await self.ewelink.send(self.device, {self.param: "off"})
+
+
+# noinspection PyAbstractClass
+class XDetach(XEntity, SwitchEntity):
+    param = "relaySeparation"
+    uid = "detach"
+
+    _attr_entity_registry_enabled_default = False
+
+    def set_state(self, params: dict):
+        self._attr_is_on = params["relaySeparation"] == 1
+
+    async def async_turn_on(self, **kwargs):
+        await self.ewelink.send_cloud(self.device, {"relaySeparation": 1})
+
+    async def async_turn_off(self):
+        await self.ewelink.send_cloud(self.device, {"relaySeparation": 0})
