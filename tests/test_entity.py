@@ -965,15 +965,37 @@ def test_diy_device():
         {
             "deviceid": DEVICEID,
             "host": "192.168.1.123",
-            "localtype": "plug",
+            "localtype": "diy_plug",
             "params": {"switch": "on"},
         },
     )
 
-    switch: XSwitch = entities[0]
+    switch: SwitchEntity = entities[0]
     assert switch.name == "MyDIY"
     assert switch.state == "on"
+    assert switch.device_info["model"] == "MINI DIY"
     assert isinstance(switch, LightEntity)
+
+
+def test_diy_minir3():
+    reg = DummyRegistry()
+
+    entities = []
+    reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
+
+    reg.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "host": "192.168.1.123",
+            "localtype": "diy_plug",
+            "params": {"switches": [{"switch": "on", "outlet": 0}]},
+        },
+    )
+
+    switch: SwitchEntity = entities[0]
+    assert switch.state == "on"
+    assert switch.device_info["model"] == "MINI R3 DIY"
 
 
 def test_unknown_diy():

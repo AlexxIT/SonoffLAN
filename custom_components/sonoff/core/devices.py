@@ -467,7 +467,7 @@ DIY = {
     # DIY type, UIID, Brand, Model/Name
     "plug": [1, None, "Single Channel DIY"],  # POWR316
     "strip": [4, None, "Multi Channel DIY"],  # 4CHPROR3
-    "diy_plug": [138, "SONOFF", "MINI DIY"],
+    "diy_plug": [1, "SONOFF", "MINI DIY"],
     "enhanced_plug": [5, "SONOFF", "POW DIY"],  # POWR2
     "th_plug": [15, "SONOFF", "TH DIY"],  # TH16R2
     "rf": [28, "SONOFF", "RFBridge DIY"],
@@ -480,8 +480,14 @@ DIY = {
 
 
 def setup_diy(device: dict) -> XDevice:
+    ltype = device["localtype"]
     try:
-        uiid, brand, model = DIY[device["localtype"]]
+        uiid, brand, model = DIY[ltype]
+        # https://github.com/AlexxIT/SonoffLAN/issues/1136
+        # https://github.com/AlexxIT/SonoffLAN/issues/1156
+        if ltype == "diy_plug" and "switches" in device["params"]:
+            uiid = 77
+            model = "MINI R3 DIY"
         device["name"] = model
         device["brandName"] = brand
         device["extra"] = {"uiid": uiid}
@@ -489,6 +495,6 @@ def setup_diy(device: dict) -> XDevice:
     except Exception:
         device["name"] = "Unknown DIY"
         device["extra"] = {"uiid": 0}
-        device["productModel"] = device["localtype"]
+        device["productModel"] = ltype
     # device["online"] = False
     return device
