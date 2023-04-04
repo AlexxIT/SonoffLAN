@@ -201,13 +201,12 @@ class XRegistryLocal(XRegistryBase):
                 if resp["error"] == 0:
                     _LOGGER.debug(f"{log} <= {resp}")
 
-                    if "iv" in resp:
+                    if "data" in resp:
                         msg = {
                             "deviceid": device["deviceid"],
                             "localtype": device["localtype"],
                             "seq": resp["seq"],
                             "data": resp["data"],
-                            "iv": resp["iv"],
                         }
                         if params and params.get("subDevId"):
                             msg["subdevid"] = params["subDevId"]
