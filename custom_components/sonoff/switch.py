@@ -1,3 +1,4 @@
+from datetime import timedelta
 from homeassistant.components.switch import SwitchEntity
 
 from .core.const import DOMAIN
@@ -5,6 +6,7 @@ from .core.entity import XEntity
 from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
+SCAN_INTERVAL = timedelta(seconds=3) # TODO move to configuration
 
 
 async def async_setup_entry(hass, config_entry, add_entities):
@@ -33,6 +35,7 @@ class XSwitch(XEntity, SwitchEntity):
 class XSwitches(XEntity, SwitchEntity):
     params = {"switches"}
     channel: int = 0
+    _attr_should_poll = True
 
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
@@ -50,6 +53,10 @@ class XSwitches(XEntity, SwitchEntity):
             self._attr_is_on = params["switch"] == "on"
         except StopIteration:
             pass
+
+    @property
+    def is_on(self) -> bool | None:
+        return self._attr_is_on
 
     async def async_turn_on(self, **kwargs):
         params = {"switches": [{"outlet": self.channel, "switch": "on"}]}
