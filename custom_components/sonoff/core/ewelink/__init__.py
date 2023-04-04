@@ -176,7 +176,7 @@ class XRegistry(XRegistryBase):
             if i > 0:
                 await asyncio.sleep(5)
 
-            ok = await self.local.send(device, command="getState")
+            ok = await self.local.send(device, command="info")
             if ok in ("online", "error"):
                 device["local_ts"] = time.time() + LOCAL_TTL
                 device["local"] = True
