@@ -231,7 +231,11 @@ class XRegistry(XRegistryBase):
     def local_update(self, msg: dict):
         mainid: str = msg["deviceid"]
         device: XDevice = self.devices.get(mainid)
+
         params: dict = msg.get("params")
+        if not params:
+            params = msg.get("data")
+
         # check device in known devices list
         if not device:
             # check payload already decrypted (DIY devices)
