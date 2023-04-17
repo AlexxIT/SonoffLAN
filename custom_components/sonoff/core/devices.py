@@ -367,6 +367,11 @@ DEVICES = {
         spec(XZigbeeSwitches, channel=2, uid="3"),
         spec(XZigbeeSwitches, channel=3, uid="4"),
     ],
+    7014: [
+        spec(XSensor100, param="temperature"),
+        spec(XSensor100, param="humidity"),
+        Battery,
+    ],  # https://github.com/AlexxIT/SonoffLAN/issues/1166
 }
 
 
