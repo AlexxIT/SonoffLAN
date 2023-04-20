@@ -390,7 +390,11 @@ def get_spec(device: dict) -> list:
     # DualR3 in cover mode
     if uiid in [126, 165] and device["params"].get("workMode") == 2:
         classes = [cls for cls in classes if XSwitches not in cls.__bases__]
-        classes.insert(0, XCoverDualR3)
+        if device.get("device_class") == "dualfan":
+            classes.insert(0, XFanDualR3)
+        else:
+            classes.insert(0, XCoverDualR3)
+        return classes 
 
     # NSPanel Climate disable without switch configuration
     if uiid in [133] and not device["params"].get("HMI_ATCDevice"):
