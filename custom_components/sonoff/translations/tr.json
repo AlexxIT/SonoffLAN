@@ -1,0 +1,39 @@
+{
+  "config": {
+    "abort": {
+      "reauth_successful": "Yeniden kimlik doğrulama başarılı oldu"
+    },
+    "error": {
+      "exists": "Bu hesap zaten yapılandırılmış",
+      "template": "{error}"
+    },
+    "step": {
+      "user": {
+        "description": "[eWeLink hesabınızın](https://www.ewelink.cc/en/) bilgilerini girin",
+        "data": {
+          "username": "E-posta veya telefon (DIY modu için herhangi birini kullanın)",
+          "password": "Parola (DIY modu için boş bırakın)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "mode": "Mod (çoğu kullanıcı için otomatik önerilir)",
+          "homes": "Evler (\"Geçerli\" ev için işaretlemeden bırakın)",
+          "debug": "Hata ayıklama sayfası (Entegrasyon > Menü > Bilinen sorunlar)"
+        }
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "version": "Sürüm",
+      "cloud_online": "Çevrimiçi bulut cihazları",
+      "local_online": "Çevrimiçi yerel cihazlar",
+      "debug": "Hata ayıklama sayfası"
+    }
+  }
+}
