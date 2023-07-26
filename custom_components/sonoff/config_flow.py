@@ -9,7 +9,7 @@ from homeassistant.data_entry_flow import FlowHandler
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .core.const import CONF_DEBUG, CONF_MODES, DOMAIN
-from .core.ewelink import XRegistry, XRegistryCloud
+from .core.ewelink import XRegistryCloud
 
 
 def form(
@@ -60,21 +60,21 @@ class SonoffLANFlowHandler(ConfigFlow, domain=DOMAIN):
             username = data.get(CONF_USERNAME)
             password = data.get(CONF_PASSWORD)
 
-            entry = await self.async_set_unique_id(username)
-            if entry and password == "token":
-                # a special way to share a user's token
-                await self.cloud.login(
-                    entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD], 1
-                )
-                return form(
-                    self,
-                    "user",
-                    schema,
-                    data,
-                    template={"error": "Token: " + self.cloud.token},
-                )
-
             try:
+                entry = await self.async_set_unique_id(username)
+                if entry and password == "token":
+                    # a special way to share a user's token
+                    await self.cloud.login(
+                        entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD], 1
+                    )
+                    return form(
+                        self,
+                        "user",
+                        schema,
+                        data,
+                        template={"error": "Token: " + self.cloud.token},
+                    )
+
                 if username and password:
                     await self.cloud.login(username, password)
 
@@ -111,11 +111,19 @@ class OptionsFlowHandler(OptionsFlow):
         if data is not None:
             return self.async_create_entry(title="", data=data)
 
-        try:
-            ewelink: XRegistry = self.hass.data[DOMAIN][self.entry.entry_id]
-            homes = await ewelink.cloud.get_homes()
-        except Exception:
-            homes = {}
+        homes = {}
+
+        username = self.entry.data.get(CONF_USERNAME)
+        password = self.entry.data.get(CONF_PASSWORD)
+        if username and password:
+            try:
+                # important to use another accout for get user homes
+                session = async_get_clientsession(self.hass)
+                cloud = XRegistryCloud(session)
+                await cloud.login(username, password, app=1)
+                homes = await cloud.get_homes()
+            except:
+                pass
 
         for home in self.entry.options.get("homes", []):
             if home not in homes:
