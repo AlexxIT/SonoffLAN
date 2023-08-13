@@ -367,6 +367,10 @@ DEVICES = {
         spec(XZigbeeSwitches, channel=2, uid="3"),
         spec(XZigbeeSwitches, channel=3, uid="4"),
     ],
+    7000: [
+        XRemoteButton,
+        Battery,
+    ],
     7014: [
         spec(XSensor100, param="temperature"),
         spec(XSensor100, param="humidity"),
