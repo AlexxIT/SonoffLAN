@@ -174,7 +174,7 @@ class XRegistryLocal(XRegistryBase):
             command = next(iter(params))
 
         payload = {
-            "sequence": sequence or self.sequence(),
+            "sequence": sequence or await self.sequence(),
             "deviceid": device["deviceid"],
             "selfApikey": "123",
             "data": params or {},
