@@ -43,7 +43,7 @@ class XRegistryBase:
     @staticmethod
     def sequence() -> str:
         """Return sequnce counter in ms. Always unique."""
-        t = int(time.time()) * 1000
+        t = time.time_ns() // 1_000_000
         if t > XRegistryBase._sequence:
             XRegistryBase._sequence = t
         else:
