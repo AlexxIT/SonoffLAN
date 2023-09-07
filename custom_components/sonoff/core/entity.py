@@ -1,5 +1,6 @@
 import logging
 
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityCategory
 
@@ -93,6 +94,11 @@ class XEntity(Entity):
 
         if parent := device.get("parent"):
             ewelink.dispatcher_connect(parent["deviceid"], self.internal_parent_update)
+
+    @property
+    def force_update(self) -> bool:
+        """Force update."""
+        return isinstance(self, SensorEntity)
 
     def set_state(self, params: dict):
         pass
