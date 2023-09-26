@@ -1027,3 +1027,33 @@ class XDiffuserLight(XEntity, LightEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {"lightswitch": 0})
+
+
+class XT5Light(XEntity, LightEntity):
+    params = {"lightSwitch", "lightMode"}
+
+    _attr_effect_list = ["0", "1", "2", "3", "4", "5", "6", "7"]
+    _attr_supported_features = SUPPORT_EFFECT
+
+    def set_state(self, params: dict):
+        if "lightSwitch" in params:
+            self._attr_is_on = params["lightSwitch"] == "on"
+
+        if "lightMode" in params:
+            self._attr_effect = str(params["lightMode"])
+
+    async def async_turn_on(
+        self, brightness: int = None, effect: str = None, **kwargs
+    ) -> None:
+        params = {}
+
+        if effect and effect != "0":
+            params["lightMode"] = int(effect)
+
+        if not params:
+            params["lightSwitch"] = "on"
+
+        await self.ewelink.send(self.device, params)
+
+    async def async_turn_off(self, **kwargs) -> None:
+        await self.ewelink.send(self.device, {"lightSwitch": "off"})

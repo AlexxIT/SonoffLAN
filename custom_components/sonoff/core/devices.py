@@ -35,6 +35,7 @@ from ..light import (
     XLightGroup,
     XLightL1,
     XLightL3,
+    XT5Light,
 )
 from ..number import XPulseWidth
 from ..remote import XRemote
@@ -51,6 +52,7 @@ from ..sensor import (
     XEnergySensorDualR3,
     XEnergySensorPOWR3,
     XEnergyTotal,
+    XT5Action,
 )
 from ..switch import (
     XSwitch,
@@ -335,6 +337,8 @@ DEVICES = {
     ],  # Sonoff POWR3
     # https://github.com/AlexxIT/SonoffLAN/issues/984
     195: [XTemperatureTH],  # NSPanel Pro
+    # T5-3C-86 https://github.com/AlexxIT/SonoffLAN/issues/1183
+    211: [Switch1, Switch2, Switch3, XT5Light, XT5Action],
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
     1257: [spec(XLightD1, base="light")],  # ZigbeeWhiteLight
