@@ -337,6 +337,7 @@ DEVICES = {
     ],  # Sonoff POWR3
     # https://github.com/AlexxIT/SonoffLAN/issues/984
     195: [XTemperatureTH],  # NSPanel Pro
+    210: [Switch1, Switch2, XT5Light, XT5Action],  # T5-2C-86
     # T5-3C-86 https://github.com/AlexxIT/SonoffLAN/issues/1183
     211: [Switch1, Switch2, Switch3, XT5Light, XT5Action],
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
