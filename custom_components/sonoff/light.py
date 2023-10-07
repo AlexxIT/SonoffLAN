@@ -358,23 +358,23 @@ class XLightL1(XLight):
             )
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
+        params = {}
         if effect:
-            return self.modes.get(effect)
-        if brightness or rgb_color:
-            # support bright and color in one command
-            params = {"mode": 1}
-            if brightness:
-                params["bright"] = conv(brightness, 1, 255, 1, 100)
-            if rgb_color:
-                params.update(
-                    {
-                        "colorR": rgb_color[0],
-                        "colorG": rgb_color[1],
-                        "colorB": rgb_color[2],
-                        "light_type": 1,
-                    }
-                )
-            return params
+            params.update(self.modes[effect])
+        if brightness:
+            params.setdefault("mode", 1)
+            params["bright"] = conv(brightness, 1, 255, 1, 100)
+        if rgb_color:
+            params.setdefault("mode", 1)
+            params.update(
+                {
+                    "colorR": rgb_color[0],
+                    "colorG": rgb_color[1],
+                    "colorB": rgb_color[2],
+                    "light_type": 1,
+                }
+            )
+        return params
 
 
 # noinspection PyAbstractClass
