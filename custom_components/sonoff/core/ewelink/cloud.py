@@ -214,9 +214,9 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             log += f"{params} | "
 
         # protect cloud from DDoS (it can break connection)
-        while time.time() - self.last_ts < 0.1:
+        while (delay := self.last_ts + 0.1 - time.time()) > 0:
             log += "DDoS | "
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(delay)
         self.last_ts = time.time()
 
         if sequence is None:
