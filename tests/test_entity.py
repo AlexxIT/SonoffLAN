@@ -1588,6 +1588,8 @@ def test_minir4():
                 ],
                 "addSubDevState": "off",
                 "addTimeOut": 10,
+
+                "key": 0,  # added manually
             },
             "model": "MINIR4",
         }
@@ -1598,6 +1600,12 @@ def test_minir4():
 
     switch: SwitchEntity = next(e for e in entities if e.uid == "detach")
     assert switch.state == "on"
+
+    action: XRemoteButton = next(e for e in entities if e.uid == "action")
+    assert action.state == ""
+
+    action.internal_update({"key": 0})
+    assert action.state == "single"
 
 
 def test_t5():
