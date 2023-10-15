@@ -291,7 +291,13 @@ DEVICES = {
     136: [spec(XLightB05B, min_ct=0, max_ct=100), RSSI],  # Sonoff B05-BL
     137: [XLightL1, RSSI],
     # https://github.com/AlexxIT/SonoffLAN/issues/623#issuecomment-1365841454
-    138: [Switch1, LED, RSSI, XDetach],  # MINIR3, MINIR4
+    138: [
+        Switch1,
+        LED,
+        RSSI,
+        XDetach,
+        spec(XRemoteButton, param="action"),
+    ],  # MINIR3, MINIR4
     # https://github.com/AlexxIT/SonoffLAN/issues/808
     154: [XWiFiDoor, Battery, RSSI],  # DW2-Wi-Fi-L
     162: SPEC_3CH,  # https://github.com/AlexxIT/SonoffLAN/issues/659
