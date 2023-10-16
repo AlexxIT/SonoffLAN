@@ -249,4 +249,6 @@ class XRegistryLocal(XRegistryBase):
         # Fix Sonoff RF Bridge sintax bug
         if data and data.startswith(b'{"rf'):
             data = data.replace(b'"="', b'":"')
+        # fix https://github.com/AlexxIT/SonoffLAN/issues/1160
+        data = data.rstrip(b"\x02")
         return json.loads(data)

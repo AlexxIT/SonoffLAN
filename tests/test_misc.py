@@ -1,6 +1,6 @@
 import asyncio
 
-from custom_components.sonoff.core.ewelink import XDevice, XRegistry
+from custom_components.sonoff.core.ewelink import XDevice, XRegistry, XRegistryLocal
 from . import save_to
 
 
@@ -36,3 +36,14 @@ def test_bulk():
     assert registry_send[0][1] == {
         "switches": [{"outlet": 1, "switch": "on"}, {"outlet": 2, "switch": "off"}]
     }
+
+
+def test_issue_1160():
+    payload = XRegistryLocal.decrypt_msg(
+        {
+            "iv": "MTA4MDc1MTQ5NzE5ODE2Ng==",
+            "data": "D85ho6GLI5uFX2b1+vohUIb+Xt99f55wxsBsNhqpPQdQ/WNc3ZTlCi1UVFiFU5cnaCPjvXPG6pqfHqXdtCO2fA==",
+        },
+        "9b0810bc-557a-406c-8266-614767890531",
+    )
+    assert payload == {"switches": [{"outlet": 0, "switch": "off"}]}

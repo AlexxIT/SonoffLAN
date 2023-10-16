@@ -34,6 +34,7 @@ from custom_components.sonoff.light import (
     XLightL1,
     XLightL3,
     XLightB05B,
+    XT5Light,
 )
 from custom_components.sonoff.number import XNumber, XPulseWidth
 from custom_components.sonoff.sensor import (
@@ -43,6 +44,7 @@ from custom_components.sonoff.sensor import (
     XTemperatureNS,
     XUnknown,
     XEnergySensorDualR3,
+    XT5Action,
 )
 from custom_components.sonoff.switch import (
     XSwitch,
@@ -1586,6 +1588,8 @@ def test_minir4():
                 ],
                 "addSubDevState": "off",
                 "addTimeOut": 10,
+
+                "key": 0,  # added manually
             },
             "model": "MINIR4",
         }
@@ -1596,3 +1600,47 @@ def test_minir4():
 
     switch: SwitchEntity = next(e for e in entities if e.uid == "detach")
     assert switch.state == "on"
+
+    action: XRemoteButton = next(e for e in entities if e.uid == "action")
+    assert action.state == ""
+
+    action.internal_update({"key": 0})
+    assert action.state == "single"
+
+
+def test_t5():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 211},
+            "params": {
+                "switches": [
+                    {"outlet": 0, "switch": "on"},
+                    {"outlet": 1, "switch": "off"},
+                    {"outlet": 2, "switch": "off"},
+                ],
+                "lightSwitch": "off",
+                "lightMode": 4,
+                "slide": 2,
+            },
+            "model": "T5-3C-86",
+        }
+    )
+
+    light: XT5Light = entities[3]
+    assert light.state == "off"
+    assert light.effect == "4"
+
+    light.internal_update({"lightSwitch": "on"})
+    assert light.state == "on"
+
+    light.internal_update({"lightMode": 1})
+    assert light.effect == "1"
+
+    action: XT5Action = entities[4]
+    assert action.state == ""
+
+    action.internal_update({"triggerType": 2})
+    assert action.state == "touch"
+
+    action.internal_update({"slide": 2})
+    assert action.state == "slide_2"

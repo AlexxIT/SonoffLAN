@@ -35,6 +35,7 @@ from ..light import (
     XLightGroup,
     XLightL1,
     XLightL3,
+    XT5Light,
 )
 from ..number import XPulseWidth
 from ..remote import XRemote
@@ -51,6 +52,7 @@ from ..sensor import (
     XEnergySensorDualR3,
     XEnergySensorPOWR3,
     XEnergyTotal,
+    XT5Action,
 )
 from ..switch import (
     XSwitch,
@@ -289,7 +291,13 @@ DEVICES = {
     136: [spec(XLightB05B, min_ct=0, max_ct=100), RSSI],  # Sonoff B05-BL
     137: [XLightL1, RSSI],
     # https://github.com/AlexxIT/SonoffLAN/issues/623#issuecomment-1365841454
-    138: [Switch1, LED, RSSI, XDetach],  # MINIR3, MINIR4
+    138: [
+        Switch1,
+        LED,
+        RSSI,
+        XDetach,
+        spec(XRemoteButton, param="action"),
+    ],  # MINIR3, MINIR4
     # https://github.com/AlexxIT/SonoffLAN/issues/808
     154: [XWiFiDoor, Battery, RSSI],  # DW2-Wi-Fi-L
     162: SPEC_3CH,  # https://github.com/AlexxIT/SonoffLAN/issues/659
@@ -335,6 +343,10 @@ DEVICES = {
     ],  # Sonoff POWR3
     # https://github.com/AlexxIT/SonoffLAN/issues/984
     195: [XTemperatureTH],  # NSPanel Pro
+    # https://github.com/AlexxIT/SonoffLAN/issues/1183
+    209: [Switch1, XT5Light, XT5Action],  # T5-1C-86
+    210: [Switch1, Switch2, XT5Light, XT5Action],  # T5-2C-86
+    211: [Switch1, Switch2, Switch3, XT5Light, XT5Action],  # T5-3C-86
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
     1257: [spec(XLightD1, base="light")],  # ZigbeeWhiteLight

@@ -1,9 +1,12 @@
+import time
+
 from homeassistant.components.light import (
     COLOR_MODE_BRIGHTNESS,
     COLOR_MODE_COLOR_TEMP,
     COLOR_MODE_ONOFF,
     COLOR_MODE_RGB,
     SUPPORT_EFFECT,
+    SUPPORT_TRANSITION,
     LightEntity,
 )
 from homeassistant.util import color
@@ -45,6 +48,7 @@ class XLight(XEntity, LightEntity):
     # support on/off and brightness
     _attr_color_mode = COLOR_MODE_BRIGHTNESS
     _attr_supported_color_modes = {COLOR_MODE_BRIGHTNESS}
+    _attr_supported_features = SUPPORT_TRANSITION
 
     def set_state(self, params: dict):
         if self.param in params:
@@ -61,16 +65,21 @@ class XLight(XEntity, LightEntity):
         xy_color=None,
         hs_color=None,
         effect: str = None,
-        **kwargs
+        transition: float = None,
+        **kwargs,
     ) -> None:
-        if brightness == 0:
-            await self.async_turn_off()
-            return
-
         if xy_color:
             rgb_color = color.color_xy_to_RGB(*xy_color)
         elif hs_color:
             rgb_color = color.color_hs_to_RGB(*hs_color)
+
+        if transition:
+            await self.transiton(brightness, color_temp, rgb_color, transition)
+            return
+
+        if brightness == 0:
+            await self.async_turn_off()
+            return
 
         if brightness or color_temp or rgb_color or effect:
             params = self.get_params(brightness, color_temp, rgb_color, effect)
@@ -83,14 +92,49 @@ class XLight(XEntity, LightEntity):
                 await self.ewelink.send(
                     self.device, {self.param: "on"}, query_cloud=False
                 )
+
             await self.ewelink.send(
-                self.device, params, {"cmd": "dimmable", **params}, cmd_lan="dimmable"
+                self.device,
+                params,
+                {"cmd": "dimmable", **params},
+                cmd_lan="dimmable",
+                query_cloud=kwargs.get("query_cloud", True),
             )
         else:
             await self.ewelink.send(self.device, {self.param: "on"})
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {self.param: "off"})
+
+    async def transiton(
+        self,
+        brightness: int,
+        color_temp: int,
+        rgb_color,
+        transition: float,
+    ):
+        br0 = self.brightness or 0
+        br1 = brightness
+        ct0 = self.color_temp or self.min_mireds
+        ct1 = color_temp
+        rgb0 = self.rgb_color or [0, 0, 0]
+        rgb1 = rgb_color
+
+        t0 = time.time()
+
+        while (k := (time.time() - t0) / transition) < 1:
+            if br1 is not None:
+                brightness = br0 + round((br1 - br0) * k)
+            if ct1 is not None:
+                color_temp = ct0 + round((ct1 - ct0) * k)
+            if rgb1 is not None:
+                rgb_color = [rgb0[i] + round((rgb1[i] - rgb0[i]) * k) for i in range(3)]
+
+            await self.async_turn_on(
+                brightness, color_temp, rgb_color, query_cloud=False
+            )
+
+        await self.async_turn_on(br1, ct1, rgb1)
 
 
 # noinspection PyAbstractClass, UIID36
@@ -199,7 +243,7 @@ class XLightB1(XLight):
     _attr_effect_list = list(UIID22_MODES.keys())
     # support on/off, brightness, color_temp and RGB
     _attr_supported_color_modes = {COLOR_MODE_COLOR_TEMP, COLOR_MODE_RGB}
-    _attr_supported_features = SUPPORT_EFFECT
+    _attr_supported_features = SUPPORT_EFFECT | SUPPORT_TRANSITION
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
@@ -295,7 +339,7 @@ class XLightL1(XLight):
 
     # support on/off, brightness, RGB
     _attr_supported_color_modes = {COLOR_MODE_RGB}
-    _attr_supported_features = SUPPORT_EFFECT
+    _attr_supported_features = SUPPORT_EFFECT | SUPPORT_TRANSITION
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
@@ -314,23 +358,23 @@ class XLightL1(XLight):
             )
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
+        params = {}
         if effect:
-            return self.modes.get(effect)
-        if brightness or rgb_color:
-            # support bright and color in one command
-            params = {"mode": 1}
-            if brightness:
-                params["bright"] = conv(brightness, 1, 255, 1, 100)
-            if rgb_color:
-                params.update(
-                    {
-                        "colorR": rgb_color[0],
-                        "colorG": rgb_color[1],
-                        "colorB": rgb_color[2],
-                        "light_type": 1,
-                    }
-                )
-            return params
+            params.update(self.modes[effect])
+        if brightness:
+            params.setdefault("mode", 1)
+            params["bright"] = conv(brightness, 1, 255, 1, 100)
+        if rgb_color:
+            params.setdefault("mode", 1)
+            params.update(
+                {
+                    "colorR": rgb_color[0],
+                    "colorG": rgb_color[1],
+                    "colorB": rgb_color[2],
+                    "light_type": 1,
+                }
+            )
+        return params
 
 
 # noinspection PyAbstractClass
@@ -729,7 +773,7 @@ class XLightB02(XLight):
     _attr_effect_list = list(B02_MODE_PAYLOADS.keys())
     # support on/off, brightness and color_temp
     _attr_supported_color_modes = {COLOR_MODE_COLOR_TEMP}
-    _attr_supported_features = SUPPORT_EFFECT
+    _attr_supported_features = SUPPORT_EFFECT | SUPPORT_TRANSITION
 
     # ewelink specs
     min_br = 1
@@ -1027,3 +1071,33 @@ class XDiffuserLight(XEntity, LightEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {"lightswitch": 0})
+
+
+class XT5Light(XEntity, LightEntity):
+    params = {"lightSwitch", "lightMode"}
+
+    _attr_effect_list = ["0", "1", "2", "3", "4", "5", "6", "7"]
+    _attr_supported_features = SUPPORT_EFFECT
+
+    def set_state(self, params: dict):
+        if "lightSwitch" in params:
+            self._attr_is_on = params["lightSwitch"] == "on"
+
+        if "lightMode" in params:
+            self._attr_effect = str(params["lightMode"])
+
+    async def async_turn_on(
+        self, brightness: int = None, effect: str = None, **kwargs
+    ) -> None:
+        params = {}
+
+        if effect and effect != "0":
+            params["lightMode"] = int(effect)
+
+        if not params:
+            params["lightSwitch"] = "on"
+
+        await self.ewelink.send(self.device, params)
+
+    async def async_turn_off(self, **kwargs) -> None:
+        await self.ewelink.send(self.device, {"lightSwitch": "off"})

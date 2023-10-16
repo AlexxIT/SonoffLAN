@@ -305,10 +305,11 @@ BUTTON_STATES = ["single", "double", "hold"]
 
 
 class XRemoteButton(XEntity, SensorEntity):
+    _attr_native_value = ""
+
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
         self.params = {"key"}
-        self._attr_native_value = ""
 
     def set_state(self, params: dict):
         button = params.get("outlet")
@@ -317,6 +318,29 @@ class XRemoteButton(XEntity, SensorEntity):
             f"button_{button + 1}_{key}" if button is not None else key
         )
         asyncio.create_task(self.clear_state())
+
+    async def clear_state(self):
+        await asyncio.sleep(0.5)
+        self._attr_native_value = ""
+        self._async_write_ha_state()
+
+
+class XT5Action(XEntity, SensorEntity):
+    uid = "action"
+    _attr_native_value = ""
+
+    def __init__(self, ewelink: XRegistry, device: dict):
+        XEntity.__init__(self, ewelink, device)
+        self.params = {"triggerType", "slide"}
+
+    def set_state(self, params: dict):
+        if params.get("triggerType") == 2:
+            self._attr_native_value = "touch"
+            asyncio.create_task(self.clear_state())
+
+        if slide := params.get("slide"):
+            self._attr_native_value = f"slide_{slide}"
+            asyncio.create_task(self.clear_state())
 
     async def clear_state(self):
         await asyncio.sleep(0.5)

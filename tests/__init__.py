@@ -46,7 +46,7 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
     entities += reg.setup_devices(devices)
 
-    hass = HomeAssistant()
+    hass = HomeAssistant("")
     for entity in entities:
         if not isinstance(entity, Entity):
             continue
