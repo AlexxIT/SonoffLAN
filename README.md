@@ -68,7 +68,7 @@ These devices work both on a local network and through the cloud.
 - [Sonoff G1](https://www.itead.cc/sonoff-g1.html) fw 3.5.0
 - [Sonoff Dual](https://www.itead.cc/sonoff-dual.html)
 - Sonoff iFan02, iFan03, [iFan04](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) fw 3.4.0
-- Sonoff S20, [S26](https://itead.cc/product/sonoff-s26-wifi-smart-plug/), [S31](https://itead.cc/product/sonoff-s31/), [S55](https://itead.cc/product/sonoff-s55/)
+- Sonoff S20, [S26](https://itead.cc/product/sonoff-s26-wifi-smart-plug/), [S31](https://itead.cc/product/sonoff-s31/), [S55](https://itead.cc/product/sonoff-s55/) [S40](https://itead.cc/product/sonoff-iplug-series-wi-fi-smart-plug-s40-s40-lite/) fw 1.3, 1.4
 - [Sonoff SV](https://www.itead.cc/sonoff-sv.html) fw 3.0.1
 - Sonoff T1, [TX Series](https://itead.cc/product/sonoff-tx-series-wifi-smart-wall-switches/)
 - [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
@@ -94,7 +94,7 @@ These devices only work through the cloud!
 - [Sonoff DW2](https://www.itead.cc/sonoff-dw2.html)
 - [Sonoff SwitchMan R5](https://itead.cc/product/sonoff-switchman-scene-controller-r5/)
 - [Sonoff S-MATE](https://sonoff.tech/product/diy-smart-switch/s-mate/)
-- [Sonoff S40](https://itead.cc/product/sonoff-iplug-series-wi-fi-smart-plug-s40-s40-lite/)
+- [Sonoff S40](https://itead.cc/product/sonoff-iplug-series-wi-fi-smart-plug-s40-s40-lite/) fw 1.1
 - [King Art - King Q4 Cover](https://www.aliexpress.com/item/32956776611.html) (pause, position) fw 2.7.0
 - [KING-M4](https://www.aliexpress.com/item/33013358523.html) (brightness) fw 2.7.0
 - [Eachen WiFi Door/Window Sensor](https://ewelink.eachen.cc/product/eachen-wifi-smart-door-window-sensor-wdw-ewelink/)
