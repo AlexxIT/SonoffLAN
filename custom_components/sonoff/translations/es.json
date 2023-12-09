@@ -1,0 +1,39 @@
+{
+  "config": {
+    "abort": {
+      "reauth_successful": "La re-autenticación fue exitosa."
+    },
+    "error": {
+      "exists": "Esta cuenta ya se encuentra configurada.",
+      "template": "{error}"
+    },
+    "step": {
+      "user": {
+        "description": "Ingrese las credenciales de su [cuenta eWeLink](https://www.ewelink.cc/es/)",
+        "data": {
+          "username": "Email o teléfono (Use cualquiera para el modo DIY)",
+          "password": "Contraseña (Dejar en blanco para el modo DIY)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "mode": "Modo (\"Auto\" es recomendado para la mayoría de usuarios)",
+          "homes": "Casas (Dejar desmarcado para la casa \"actual\")",
+          "debug": "Página de depuración (Integraciones > Sonoff integration > Problemas conocidos)"
+        }
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "version": "Versión",
+      "cloud_online": "Dispositivos cloud online",
+      "local_online": "Dispositivos locales online",
+      "debug": "Página de depuración"
+    }
+  }
+}
