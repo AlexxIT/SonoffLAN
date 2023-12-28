@@ -10,7 +10,7 @@ from homeassistant.components.climate.const import (
     SUPPORT_TARGET_TEMPERATURE,
     SUPPORT_TARGET_TEMPERATURE_RANGE,
 )
-from homeassistant.const import TEMP_CELSIUS
+from homeassistant.const import UnitOfTemperature
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -39,7 +39,7 @@ class XClimateTH(XEntity, ClimateEntity):
     _attr_supported_features = SUPPORT_TARGET_TEMPERATURE_RANGE
     _attr_target_temperature_high = None
     _attr_target_temperature_low = None
-    _attr_temperature_unit = TEMP_CELSIUS
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 1
 
     heat: bool = None

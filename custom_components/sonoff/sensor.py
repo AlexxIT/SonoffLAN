@@ -14,7 +14,7 @@ from homeassistant.const import (
     PERCENTAGE,
     POWER_WATT,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
-    TEMP_CELSIUS,
+    UnitOfTemperature,
 )
 from homeassistant.util import dt
 
@@ -50,10 +50,10 @@ UNITS = {
     "battery_voltage": ELECTRIC_POTENTIAL_VOLT,
     "current": ELECTRIC_CURRENT_AMPERE,
     "humidity": PERCENTAGE,
-    "outdoor_temp": TEMP_CELSIUS,
+    "outdoor_temp": UnitOfTemperature.CELSIUS,
     "power": POWER_WATT,
     "rssi": SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
-    "temperature": TEMP_CELSIUS,
+    "temperature": UnitOfTemperature.CELSIUS,
     "voltage": ELECTRIC_POTENTIAL_VOLT,
 }
 
