@@ -1,16 +1,9 @@
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
-    HVAC_MODE_AUTO,
-    HVAC_MODE_COOL,
-    HVAC_MODE_DRY,
-    HVAC_MODE_HEAT,
-    HVAC_MODE_HEAT_COOL,
-    HVAC_MODE_OFF,
-    SUPPORT_PRESET_MODE,
-    SUPPORT_TARGET_TEMPERATURE,
-    SUPPORT_TARGET_TEMPERATURE_RANGE,
+    ClimateEntityFeature,
+    HVACMode,
 )
-from homeassistant.const import TEMP_CELSIUS
+from homeassistant.const import UnitOfTemperature
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -33,13 +26,13 @@ class XClimateTH(XEntity, ClimateEntity):
 
     _attr_entity_registry_enabled_default = False
     _attr_hvac_mode = None
-    _attr_hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_DRY]
+    _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.COOL, HVACMode.DRY]
     _attr_max_temp = 99
     _attr_min_temp = 1
-    _attr_supported_features = SUPPORT_TARGET_TEMPERATURE_RANGE
+    _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
     _attr_target_temperature_high = None
     _attr_target_temperature_low = None
-    _attr_temperature_unit = TEMP_CELSIUS
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 1
 
     heat: bool = None
@@ -53,16 +46,16 @@ class XClimateTH(XEntity, ClimateEntity):
             self._attr_target_temperature_low = float(lo["targetLow"])
 
             if params["deviceType"] == "normal":
-                self._attr_hvac_mode = HVAC_MODE_OFF
+                self._attr_hvac_mode = HVACMode.OFF
             elif params["deviceType"] == "humidity":
-                self._attr_hvac_mode = HVAC_MODE_DRY
+                self._attr_hvac_mode = HVACMode.DRY
             elif self.is_aux_heat:
-                self._attr_hvac_mode = HVAC_MODE_HEAT
+                self._attr_hvac_mode = HVACMode.HEAT
             else:
-                self._attr_hvac_mode = HVAC_MODE_COOL
+                self._attr_hvac_mode = HVACMode.COOL
 
         try:
-            if self.hvac_mode != HVAC_MODE_DRY:
+            if self.hvac_mode != HVACMode.DRY:
                 value = float(params.get("currentTemperature") or params["temperature"])
                 value = round(value, 1)
             else:
@@ -84,19 +77,19 @@ class XClimateTH(XEntity, ClimateEntity):
         ]
 
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:
-        if hvac_mode == HVAC_MODE_HEAT:
+        if hvac_mode == HVACMode.HEAT:
             params = {
                 "mainSwitch": "on",
                 "deviceType": "temperature",
                 "targets": self.get_targets(True),
             }
-        elif hvac_mode == HVAC_MODE_COOL:
+        elif hvac_mode == HVACMode.COOL:
             params = {
                 "mainSwitch": "on",
                 "deviceType": "temperature",
                 "targets": self.get_targets(False),
             }
-        elif hvac_mode == HVAC_MODE_DRY:
+        elif hvac_mode == HVACMode.DRY:
             params = {
                 "mainSwitch": "on",
                 "deviceType": "humidity",
@@ -116,13 +109,13 @@ class XClimateTH(XEntity, ClimateEntity):
         heat = self.is_aux_heat
         if hvac_mode is None:
             params = {}
-        elif hvac_mode == HVAC_MODE_HEAT:
+        elif hvac_mode == HVACMode.HEAT:
             heat = True
             params = {"mainSwitch": "on", "deviceType": "temperature"}
-        elif hvac_mode == HVAC_MODE_COOL:
+        elif hvac_mode == HVACMode.COOL:
             heat = False
             params = {"mainSwitch": "on", "deviceType": "temperature"}
-        elif hvac_mode == HVAC_MODE_DRY:
+        elif hvac_mode == HVACMode.DRY:
             params = {"mainSwitch": "on", "deviceType": "humidity"}
         else:
             params = {"mainSwitch": "off", "deviceType": "normal"}
@@ -147,11 +140,11 @@ class XClimateNS(XEntity, ClimateEntity):
     params = {"ATCEnable", "ATCMode", "temperature", "tempCorrection"}
 
     _attr_entity_registry_enabled_default = False
-    _attr_hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT_COOL, HVAC_MODE_AUTO]
+    _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT_COOL, HVACMode.AUTO]
     _attr_max_temp = 31
     _attr_min_temp = 16
-    _attr_supported_features = SUPPORT_TARGET_TEMPERATURE
-    _attr_temperature_unit = TEMP_CELSIUS
+    _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 1
 
     def set_state(self, params: dict):
@@ -161,18 +154,18 @@ class XClimateNS(XEntity, ClimateEntity):
 
         if "HMI_ATCDevice" in params and "etype" in params["HMI_ATCDevice"]:
             if cache["HMI_ATCDevice"]["etype"] == "cold":
-                self._attr_hvac_modes[1] = HVAC_MODE_COOL
+                self._attr_hvac_modes[1] = HVACMode.COOL
             else:
-                self._attr_hvac_modes[1] = HVAC_MODE_HEAT
+                self._attr_hvac_modes[1] = HVACMode.HEAT
 
         if "ATCEnable" in params or "ATCMode" in params:
             if cache["ATCEnable"]:
                 if cache["ATCMode"]:
-                    self.set_hvac_attr(HVAC_MODE_AUTO)
+                    self.set_hvac_attr(HVACMode.AUTO)
                 else:
                     self.set_hvac_attr(self._attr_hvac_modes[1])
             else:
-                self.set_hvac_attr(HVAC_MODE_OFF)
+                self.set_hvac_attr(HVACMode.OFF)
 
         if "ATCExpect0" in params:
             self._attr_target_temperature = cache["ATCExpect0"]
@@ -188,25 +181,25 @@ class XClimateNS(XEntity, ClimateEntity):
                 pass
 
     def set_hvac_attr(self, hvac_mode: str) -> None:
-        if hvac_mode == HVAC_MODE_AUTO:
+        if hvac_mode == HVACMode.AUTO:
             self._attr_hvac_mode = hvac_mode
             self._attr_supported_features = 0
-        elif hvac_mode == HVAC_MODE_OFF:
+        elif hvac_mode == HVACMode.OFF:
             self._attr_hvac_mode = hvac_mode
-            self._attr_supported_features = SUPPORT_TARGET_TEMPERATURE
-        elif hvac_mode in (HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_HEAT_COOL):
+            self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
+        elif hvac_mode in (HVACMode.COOL, HVACMode.HEAT, HVACMode.HEAT_COOL):
             self._attr_hvac_mode = self._attr_hvac_modes[1]
-            self._attr_supported_features = SUPPORT_TARGET_TEMPERATURE
+            self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
 
     @staticmethod
     def get_params(hvac_mode: str) -> dict:
-        if hvac_mode == HVAC_MODE_AUTO:
+        if hvac_mode == HVACMode.AUTO:
             return {"ATCEnable": 1, "ATCMode": 1}
-        elif hvac_mode in (HVAC_MODE_COOL, HVAC_MODE_HEAT):
+        elif hvac_mode in (HVACMode.COOL, HVACMode.HEAT):
             return {"ATCEnable": 1, "ATCMode": 0}
-        elif hvac_mode == HVAC_MODE_HEAT_COOL:
+        elif hvac_mode == HVACMode.HEAT_COOL:
             return {"ATCEnable": 1}  # async_turn_on
-        elif hvac_mode == HVAC_MODE_OFF:
+        elif hvac_mode == HVACMode.OFF:
             return {"ATCEnable": 0}
         else:
             return {}
@@ -233,12 +226,12 @@ class XThermostat(XEntity, ClimateEntity):
     params = {"switch", "targetTemp", "temperature", "workMode", "workState"}
 
     # @bwp91 https://github.com/AlexxIT/SonoffLAN/issues/358
-    _attr_hvac_modes = [HVAC_MODE_OFF, HVAC_MODE_HEAT, HVAC_MODE_AUTO]
+    _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.AUTO]
     _attr_max_temp = 45
     _attr_min_temp = 5
     _attr_preset_modes = ["manual", "programmed", "economical"]
-    _attr_supported_features = SUPPORT_TARGET_TEMPERATURE | SUPPORT_PRESET_MODE
-    _attr_temperature_unit = TEMP_CELSIUS
+    _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
 
     def set_state(self, params: dict):
@@ -250,7 +243,7 @@ class XThermostat(XEntity, ClimateEntity):
             # workState: 1=heating, 2=auto
             self._attr_hvac_mode = self.hvac_modes[cache["workState"]]
         else:
-            self._attr_hvac_mode = HVAC_MODE_OFF
+            self._attr_hvac_mode = HVACMode.OFF
 
         if "workMode" in params:
             self._attr_preset_mode = self.preset_modes[params["workMode"] - 1]
@@ -278,7 +271,7 @@ class XThermostat(XEntity, ClimateEntity):
     ) -> None:
         if hvac_mode is None:
             params = {}
-        elif hvac_mode is HVAC_MODE_OFF:
+        elif hvac_mode is HVACMode.OFF:
             params = {"switch": "off"}
         else:
             i = self.hvac_modes.index(hvac_mode)

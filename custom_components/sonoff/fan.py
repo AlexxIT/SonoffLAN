@@ -1,7 +1,6 @@
 from homeassistant.components.fan import (
-    SUPPORT_PRESET_MODE,
-    SUPPORT_SET_SPEED,
     FanEntity,
+    FanEntityFeature,
 )
 
 from .core.const import DOMAIN
@@ -29,7 +28,7 @@ SPEED_HIGH = "high"
 class XFan(XEntity, FanEntity):
     params = {"switches", "fan"}
     _attr_speed_count = 3
-    _attr_supported_features = SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE
+    _attr_supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
     _attr_preset_modes = [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
 
     def set_state(self, params: dict):
