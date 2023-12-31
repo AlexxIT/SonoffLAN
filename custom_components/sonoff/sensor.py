@@ -338,7 +338,8 @@ class XT5Action(XEntity, SensorEntity):
             self._attr_native_value = "touch"
             asyncio.create_task(self.clear_state())
 
-        if slide := params.get("slide"):
+        # fix https://github.com/AlexxIT/SonoffLAN/issues/1252
+        if (slide := params.get("slide")) and len(params) == 1:
             self._attr_native_value = f"slide_{slide}"
             asyncio.create_task(self.clear_state())
 
