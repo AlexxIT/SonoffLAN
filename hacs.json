@@ -1,5 +1,5 @@
 {
     "name": "Sonoff LAN",
-    "homeassistant": "2022.5.0",
+    "homeassistant": "2023.1.0",
     "render_readme": true
 }
