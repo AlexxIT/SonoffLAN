@@ -346,6 +346,8 @@ DEVICES = {
     209: [Switch1, XT5Light, XT5Action],  # T5-1C-86
     210: [Switch1, Switch2, XT5Light, XT5Action],  # T5-2C-86
     211: [Switch1, Switch2, Switch3, XT5Light, XT5Action],  # T5-3C-86
+    # https://github.com/AlexxIT/SonoffLAN/issues/1251
+    212: [Switch1, Switch2, Switch3, Switch4, XT5Light, XT5Action],  # T5-4C-86
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
     1257: [spec(XLightD1, base="light")],  # ZigbeeWhiteLight
