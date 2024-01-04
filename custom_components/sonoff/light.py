@@ -1,13 +1,9 @@
 import time
 
 from homeassistant.components.light import (
-    COLOR_MODE_BRIGHTNESS,
-    COLOR_MODE_COLOR_TEMP,
-    COLOR_MODE_ONOFF,
-    COLOR_MODE_RGB,
-    SUPPORT_EFFECT,
-    SUPPORT_TRANSITION,
+    ColorMode,
     LightEntity,
+    LightEntityFeature,
 )
 from homeassistant.util import color
 
@@ -46,9 +42,9 @@ class XLight(XEntity, LightEntity):
     uid = ""  # prevent add param to entity_id
 
     # support on/off and brightness
-    _attr_color_mode = COLOR_MODE_BRIGHTNESS
-    _attr_supported_color_modes = {COLOR_MODE_BRIGHTNESS}
-    _attr_supported_features = SUPPORT_TRANSITION
+    _attr_color_mode = ColorMode.BRIGHTNESS
+    _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
+    _attr_supported_features = LightEntityFeature.TRANSITION
 
     def set_state(self, params: dict):
         if self.param in params:
@@ -242,8 +238,8 @@ class XLightB1(XLight):
     _attr_max_mireds = 3  # warm
     _attr_effect_list = list(UIID22_MODES.keys())
     # support on/off, brightness, color_temp and RGB
-    _attr_supported_color_modes = {COLOR_MODE_COLOR_TEMP, COLOR_MODE_RGB}
-    _attr_supported_features = SUPPORT_EFFECT | SUPPORT_TRANSITION
+    _attr_supported_color_modes = {ColorMode.COLOR_TEMP, ColorMode.RGB}
+    _attr_supported_features = LightEntityFeature.EFFECT | LightEntityFeature.TRANSITION
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
@@ -251,15 +247,15 @@ class XLightB1(XLight):
         if "zyx_mode" in params:
             mode = params["zyx_mode"]  # 1-6
             if mode == 1:
-                self._attr_color_mode = COLOR_MODE_COLOR_TEMP
+                self._attr_color_mode = ColorMode.COLOR_TEMP
             else:
-                self._attr_color_mode = COLOR_MODE_RGB
+                self._attr_color_mode = ColorMode.RGB
             if mode >= 3:
                 self._attr_effect = self.effect_list[mode - 3]
             else:
                 self._attr_effect = None
 
-        if self.color_mode == COLOR_MODE_COLOR_TEMP:
+        if self.color_mode == ColorMode.COLOR_TEMP:
             # from 25 to 255
             cold = int(params["channel0"])
             warm = int(params["channel1"])
@@ -334,12 +330,12 @@ class XLightL1(XLight):
         "Music": {"mode": 12, "switch": "on"},
     }
 
-    _attr_color_mode = COLOR_MODE_RGB
+    _attr_color_mode = ColorMode.RGB
     _attr_effect_list = list(modes.keys())
 
     # support on/off, brightness, RGB
-    _attr_supported_color_modes = {COLOR_MODE_RGB}
-    _attr_supported_features = SUPPORT_EFFECT | SUPPORT_TRANSITION
+    _attr_supported_color_modes = {ColorMode.RGB}
+    _attr_supported_features = LightEntityFeature.EFFECT | LightEntityFeature.TRANSITION
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
@@ -769,11 +765,11 @@ class XLightB02(XLight):
     _attr_max_mireds: int = int(1000000 / 2200)  # 454
     _attr_min_mireds: int = int(1000000 / 6500)  # 153
 
-    _attr_color_mode = COLOR_MODE_COLOR_TEMP
+    _attr_color_mode = ColorMode.COLOR_TEMP
     _attr_effect_list = list(B02_MODE_PAYLOADS.keys())
     # support on/off, brightness and color_temp
-    _attr_supported_color_modes = {COLOR_MODE_COLOR_TEMP}
-    _attr_supported_features = SUPPORT_EFFECT | SUPPORT_TRANSITION
+    _attr_supported_color_modes = {ColorMode.COLOR_TEMP}
+    _attr_supported_features = LightEntityFeature.EFFECT | LightEntityFeature.TRANSITION
 
     # ewelink specs
     min_br = 1
@@ -846,7 +842,7 @@ B05_MODE_PAYLOADS = {
 class XLightB05B(XLightB02):
     _attr_effect_list = list(B05_MODE_PAYLOADS.keys())
     # support on/off, brightness, color_temp and RGB
-    _attr_supported_color_modes = {COLOR_MODE_COLOR_TEMP, COLOR_MODE_RGB}
+    _attr_supported_color_modes = {ColorMode.COLOR_TEMP, ColorMode.RGB}
     _attr_max_mireds = 500
     _attr_min_mireds = 153
 
@@ -858,9 +854,9 @@ class XLightB05B(XLightB02):
 
         effect = params["ltype"]
         if effect == "white":
-            self._attr_color_mode = COLOR_MODE_COLOR_TEMP
+            self._attr_color_mode = ColorMode.COLOR_TEMP
         else:
-            self._attr_color_mode = COLOR_MODE_RGB
+            self._attr_color_mode = ColorMode.RGB
 
         if effect in self.effect_list:
             self._attr_effect = effect
@@ -912,7 +908,7 @@ class XLightB05B(XLightB02):
                 },
             }
         if brightness:
-            if self.color_mode == COLOR_MODE_COLOR_TEMP:
+            if self.color_mode == ColorMode.COLOR_TEMP:
                 return self.get_params(brightness, self.color_temp, None, None)
             else:
                 return self.get_params(brightness, None, self.rgb_color, None)
@@ -939,8 +935,8 @@ class XLightGroup(XEntity, LightEntity):
 
     _attr_brightness = 0
     # support on/off and brightness
-    _attr_color_mode = COLOR_MODE_BRIGHTNESS
-    _attr_supported_color_modes = {COLOR_MODE_BRIGHTNESS}
+    _attr_color_mode = ColorMode.BRIGHTNESS
+    _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
 
     def set_state(self, params: dict):
         cnt = sum(
@@ -1010,7 +1006,7 @@ class XDiffuserLight(XEntity, LightEntity):
     params = {"lightswitch", "lightbright", "lightmode", "lightRcolor"}
 
     _attr_effect_list = ["Color Light", "RGB Color", "Night Light"]
-    _attr_supported_features = SUPPORT_EFFECT
+    _attr_supported_features = LightEntityFeature.EFFECT
 
     def set_state(self, params: dict):
         if "lightswitch" in params:
@@ -1023,16 +1019,16 @@ class XDiffuserLight(XEntity, LightEntity):
             mode = params["lightmode"]
             if mode == 1:
                 # support on/off
-                self._attr_color_mode = COLOR_MODE_ONOFF
-                self._attr_supported_color_modes = {COLOR_MODE_ONOFF}
+                self._attr_color_mode = ColorMode.ONOFF
+                self._attr_supported_color_modes = {ColorMode.ONOFF}
             elif mode == 2:
-                self._attr_color_mode = COLOR_MODE_RGB
+                self._attr_color_mode = ColorMode.RGB
                 # support on/off, brightness and RGB
-                self._attr_supported_color_modes = {COLOR_MODE_RGB}
+                self._attr_supported_color_modes = {ColorMode.RGB}
             elif mode == 3:
                 # support on/off and brightness
-                self._attr_color_mode = COLOR_MODE_BRIGHTNESS
-                self._attr_supported_color_modes = {COLOR_MODE_BRIGHTNESS}
+                self._attr_color_mode = ColorMode.BRIGHTNESS
+                self._attr_supported_color_modes = {ColorMode.BRIGHTNESS}
 
         if "lightRcolor" in params:
             self._attr_rgb_color = (
@@ -1077,7 +1073,7 @@ class XT5Light(XEntity, LightEntity):
     params = {"lightSwitch", "lightMode"}
 
     _attr_effect_list = ["0", "1", "2", "3", "4", "5", "6", "7"]
-    _attr_supported_features = SUPPORT_EFFECT
+    _attr_supported_features = LightEntityFeature.EFFECT
 
     def set_state(self, params: dict):
         if "lightSwitch" in params:
