@@ -36,8 +36,6 @@ class XEntity(Entity):
     param: str = None
     uid: str = None
 
-    # fix Hass v2021.12 empty attribute bug
-    _attr_is_on = None
     _attr_should_poll = False
 
     def __init__(self, ewelink: XRegistry, device: XDevice) -> None:

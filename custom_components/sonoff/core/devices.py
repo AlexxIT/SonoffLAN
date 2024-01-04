@@ -101,9 +101,8 @@ Battery = spec(XSensor, param="battery")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
 PULSE = spec(XToggle, param="pulse", enabled=False)
-PULSEWIDTH = spec(XPulseWidth, param="pulseWidth", enabled=False)
 
-SPEC_SWITCH = [XSwitch, LED, RSSI, PULSE, PULSEWIDTH]
+SPEC_SWITCH = [XSwitch, LED, RSSI, PULSE, XPulseWidth]
 SPEC_1CH = [Switch1, LED, RSSI]
 SPEC_2CH = [Switch1, Switch2, LED, RSSI]
 SPEC_3CH = [Switch1, Switch2, Switch3, LED, RSSI]
