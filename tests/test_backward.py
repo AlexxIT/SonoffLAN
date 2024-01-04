@@ -15,6 +15,9 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfTemperature,
 )
+from homeassistant.helpers.entity import Entity
+
+from . import init
 
 
 def test_2021_9_0():
@@ -51,4 +54,10 @@ def test_2023_1_0():
 
 
 def test_2024_1_cached_properties():
-    pass
+    _, entities = init({"extra": {"uiid": 5}})
+    sensor: SensorEntity = next(e for e in entities if e.uid == "energy")
+    assert sensor.device_class == SensorDeviceClass.ENERGY
+
+    _, entities = init({"extra": {"uiid": 1256}})
+    sensor: Entity = next(e for e in entities)
+    assert sensor.should_poll is False
