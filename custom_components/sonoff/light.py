@@ -1087,7 +1087,7 @@ class XT5Light(XEntity, LightEntity):
     ) -> None:
         params = {}
 
-        if effect and effect != "0":
+        if effect and effect.isnumeric():
             params["lightMode"] = int(effect)
 
         if not params:
