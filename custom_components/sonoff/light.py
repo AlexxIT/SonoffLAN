@@ -1080,7 +1080,7 @@ class XT5Light(XEntity, LightEntity):
             self._attr_is_on = params["lightSwitch"] == "on"
 
         if "lightMode" in params:
-            self._attr_effect = str(params["lightMode"])
+            self._attr_effect = self._attr_effect_list[int(params["lightMode"])]
 
     async def async_turn_on(
         self, brightness: int = None, effect: str = None, **kwargs
