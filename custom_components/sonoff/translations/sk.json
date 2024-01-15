@@ -1,0 +1,39 @@
+{
+  "config": {
+    "abort": {
+      "reauth_successful": "Opätovné overenie bolo úspešné"
+    },
+    "error": {
+      "exists": "Tento účet je už nakonfigurovaný",
+      "template": "{error}"
+    },
+    "step": {
+      "user": {
+        "description": "Zadajte Vaše [eWeLink účet](https://www.ewelink.cc/en/) poverenia",
+        "data": {
+          "username": "E-mail alebo telefón (v režime DIY použite ľubovoľný)",
+          "password": "Heslo (pre DIY režim nechajte prázdne)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "mode": "Režim (automatický režim sa odporúča pre väčšinu používateľov)",
+          "homes": "Domy (nechajte nezačiarknuté \"current\" Home)",
+          "debug": "Stránka ladenia (Integrácia > Ponuka > Známe problémy)"
+        }
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "version": "Verzia",
+      "cloud_online": "Cloudové zariadenia online",
+      "local_online": "Miestne zariadenia online",
+      "debug": "Stránka ladenia"
+    }
+  }
+}

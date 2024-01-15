@@ -8,13 +8,13 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    ELECTRIC_CURRENT_AMPERE,
-    ELECTRIC_POTENTIAL_VOLT,
-    ENERGY_KILO_WATT_HOUR,
     PERCENTAGE,
-    POWER_WATT,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
-    TEMP_CELSIUS,
+    UnitOfElectricCurrent,
+    UnitOfElectricPotential,
+    UnitOfEnergy,
+    UnitOfPower,
+    UnitOfTemperature,
 )
 from homeassistant.util import dt
 
@@ -47,14 +47,14 @@ DEVICE_CLASSES = {
 
 UNITS = {
     "battery": PERCENTAGE,
-    "battery_voltage": ELECTRIC_POTENTIAL_VOLT,
-    "current": ELECTRIC_CURRENT_AMPERE,
+    "battery_voltage": UnitOfElectricPotential.VOLT,
+    "current": UnitOfElectricCurrent.AMPERE,
     "humidity": PERCENTAGE,
-    "outdoor_temp": TEMP_CELSIUS,
-    "power": POWER_WATT,
+    "outdoor_temp": UnitOfTemperature.CELSIUS,
+    "power": UnitOfPower.WATT,
     "rssi": SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
-    "temperature": TEMP_CELSIUS,
-    "voltage": ELECTRIC_POTENTIAL_VOLT,
+    "temperature": UnitOfTemperature.CELSIUS,
+    "voltage": UnitOfElectricPotential.VOLT,
 }
 
 
@@ -175,7 +175,7 @@ class XEnergySensor(XEntity, SensorEntity):
 
     _attr_device_class = SensorDeviceClass.ENERGY
     _attr_entity_registry_enabled_default = False
-    _attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
+    _attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_should_poll = True
 
@@ -257,7 +257,7 @@ class XEnergySensorPOWR3(XEnergySensor, SensorEntity):
 
 class XEnergyTotal(XSensor):
     _attr_device_class = SensorDeviceClass.ENERGY
-    _attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
+    _attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
     _attr_state_class = SensorStateClass.TOTAL
 
 
@@ -338,7 +338,8 @@ class XT5Action(XEntity, SensorEntity):
             self._attr_native_value = "touch"
             asyncio.create_task(self.clear_state())
 
-        if slide := params.get("slide"):
+        # fix https://github.com/AlexxIT/SonoffLAN/issues/1252
+        if (slide := params.get("slide")) and len(params) == 1:
             self._attr_native_value = f"slide_{slide}"
             asyncio.create_task(self.clear_state())
 

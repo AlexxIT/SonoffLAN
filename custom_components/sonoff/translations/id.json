@@ -1,0 +1,39 @@
+{
+    "config": {
+      "abort": {
+        "reauth_successful": "Autentikasi ulang telah berhasil"
+      },
+      "error": {
+        "exists": "Akun ini sudah dikonfigurasi",
+        "template": "{error}"
+      },
+      "step": {
+        "user": {
+          "description": "Masukkan kredensial [akun eWeLink](https://www.ewelink.cc/en/) Anda",
+          "data": {
+            "username": "Surel atau telepon (gunakan manapun untuk mode DIY)",
+            "password": "Kata sandi (biarkan kosong untuk mode DIY)"
+          }
+        }
+      }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "data": {
+            "mode": "Mode (otomatis direkomendasikan untuk sebagian besar pengguna)",
+            "homes": "Rumah (biarkan tidak dicentang untuk Rumah \"saat ini\")",
+            "debug": "Halaman Debug (Integrasi > Menu > Masalah yang diketahui)"
+          }
+        }
+      }
+    },
+    "system_health": {
+      "info": {
+        "version": "Versi",
+        "cloud_online": "Perangkat cloud daring",
+        "local_online": "Perangkat lokal daring",
+        "debug": "Halaman debug"
+      }
+    }
+  }

@@ -87,7 +87,7 @@ def spec(cls, base: str = None, enabled: bool = None, **kwargs) -> type:
         bases = cls.__mro__[-len(XSwitch.__mro__) :: -1]
         bases = {k: v for b in bases for k, v in b.__dict__.items()}
         return type(cls.__name__, DEVICE_CLASS[base], {**bases, **kwargs})
-    return type(cls.__name__, (cls,), {**cls.__dict__, **kwargs})
+    return type(cls.__name__, (cls,), kwargs)
 
 
 Switch1 = spec(XSwitches, channel=0, uid="1")
@@ -101,9 +101,8 @@ Battery = spec(XSensor, param="battery")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
 PULSE = spec(XToggle, param="pulse", enabled=False)
-PULSEWIDTH = spec(XPulseWidth, param="pulseWidth", enabled=False)
 
-SPEC_SWITCH = [XSwitch, LED, RSSI, PULSE, PULSEWIDTH]
+SPEC_SWITCH = [XSwitch, LED, RSSI, PULSE, XPulseWidth]
 SPEC_1CH = [Switch1, LED, RSSI]
 SPEC_2CH = [Switch1, Switch2, LED, RSSI]
 SPEC_3CH = [Switch1, Switch2, Switch3, LED, RSSI]
@@ -347,9 +346,11 @@ DEVICES = {
     209: [Switch1, XT5Light, XT5Action],  # T5-1C-86
     210: [Switch1, Switch2, XT5Light, XT5Action],  # T5-2C-86
     211: [Switch1, Switch2, Switch3, XT5Light, XT5Action],  # T5-3C-86
+    # https://github.com/AlexxIT/SonoffLAN/issues/1251
+    212: [Switch1, Switch2, Switch3, Switch4, XT5Light, XT5Action],  # T5-4C-86
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     1256: [spec(XSwitch, base="light")],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
-    1257: [spec(XLightD1, base="light")],  # ZigbeeWhiteLight
+    1257: [XLightD1],  # ZigbeeWhiteLight
     # https://github.com/AlexxIT/SonoffLAN/issues/972
     1514: [XZigbeeCover, spec(XSensor, param="battery", multiply=2)],
     1770: [

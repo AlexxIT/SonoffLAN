@@ -1,9 +1,12 @@
 send_command:
+  name: Send Command
   description: Sends a command to a device.
   fields:
     device:
+      name: Device
       description: Device ID to send command to.
       example: '1000123456'
     cmd:
+      name: Command
       description: A single command to send.
       example: 'switch'

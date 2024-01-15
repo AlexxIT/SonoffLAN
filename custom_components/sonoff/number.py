@@ -1,20 +1,10 @@
 from homeassistant.components.number import NumberEntity
-from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
 from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
-
-# https://github.com/home-assistant/core/blob/2022.7.0/homeassistant/components/number/__init__.py
-BACKWARD = {
-    "_attr_max_value": "_attr_native_max_value",
-    "_attr_min_value": "_attr_native_min_value",
-    "_attr_step": "_attr_native_step",
-    "_attr_value": "_attr_native_value",
-    "async_set_value": "async_set_native_value",
-}
 
 
 async def async_setup_entry(hass, config_entry, add_entities):
@@ -27,10 +17,6 @@ async def async_setup_entry(hass, config_entry, add_entities):
 
 # noinspection PyAbstractClass
 class XNumber(XEntity, NumberEntity):
-    """
-    customizable number entity for simple 'params'
-    """
-
     multiply: float = None
     round: int = None
 
@@ -48,17 +34,12 @@ class XNumber(XEntity, NumberEntity):
             value /= self.multiply
         await self.ewelink.send(self.device, {self.param: int(value)})
 
-    # backward compatibility fix
-    if (MAJOR_VERSION, MINOR_VERSION) < (2022, 7):
-        # fix Hass v2021.12 empty attribute bug
-        _attr_native_value = None
-
-        def __getattribute__(self, name: str):
-            name = BACKWARD.get(name, name)
-            return super().__getattribute__(name)
-
 
 class XPulseWidth(XNumber):
+    param = "pulseWidth"
+
+    __attr_entity_registry_enabled_default = False
+
     _attr_native_max_value = 36000
     _attr_native_min_value = 0.5
     _attr_native_step = 0.5

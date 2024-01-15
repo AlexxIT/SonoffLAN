@@ -15,6 +15,8 @@ from homeassistant.const import (
     CONF_TIMEOUT,
     CONF_USERNAME,
     EVENT_HOMEASSISTANT_STOP,
+    MAJOR_VERSION,
+    MINOR_VERSION,
 )
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
@@ -24,7 +26,6 @@ from homeassistant.helpers.device_registry import async_get as device_registry
 from homeassistant.helpers.storage import Store
 
 from . import system_health
-from .core import backward
 from .core import devices as core_devices
 from .core.const import (
     CONF_APPID,
@@ -95,8 +96,8 @@ UNIQUE_DEVICES = {}
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    if not backward.hass_version_supported:
-        return False
+    if (MAJOR_VERSION, MINOR_VERSION) < (2023, 1):
+        raise Exception("unsupported hass version")
 
     # init storage for registries
     hass.data[DOMAIN] = {}
