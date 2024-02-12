@@ -3,7 +3,7 @@ from homeassistant.components.climate.const import (
     ClimateEntityFeature,
     HVACMode,
 )
-from homeassistant.const import UnitOfTemperature
+from homeassistant.const import UnitOfTemperature, MAJOR_VERSION, MINOR_VERSION
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -29,11 +29,21 @@ class XClimateTH(XEntity, ClimateEntity):
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.COOL, HVACMode.DRY]
     _attr_max_temp = 99
     _attr_min_temp = 1
-    _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
     _attr_target_temperature_high = None
     _attr_target_temperature_low = None
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 1
+
+    # https://developers.home-assistant.io/blog/2024/01/24/climate-climateentityfeatures-expanded
+    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 2):
+        _attr_supported_features = (
+            ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+            | ClimateEntityFeature.TURN_ON
+            | ClimateEntityFeature.TURN_OFF
+        )
+        _enable_turn_on_off_backwards_compatibility = False
+    else:
+        _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
 
     heat: bool = None
 
