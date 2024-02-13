@@ -45,6 +45,7 @@ from custom_components.sonoff.sensor import (
     XUnknown,
     XEnergySensorDualR3,
     XT5Action,
+    XButton91,
 )
 from custom_components.sonoff.switch import (
     XSwitch,
@@ -1588,7 +1589,6 @@ def test_minir4():
                 ],
                 "addSubDevState": "off",
                 "addTimeOut": 10,
-
                 "key": 0,  # added manually
             },
             "model": "MINIR4",
@@ -1644,3 +1644,13 @@ def test_t5():
 
     action.internal_update({"slide": 2})
     assert action.state == "slide_2"
+
+
+def test_91():
+    entities = get_entitites({"extra": {"uiid": 91}, "params": {"op": 1}})
+
+    action: XButton91 = entities[0]
+    assert action.state == ""
+
+    action.internal_update({"op": 2})
+    assert action.state == "button_2"

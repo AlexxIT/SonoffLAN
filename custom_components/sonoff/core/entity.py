@@ -32,6 +32,7 @@ NAMES = {
 
 
 class XEntity(Entity):
+    event: bool = False  # if True - skip set_state on entity init
     params: set = {}
     param: str = None
     uid: str = None
@@ -83,7 +84,7 @@ class XEntity(Entity):
         )
 
         try:
-            self.internal_update(params)
+            self.internal_update(None if self.event else params)
         except Exception as e:
             _LOGGER.error(f"Can't init device: {device}", exc_info=e)
 

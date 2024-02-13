@@ -304,12 +304,19 @@ class XWiFiDoorBattery(XSensor):
 BUTTON_STATES = ["single", "double", "hold"]
 
 
-class XRemoteButton(XEntity, SensorEntity):
+class XEventSesor(XEntity, SensorEntity):
+    event = True
     _attr_native_value = ""
 
-    def __init__(self, ewelink: XRegistry, device: dict):
-        XEntity.__init__(self, ewelink, device)
-        self.params = {"key"}
+    async def clear_state(self):
+        await asyncio.sleep(0.5)
+        self._attr_native_value = ""
+        if self.hass:
+            self._async_write_ha_state()
+
+
+class XRemoteButton(XEventSesor):
+    params = {"key"}
 
     def set_state(self, params: dict):
         button = params.get("outlet")
@@ -319,20 +326,10 @@ class XRemoteButton(XEntity, SensorEntity):
         )
         asyncio.create_task(self.clear_state())
 
-    async def clear_state(self):
-        await asyncio.sleep(0.5)
-        self._attr_native_value = ""
-        if self.hass:
-            self._async_write_ha_state()
 
-
-class XT5Action(XEntity, SensorEntity):
+class XT5Action(XEventSesor):
+    params = {"triggerType", "slide"}
     uid = "action"
-    _attr_native_value = ""
-
-    def __init__(self, ewelink: XRegistry, device: dict):
-        XEntity.__init__(self, ewelink, device)
-        self.params = {"triggerType", "slide"}
 
     def set_state(self, params: dict):
         if params.get("triggerType") == 2:
@@ -344,11 +341,14 @@ class XT5Action(XEntity, SensorEntity):
             self._attr_native_value = f"slide_{slide}"
             asyncio.create_task(self.clear_state())
 
-    async def clear_state(self):
-        await asyncio.sleep(0.5)
-        self._attr_native_value = ""
-        if self.hass:
-            self._async_write_ha_state()
+
+class XButton91(XEventSesor):
+    params = {"op"}
+
+    def set_state(self, params: dict):
+        button = params["op"]
+        self._attr_native_value = f"button_{button}"
+        asyncio.create_task(self.clear_state())
 
 
 class XUnknown(XEntity, SensorEntity):

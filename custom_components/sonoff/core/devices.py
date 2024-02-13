@@ -53,6 +53,7 @@ from ..sensor import (
     XEnergySensorPOWR3,
     XEnergyTotal,
     XT5Action,
+    XButton91,
 )
 from ..switch import (
     XSwitch,
@@ -210,6 +211,7 @@ DEVICES = {
     82: SPEC_2CH,
     83: SPEC_3CH,
     84: SPEC_4CH,
+    91: [XButton91],
     102: [XWiFiDoor, XWiFiDoorBattery, RSSI],  # Sonoff DW2 Door/Window sensor
     103: [XLightB02, RSSI],  # Sonoff B02 CCT bulb
     104: [XLightB05B, RSSI],  # Sonoff B05-B RGB+CCT color bulb
