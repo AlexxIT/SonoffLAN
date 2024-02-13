@@ -395,6 +395,8 @@ DEVICES = {
         XRemoteButton,
         Battery,
     ],
+    # https://github.com/AlexxIT/SonoffLAN/issues/1283
+    7006: [XZigbeeCover, spec(XSensor, param="battery")],
     7014: [
         spec(XSensor100, param="temperature"),
         spec(XSensor100, param="humidity"),
