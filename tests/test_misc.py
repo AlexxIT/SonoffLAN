@@ -1,6 +1,8 @@
 import asyncio
 
+from custom_components.sonoff.core.devices import spec
 from custom_components.sonoff.core.ewelink import XDevice, XRegistry, XRegistryLocal
+from custom_components.sonoff.light import XLightL1
 from . import save_to
 
 
@@ -47,3 +49,7 @@ def test_issue_1160():
         "9b0810bc-557a-406c-8266-614767890531",
     )
     assert payload == {"switches": [{"outlet": 0, "switch": "off"}]}
+
+
+def test_issue_1333():
+    assert spec(XLightL1, base="light")

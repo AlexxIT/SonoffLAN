@@ -75,6 +75,14 @@ DEVICE_CLASS = {
 }
 
 
+def unwrap_cached_properties(attrs: dict):
+    """Fix metaclass CachedProperties problem in latest Hass."""
+    for k, v in list(attrs.items()):
+        if k.startswith("_attr_") and f"_{k}" in attrs and isinstance(v, property):
+            attrs[k] = attrs.pop(f"_{k}")
+    return attrs
+
+
 def spec(cls, base: str = None, enabled: bool = None, **kwargs) -> type:
     """Make duplicate for cls class with changes in kwargs params.
 
@@ -84,9 +92,10 @@ def spec(cls, base: str = None, enabled: bool = None, **kwargs) -> type:
     if enabled is not None:
         kwargs["_attr_entity_registry_enabled_default"] = enabled
     if base:
-        bases = cls.__mro__[-len(XSwitch.__mro__) :: -1]
-        bases = {k: v for b in bases for k, v in b.__dict__.items()}
-        return type(cls.__name__, DEVICE_CLASS[base], {**bases, **kwargs})
+        attrs = cls.__mro__[-len(XSwitch.__mro__) :: -1]
+        attrs = {k: v for b in attrs for k, v in b.__dict__.items()}
+        attrs = unwrap_cached_properties({**attrs, **kwargs})
+        return type(cls.__name__, DEVICE_CLASS[base], attrs)
     return type(cls.__name__, (cls,), kwargs)
 
 
