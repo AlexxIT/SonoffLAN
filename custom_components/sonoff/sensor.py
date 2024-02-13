@@ -322,7 +322,8 @@ class XRemoteButton(XEntity, SensorEntity):
     async def clear_state(self):
         await asyncio.sleep(0.5)
         self._attr_native_value = ""
-        self._async_write_ha_state()
+        if self.hass:
+            self._async_write_ha_state()
 
 
 class XT5Action(XEntity, SensorEntity):
@@ -346,7 +347,8 @@ class XT5Action(XEntity, SensorEntity):
     async def clear_state(self):
         await asyncio.sleep(0.5)
         self._attr_native_value = ""
-        self._async_write_ha_state()
+        if self.hass:
+            self._async_write_ha_state()
 
 
 class XUnknown(XEntity, SensorEntity):
