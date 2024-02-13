@@ -2,6 +2,7 @@ import asyncio
 
 from custom_components.sonoff.core.devices import spec
 from custom_components.sonoff.core.ewelink import XDevice, XRegistry, XRegistryLocal
+from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import XLightL1
 from . import save_to
 
@@ -53,3 +54,7 @@ def test_issue_1160():
 
 def test_issue_1333():
     assert spec(XLightL1, base="light")
+
+
+def test_issus_1313():
+    assert spec(XFan, base="fan")
