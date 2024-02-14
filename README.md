@@ -333,9 +333,11 @@ sonoff:
 
 ## Sonoff Pow
 
-Support power, current and voltage sensors via LAN and Cloud connections. Also support energy (consumption) sensor only with **Cloud** connection.
+Support `power`, `current` and `voltage` sensors via LAN and Cloud connections. Also support energy (consumption) sensor only with **Cloud** connection.
 
-By default energy data loads from cloud every hour. You can change interval via YAML and add history data to sensor attributes (max size - 30 days, disable - 0). For multi-channel devices use `energy_1`, `energy_2`.
+Many models of Sonoff power devices DON'T send `power`, `current` and `voltage`  by default. You need to ASK these devices to send this data. This can ONLY be done through a cloud-based request. The mobile app does it. And the integration does it (only in the `auto` and `cloud` modes).
+
+By default `energy` data loads from cloud every hour. You can change interval via YAML and add history data to sensor attributes (max size - 30 days, disable - 0). For multi-channel devices use `energy_1`, `energy_2`.
 
 ```yaml
 sonoff:
