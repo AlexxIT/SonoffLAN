@@ -57,7 +57,7 @@ Almost any single or multi-channel Switch working in the eWeLink application wil
 These devices work both on a local network and through the cloud.
 
 - Sonoff Basic, [BASICR2](https://itead.cc/product/sonoff-basicr2/), [BASICR3](https://itead.cc/product/sonoff-basicr3-wifi-diy-smart-switch/), [RFR2](https://itead.cc/product/sonoff-rf/), [RFR3](https://itead.cc/product/sonoff-rfr3/)
-- [Sonoff Mini](https://itead.cc/product/sonoff-mini/), [MINI R3](https://itead.cc/product/sonoff-minir3-smart-switch/) (no need use DIY-mode)
+- [Sonoff Mini/MINIR2](https://itead.cc/product/sonoff-mini/), [MINI R3](https://itead.cc/product/sonoff-minir3-smart-switch/) (no need use DIY-mode)
 - [Sonoff Micro](https://itead.cc/product/sonoff-micro-5v-usb-smart-adaptor/)
 - [Sonoff TH10/TH16](https://itead.cc/product/sonoff-th/) (support Thermostat)
 - Sonoff 4CH, 4CHR2, [4CHR3 & 4CHPROR3](https://itead.cc/product/sonoff-4ch-r3-pro-r3/)
