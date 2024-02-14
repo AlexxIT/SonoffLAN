@@ -1628,13 +1628,13 @@ def test_t5():
 
     light: XT5Light = entities[3]
     assert light.state == "off"
-    assert light.effect == "4"
+    assert light.effect == "Childhood"
 
     light.internal_update({"lightSwitch": "on"})
     assert light.state == "on"
 
     light.internal_update({"lightMode": 1})
-    assert light.effect == "1"
+    assert light.effect == "Party"
 
     action: XT5Action = entities[4]
     assert action.state == ""
