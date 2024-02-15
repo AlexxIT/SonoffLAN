@@ -80,6 +80,34 @@ class ResponseWaiter:
         return fut.result()
 
 
+# noinspection PyProtectedMember
+class WebSocket:
+    def __init__(self, ws: ClientWebSocketResponse):
+        self._heartbeat: float = ws._heartbeat
+        self._heartbeat_cb: asyncio.TimerHandle | None = None
+        self.ws = ws
+
+    def __aiter__(self):
+        return self.ws
+
+    async def __anext__(self):
+        return await self.ws.__anext__()
+
+    async def receive_json(self):
+        return await self.ws.receive_json()
+
+    async def send_json(self, data: dict):
+        if self._heartbeat_cb:
+            self._heartbeat_cb.cancel()
+            self._heartbeat_cb = None
+
+        self._heartbeat_cb = self.ws._loop.call_later(
+            self._heartbeat, self.ws._send_heartbeat
+        )
+
+        await self.ws.send_json(data)
+
+
 class XRegistryCloud(ResponseWaiter, XRegistryBase):
     auth: dict = None
     devices: dict = None
@@ -87,8 +115,8 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     online = None
     region = "eu"
 
-    task: Optional[asyncio.Task] = None
-    ws: ClientWebSocketResponse = None
+    task: asyncio.Task | None = None
+    ws: WebSocket = None
 
     @property
     def host(self) -> str:
@@ -288,7 +316,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 msg: WSMessage
                 async for msg in self.ws:
                     resp = json.loads(msg.data)
-                    asyncio.create_task(self._process_ws_msg(resp))
+                    _ = asyncio.create_task(self._process_ws_msg(resp))
             except Exception as e:
                 _LOGGER.warning("Cloud processing error", exc_info=e)
 
@@ -299,9 +327,10 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             resp = await r.json()
 
             # we can use IP, but using domain because security
-            self.ws = await self.session.ws_connect(
+            ws = await self.session.ws_connect(
                 f"wss://{resp['domain']}:{resp['port']}/api/ws", heartbeat=90
             )
+            self.ws = WebSocket(ws)
 
             # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=websocket-handshake
             ts = time.time()
@@ -321,6 +350,9 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             resp = await self.ws.receive_json()
             if "error" in resp and resp["error"] != 0:
                 raise Exception(resp)
+
+            if (config := resp.get("config")) and config.get("hb"):
+                self.ws._heartbeat = config.get("hbInterval")
 
             return True
 
