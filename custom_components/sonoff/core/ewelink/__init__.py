@@ -102,9 +102,10 @@ class XRegistry(XRegistryBase):
 
         if "parent" in device:
             main_device = device["parent"]
-            if not params_lan:
+            if params_lan is None and params is not None:
                 params_lan = params.copy()
-            params_lan["subDevId"] = device["deviceid"]
+            if params_lan:
+                params_lan["subDevId"] = device["deviceid"]
         else:
             main_device = device
 
