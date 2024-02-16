@@ -1135,7 +1135,16 @@ class XDiffuserLight(XEntity, LightEntity):
 class XT5Light(XEntity, LightEntity):
     params = {"lightSwitch", "lightMode"}
 
-    _attr_effect_list = ["Night Light", "Party", "Leisure", "Color", "Childhood", "Wiper", "Fairy", "Starburst"]
+    _attr_effect_list = [
+        "Night Light",
+        "Party",
+        "Leisure",
+        "Color",
+        "Childhood",
+        "Wiper",
+        "Fairy",
+        "Starburst",
+    ]
     _attr_supported_features = LightEntityFeature.EFFECT
 
     def set_state(self, params: dict):
