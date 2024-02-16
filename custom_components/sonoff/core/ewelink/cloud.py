@@ -248,7 +248,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         self.last_ts = time.time()
 
         if sequence is None:
-            sequence = self.sequence()
+            sequence = await self.sequence()
         log += sequence
 
         # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=websocket-update-device-status

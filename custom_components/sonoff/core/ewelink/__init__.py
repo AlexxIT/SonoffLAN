@@ -101,7 +101,7 @@ class XRegistry(XRegistryBase):
           ignored if params empty
         :param timeout_lan: optional custom LAN timeout
         """
-        seq = self.sequence()
+        seq = await self.sequence()
 
         if "parent" in device:
             main_device = device["parent"]

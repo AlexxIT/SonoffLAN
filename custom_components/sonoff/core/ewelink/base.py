@@ -35,20 +35,22 @@ class XDevice(TypedDict, total=False):
 class XRegistryBase:
     dispatcher: dict[str, list[Callable]] = None
     _sequence: int = 0
+    _sequence_lock: asyncio.Lock = asyncio.Lock()
 
     def __init__(self, session: ClientSession):
         self.dispatcher = {}
         self.session = session
 
     @staticmethod
-    def sequence() -> str:
+    async def sequence() -> str:
         """Return sequnce counter in ms. Always unique."""
-        t = int(time.time()) * 1000
-        if t > XRegistryBase._sequence:
-            XRegistryBase._sequence = t
-        else:
-            XRegistryBase._sequence += 1
-        return str(XRegistryBase._sequence)
+        t = time.time_ns() // 1_000_000
+        async with XRegistryBase._sequence_lock:
+            if t > XRegistryBase._sequence:
+                XRegistryBase._sequence = t
+            else:
+                XRegistryBase._sequence += 1
+            return str(XRegistryBase._sequence)
 
     def dispatcher_connect(self, signal: str, target: Callable) -> Callable:
         targets = self.dispatcher.setdefault(signal, [])
