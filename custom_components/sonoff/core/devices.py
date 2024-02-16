@@ -36,6 +36,7 @@ from ..light import (
     XLightL1,
     XLightL3,
     XT5Light,
+    XZigbeeLight,
 )
 from ..number import XPulseWidth
 from ..remote import XRemote
@@ -382,6 +383,8 @@ DEVICES = {
         spec(XBinarySensor, param="lock", uid="", default_class="door"),
         Battery,
     ],
+    # https://github.com/AlexxIT/SonoffLAN/issues/1265
+    3258: [XZigbeeLight],  # ZigbeeColorTunableWhiteLight
     4026: [
         spec(XBinarySensor, param="water", uid="", default_class="moisture"),
         Battery,
