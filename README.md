@@ -269,15 +269,14 @@ sonoff:
     1000xxxxxx:
       device_class: shutter
 ```
-You can set the `uiid` when running in DIY mode to enable the device features.
-You can view the list of `uiid`'s and the associated device in `device.py:131`
+
+You can set the `uiid` when running in DIY mode to enable the device features. More info [here](https://github.com/AlexxIT/SonoffLAN/blob/master/custom_components/sonoff/core/devices.py).
 
 ```yaml
 sonoff:
   devices:
     1000xxxxxx:
-      extra:
-        uiid: 136 # Sonoff B05-BL
+      extra: { uiid: 136 }  # Sonoff B05-BL
 ```
 
 ### Custom devices
