@@ -138,6 +138,7 @@ class XDiffuserFan(XFan):
 # noinspection PyAbstractClass
 class XFanDualR3(XFan):
     params = {"motorTurn"}
+    _attr_entity_registry_enabled_default = False
     _attr_speed_count = 2
     _attr_preset_modes = [SPEED_OFF, SPEED_LOW, SPEED_HIGH]
 

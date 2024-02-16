@@ -70,7 +70,6 @@ from ..switch import (
 DEVICE_CLASS = {
     "binary_sensor": (XEntity, BinarySensorEntity),
     "fan": (XToggleFan,),  # using custom class for overriding is_on function
-    "dualfan": (XFanDualR3,),
     "light": (XEntity, LightEntity),
     "sensor": (XEntity, SensorEntity),
     "switch": (XEntity, SwitchEntity),
@@ -424,7 +423,7 @@ def get_spec(device: dict) -> list:
     # DualR3 in cover mode
     if uiid in [126, 165] and device["params"].get("workMode") == 2:
         classes = [cls for cls in classes if XSwitches not in cls.__bases__]
-        classes.insert(0, XCoverDualR3)
+        classes = [XCoverDualR3, XFanDualR3] + classes
 
     # NSPanel Climate disable without switch configuration
     if uiid in [133] and not device["params"].get("HMI_ATCDevice"):
