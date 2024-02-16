@@ -48,9 +48,12 @@ class XRegistry(XRegistryBase):
                 _LOGGER.debug(f"{did} UIID {uiid:04} | %s", device["params"])
 
                 if parentid := device["params"].get("parentid"):
-                    device["parent"] = next(
-                        d for d in devices if d["deviceid"] == parentid
-                    )
+                    try:
+                        device["parent"] = next(
+                            d for d in devices if d["deviceid"] == parentid
+                        )
+                    except StopIteration:
+                        pass
 
                 # at this moment entities can catch signals with device_id and
                 # update their states, but they can be added to hass later
