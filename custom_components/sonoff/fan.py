@@ -29,12 +29,12 @@ class XFan(XEntity, FanEntity):
     params = {"switches", "fan"}
     _attr_speed_count = 3
     _attr_supported_features = FanEntityFeature.SET_SPEED
-    _attr_preset_modes = [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
 
     def __init__(self, ewelink: XRegistry, device: XDevice) -> None:
         super().__init__(ewelink, device)
 
         if device.get("preset_mode", True):
+            self._attr_preset_modes = [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
             self._attr_supported_features |= FanEntityFeature.PRESET_MODE
 
     def set_state(self, params: dict):
