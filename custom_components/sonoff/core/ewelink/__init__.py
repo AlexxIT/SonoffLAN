@@ -180,7 +180,7 @@ class XRegistry(XRegistryBase):
             if i > 0:
                 await asyncio.sleep(5)
 
-            ok = await self.local.send(device, command="getState")
+            ok = await self.local.send(device, command="info")
             if ok in ("online", "error"):
                 device["local_ts"] = time.time() + LOCAL_TTL
                 device["local"] = True
@@ -235,7 +235,11 @@ class XRegistry(XRegistryBase):
     def local_update(self, msg: dict):
         mainid: str = msg["deviceid"]
         device: XDevice = self.devices.get(mainid)
+
         params: dict = msg.get("params")
+        if not params:
+            params = msg.get("data")
+
         # check device in known devices list
         if not device:
             # check payload already decrypted (DIY devices)
