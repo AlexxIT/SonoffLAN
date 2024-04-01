@@ -343,7 +343,7 @@ class XLightL1(XLight):
 
         if "bright" in params:
             self._attr_brightness = conv(params["bright"], 1, 100, 1, 255)
-        if "colorR" in params and "colorG" in params and "colorB":
+        if "colorR" in params and "colorG" in params and "colorB" in params:
             self._attr_rgb_color = (
                 params["colorR"],
                 params["colorG"],
