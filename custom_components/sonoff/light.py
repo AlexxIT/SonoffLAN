@@ -1146,6 +1146,7 @@ class XT5Light(XEntity, LightEntity):
         "Fairy",
         "Starburst",
     ]
+    _attr_supported_color_modes = {ColorMode.ONOFF}
     _attr_supported_features = LightEntityFeature.EFFECT
 
     def set_state(self, params: dict):
