@@ -15,12 +15,14 @@ ENTITY_CATEGORIES = {
     "rssi": EntityCategory.DIAGNOSTIC,
     "pulse": EntityCategory.CONFIG,
     "pulseWidth": EntityCategory.CONFIG,
+    "shock": EntityCategory.CONFIG,
 }
 
 ICONS = {
     "dusty": "mdi:cloud",
     "led": "mdi:led-off",
     "noise": "mdi:bell-ring",
+    "shock": "mdi:vibrate",
 }
 
 NAMES = {
@@ -28,6 +30,7 @@ NAMES = {
     "rssi": "RSSI",
     "pulse": "INCHING",
     "pulseWidth": "INCHING Duration",
+    "shock": "Vibrate",
 }
 
 

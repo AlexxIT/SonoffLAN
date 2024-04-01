@@ -5,6 +5,7 @@ from homeassistant.components.light import (
     LightEntity,
     LightEntityFeature,
 )
+from homeassistant.const import EntityCategory
 from homeassistant.util import color
 
 from .core.const import DOMAIN
@@ -1169,3 +1170,78 @@ class XT5Light(XEntity, LightEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {"lightSwitch": "off"})
+
+
+class XT5LightStatusLight(XEntity, LightEntity):
+    entity_category = EntityCategory.CONFIG
+
+    _attr_effect_list = [
+        "Side 1 (Top)",
+        "Side 2 (Below)",
+        "Two sides",
+    ]
+
+    _attr_color_mode = ColorMode.RGB
+    _attr_supported_color_modes = {ColorMode.RGB}
+    _attr_supported_features = LightEntityFeature.EFFECT
+
+    _attr_brightness = 60
+    _attr_rgb_color = [0, 0, 255]
+
+    def set_state(self, params: dict):
+        effect_params = params[self.param]
+        cache = self.device["params"][self.param]
+        if cache != effect_params:
+            cache.update(effect_params)
+
+        if "statusLightTop" in effect_params or "statusLightBelow" in effect_params:
+            if effect_params["statusLightTop"] and effect_params["statusLightBelow"]:
+                self._attr_effect = self._attr_effect_list[2]
+            elif effect_params["statusLightBelow"]:
+                self._attr_effect = self._attr_effect_list[1]
+            elif effect_params["statusLightTop"]:
+                self._attr_effect = self._attr_effect_list[0]
+
+        if "statusLight" in effect_params:
+            self._attr_is_on = effect_params["statusLight"] == "on"
+
+        if "r" in effect_params and "g" in effect_params and "b" in effect_params:
+            self._attr_rgb_color = (
+                effect_params["r"],
+                effect_params["g"],
+                effect_params["b"],
+            )
+
+        if "br" in effect_params:
+            self._attr_brightness = conv(effect_params["br"], 0, 100, 1, 255)
+
+    def get_params(self, brightness: int = None, color_temp: int = None, rgb_color=None, effect: str = None) -> dict:
+        params = {
+            **self.device['params'][self.param],
+            'statusLightTop': 1 if effect != self._attr_effect_list[1] else 0,
+            'statusLightBelow': 1 if effect != self._attr_effect_list[0] else 0,
+            "r": (rgb_color or self.rgb_color)[0],
+            "g": (rgb_color or self.rgb_color)[1],
+            "b": (rgb_color or self.rgb_color)[2],
+            'br': conv(brightness or self.brightness, 1, 255, 0, 100),
+        }
+
+        return params
+
+    async def async_turn_on(
+        self, brightness: int = None, color_temp: int = None, rgb_color=None, effect: str = None, **kwargs
+    ) -> None:
+        params = self.get_params(brightness, color_temp, rgb_color, effect)
+        params['statusLight'] = 'on'
+
+        await self.ewelink.send(self.device, {
+            self.param: params
+        })
+
+    async def async_turn_off(self, **kwargs) -> None:
+        params = self.get_params()
+        params['statusLight'] = 'off'
+
+        await self.ewelink.send(self.device, {
+            self.param: params
+        })

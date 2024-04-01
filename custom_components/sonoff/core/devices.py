@@ -36,10 +36,12 @@ from ..light import (
     XLightL1,
     XLightL3,
     XT5Light,
+    XT5LightStatusLight,
     XZigbeeLight,
 )
 from ..number import XPulseWidth
 from ..remote import XRemote
+from ..select import XT5Select
 from ..sensor import (
     XEnergySensor,
     XHumidityTH,
@@ -61,6 +63,7 @@ from ..switch import (
     XSwitches,
     XSwitchTH,
     XToggle,
+    XToggleNum,
     XZigbeeSwitches,
     XSwitchPOWR3,
     XDetach,
@@ -111,6 +114,8 @@ Battery = spec(XSensor, param="battery")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
 PULSE = spec(XToggle, param="pulse", enabled=False)
+SHOCK = spec(XToggleNum, param="shock")
+NETWORK_INDICATOR = spec(LED, name="Network indicator", enabled=False)
 
 SPEC_SWITCH = [XSwitch, LED, RSSI, PULSE, XPulseWidth]
 SPEC_1CH = [Switch1, LED, RSSI]
@@ -354,11 +359,111 @@ DEVICES = {
     # https://github.com/AlexxIT/SonoffLAN/issues/984
     195: [XTemperatureTH],  # NSPanel Pro
     # https://github.com/AlexxIT/SonoffLAN/issues/1183
-    209: [Switch1, XT5Light, XT5Action],  # T5-1C-86
-    210: [Switch1, Switch2, XT5Light, XT5Action],  # T5-2C-86
-    211: [Switch1, Switch2, Switch3, XT5Light, XT5Action],  # T5-3C-86
+    209: [  # T5-1C-86
+        Switch1,
+        XT5Light,
+        SHOCK, NETWORK_INDICATOR,
+
+        spec(XT5LightStatusLight, param="onEffects", uid="onEffectsStatus", name="On effects [status]",
+             icon="mdi:lightbulb-alert"),
+        spec(XT5LightStatusLight, param="offEffects", uid="offEffectsStatus", name="Off effects [status]",
+             icon="mdi:lightbulb-alert-outline"),
+
+        spec(XT5Select, param="onEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="onEffectsLight", name="On effects [light]", icon="mdi:lightbulb-on"),
+        spec(XT5Select, param="offEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="offEffectsLight", name="Off effects [light]", icon="mdi:lightbulb-on-outline"),
+        spec(XT5Select, param="preEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="preEffectsLight", name="Preview effects [light]", icon="mdi:lightbulb-on"),
+
+        spec(XT5Select, param="onEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="onEffectsSound", name="On effects [sound]", icon="mdi:alarm-light"),
+        spec(XT5Select, param="offEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="offEffectsSound", name="Off effects [sound]", icon="mdi:alarm-light-outline"),
+        spec(XT5Select, param="preEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="preEffectsSound", name="Preview effects [sound]", icon="mdi:alarm-light"),
+
+        XT5Action
+    ],
+    210: [  # T5-2C-86
+        Switch1, Switch2,
+        XT5Light,
+        SHOCK, NETWORK_INDICATOR,
+
+        spec(XT5LightStatusLight, param="onEffects", uid="onEffectsStatus", name="On effects [status]",
+             icon="mdi:lightbulb-alert"),
+        spec(XT5LightStatusLight, param="offEffects", uid="offEffectsStatus", name="Off effects [status]",
+             icon="mdi:lightbulb-alert-outline"),
+
+        spec(XT5Select, param="onEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="onEffectsLight", name="On effects [light]", icon="mdi:lightbulb-on"),
+        spec(XT5Select, param="offEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="offEffectsLight", name="Off effects [light]", icon="mdi:lightbulb-on-outline"),
+        spec(XT5Select, param="preEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="preEffectsLight", name="Preview effects [light]", icon="mdi:lightbulb-on"),
+
+        spec(XT5Select, param="onEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="onEffectsSound", name="On effects [sound]", icon="mdi:alarm-light"),
+        spec(XT5Select, param="offEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="offEffectsSound", name="Off effects [sound]", icon="mdi:alarm-light-outline"),
+        spec(XT5Select, param="preEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="preEffectsSound", name="Preview effects [sound]", icon="mdi:alarm-light"),
+
+        XT5Action
+    ],
+    211: [  # T5-3C-86
+        Switch1, Switch2, Switch3,
+        XT5Light,
+        SHOCK, NETWORK_INDICATOR,
+
+        spec(XT5LightStatusLight, param="onEffects", uid="onEffectsStatus", name="On effects [status]",
+             icon="mdi:lightbulb-alert"),
+        spec(XT5LightStatusLight, param="offEffects", uid="offEffectsStatus", name="Off effects [status]",
+             icon="mdi:lightbulb-alert-outline"),
+
+        spec(XT5Select, param="onEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="onEffectsLight", name="On effects [light]", icon="mdi:lightbulb-on"),
+        spec(XT5Select, param="offEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="offEffectsLight", name="Off effects [light]", icon="mdi:lightbulb-on-outline"),
+        spec(XT5Select, param="preEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="preEffectsLight", name="Preview effects [light]", icon="mdi:lightbulb-on"),
+
+        spec(XT5Select, param="onEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="onEffectsSound", name="On effects [sound]", icon="mdi:alarm-light"),
+        spec(XT5Select, param="offEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="offEffectsSound", name="Off effects [sound]", icon="mdi:alarm-light-outline"),
+        spec(XT5Select, param="preEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="preEffectsSound", name="Preview effects [sound]", icon="mdi:alarm-light"),
+
+        XT5Action
+    ],
     # https://github.com/AlexxIT/SonoffLAN/issues/1251
-    212: [Switch1, Switch2, Switch3, Switch4, XT5Light, XT5Action],  # T5-4C-86
+    212: [  # T5-4C-86
+        Switch1, Switch2, Switch3, Switch4,
+        XT5Light,
+        SHOCK, NETWORK_INDICATOR,
+
+        spec(XT5LightStatusLight, param="onEffects", uid="onEffectsStatus", name="On effects [status]",
+             icon="mdi:lightbulb-alert"),
+        spec(XT5LightStatusLight, param="offEffects", uid="offEffectsStatus", name="Off effects [status]",
+             icon="mdi:lightbulb-alert-outline"),
+
+        spec(XT5Select, param="onEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="onEffectsLight", name="On effects [light]", icon="mdi:lightbulb-on"),
+        spec(XT5Select, param="offEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="offEffectsLight", name="Off effects [light]", icon="mdi:lightbulb-on-outline"),
+        spec(XT5Select, param="preEffects", property="lightEffect", effect_name="Light", effect_count=5,
+             uid="preEffectsLight", name="Preview effects [light]", icon="mdi:lightbulb-on"),
+
+        spec(XT5Select, param="onEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="onEffectsSound", name="On effects [sound]", icon="mdi:alarm-light"),
+        spec(XT5Select, param="offEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="offEffectsSound", name="Off effects [sound]", icon="mdi:alarm-light-outline"),
+        spec(XT5Select, param="preEffects", property="soundEffect", effect_name="Sound", effect_count=5,
+             uid="preEffectsSound", name="Preview effects [sound]", icon="mdi:alarm-light"),
+
+        XT5Action
+    ],
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     # https://github.com/AlexxIT/SonoffLAN/issues/1195
     1256: [spec(XSwitch)],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
