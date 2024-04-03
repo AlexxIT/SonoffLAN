@@ -51,7 +51,7 @@ class XSwitches(XEntity, SwitchEntity):
         except StopIteration:
             pass
 
-    async def async_turn_on(self, **kwargs):
+    async def async_turn_on(self, *args, **kwargs):
         params = {"switches": [{"outlet": self.channel, "switch": "on"}]}
         await self.ewelink.send_bulk(self.device, params)
 
