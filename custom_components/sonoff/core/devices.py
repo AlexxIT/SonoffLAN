@@ -512,6 +512,7 @@ DIY = {
     "fan_light": [34, "SONOFF", "iFan DIY"],
     "light": [44, "SONOFF", "D1 DIY"],  # don't know if light exist
     "diylight": [44, "SONOFF", "D1 DIY"],
+    "diy_light": [136, "SONOFF", "B0x-BL DIY"],
     "switch_radar": [77, "SONOFF", "Micro DIY"],  # Micro
     "multifun_switch": [126, "SONOFF", "DualR3 DIY"],
 }
