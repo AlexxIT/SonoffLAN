@@ -22,6 +22,7 @@ SPEED_OFF = "off"
 SPEED_LOW = "low"
 SPEED_MEDIUM = "medium"
 SPEED_HIGH = "high"
+MODES = [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
 
 
 # noinspection PyAbstractClass
@@ -34,7 +35,7 @@ class XFan(XEntity, FanEntity):
         super().__init__(ewelink, device)
 
         if device.get("preset_mode", True):
-            self._attr_preset_modes = [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
+            self._attr_preset_modes = MODES
             self._attr_supported_features |= FanEntityFeature.PRESET_MODE
 
     def set_state(self, params: dict):
@@ -61,9 +62,7 @@ class XFan(XEntity, FanEntity):
                 mode = SPEED_HIGH
 
         self._attr_percentage = int(
-            self._attr_preset_modes.index(mode or SPEED_OFF)
-            / self._attr_speed_count
-            * 100
+            MODES.index(mode or SPEED_OFF) / self._attr_speed_count * 100
         )
         self._attr_preset_mode = mode
 
