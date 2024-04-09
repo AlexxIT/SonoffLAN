@@ -184,15 +184,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if entry.options.get("debug") and not _LOGGER.handlers:
         await system_health.setup_debug(hass, _LOGGER)
 
-    username = entry.data.get(CONF_USERNAME)
-    password = entry.data.get(CONF_PASSWORD)
     mode = entry.options.get(CONF_MODE, "auto")
 
     # retry only when can't login first time
     if entry.state == ConfigEntryState.SETUP_RETRY:
         assert mode in ("auto", "cloud")
         try:
-            await registry.cloud.login(username, password)
+            await registry.cloud.login(**entry.data)
         except Exception as e:
             _LOGGER.warning(f"Can't login with mode: {mode}", exc_info=e)
             raise ConfigEntryNotReady(e)
@@ -202,9 +200,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.async_create_task(internal_normal_setup(hass, entry))
         return True
 
-    if registry.cloud.auth is None and username and password:
+    if registry.cloud.auth is None and entry.data.get(CONF_PASSWORD):
         try:
-            await registry.cloud.login(username, password)
+            await registry.cloud.login(**entry.data)
         except Exception as e:
             _LOGGER.warning(f"Can't login with mode: {mode}", exc_info=e)
             if mode in ("auto", "local"):

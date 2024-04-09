@@ -12,7 +12,8 @@
         "description": "Enter your [eWeLink account](https://www.ewelink.cc/en/) credentials",
         "data": {
           "username": "Email or phone (use any for DIY mode)",
-          "password": "Password (leave blank for DIY mode)"
+          "password": "Password (leave blank for DIY mode)",
+          "country_code": "Country code (leave blank for auto select)"
         }
       }
     }
@@ -22,7 +23,7 @@
       "init": {
         "data": {
           "mode": "Mode (auto is recommended for most users)",
-          "homes": "Homes (leave unchecked for \"current\" Home)",
+          "homes": "Homes (leave blank for active home in mobile app)",
           "debug": "Debug page (Integration > Menu > Known issues)"
         }
       }
