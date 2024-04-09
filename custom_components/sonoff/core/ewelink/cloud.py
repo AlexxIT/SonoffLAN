@@ -1,6 +1,7 @@
 """
 https://coolkit-technologies.github.io/eWeLink-API/#/en/PlatformOverview
 """
+
 import asyncio
 import base64
 import hashlib
@@ -16,7 +17,7 @@ from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
 
 _LOGGER = logging.getLogger(__name__)
 
-RETRY_DELAYS = [15, 60, 5 * 60, 15 * 60, 60 * 60]
+RETRY_DELAYS = [15, 30, 60, 5 * 60, 15 * 60, 30 * 60, 60 * 60]
 
 # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=interface-domain-name
 API = {
@@ -244,8 +245,6 @@ REGIONS = {
 DATA_ERROR = {0: "online", 503: "offline", 504: "timeout", None: "unknown"}
 
 APP = [
-    # ("oeVkj2lYFGnJu5XUtWisfW4utiN4u9Mq", "6Nz4n0xA8s8qdxQf2GqurZj2Fs55FUvM"),
-    # ("KOBxGJna5qkk3JLXw3LHLX3wSNiPjAVi", "4v0sv6X5IM2ASIBiNDj6kGmSfxo40w7n"),
     ("4s1FXKC9FaGfoqXhmXSJneb3qcm1gOak", "oKvCM06gvwkRbfetd6qWRrbC3rFrbIpV"),
     ("R8Oq3y0eSZSYdKccHlrQzT1ACCOUT9Gv", "1ve5Qk9GXfUhKAn1svnKwpAlxXkMarru"),
 ]
@@ -290,6 +289,13 @@ class ResponseWaiter:
 
 # noinspection PyProtectedMember
 class WebSocket:
+    """Default asyncio.WebSocket keep-alive only incoming messages with heartbeats.
+    This is helpful if messages from the server don't come very often.
+
+    With this changes we also keep-alive outgoing messages with heartbeats.
+    This is helpful if our messages to the server are not sent very often.
+    """
+
     def __init__(self, ws: ClientWebSocketResponse):
         self._heartbeat: float = ws._heartbeat
         self._heartbeat_cb: asyncio.TimerHandle | None = None
@@ -372,7 +378,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             "X-CK-Appid": appid,
         }
         r = await self.session.post(
-            self.host + "/v2/user/login", data=data, headers=headers, timeout=30
+            self.host + "/v2/user/login", data=data, headers=headers, timeout=10
         )
         resp = await r.json()
 
@@ -380,7 +386,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         if resp["error"] == 10004:
             self.region = resp["data"]["region"]
             r = await self.session.post(
-                self.host + "/v2/user/login", data=data, headers=headers, timeout=30
+                self.host + "/v2/user/login", data=data, headers=headers, timeout=10
             )
             resp = await r.json()
 
@@ -486,8 +492,8 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             _LOGGER.error(log, exc_info=e)
             return "E#???"
 
-    def start(self):
-        self.task = asyncio.create_task(self.run_forever())
+    def start(self, **kwargs):
+        self.task = asyncio.create_task(self.run_forever(**kwargs))
 
     async def stop(self):
         if self.task:
@@ -497,28 +503,32 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         self.set_online(None)
 
     def set_online(self, value: Optional[bool]):
-        _LOGGER.debug(f"CLOUD {self.online} => {value}")
+        _LOGGER.debug(f"CLOUD change state old={self.online}, new={value}")
         if self.online == value:
             return
         self.online = value
         self.dispatcher_send(SIGNAL_CONNECTED)
 
-    async def run_forever(self):
+    async def run_forever(self, **kwargs):
         fails = 0
 
         while not self.session.closed:
-            if not await self.connect():
+            if fails:
                 self.set_online(False)
 
-                delay = RETRY_DELAYS[fails]
+                delay = RETRY_DELAYS[min(fails, len(RETRY_DELAYS)) - 1]
                 _LOGGER.debug(f"Cloud connection retrying in {delay} seconds")
-                if fails + 1 < len(RETRY_DELAYS):
-                    fails += 1
                 await asyncio.sleep(delay)
+
+            if not self.auth and not await self.login(**kwargs):
+                fails += 1
+                continue
+
+            if not await self.connect():
+                fails += 1
                 continue
 
             fails = 0
-
             self.set_online(True)
 
             try:
@@ -557,7 +567,14 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             await self.ws.send_json(payload)
 
             resp = await self.ws.receive_json()
-            if "error" in resp and resp["error"] != 0:
+            if (error := resp.get("error", 0)) != 0:
+                # {'error': 406, 'reason': 'Authentication Failed'}
+                # can happened when login from another place with same user/appid
+                if error == 406:
+                    _LOGGER.warning("You logged in from another place")
+                    self.auth = None
+                    return False
+
                 raise Exception(resp)
 
             if (config := resp.get("config")) and config.get("hb"):
