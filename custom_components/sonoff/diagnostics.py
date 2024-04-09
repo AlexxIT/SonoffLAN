@@ -3,8 +3,9 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
-from .core.const import DOMAIN, PRIVATE_KEYS, source_hash
+from .core.const import DOMAIN, PRIVATE_KEYS
 from .core.ewelink import XRegistry
+from .core import xutils
 
 
 async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigEntry):
@@ -21,49 +22,42 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
         else:
             config = None
     except Exception as e:
-        config = f"{type(e).__name__}: {e}"
+        config = repr(e)
 
     options = {k: len(v) if k == "homes" else v for k, v in entry.options.items()}
 
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
     try:
         devices = {
-            did: {
-                "uiid": device["extra"]["uiid"],
-                "params": {
-                    k: "***" if k in PRIVATE_KEYS else v
-                    for k, v in device["params"].items()
-                },
-                "model": device.get("productModel"),
-                "online": device.get("online"),
-                "local": device.get("local"),
-                "localtype": device.get("localtype"),
-                "host": device.get("host"),
-            }
-            if "params" in device
-            else {
-                "localtype": device.get("localtype"),
-            }
+            did: (
+                {
+                    "uiid": device["extra"]["uiid"],
+                    "params": {
+                        k: "***" if k in PRIVATE_KEYS else v
+                        for k, v in device["params"].items()
+                    },
+                    "model": device.get("productModel"),
+                    "online": device.get("online"),
+                    "local": device.get("local"),
+                    "localtype": device.get("localtype"),
+                    "host": device.get("host"),
+                }
+                if "params" in device
+                else {
+                    "localtype": device.get("localtype"),
+                }
+            )
             for did, device in registry.devices.items()
         }
     except Exception as e:
-        devices = f"{type(e).__name__}: {e}"
-
-    try:
-        errors = [
-            entry.to_dict()
-            for key, entry in hass.data["system_log"].records.items()
-            if DOMAIN in key
-        ]
-    except Exception as e:
-        errors = f"{type(e).__name__}: {e}"
+        devices = repr(e)
 
     return {
-        "version": source_hash(),
+        "version": xutils.source_hash(),
         "cloud_auth": registry.cloud.auth is not None,
         "config": config,
         "options": options,
-        "errors": errors,
+        "errors": xutils.system_log_records(hass, DOMAIN),
         "devices": devices,
     }
 
