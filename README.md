@@ -133,8 +133,8 @@ You can setup multiple integrations with different ewelink accounts.
 
 **Important**. If you use the same account in different smart home systems, you will be constantly unlogged from everywhere. In this case, you need to create a second ewelink account and share your devices or home with it.
 
-- Problems: Hass + Hass, Hass + Homebridge, Hass + eWeLink app v3, etc.
-- No Problems: Hass + [eWeLink app v4](https://www.ewelink.cc/en/), Hass + [eWeLink addon](https://www.ewelink.cc/en/2021/06/23/ewelink-home-assistant-add-on-github-archive/)
+- Problems: another Home Assistant, Homebridge, [eWeLink addon](https://www.ewelink.cc/en/2021/06/23/ewelink-home-assistant-add-on-github-archive/), etc.
+- No Problems: latest [eWeLink mobile app v4+](https://www.ewelink.cc/en/)
 
 ## Issues
 
