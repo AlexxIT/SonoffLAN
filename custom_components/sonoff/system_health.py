@@ -12,7 +12,8 @@ from homeassistant.components import system_health
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant, callback
 
-from .core.const import DOMAIN, PRIVATE_KEYS, source_hash
+from .core.const import DOMAIN, PRIVATE_KEYS
+from .core import xutils
 
 
 @callback
@@ -41,7 +42,7 @@ async def system_health_info(hass: HomeAssistant):
 
     integration = hass.data["integrations"][DOMAIN]
     info = {
-        "version": f"{integration.version} ({source_hash()})",
+        "version": f"{integration.version} ({xutils.source_hash()})",
         "cloud_online": f"{cloud_online} / {cloud_total}",
         "local_online": f"{local_online} / {local_total}",
     }
@@ -58,7 +59,7 @@ async def setup_debug(hass: HomeAssistant, logger: Logger):
 
     integration = hass.data["integrations"][DOMAIN]
     info = await hass.helpers.system_info.async_get_system_info()
-    info[DOMAIN + "_version"] = f"{integration.version} ({source_hash()})"
+    info[DOMAIN + "_version"] = f"{integration.version} ({xutils.source_hash()})"
     logger.debug(f"SysInfo: {info}")
 
     integration.manifest["issue_tracker"] = view.url
