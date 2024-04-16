@@ -3,6 +3,7 @@ For non DIY devices data will be encrypted with devicekey. The registry cannot
 decode such messages by itself because it does not manage the list of known
 devices and their devicekey.
 """
+
 import asyncio
 import base64
 import errno
@@ -97,7 +98,9 @@ class XRegistryLocal(XRegistryBase):
         state_change: ServiceStateChange,
     ):
         """Step 1. Receive change event from zeroconf."""
-        if state_change == ServiceStateChange.Removed:
+        # accept: eWeLink_1000xxxxxx.local.
+        # skip: ihost-1001xxxxxx.local.
+        if state_change == ServiceStateChange.Removed or not name.startswith("eWeLink"):
             return
 
         asyncio.create_task(self._handler2(zeroconf, service_type, name))
