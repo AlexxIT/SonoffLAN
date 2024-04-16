@@ -80,7 +80,9 @@ class XSensor(XEntity, SensorEntity):
         default_class = (
             self.uid[:-2] if self.uid.endswith(("_1", "_2", "_3", "_4")) else self.uid
         )
-        self._attr_device_class = DEVICE_CLASSES.get(default_class)
+
+        if device_class := DEVICE_CLASSES.get(default_class):
+            self._attr_device_class = device_class
 
         if default_class in UNITS:
             # by default all sensors with units is measurement sensors

@@ -9,8 +9,9 @@ from homeassistant.components.light import (
     COLOR_MODE_RGB,
     LightEntity,
 )
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.const import TEMP_FAHRENHEIT
+from homeassistant.const import TEMP_FAHRENHEIT, UnitOfEnergy
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
@@ -46,6 +47,7 @@ from custom_components.sonoff.sensor import (
     XEnergySensorDualR3,
     XT5Action,
     XButton91,
+    XEnergyTotal,
 )
 from custom_components.sonoff.switch import (
     XSwitch,
@@ -1654,3 +1656,43 @@ def test_91():
 
     action.internal_update({"op": 2})
     assert action.state == "button_2"
+
+
+def test_powr3():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 190},
+            "params": {
+                "version": 8,
+                "demNextFetchTime": 1678057200000,
+                "fwVersion": "1.0.7",
+                "current": 0,
+                "voltage": 0,
+                "power": 0,
+                "uiActive": 60,
+                "timeZone": 0,
+                "dayKwh": 7,
+                "monthKwh": 7,
+                "switches": [{"switch": "off", "outlet": 0}],
+                "configure": [{"startup": "off", "outlet": 0}],
+                "pulses": [
+                    {"pulse": "off", "switch": "off", "outlet": 0, "width": 500}
+                ],
+                "rssi": -57,
+                "threshold": {
+                    "actPow": {"min": 10, "max": 400000},
+                    "voltage": {"min": 18500, "max": 26400},
+                    "current": {"min": 10, "max": 1600},
+                },
+                "getHoursKwh": {"start": 4464, "end": 4535},
+                "operSide": 1,
+            },
+        }
+    )
+
+    energy: XEnergyTotal = next(e for e in entities if e.uid == "energy_day")
+    assert energy.device_class == SensorDeviceClass.ENERGY
+    assert energy.unit_of_measurement == UnitOfEnergy.KILO_WATT_HOUR
+    assert energy.state_class == SensorStateClass.TOTAL
+    energy.set_state({"dayKwh": 7})
+    assert energy.native_value == 0.07
