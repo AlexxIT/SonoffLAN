@@ -334,6 +334,7 @@ class XT5Action(XEventSesor):
     uid = "action"
 
     def set_state(self, params: dict):
+        # https://github.com/AlexxIT/SonoffLAN/issues/1373
         if "switches" in params and params.get("triggerType") == 2:
             self._attr_native_value = "touch"
             asyncio.create_task(self.clear_state())
