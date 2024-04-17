@@ -112,8 +112,8 @@ class XRegistry(XRegistryBase):
         else:
             main_device = device
 
-        can_local = self.local.online and main_device.get("local")
-        can_cloud = self.cloud.online and main_device.get("online")
+        can_local = self.can_local(device)
+        can_cloud = self.can_cloud(device)
 
         if can_local and can_cloud:
             # try to send a command locally (wait no more than a second)
@@ -166,7 +166,7 @@ class XRegistry(XRegistryBase):
         return await self.send(device, device.pop("params_bulk"))
 
     async def send_cloud(self, device: XDevice, params: dict = None, query=True):
-        if not self.cloud.online or not device.get("online"):
+        if not self.can_cloud(device):
             return
         ok = await self.cloud.send(device, params)
         if ok == "online" and query and params:
@@ -326,24 +326,24 @@ class XRegistry(XRegistryBase):
         # [5] POW, [32] POWR2, [182] S40, [190] POWR3 - one channel, only cloud update
         # [181] THR316D/THR320D
         if uiid in (5, 32, 182, 190, 181):
-            if self.cloud.online and device.get("online"):
+            if self.can_cloud(device):
                 params = {"uiActive": 60}
                 asyncio.create_task(self.cloud.send(device, params, timeout=0))
 
         # DUALR3 - two channels, local and cloud update
         elif uiid == 126:
-            if self.local.online and device.get("local"):
+            if self.can_local(device):
                 # empty params is OK
                 asyncio.create_task(self.local.send(device, command="statistics"))
-            elif self.cloud.online and device.get("online"):
+            elif self.can_cloud(device):
                 params = {"uiActive": {"all": 1, "time": 60}}
                 asyncio.create_task(self.cloud.send(device, params, timeout=0))
 
         # SPM-4Relay - four channels, separate update for each channel
         elif uiid == 130:
-            if self.local.online and device.get("local"):
+            if self.can_local(device):
                 asyncio.create_task(self.update_spm_pow(device, False))
-            if self.cloud.online and device.get("online"):
+            if self.can_cloud(device):
                 asyncio.create_task(self.update_spm_pow(device, True))
 
         # checks if device still available via LAN
@@ -362,3 +362,15 @@ class XRegistry(XRegistryBase):
                 await self.cloud.send(device, params, timeout=0)
             else:
                 await self.local.send(device, params, command="statistics")
+
+    def can_cloud(self, device: XDevice) -> bool:
+        if not self.cloud.online:
+            return False
+        return device.get("online")
+
+    def can_local(self, device: XDevice) -> bool:
+        if not self.local.online:
+            return False
+        if "parent" in device:
+            return device["parent"].get("local")
+        return device.get("local")

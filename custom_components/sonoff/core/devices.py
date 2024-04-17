@@ -535,5 +535,4 @@ def setup_diy(device: dict) -> XDevice:
         device["name"] = "Unknown DIY"
         device["extra"] = {"uiid": 0}
         device["productModel"] = ltype
-    # device["online"] = False
     return device
