@@ -438,7 +438,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             devices += [
                 i["itemData"]
                 for i in resp["data"]["thingList"]
-                if i["itemType"] != 3  # skip groups
+                if "deviceid" in i["itemData"]  # skip groups
             ]
         return devices
 
