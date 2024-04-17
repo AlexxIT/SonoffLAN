@@ -347,15 +347,6 @@ class XT5Action(XEventSesor):
             asyncio.create_task(self.clear_state())
 
 
-class XButton91(XEventSesor):
-    params = {"op"}
-
-    def set_state(self, params: dict):
-        button = params["op"]
-        self._attr_native_value = f"button_{button}"
-        asyncio.create_task(self.clear_state())
-
-
 class XUnknown(XEntity, SensorEntity):
     _attr_device_class = SensorDeviceClass.TIMESTAMP
 

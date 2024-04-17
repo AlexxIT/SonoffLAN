@@ -132,3 +132,31 @@ class XZigbeeCover(XCover):
 
     async def async_set_cover_position(self, position: int, **kwargs):
         await self.ewelink.send(self.device, {"openPercent": 100 - position})
+
+
+# https://github.com/AlexxIT/SonoffLAN/issues/1304
+class XCover91(XEntity, CoverEntity):
+    param = "op"
+
+    _attr_is_closed = None  # unknown state
+
+    def set_state(self, params: dict):
+        if v := params.get(self.param):
+            if v == 1:
+                self._attr_is_opening = True
+                self._attr_is_closing = False
+            elif v == 2:
+                self._attr_is_opening = False
+                self._attr_is_closing = False
+            elif v == 3:
+                self._attr_is_opening = False
+                self._attr_is_closing = True
+
+    async def async_stop_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {self.param: 2})
+
+    async def async_open_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {self.param: 1})
+
+    async def async_close_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {self.param: 3})

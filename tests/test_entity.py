@@ -26,7 +26,7 @@ from custom_components.sonoff.core.ewelink import (
     SIGNAL_CONNECTED,
     SIGNAL_UPDATE,
 )
-from custom_components.sonoff.cover import XCover, XCoverDualR3, XZigbeeCover
+from custom_components.sonoff.cover import XCover, XCoverDualR3, XZigbeeCover, XCover91
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import (
     UIID22_MODES,
@@ -47,7 +47,6 @@ from custom_components.sonoff.sensor import (
     XUnknown,
     XEnergySensorDualR3,
     XT5Action,
-    XButton91,
     XEnergyTotal,
 )
 from custom_components.sonoff.switch import (
@@ -1658,11 +1657,11 @@ def test_t5():
 def test_91():
     entities = get_entitites({"extra": {"uiid": 91}, "params": {"op": 1}})
 
-    action: XButton91 = entities[0]
-    assert action.state == ""
+    cover: XCover91 = entities[0]
+    assert cover.state == "opening"
 
-    action.internal_update({"op": 2})
-    assert action.state == "button_2"
+    cover.internal_update({"op": 2})
+    assert cover.state is None
 
 
 def test_powr3():
