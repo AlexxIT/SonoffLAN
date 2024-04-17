@@ -36,6 +36,11 @@ def conv(value: int, a1: int, a2: int, b1: int, b2: int) -> int:
 ###############################################################################
 
 
+class XOnOffLight(XEntity, LightEntity):
+    _attr_color_mode = ColorMode.ONOFF
+    _attr_supported_color_modes = {ColorMode.ONOFF}
+
+
 # https://developers.home-assistant.io/docs/core/entity/light/
 # noinspection PyAbstractClass
 class XLight(XEntity, LightEntity):

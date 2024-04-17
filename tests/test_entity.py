@@ -7,6 +7,7 @@ from homeassistant.components.fan import FanEntity
 from homeassistant.components.light import (
     COLOR_MODE_COLOR_TEMP,
     COLOR_MODE_RGB,
+    ColorMode,
     LightEntity,
 )
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
@@ -855,6 +856,10 @@ def test_device_class():
 
     assert isinstance(light, LightEntity)
     assert not isinstance(light, SwitchEntity)
+
+    # https://github.com/AlexxIT/SonoffLAN/issues/1362
+    assert light.color_mode == ColorMode.ONOFF
+    assert light.supported_color_modes == {ColorMode.ONOFF}
 
 
 def test_device_class_micro():

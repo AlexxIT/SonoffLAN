@@ -35,6 +35,7 @@ from ..light import (
     XLightGroup,
     XLightL1,
     XLightL3,
+    XOnOffLight,
     XT5Light,
     XZigbeeLight,
 )
@@ -70,7 +71,7 @@ from ..switch import (
 DEVICE_CLASS = {
     "binary_sensor": (XEntity, BinarySensorEntity),
     "fan": (XToggleFan,),  # using custom class for overriding is_on function
-    "light": (XEntity, LightEntity),
+    "light": (XOnOffLight,),  # fix color modes support
     "sensor": (XEntity, SensorEntity),
     "switch": (XEntity, SwitchEntity),
 }
