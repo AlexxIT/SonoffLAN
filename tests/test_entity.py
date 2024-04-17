@@ -1661,36 +1661,30 @@ def test_91():
 
 
 def test_powr3():
-    entities = get_entitites(
-        {
-            "extra": {"uiid": 190},
-            "params": {
-                "version": 8,
-                "demNextFetchTime": 1678057200000,
-                "fwVersion": "1.0.7",
-                "current": 0,
-                "voltage": 0,
-                "power": 0,
-                "uiActive": 60,
-                "timeZone": 0,
-                "dayKwh": 7,
-                "monthKwh": 7,
-                "switches": [{"switch": "off", "outlet": 0}],
-                "configure": [{"startup": "off", "outlet": 0}],
-                "pulses": [
-                    {"pulse": "off", "switch": "off", "outlet": 0, "width": 500}
-                ],
-                "rssi": -57,
-                "threshold": {
-                    "actPow": {"min": 10, "max": 400000},
-                    "voltage": {"min": 18500, "max": 26400},
-                    "current": {"min": 10, "max": 1600},
-                },
-                "getHoursKwh": {"start": 4464, "end": 4535},
-                "operSide": 1,
-            },
-        }
-    )
+    params = {
+        "version": 8,
+        "demNextFetchTime": 1678057200000,
+        "fwVersion": "1.0.7",
+        "current": 0,
+        "voltage": 0,
+        "power": 0,
+        "uiActive": 60,
+        "timeZone": 0,
+        "dayKwh": 7,
+        "monthKwh": 7,
+        "switches": [{"switch": "off", "outlet": 0}],
+        "configure": [{"startup": "off", "outlet": 0}],
+        "pulses": [{"pulse": "off", "switch": "off", "outlet": 0, "width": 500}],
+        "rssi": -57,
+        "threshold": {
+            "actPow": {"min": 10, "max": 400000},
+            "voltage": {"min": 18500, "max": 26400},
+            "current": {"min": 10, "max": 1600},
+        },
+        "getHoursKwh": {"start": 4464, "end": 4535},
+        "operSide": 1,
+    }
+    entities = get_entitites({"extra": {"uiid": 190}, "params": params})
 
     energy: XEnergyTotal = next(e for e in entities if e.uid == "energy_day")
     assert energy.device_class == SensorDeviceClass.ENERGY
