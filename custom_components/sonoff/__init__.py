@@ -208,6 +208,13 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         if devices := await store.async_load():
             _LOGGER.debug(f"{len(devices)} devices loaded from Cache")
 
+    if devices:
+        # we need to setup_devices before local.start
+        devices = internal_unique_devices(config_entry.entry_id, devices)
+        entities = registry.setup_devices(devices)
+    else:
+        entities = None
+
     if not config_entry.update_listeners:
         config_entry.add_update_listener(async_update_options)
 
@@ -239,9 +246,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     #    unavailable at init state
     # 2. We need add_entities before Hass start event, so Hass won't push
     #    unavailable state with restored=True attribute to history
-    if devices:
-        devices = internal_unique_devices(config_entry.entry_id, devices)
-        entities = registry.setup_devices(devices)
+    if entities:
         _LOGGER.debug(f"Add {len(entities)} entities")
         registry.dispatcher_send(SIGNAL_ADD_ENTITIES, entities)
 
