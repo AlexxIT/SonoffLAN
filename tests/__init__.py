@@ -1,7 +1,7 @@
 import asyncio
 from typing import List
 
-from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import HomeAssistant  # fix circular import
 from homeassistant.helpers.entity import Entity
 
 from custom_components.sonoff.core.entity import XEntity
@@ -46,7 +46,11 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
     reg.dispatcher_connect(SIGNAL_ADD_ENTITIES, lambda x: entities.extend(x))
     entities += reg.setup_devices(devices)
 
-    hass = HomeAssistant("")
+    try:
+        hass = HomeAssistant("")  # new Hass
+    except TypeError:
+        hass = HomeAssistant()  # old Hass
+
     for entity in entities:
         if not isinstance(entity, Entity):
             continue

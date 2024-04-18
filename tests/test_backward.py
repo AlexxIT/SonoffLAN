@@ -1,56 +1,40 @@
-from homeassistant.components.button import ButtonEntity
-from homeassistant.components.climate.const import ClimateEntityFeature, HVACMode
-from homeassistant.components.fan import FanEntityFeature, FanEntity
-from homeassistant.components.light import ColorMode, LightEntityFeature
-from homeassistant.components.sensor import (
-    SensorEntity,
-    SensorDeviceClass,
-    SensorStateClass,
-)
-from homeassistant.const import (
-    EntityCategory,
-    UnitOfElectricCurrent,
-    UnitOfElectricPotential,
-    UnitOfEnergy,
-    UnitOfPower,
-    UnitOfTemperature,
-)
-from homeassistant.helpers.entity import Entity
+from homeassistant.const import REQUIRED_PYTHON_VER
 
+from custom_components.sonoff import *
+from custom_components.sonoff.binary_sensor import *
+from custom_components.sonoff.button import *
+from custom_components.sonoff.climate import *
+from custom_components.sonoff.config_flow import *
+from custom_components.sonoff.cover import *
+from custom_components.sonoff.diagnostics import *
+from custom_components.sonoff.fan import *
+from custom_components.sonoff.light import *
+from custom_components.sonoff.number import *
+from custom_components.sonoff.remote import *
+from custom_components.sonoff.sensor import *
+from custom_components.sonoff.switch import *
+from custom_components.sonoff.system_health import *
 from . import init
 
 
-def test_2021_9_0():
-    sensor = SensorEntity()
-    assert sensor.native_value is None
-    assert sensor.native_unit_of_measurement is None
+def test_backward():
+    # https://github.com/home-assistant/core/blob/2023.2.0/homeassistant/const.py
+    assert REQUIRED_PYTHON_VER >= (3, 10, 0)
 
-
-def test_2021_12_0():
-    assert ButtonEntity
-    assert EntityCategory
-    assert FanEntity().percentage is 0
-    assert SensorDeviceClass
-    assert SensorStateClass
-
-
-def test_2022_5_0():
-    assert ClimateEntityFeature
-    assert HVACMode
-    assert FanEntityFeature
-    assert ColorMode
-    assert LightEntityFeature
-
-
-def test_2022_11_0():
-    assert UnitOfEnergy
-    assert UnitOfPower
-    assert UnitOfTemperature
-
-
-def test_2023_1_0():
-    assert UnitOfElectricCurrent
-    assert UnitOfElectricPotential
+    assert async_setup_entry, async_unload_entry
+    assert XBinarySensor
+    assert XRemoteButton
+    assert XClimateTH
+    assert SonoffLANFlowHandler
+    assert XCover
+    assert async_get_config_entry_diagnostics
+    assert XFan
+    assert XOnOffLight
+    assert XNumber
+    assert XRemote
+    assert XSensor
+    assert XSwitch
+    assert system_health_info
 
 
 def test_2024_1_cached_properties():
@@ -59,5 +43,5 @@ def test_2024_1_cached_properties():
     assert sensor.device_class == SensorDeviceClass.ENERGY
 
     _, entities = init({"extra": {"uiid": 1256}})
-    sensor: Entity = next(e for e in entities)
+    sensor: SensorEntity = next(e for e in entities)
     assert sensor.should_poll is False
