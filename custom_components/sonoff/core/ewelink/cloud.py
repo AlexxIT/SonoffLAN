@@ -17,8 +17,6 @@ from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
 
 _LOGGER = logging.getLogger(__name__)
 
-RETRY_DELAYS = [15, 30, 60, 5 * 60, 15 * 60, 30 * 60, 60 * 60]
-
 # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=interface-domain-name
 API = {
     "cn": "https://cn-apia.coolkit.cn",
@@ -516,7 +514,8 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             if fails:
                 self.set_online(False)
 
-                delay = RETRY_DELAYS[min(fails, len(RETRY_DELAYS)) - 1]
+                # 15s 30s 1m 2m 4m 8m 16m 32m 64m
+                delay = 15 * 2 ** min(fails - 1, 8)
                 _LOGGER.debug(f"Cloud connection retrying in {delay} seconds")
                 await asyncio.sleep(delay)
 
