@@ -361,7 +361,8 @@ class XRegistry(XRegistryBase):
             if cloud_mode:
                 await self.cloud.send(device, params, timeout=0)
             else:
-                await self.local.send(device, params, command="statistics")
+                params["subDevId"] = device["deviceid"]
+                await self.local.send(device["parent"], params, command="statistics")
 
     def can_cloud(self, device: XDevice) -> bool:
         if not self.cloud.online:
