@@ -188,6 +188,16 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
                     raise ConfigEntryAuthFailed(e)
                 raise ConfigEntryNotReady(e)
 
+    if not config_entry.update_listeners:
+        config_entry.add_update_listener(async_update_options)
+
+    config_entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, registry.stop)
+    )
+
+    # important to run before registry.setup_devices (for remote childs)
+    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
+
     devices: list[dict] | None = None
     store = Store(hass, 1, f"{DOMAIN}/{config_entry.data['username']}.json")
 
@@ -214,16 +224,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         entities = registry.setup_devices(devices)
     else:
         entities = None
-
-    if not config_entry.update_listeners:
-        config_entry.add_update_listener(async_update_options)
-
-    config_entry.async_on_unload(
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, registry.stop)
-    )
-
-    # this may only happen if async_setup_entry will fail
-    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
     if mode in ("auto", "cloud") and config_entry.data.get(CONF_PASSWORD):
         registry.cloud.start(**config_entry.data)
