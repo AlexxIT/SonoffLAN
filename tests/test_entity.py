@@ -1786,3 +1786,91 @@ def test_issue1235():
     assert power.native_unit_of_measurement is None
     assert power.native_value is "off"
     assert power.state_class is None
+
+
+def test_issue1386():
+    device = {
+        "extra": {"uiid": 210},
+        "brandName": "SONOFF",
+        "productModel": "T5-2C-120",
+        "params": {
+            "version": 8,
+            "reset_reason": "ESP_RST_POWERON",
+            "fwVersion": "1.4.0",
+            "switches": [
+                {"switch": "off", "outlet": 0},
+                {"switch": "off", "outlet": 1},
+            ],
+            "lightSwitch": "off",
+            "lightMode": 101,
+            "shock": 1,
+            "doNotDisturb": 1,
+            "doNotDisturbTime": {"from": "22:00", "to": "07:00"},
+            "onEffects": {
+                "lightEffect": 1,
+                "soundEffect": 1,
+                "statusLight": "on",
+                "statusLightTop": 1,
+                "statusLightBelow": 1,
+                "r": 0,
+                "g": 0,
+                "b": 255,
+                "br": 60,
+                "volume": 50,
+            },
+            "offEffects": {
+                "lightEffect": 2,
+                "soundEffect": 2,
+                "statusLight": "off",
+                "statusLightTop": 1,
+                "statusLightBelow": 1,
+                "r": 0,
+                "g": 0,
+                "b": 255,
+                "br": 5,
+                "volume": 50,
+            },
+            "configure": [
+                {"startup": "stay", "enableDelay": 0, "width": 19000, "outlet": 0},
+                {"startup": "stay", "enableDelay": 0, "width": 13000, "outlet": 1},
+            ],
+            "pulses": [
+                {"pulse": "off", "switch": "off", "outlet": 0, "width": 500},
+                {"pulse": "off", "switch": "off", "outlet": 1, "width": 500},
+            ],
+            "sledOnline": "on",
+            "rssi": -59,
+            "timeZone": 3,
+            "only_device": {"ota": "success", "ota_fail_reason": 0},
+            "addSubDevState": "off",
+            "addTimeOut": 10,
+            "percentageControl": 0,
+            "calibState": False,
+            "slide": 1,
+            "preEffects": {
+                "lightEffect": 1,
+                "soundEffect": 1,
+                "statusLight": "on",
+                "statusLightTop": 1,
+                "statusLightBelow": 1,
+                "r": 0,
+                "g": 0,
+                "b": 255,
+                "br": 60,
+                "volume": 50,
+            },
+            "subDevices": [],
+            "electromotor": 1,
+            "disableSwipeGesture": True,
+            "disableTapGesture": True,
+        },
+        "isSupportGroup": True,
+        "isSupportedOnMP": False,
+        "isSupportChannelSplit": True,
+        "deviceFeature": {},
+    }
+
+    entities = get_entitites(device)
+    light: XT5Light = next(i for i in entities if isinstance(i, XT5Light))
+    light.internal_update({"lightMode": 101})
+    assert light.hass.states.get(light.entity_id).state == "off"
