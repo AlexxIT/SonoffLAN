@@ -519,9 +519,12 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 _LOGGER.debug(f"Cloud connection retrying in {delay} seconds")
                 await asyncio.sleep(delay)
 
-            if not self.auth and not await self.login(**kwargs):
-                fails += 1
-                continue
+            if not self.auth:
+                try:
+                    assert await self.login(**kwargs)
+                except:
+                    fails += 1
+                    continue
 
             if not await self.connect():
                 fails += 1
