@@ -341,10 +341,9 @@ class XRegistry(XRegistryBase):
 
         # SPM-4Relay - four channels, separate update for each channel
         elif uiid == 130:
-            if self.can_local(device):
-                asyncio.create_task(self.update_spm_pow(device, False))
+            # https://github.com/AlexxIT/SonoffLAN/issues/1366
             if self.can_cloud(device):
-                asyncio.create_task(self.update_spm_pow(device, True))
+                asyncio.create_task(self.update_spm_pow(device))
 
         # checks if device still available via LAN
         if "local_ts" not in device or device["local_ts"] > time.time():
@@ -353,16 +352,12 @@ class XRegistry(XRegistryBase):
         if self.local.online:
             asyncio.create_task(self.check_offline(device))
 
-    async def update_spm_pow(self, device: XDevice, cloud_mode: bool):
+    async def update_spm_pow(self, device: XDevice):
         for i in range(4):
             if i > 0:
                 await asyncio.sleep(5)
             params = {"uiActive": {"outlet": i, "time": 60}}
-            if cloud_mode:
-                await self.cloud.send(device, params, timeout=0)
-            else:
-                params["subDevId"] = device["deviceid"]
-                await self.local.send(device["parent"], params, command="statistics")
+            await self.cloud.send(device, params, timeout=0)
 
     def can_cloud(self, device: XDevice) -> bool:
         if not self.cloud.online:
