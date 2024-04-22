@@ -49,6 +49,7 @@ PLATFORMS = [
     "fan",
     "light",
     "remote",
+    "select",
     "sensor",
     "switch",
     "number",

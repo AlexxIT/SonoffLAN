@@ -133,3 +133,16 @@ class XDetach(XEntity, SwitchEntity):
 
     async def async_turn_off(self):
         await self.ewelink.send_cloud(self.device, {"relaySeparation": 0})
+
+
+# noinspection PyAbstractClass
+class XToggleNum(XEntity, SwitchEntity):
+    def set_state(self, params: dict):
+        self.device["params"][self.param] = params[self.param]
+        self._attr_is_on = params[self.param] == 1
+
+    async def async_turn_on(self):
+        await self.ewelink.send(self.device, {self.param: 1})
+
+    async def async_turn_off(self):
+        await self.ewelink.send(self.device, {self.param: 0})
