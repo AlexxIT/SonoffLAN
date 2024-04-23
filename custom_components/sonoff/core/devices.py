@@ -272,13 +272,13 @@ DEVICES = {
         ),
         spec(
             XEnergySensorDualR3,
-            param="kwhHistories_01",
+            param="kwhHistories_02",
             uid="energy_3",
             get_params={"getKwh_02": 2},
         ),
         spec(
             XEnergySensorDualR3,
-            param="kwhHistories_01",
+            param="kwhHistories_03",
             uid="energy_4",
             get_params={"getKwh_03": 2},
         ),
