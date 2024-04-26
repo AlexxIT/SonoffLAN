@@ -158,12 +158,15 @@ class XRegistry(XRegistryBase):
                         break
                 else:
                     device["params_bulk"]["switches"].append(new)
-            return
+        else:
+            device["params_bulk"] = params
 
-        device["params_bulk"] = params
         await asyncio.sleep(0.1)
 
-        return await self.send(device, device.pop("params_bulk"))
+        # this can be called from different threads/loops
+        # https://github.com/AlexxIT/SonoffLAN/issues/1368
+        if params := device.pop("params_bulk", None):
+            return await self.send(device, params)
 
     async def send_cloud(self, device: XDevice, params: dict = None, query=True):
         if not self.can_cloud(device):
