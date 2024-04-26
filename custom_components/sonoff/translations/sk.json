@@ -12,7 +12,8 @@
         "description": "Zadajte Vaše [eWeLink účet](https://www.ewelink.cc/en/) poverenia",
         "data": {
           "username": "E-mail alebo telefón (v režime DIY použite ľubovoľný)",
-          "password": "Heslo (pre DIY režim nechajte prázdne)"
+          "password": "Heslo (pre DIY režim nechajte prázdne)",
+          "country_code": "Kód krajiny (pre automatický výber nechajte prázdne)"
         }
       }
     }
