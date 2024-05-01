@@ -1896,3 +1896,22 @@ def test_zbminil2():
     entities = get_entitites(device)
     assert entities[0].state == "on"
     assert entities[1].state == -61
+
+
+def test_1394():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1394
+    entities = get_entitites({"extra": {"uiid": 173}})
+    light: XLightL3 = entities[0]
+
+    # noinspection PyTypeChecker
+    registry: DummyRegistry = light.ewelink
+
+    await_(light.async_turn_on(brightness=128, rgb_color=(255, 0, 0)))
+    assert registry.send_args[1] == {
+        "bright": 50,
+        "colorB": 0,
+        "colorG": 0,
+        "colorR": 255,
+        "light_type": 1,
+        "mode": 1,
+    }
