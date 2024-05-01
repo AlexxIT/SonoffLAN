@@ -111,6 +111,7 @@ Battery = spec(XSensor, param="battery")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
 PULSE = spec(XToggle, param="pulse", enabled=False)
+ZRSSI = spec(XSensor, param="subDevRssi", uid="rssi", enabled=False)
 
 SPEC_SWITCH = [XSwitch, LED, RSSI, PULSE, XPulseWidth]
 SPEC_1CH = [Switch1, LED, RSSI]
@@ -398,6 +399,8 @@ DEVICES = {
         XRemoteButton,
         Battery,
     ],
+    # https://github.com/AlexxIT/SonoffLAN/issues/1398
+    7004: [XSwitch, ZRSSI],  # ZBMINIL2
     # https://github.com/AlexxIT/SonoffLAN/issues/1283
     7006: [XZigbeeCover, spec(XSensor, param="battery")],
     7014: [
@@ -405,6 +408,7 @@ DEVICES = {
         spec(XSensor100, param="humidity"),
         Battery,
     ],  # https://github.com/AlexxIT/SonoffLAN/issues/1166
+    7016: [ZRSSI],  # SNZB-06P
 }
 
 

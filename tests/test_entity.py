@@ -1874,3 +1874,25 @@ def test_issue1386():
     light: XT5Light = next(i for i in entities if isinstance(i, XT5Light))
     light.internal_update({"lightMode": 101})
     assert light.hass.states.get(light.entity_id).state == "off"
+
+
+def test_zbminil2():
+    device = {
+        "extra": {"uiid": 7004},
+        "params": {
+            "bindInfos": "***",
+            "subDevId": "4e0560fefff410347004",
+            "parentid": "100202124f",
+            "fwVersion": "1.0.14",
+            "switch": "on",
+            "startup": "stay",
+            "subDevRssiSetting": {"active": 60, "duration": 5},
+            "subDevRssi": -61,
+            "sledOnline": "on",
+        },
+        "model": "ZBMINIL2",
+    }
+
+    entities = get_entitites(device)
+    assert entities[0].state == "on"
+    assert entities[1].state == -61
