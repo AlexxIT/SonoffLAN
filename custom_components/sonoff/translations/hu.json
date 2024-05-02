@@ -12,7 +12,8 @@
         "description": "Adja meg [eWeLink](https://www.ewelink.cc/hu/) fiókadatait",
         "data": {
           "username": "E-mail vagy telefonszám (bármelyik DIY mód esetén)",
-          "password": "Jelszó (hagyja üresen DIY mód estén)"
+          "password": "Jelszó (hagyja üresen DIY mód estén)",
+          "country_code": "Országkód (hagyja üresen az automatikus kiválasztáshoz)"
         }
       }
     }
