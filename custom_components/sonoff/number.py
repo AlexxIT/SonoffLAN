@@ -57,3 +57,11 @@ class XPulseWidth(XNumber):
         await self.ewelink.send(
             self.device, {"pulse": "on", "pulseWidth": int(value / 0.5) * 500}
         )
+
+
+class XSensitivity(XNumber):
+    param = "sensitivity"
+
+    _attr_entity_registry_enabled_default = False
+    _attr_native_max_value = 3
+    _attr_native_min_value = 1

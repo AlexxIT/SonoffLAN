@@ -12,9 +12,10 @@ ENTITY_CATEGORIES = {
     "battery": EntityCategory.DIAGNOSTIC,
     "battery_voltage": EntityCategory.DIAGNOSTIC,
     "led": EntityCategory.CONFIG,
-    "rssi": EntityCategory.DIAGNOSTIC,
     "pulse": EntityCategory.CONFIG,
     "pulseWidth": EntityCategory.CONFIG,
+    "rssi": EntityCategory.DIAGNOSTIC,
+    "sensitivity": EntityCategory.CONFIG,
 }
 
 ICONS = {

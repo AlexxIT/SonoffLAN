@@ -18,7 +18,13 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 
 from .ewelink import XDevice
-from ..binary_sensor import XBinarySensor, XWiFiDoor, XZigbeeMotion
+from ..binary_sensor import (
+    XBinarySensor,
+    XWiFiDoor,
+    XZigbeeMotion,
+    XHumanSensor,
+    XLightSensor,
+)
 from ..climate import XClimateNS, XClimateTH, XThermostat
 from ..core.entity import XEntity
 from ..cover import XCover, XCoverDualR3, XZigbeeCover, XCover91
@@ -39,7 +45,7 @@ from ..light import (
     XT5Light,
     XZigbeeLight,
 )
-from ..number import XPulseWidth
+from ..number import XPulseWidth, XSensitivity
 from ..remote import XRemote
 from ..sensor import (
     XEnergySensor,
@@ -408,7 +414,7 @@ DEVICES = {
         spec(XSensor100, param="humidity"),
         Battery,
     ],  # https://github.com/AlexxIT/SonoffLAN/issues/1166
-    7016: [ZRSSI],  # SNZB-06P
+    7016: [XHumanSensor, XLightSensor, XSensitivity, ZRSSI],  # SNZB-06P
 }
 
 
