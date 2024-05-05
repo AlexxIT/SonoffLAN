@@ -11,6 +11,7 @@ from aiohttp import web
 from homeassistant.components import system_health
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.system_info import async_get_system_info
 
 from .core.const import DOMAIN, PRIVATE_KEYS
 from .core import xutils
@@ -58,7 +59,7 @@ async def setup_debug(hass: HomeAssistant, logger: Logger):
     hass.http.register_view(view)
 
     integration = hass.data["integrations"][DOMAIN]
-    info = await hass.helpers.system_info.async_get_system_info()
+    info = await async_get_system_info(hass)
     info[DOMAIN + "_version"] = f"{integration.version} ({xutils.source_hash()})"
     logger.debug(f"SysInfo: {info}")
 
