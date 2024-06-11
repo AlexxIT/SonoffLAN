@@ -12,7 +12,8 @@
         "description": "[eWeLink hesabınızın](https://www.ewelink.cc/en/) bilgilerini girin",
         "data": {
           "username": "E-posta veya telefon (DIY modu için herhangi birini kullanın)",
-          "password": "Parola (DIY modu için boş bırakın)"
+          "password": "Parola (DIY modu için boş bırakın)",
+          "country_code": "Ülke kodu (Otomatik seçim için boş bırakın)"
         }
       }
     }
