@@ -1,7 +1,7 @@
 from homeassistant.core import HomeAssistant
 
 
-def source_hash() -> str:
+async def source_hash() -> str:
     if source_hash.__doc__:
         return source_hash.__doc__
 
@@ -11,13 +11,13 @@ def source_hash() -> str:
 
         m = hashlib.md5()
         path = os.path.dirname(os.path.dirname(__file__))
-        for root, dirs, files in os.walk(path):
+        for root, dirs, files in await HomeAssistant.async_add_executor_job(os.walk, path):
             dirs.sort()
             for file in sorted(files):
                 if not file.endswith(".py"):
                     continue
                 path = os.path.join(root, file)
-                with open(path, "rb") as f:
+                with await HomeAssistant.async_add_executor_job(open, path, "rb") as f:
                     m.update(f.read())
 
         source_hash.__doc__ = m.hexdigest()[:7]
