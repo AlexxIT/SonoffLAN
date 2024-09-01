@@ -595,7 +595,8 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     async def _process_ws_msg(self, data: dict):
         if "action" not in data:
             # response on our command
-            self._set_response(data["sequence"], data["error"])
+            if "sequence" in data and "error" in data:
+                self._set_response(data["sequence"], data["error"])
 
             # with params response on query, without - on update
             if "params" in data:
