@@ -595,8 +595,8 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     async def _process_ws_msg(self, data: dict):
         if "action" not in data:
             # response on our command
-            if "sequence" in data and "error" in data:
-                self._set_response(data["sequence"], data["error"])
+            if "sequence" in data:
+                self._set_response(data["sequence"], data.get("error"))
 
             # with params response on query, without - on update
             if "params" in data:
@@ -604,8 +604,11 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             elif "config" in data:
                 data["params"] = data.pop("config")
                 self.dispatcher_send(SIGNAL_UPDATE, data)
-            elif data["error"] != 0:
-                _LOGGER.warning(f"Cloud ERROR: {data}")
+            elif "error" in data:
+                if data["error"] != 0:
+                    _LOGGER.warning(f"Cloud ERROR: {data}")
+            else:
+                _LOGGER.warning(f"UNKNOWN cloud msg: {data}")
 
         elif data["action"] == "update":
             # new state from device
