@@ -154,7 +154,7 @@ class XClimateNS(XEntity, ClimateEntity):
     _attr_max_temp = 31
     _attr_min_temp = 16
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
-    _attr_target_temperature_step = 1
+    _attr_target_temperature_step = 0.5
 
     # https://developers.home-assistant.io/blog/2024/01/24/climate-climateentityfeatures-expanded
     if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 2):
