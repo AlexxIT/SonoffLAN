@@ -145,6 +145,9 @@ EnergyPOW = spec(
     get_params={"hundredDaysKwh": "get"},
 )
 
+# backward compatibility for unique_id
+DoorLock = spec(XBinarySensor, param="lock", uid="", default_class="door")
+
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
 DEVICES = {
     1: SPEC_SWITCH,
@@ -385,12 +388,7 @@ DEVICES = {
         Battery,
     ],  # https://github.com/AlexxIT/SonoffLAN/issues/1150
     2026: [XZigbeeMotion, Battery],  # ZIGBEE_MOBILE_SENSOR
-    # ZIGBEE_DOOR_AND_WINDOW_SENSOR
-    3026: [
-        # backward compatibility for unique_id
-        spec(XBinarySensor, param="lock", uid="", default_class="door"),
-        Battery,
-    ],
+    3026: [DoorLock, Battery],  # ZIGBEE_DOOR_AND_WINDOW_SENSOR
     # https://github.com/AlexxIT/SonoffLAN/issues/1265
     3258: [XZigbeeLight],  # ZigbeeColorTunableWhiteLight
     4026: [
@@ -403,10 +401,9 @@ DEVICES = {
         spec(XZigbeeSwitches, channel=2, uid="3"),
         spec(XZigbeeSwitches, channel=3, uid="4"),
     ],
-    7000: [
-        XRemoteButton,
-        Battery,
-    ],
+    7000: [XRemoteButton, Battery],
+    # https://github.com/AlexxIT/SonoffLAN/issues/1439
+    7003: [DoorLock, Battery],  # SNZB-04P
     # https://github.com/AlexxIT/SonoffLAN/issues/1398
     7004: [XSwitch, ZRSSI],  # ZBMINIL2
     # https://github.com/AlexxIT/SonoffLAN/issues/1283
