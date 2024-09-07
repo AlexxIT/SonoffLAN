@@ -60,6 +60,7 @@ from custom_components.sonoff.switch import (
     XSwitchTH,
     XToggle,
     XZigbeeSwitches,
+    XBoolSwitch,
 )
 from . import init, save_to, DEVICEID, DummyRegistry
 
@@ -1959,3 +1960,64 @@ def test_snzb_03p():
     assert entities[1].state == "on"
     assert entities[2].state == 100
     assert entities[3].state == -68
+
+
+def test_226():
+    device = {
+        "extra": {"uiid": 226},
+        "params": {
+            "bindInfos": "***",
+            "version": 8,
+            "rssi": -77,
+            "fwVersion": "1.0.0",
+            "switch": True,
+            "pulse": "off",
+            "pulseWidth": 1000,
+            "sledOnline": "on",
+            "startup": "off",
+            "prepaid_support": True,
+            "alarm_v_min": -1,
+            "alarm_v_max": -1,
+            "alarm_c_min": -1,
+            "alarm_c_max": -1,
+            "alarm_p_min": -1,
+            "alarm_p_max": -1,
+            "availablePower": 0,
+            "prepaidEnale": False,
+            "prepaidLowBalanceAlert": False,
+            "prepaidLowest": 0,
+            "min_p_upper": 5000,
+            "min_p_lower": 1,
+            "max_p_upper": 15000,
+            "max_p_lower": 1,
+            "min_v_upper": 220,
+            "min_v_lower": 76,
+            "max_v_upper": 300,
+            "max_v_lower": 220,
+            "max_c_upper": 63,
+            "max_c_lower": 0.1,
+            "calibrateFlag": False,
+            "ssid": "***",
+            "bssid": "***",
+            "staMac": "***",
+            "totalPower": 0.7,
+            "phase_0_c": 1.13,
+            "phase_0_v": 241.08,
+            "phase_0_p": 51.83,
+            "uiActive": 60,
+        },
+        "model": "CK-BL602-W102SW18-01(226)",
+    }
+
+    entities = get_entitites(device)
+
+    switch: SwitchEntity = next(e for e in entities if isinstance(e, XBoolSwitch))
+    assert switch.state == "on"
+    current: XSensor = next(e for e in entities if e.uid == "current")
+    assert current.state == 1.13
+    current: XSensor = next(e for e in entities if e.uid == "power")
+    assert current.state == 51.83
+    current: XSensor = next(e for e in entities if e.uid == "voltage")
+    assert current.state == 241.08
+    energy: XSensor = next(e for e in entities if e.uid == "energy")
+    assert energy.state == 0.7

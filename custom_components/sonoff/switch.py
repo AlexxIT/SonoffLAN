@@ -133,3 +133,16 @@ class XDetach(XEntity, SwitchEntity):
 
     async def async_turn_off(self):
         await self.ewelink.send_cloud(self.device, {"relaySeparation": 0})
+
+
+class XBoolSwitch(XEntity, SwitchEntity):
+    params = {"switch"}
+
+    def set_state(self, params: dict):
+        self._attr_is_on = params["switch"]
+
+    async def async_turn_on(self, *args, **kwargs):
+        await self.ewelink.send(self.device, {"switch": True})
+
+    async def async_turn_off(self):
+        await self.ewelink.send(self.device, {"switch": False})

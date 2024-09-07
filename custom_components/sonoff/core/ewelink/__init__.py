@@ -327,8 +327,8 @@ class XRegistry(XRegistryBase):
         uiid = device["extra"]["uiid"]
 
         # [5] POW, [32] POWR2, [182] S40, [190] POWR3 - one channel, only cloud update
-        # [181] THR316D/THR320D
-        if uiid in (5, 32, 182, 190, 181):
+        # [181] THR316D/THR320D, [226] CK-BL602-W102SW18-01
+        if uiid in (5, 32, 182, 190, 181, 226):
             if self.can_cloud(device):
                 params = {"uiActive": 60}
                 asyncio.create_task(self.cloud.send(device, params, timeout=0))

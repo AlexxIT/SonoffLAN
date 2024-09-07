@@ -70,6 +70,7 @@ from ..switch import (
     XZigbeeSwitches,
     XSwitchPOWR3,
     XDetach,
+    XBoolSwitch,
 )
 
 # supported custom device_class
@@ -371,6 +372,15 @@ DEVICES = {
     211: [Switch1, Switch2, Switch3, XT5Light, XT5Action],  # T5-3C-86
     # https://github.com/AlexxIT/SonoffLAN/issues/1251
     212: [Switch1, Switch2, Switch3, Switch4, XT5Light, XT5Action],  # T5-4C-86
+    226: [
+        XBoolSwitch,
+        LED,
+        RSSI,
+        spec(XSensor, param="phase_0_c", uid="current"),
+        spec(XSensor, param="phase_0_p", uid="power"),
+        spec(XSensor, param="phase_0_v", uid="voltage"),
+        spec(XEnergyTotal, param="totalPower", uid="energy"),
+    ],  # CK-BL602-W102SW18-01(226)
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     # https://github.com/AlexxIT/SonoffLAN/issues/1195
     1256: [spec(XSwitch)],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
