@@ -28,7 +28,7 @@ class XClimateTH(XEntity, ClimateEntity):
     _attr_hvac_mode = None
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.COOL, HVACMode.DRY]
     _attr_max_temp = 99
-    _attr_min_temp = 1
+    _attr_min_temp = -40
     _attr_target_temperature_high = None
     _attr_target_temperature_low = None
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
