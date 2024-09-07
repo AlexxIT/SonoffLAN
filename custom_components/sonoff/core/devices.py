@@ -402,8 +402,10 @@ DEVICES = {
         spec(XZigbeeSwitches, channel=3, uid="4"),
     ],
     7000: [XRemoteButton, Battery],
+    # https://github.com/AlexxIT/SonoffLAN/issues/1435
+    7002: [XZigbeeMotion, XLightSensor, Battery, ZRSSI],  # SNZB-03P
     # https://github.com/AlexxIT/SonoffLAN/issues/1439
-    7003: [DoorLock, Battery],  # SNZB-04P
+    7003: [DoorLock, Battery, ZRSSI],  # SNZB-04P
     # https://github.com/AlexxIT/SonoffLAN/issues/1398
     7004: [XSwitch, ZRSSI],  # ZBMINIL2
     # https://github.com/AlexxIT/SonoffLAN/issues/1283

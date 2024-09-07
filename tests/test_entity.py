@@ -1934,3 +1934,28 @@ def test_1394():
         "light_type": 1,
         "mode": 1,
     }
+
+
+def test_snzb_03p():
+    device = {
+        "extra": {"uiid": 7002},
+        "params": {
+            "fwVersion": "2.2.1",
+            "battery": 100,
+            "trigTime": "1717890285000",
+            "supportPowConfig": 1,
+            "subDevRssi": -68,
+            "motion": 1,
+            "subDevRssiSetting": {"active": 60, "duration": 5},
+            "key": 0,
+            "detectInterval": 10,
+            "brState": "brighter",
+        },
+        "model": "SNZB-03P",
+    }
+
+    entities = get_entitites(device)
+    assert entities[0].state == "on"
+    assert entities[1].state == "on"
+    assert entities[2].state == 100
+    assert entities[3].state == -68
