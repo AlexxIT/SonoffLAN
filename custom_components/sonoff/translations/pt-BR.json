@@ -12,7 +12,8 @@
         "description": "Insira a sua [conta eWeLink](https://www.ewelink.cc/en/)",
         "data": {
           "username": "E-mail ou telefone (use qualquer um para o modo DIY)",
-          "password": "Senha (deixe em branco para o modo DIY)"
+          "password": "Senha (deixe em branco para o modo DIY)",
+          "country_code": "Código do país (deixe em branco para escolha automática)"
         }
       }
     }
