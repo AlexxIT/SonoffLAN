@@ -1,4 +1,5 @@
 import asyncio
+import threading
 from typing import List
 
 from homeassistant.config_entries import HomeAssistant  # fix circular import
@@ -36,7 +37,7 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
         params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
 
     asyncio.create_task = lambda _: None
-    asyncio.get_running_loop = lambda: None
+    asyncio.get_running_loop = lambda: type("", (), {"_thread_id": threading.get_ident()})
 
     entities = []
 

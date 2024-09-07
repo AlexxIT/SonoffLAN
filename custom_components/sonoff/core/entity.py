@@ -66,7 +66,7 @@ class XEntity(Entity):
             self._attr_unique_id = device["deviceid"]
 
         # domain will be replaced in entity_registry.async_generate_entity_id
-        self.entity_id = f"{DOMAIN}.{DOMAIN}_{self._attr_unique_id}"
+        self.entity_id = f"{DOMAIN}.{DOMAIN}_{self._attr_unique_id.lower()}"
 
         deviceid: str = device["deviceid"]
         params: dict = device["params"]
