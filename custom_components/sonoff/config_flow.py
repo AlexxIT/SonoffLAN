@@ -12,7 +12,7 @@ from .core.ewelink import XRegistryCloud
 from .core.ewelink.cloud import REGIONS
 
 
-class SonoffLANFlowHandler(ConfigFlow, domain=DOMAIN):
+class FlowHandler(ConfigFlow, domain=DOMAIN):
     @property
     @lru_cache(maxsize=1)
     def cloud(self):

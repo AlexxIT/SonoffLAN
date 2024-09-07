@@ -96,7 +96,7 @@ UNIQUE_DEVICES = {}
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    if (MAJOR_VERSION, MINOR_VERSION) < (2023, 1):
+    if (MAJOR_VERSION, MINOR_VERSION) < (2023, 2):
         raise Exception("unsupported hass version")
 
     # init storage for registries

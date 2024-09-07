@@ -19,22 +19,25 @@ from . import init
 
 def test_backward():
     # https://github.com/home-assistant/core/blob/2023.2.0/homeassistant/const.py
+    assert (MAJOR_VERSION, MINOR_VERSION) >= (2023, 2)
     assert REQUIRED_PYTHON_VER >= (3, 10, 0)
 
-    assert async_setup_entry, async_unload_entry
+    assert async_setup_entry
+    assert async_get_config_entry_diagnostics
+    assert system_health_info
+
+    assert FlowHandler
+
     assert XBinarySensor
     assert XRemoteButton
     assert XClimateTH
-    assert SonoffLANFlowHandler
     assert XCover
-    assert async_get_config_entry_diagnostics
     assert XFan
     assert XOnOffLight
     assert XNumber
     assert XRemote
     assert XSensor
     assert XSwitch
-    assert system_health_info
 
 
 def test_2024_1_cached_properties():
