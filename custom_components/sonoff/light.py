@@ -1149,6 +1149,8 @@ class XT5Light(XOnOffLight):
         "Wiper",
         "Fairy",
         "Starburst",
+        "DIY 1",
+        "DIY 2",
     ]
     _attr_supported_features = LightEntityFeature.EFFECT
 
