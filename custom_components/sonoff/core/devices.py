@@ -411,6 +411,8 @@ DEVICES = {
     7004: [XSwitch, ZRSSI],  # ZBMINIL2
     # https://github.com/AlexxIT/SonoffLAN/issues/1283
     7006: [XZigbeeCover, spec(XSensor, param="battery")],
+    # https://github.com/AlexxIT/SonoffLAN/issues/1456
+    7009: [XZigbeeLight],  # CK-BL702-AL-01(7009_Z102LG03-1)
     7014: [
         spec(XSensor100, param="temperature"),
         spec(XSensor100, param="humidity"),
