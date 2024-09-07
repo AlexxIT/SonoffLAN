@@ -48,3 +48,34 @@ def test_2024_1_cached_properties():
     _, entities = init({"extra": {"uiid": 1256}})
     sensor: SensorEntity = next(e for e in entities)
     assert sensor.should_poll is False
+
+
+def test_2024_2_climate():
+    _, entities = init({"extra": {"uiid": 15}})
+    climate: ClimateEntity = next(e for e in entities if isinstance(e, XClimateTH))
+    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 2):
+        assert climate.supported_features == (
+            ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+            | ClimateEntityFeature.TURN_ON
+            | ClimateEntityFeature.TURN_OFF
+        )
+    else:
+        assert (
+            climate.supported_features == ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+        )
+
+
+def test_2024_8_fan():
+    _, entities = init({"extra": {"uiid": 34}})
+    fan: FanEntity = next(e for e in entities if isinstance(e, XFan))
+    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 8):
+        assert fan.supported_features == (
+            FanEntityFeature.SET_SPEED
+            | FanEntityFeature.PRESET_MODE
+            | FanEntityFeature.TURN_OFF
+            | FanEntityFeature.TURN_ON
+        )
+    else:
+        assert fan.supported_features == (
+            FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
+        )

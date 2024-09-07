@@ -2,6 +2,7 @@ from homeassistant.components.fan import (
     FanEntity,
     FanEntityFeature,
 )
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -29,7 +30,16 @@ MODES = [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
 class XFan(XEntity, FanEntity):
     params = {"switches", "fan"}
     _attr_speed_count = 3
-    _attr_supported_features = FanEntityFeature.SET_SPEED
+
+    # https://developers.home-assistant.io/blog/2024/07/19/fan-fanentityfeatures-turn-on_off/
+    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 8):
+        _attr_supported_features = (
+            FanEntityFeature.SET_SPEED
+            | FanEntityFeature.TURN_OFF
+            | FanEntityFeature.TURN_ON
+        )
+    else:
+        _attr_supported_features = FanEntityFeature.SET_SPEED
 
     def __init__(self, ewelink: XRegistry, device: XDevice) -> None:
         super().__init__(ewelink, device)
@@ -166,6 +176,9 @@ class XFanDualR3(XFan):
 
 # noinspection PyAbstractClass
 class XToggleFan(XEntity, FanEntity):
+    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 8):
+        _attr_supported_features = FanEntityFeature.TURN_OFF | FanEntityFeature.TURN_ON
+
     @property
     def is_on(self):
         return self._attr_is_on

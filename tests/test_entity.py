@@ -3,7 +3,7 @@ import time
 from typing import Union
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
-from homeassistant.components.fan import FanEntity
+from homeassistant.components.fan import FanEntity, FanEntityFeature
 from homeassistant.components.light import (
     COLOR_MODE_COLOR_TEMP,
     COLOR_MODE_RGB,
@@ -12,7 +12,12 @@ from homeassistant.components.light import (
 )
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.const import TEMP_FAHRENHEIT, UnitOfEnergy
+from homeassistant.const import (
+    TEMP_FAHRENHEIT,
+    UnitOfEnergy,
+    MAJOR_VERSION,
+    MINOR_VERSION,
+)
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
@@ -27,7 +32,7 @@ from custom_components.sonoff.core.ewelink import (
     SIGNAL_UPDATE,
 )
 from custom_components.sonoff.cover import XCover, XCoverDualR3, XZigbeeCover, XCover91
-from custom_components.sonoff.fan import XFan
+from custom_components.sonoff.fan import XFan, XToggleFan
 from custom_components.sonoff.light import (
     UIID22_MODES,
     XDiffuserLight,
@@ -908,6 +913,20 @@ def test_device_class2():
         assert fan.state == "on"
 
         assert light.__class__.async_turn_on == func
+
+
+def test_device_class_fan():
+    entities = get_entitites(
+        {"extra": {"uiid": 1}}, {"devices": {DEVICEID: {"device_class": "fan"}}}
+    )
+
+    fan: FanEntity = next(e for e in entities if isinstance(e, XToggleFan))
+    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 8):
+        assert fan.supported_features == (
+            FanEntityFeature.TURN_OFF | FanEntityFeature.TURN_ON
+        )
+    else:
+        assert fan.supported_features == 0
 
 
 def test_light_group():
