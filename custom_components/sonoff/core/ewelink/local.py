@@ -15,6 +15,7 @@ import aiohttp
 from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
+from aiohttp.hdrs import CONTENT_TYPE
 from zeroconf import Zeroconf, ServiceStateChange
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo
 
@@ -202,6 +203,11 @@ class XRegistryLocal(XRegistryBase):
             )
 
             try:
+                # some devices don't support getState command
+                # https://github.com/AlexxIT/SonoffLAN/issues/1442
+                if command == "getState" and r.headers.get(CONTENT_TYPE) == "text/html":
+                    return "online"
+
                 resp: dict = await r.json()
                 if resp["error"] == 0:
                     _LOGGER.debug(f"{log} <= {resp}")
