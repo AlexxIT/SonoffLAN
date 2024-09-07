@@ -3,9 +3,9 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
+from .core import xutils
 from .core.const import DOMAIN, PRIVATE_KEYS
 from .core.ewelink import XRegistry
-from .core import xutils
 
 
 async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigEntry):
@@ -53,7 +53,7 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
         devices = repr(e)
 
     return {
-        "version": xutils.source_hash(),
+        "version": await hass.async_add_executor_job(xutils.source_hash),
         "cloud_auth": registry.cloud.auth is not None,
         "config": config,
         "options": options,
