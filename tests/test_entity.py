@@ -1920,7 +1920,18 @@ def test_zbminil2():
 
 def test_1394():
     # https://github.com/AlexxIT/SonoffLAN/issues/1394
-    entities = get_entitites({"extra": {"uiid": 173}})
+    device = {
+        "extra": {"uiid": 173},
+        "params": {
+            "bright": 50,
+            "colorB": 0,
+            "colorG": 0,
+            "colorR": 255,
+            "light_type": 1,
+            "mode": 1,
+        },
+    }
+    entities = get_entitites(device)
     light: XLightL3 = entities[0]
 
     # noinspection PyTypeChecker
@@ -1932,6 +1943,26 @@ def test_1394():
         "colorB": 0,
         "colorG": 0,
         "colorR": 255,
+        "light_type": 1,
+        "mode": 1,
+    }
+
+    await_(light.async_turn_on(brightness=255))
+    assert registry.send_args[1] == {
+        "bright": 100,
+        "colorB": 0,
+        "colorG": 0,
+        "colorR": 255,
+        "light_type": 1,
+        "mode": 1,
+    }
+
+    await_(light.async_turn_on(rgb_color=(0, 255, 0)))
+    assert registry.send_args[1] == {
+        "bright": 50,
+        "colorB": 0,
+        "colorG": 255,
+        "colorR": 0,
         "light_type": 1,
         "mode": 1,
     }

@@ -752,6 +752,14 @@ class XLightL3(XLightL1):
                 None,
             )
 
+    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
+        # fix https://github.com/AlexxIT/SonoffLAN/issues/1394
+        if brightness is not None and rgb_color is None:
+            rgb_color = self.rgb_color
+        if brightness is None and rgb_color is not None:
+            brightness = self.brightness
+        return super().get_params(brightness, color_temp, rgb_color, effect)
+
 
 B02_MODE_PAYLOADS = {
     "nightLight": {"br": 5, "ct": 0},
