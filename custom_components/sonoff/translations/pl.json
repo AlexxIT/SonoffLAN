@@ -32,8 +32,8 @@
   "system_health": {
     "info": {
       "version": "Wersja",
-      "cloud_online": "Urzadzenia chmurowe online",
-      "local_online": "Urzadzenia lokalne online",
+      "cloud_online": "Urządzenia chmurowe online",
+      "local_online": "Urządzenia lokalne online",
       "debug": "Strona debugowania"
     }
   }
