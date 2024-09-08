@@ -38,7 +38,7 @@ class XNumber(XEntity, NumberEntity):
 class XPulseWidth(XNumber):
     param = "pulseWidth"
 
-    __attr_entity_registry_enabled_default = False
+    _attr_entity_registry_enabled_default = False
 
     _attr_native_max_value = 36000
     _attr_native_min_value = 0.5
