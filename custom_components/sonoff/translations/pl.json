@@ -1,18 +1,19 @@
 {
   "config": {
     "abort": {
-      "reauth_successful": "Ponowne uwierzytelnienie powiod\u0142o si\u0119"
+      "reauth_successful": "Ponowne uwierzytelnienie powiodło się"
     },
     "error": {
-      "exists": "To konto jest juz skonfigurowane",
+      "exists": "To konto jest już skonfigurowane",
       "template": "{error}"
     },
     "step": {
       "user": {
         "description": "Wpisz dane konta [eWeLink](https://www.ewelink.cc/pl/)",
         "data": {
-          "username": "Adres email lub telefon (użyj dowolnych dla trybu DIY)",
-          "password": "Hasło (pozostaw puste dla trybu DIY)"
+          "username": "Adres e-mail lub numer telefonu (użyj dowolnych dla trybu DIY)",
+          "password": "Hasło (pozostaw puste dla trybu DIY)",
+          "country_code": "Kod kraju (pozostaw puste dla automatycznego wyboru)"
         }
       }
     }
@@ -22,7 +23,7 @@
       "init": {
         "data": {
           "mode": "Tryb (auto jest rekomendowany dla większości użytkowników)",
-          "homes": "Domy (pozostaw nie zaznaczone dla \"obecnego\")",
+          "homes": "Domy (pozostaw niezaznaczone dla aktywnego w aplikacji mobilnej)",
           "debug": "Strona debugowania (Integracja > Menu > Znane problemy)"
         }
       }
@@ -31,8 +32,8 @@
   "system_health": {
     "info": {
       "version": "Wersja",
-      "cloud_online": "Urządzenie chmurowe online",
-      "local_online": "Urzadzenia lokalne online",
+      "cloud_online": "Urządzenia chmurowe online",
+      "local_online": "Urządzenia lokalne online",
       "debug": "Strona debugowania"
     }
   }
