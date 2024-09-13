@@ -1,0 +1,40 @@
+{
+  "config": {
+    "abort": {
+      "reauth_successful": "重新認證成功"
+    },
+    "error": {
+      "exists": "此帳號已經設定",
+      "template": "{error}"
+    },
+    "step": {
+      "user": {
+        "description": "輸入您的 [eWeLink帳號](https://www.ewelink.cc/) 資訊",
+        "data": {
+          "username": "Email或手機 (DIY模式請輸入any)",
+          "password": "密碼 (DIY模式請留空)",
+          "country_code": "國家地區代碼 (欲自動選擇請留空)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "mode": "模式 (一般使用請選擇auto)",
+          "homes": "家 (請留空)",
+          "debug": "除錯頁面 (整合 > 選單 > 已知問題)"
+        }
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "version": "版本",
+      "cloud_online": "Cloud devices online",
+      "local_online": "Local devices online",
+      "debug": "除錯頁面"
+    }
+  }
+}
