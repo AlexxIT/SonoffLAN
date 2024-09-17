@@ -572,8 +572,11 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 # {'error': 406, 'reason': 'Authentication Failed'}
                 # can happened when login from another place with same user/appid
                 if error == 406:
-                    _LOGGER.warning("You logged in from another place")
-                    self.auth = None
+                    _LOGGER.error(
+                        "You logged in from another place, read more "
+                        "https://github.com/AlexxIT/SonoffLAN#configuration"
+                    )
+                    # self.auth = None
                     return False
 
                 raise Exception(resp)
