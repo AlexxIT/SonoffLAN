@@ -30,6 +30,7 @@ from .core import devices as core_devices
 from .core.const import (
     CONF_APPID,
     CONF_APPSECRET,
+    CONF_COUNTRY_CODE,
     CONF_DEFAULT_CLASS,
     CONF_DEVICEKEY,
     CONF_RFBRIDGE,
@@ -175,11 +176,18 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         hass.data[DOMAIN][config_entry.entry_id] = registry = XRegistry(session)
 
     mode = config_entry.options.get(CONF_MODE, "auto")
+    data = config_entry.data
 
     # if has cloud password and not auth
-    if not registry.cloud.auth and config_entry.data.get(CONF_PASSWORD):
+    if not registry.cloud.auth and data.get(CONF_PASSWORD):
         try:
-            await registry.cloud.login(**config_entry.data)
+            await registry.cloud.login(**data)
+            # store country_code for future requests optimisation
+            if not data.get(CONF_COUNTRY_CODE):
+                hass.config_entries.async_update_entry(
+                    config_entry,
+                    data={**data, CONF_COUNTRY_CODE: registry.cloud.country_code},
+                )
         except Exception as e:
             _LOGGER.warning(f"Can't login in {mode} mode: {repr(e)}")
             if mode == "cloud":

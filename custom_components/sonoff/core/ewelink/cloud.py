@@ -345,6 +345,10 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     def token(self) -> str:
         return self.region + ":" + self.auth["at"]
 
+    @property
+    def country_code(self) -> str:
+        return self.auth["user"]["countryCode"]
+
     async def login(
         self, username: str, password: str, country_code: str = "+86", app: int = 0
     ) -> bool:
