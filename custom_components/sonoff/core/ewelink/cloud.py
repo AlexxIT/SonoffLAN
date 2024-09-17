@@ -243,7 +243,6 @@ REGIONS = {
 DATA_ERROR = {0: "online", 503: "offline", 504: "timeout", None: "unknown"}
 
 APP = [
-    ("4s1FXKC9FaGfoqXhmXSJneb3qcm1gOak", "oKvCM06gvwkRbfetd6qWRrbC3rFrbIpV"),
     ("R8Oq3y0eSZSYdKccHlrQzT1ACCOUT9Gv", "1ve5Qk9GXfUhKAn1svnKwpAlxXkMarru"),
 ]
 
@@ -364,7 +363,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         else:
             payload["phoneNumber"] = "+" + username
 
-        appid, appsecret = APP[app]
+        appid, appsecret = APP[0]  # force using app=0
 
         # ensure POST payload and Sign payload will be same
         data = json.dumps(payload).encode()
