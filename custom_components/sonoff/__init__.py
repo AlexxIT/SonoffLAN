@@ -108,10 +108,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         if CONF_APPID in conf and CONF_APPSECRET in conf:
             APP[0] = (conf[CONF_APPID], conf[CONF_APPSECRET])
         if CONF_DEFAULT_CLASS in conf:
-            core_devices.set_default_class(conf.pop(CONF_DEFAULT_CLASS))
+            core_devices.set_default_class(conf.get(CONF_DEFAULT_CLASS))
         if CONF_SENSORS in conf:
             core_devices.get_spec = core_devices.get_spec_wrapper(
-                core_devices.get_spec, conf.pop(CONF_SENSORS)
+                core_devices.get_spec, conf.get(CONF_SENSORS)
             )
 
     # cameras starts only on first command to it
