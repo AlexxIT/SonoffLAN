@@ -419,7 +419,7 @@ DEVICES = {
     # https://github.com/AlexxIT/SonoffLAN/issues/1398
     7004: [XSwitch, ZRSSI],  # ZBMINIL2
     # https://github.com/AlexxIT/SonoffLAN/issues/1283
-    7006: [XZigbeeCover, spec(XSensor, param="battery")],
+    7006: [XZigbeeCover, Battery],
     # https://github.com/AlexxIT/SonoffLAN/issues/1456
     7009: [XZigbeeLight],  # CK-BL702-AL-01(7009_Z102LG03-1)
     7014: [
@@ -451,6 +451,10 @@ def get_spec(device: dict) -> list:
     # NSPanel Climate disable without switch configuration
     if uiid in [133] and not device["params"].get("HMI_ATCDevice"):
         classes = [cls for cls in classes if XClimateNS not in cls.__bases__]
+
+    # SNZB-06P has no battery
+    if uiid in [2026] and not device["params"].get("battery"):
+        classes = [cls for cls in classes if cls != Battery]
 
     if "device_class" in device:
         classes = get_custom_spec(classes, device["device_class"])
