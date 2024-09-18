@@ -467,21 +467,22 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             sequence = await self.sequence()
         log += sequence
 
-        # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=websocket-update-device-status
-        payload = {
-            "action": "update" if params else "query",
-            # we need to use device apikey bacause device may be shared from
-            # another account
-            "apikey": device["apikey"],
-            "selfApikey": self.auth["user"]["apikey"],
-            "deviceid": device["deviceid"],
-            "params": params or [],
-            "userAgent": "app",
-            "sequence": sequence,
-        }
-
         _LOGGER.debug(log)
         try:
+            # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=websocket-update-device-status
+            payload = {
+                "action": "update" if params else "query",
+                # we need to use device apikey bacause device may be shared from
+                # another account
+                "apikey": device["apikey"],
+                # auth can be null (logged in from another place)
+                "selfApikey": self.auth["user"]["apikey"],
+                "deviceid": device["deviceid"],
+                "params": params or [],
+                "userAgent": "app",
+                "sequence": sequence,
+            }
+
             await self.ws.send_json(payload)
 
             if timeout:
