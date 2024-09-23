@@ -89,6 +89,15 @@ class XLightSensor(XEntity, BinarySensorEntity):
         self._attr_is_on = params[self.param] == "brighter"
 
 
+class XWaterSensor(XEntity, BinarySensorEntity):
+    param = "water"
+    uid = "moisture"
+    _attr_device_class = BinarySensorDeviceClass.MOISTURE
+
+    def set_state(self, params: dict):
+        self._attr_is_on = params[self.param] == 1
+
+
 # noinspection PyAbstractClass
 class XRemoteSensor(BinarySensorEntity, RestoreEntity):
     _attr_is_on = False

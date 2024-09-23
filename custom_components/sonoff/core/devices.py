@@ -24,6 +24,7 @@ from ..binary_sensor import (
     XZigbeeMotion,
     XHumanSensor,
     XLightSensor,
+    XWaterSensor,
 )
 from ..climate import XClimateNS, XClimateTH, XThermostat
 from ..core.entity import XEntity
@@ -428,6 +429,8 @@ DEVICES = {
         Battery,
     ],  # https://github.com/AlexxIT/SonoffLAN/issues/1166
     7016: [XHumanSensor, XLightSensor, XSensitivity, ZRSSI],  # SNZB-06P
+    # SNZB-05P https://github.com/AlexxIT/SonoffLAN/issues/1496
+    7019: [XWaterSensor, Battery],
 }
 
 
