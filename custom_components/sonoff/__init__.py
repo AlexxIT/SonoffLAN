@@ -21,7 +21,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.device_registry import async_get as device_registry
 from homeassistant.helpers.storage import Store
 
@@ -173,7 +173,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     registry: XRegistry = hass.data[DOMAIN].get(config_entry.entry_id)
     if not registry:
-        session = async_get_clientsession(hass)
+        integration = hass.data["integrations"][DOMAIN]
+        session = async_create_clientsession(hass)
+        session._default_headers = {"User-Agent": "SonoffLAN/" + integration.version}
         hass.data[DOMAIN][config_entry.entry_id] = registry = XRegistry(session)
 
     mode = config_entry.options.get(CONF_MODE, "auto")
