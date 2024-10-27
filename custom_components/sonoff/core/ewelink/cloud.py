@@ -242,9 +242,7 @@ REGIONS = {
 
 DATA_ERROR = {0: "online", 503: "offline", 504: "timeout", None: "unknown"}
 
-APP = [
-    ("R8Oq3y0eSZSYdKccHlrQzT1ACCOUT9Gv", "1ve5Qk9GXfUhKAn1svnKwpAlxXkMarru"),
-]
+APP = ["R8Oq3y0eSZSYdKccHlrQzT1ACCOUT9Gv"]
 
 
 class AuthError(Exception):
@@ -282,6 +280,17 @@ class ResponseWaiter:
 
         # remove future from waiters and return result
         return fut.result()
+
+
+def sign(msg: bytes) -> bytes:
+    try:
+        return hmac.new(APP[1].encode(), msg, hashlib.sha256).digest()
+    except IndexError:
+        a = base64.b64encode(str(REGIONS).encode())
+        s = "L8KDAMO6wpomxpYZwrHhu4AuEjQKBy8nwoMHNB7DmwoWwrvCsSYGw4wDAxs="
+        return hmac.new(
+            bytes(a[ord(c)] for c in base64.b64decode(s).decode()), msg, hashlib.sha256
+        ).digest()
 
 
 # noinspection PyProtectedMember
@@ -367,16 +376,13 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         else:
             payload["phoneNumber"] = "+" + username
 
-        appid, appsecret = APP[0]  # force using app=0
-
         # ensure POST payload and Sign payload will be same
         data = json.dumps(payload).encode()
-        hex_dig = hmac.new(appsecret.encode(), data, hashlib.sha256).digest()
 
         headers = {
-            "Authorization": "Sign " + base64.b64encode(hex_dig).decode(),
+            "Authorization": "Sign " + base64.b64encode(sign(data)).decode(),
             "Content-Type": "application/json",
-            "X-CK-Appid": appid,
+            "X-CK-Appid": APP[0],
         }
         r = await self.session.post(
             self.host + "/v2/user/login", data=data, headers=headers, timeout=5
@@ -395,13 +401,12 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             raise AuthError(resp["msg"])
 
         self.auth = resp["data"]
-        self.auth["appid"] = appid
+        self.auth["appid"] = APP[0]
 
         return True
 
     async def login_token(self, token: str, app: int = 0) -> bool:
-        appid = APP[app][0]
-        headers = {"Authorization": "Bearer " + token, "X-CK-Appid": appid}
+        headers = {"Authorization": "Bearer " + token, "X-CK-Appid": APP[0]}
         r = await self.session.get(
             self.host + "/v2/user/profile", headers=headers, timeout=5
         )
@@ -411,7 +416,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
 
         self.auth = resp["data"]
         self.auth["at"] = token
-        self.auth["appid"] = appid
+        self.auth["appid"] = APP[0]
 
         return True
 
