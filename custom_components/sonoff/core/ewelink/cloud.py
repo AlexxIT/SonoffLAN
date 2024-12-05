@@ -452,7 +452,9 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 "userAgent": "app",
                 "sequence": sequence,
             }
-
+            # log request payload
+            log += f" => payload: {payload} "
+            _LOGGER.debug(log)
             await self.ws.send_json(payload)
 
             if timeout:
