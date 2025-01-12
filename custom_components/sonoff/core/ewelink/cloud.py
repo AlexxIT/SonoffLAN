@@ -10,7 +10,12 @@ import json
 import logging
 import time
 
-from aiohttp import ClientConnectorError, ClientWebSocketResponse, WSMessage
+from aiohttp import (
+    ClientConnectorError,
+    ClientWebSocketResponse,
+    ServerTimeoutError,
+    WSMessage,
+)
 
 from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
 
@@ -511,8 +516,12 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 async for msg in self.ws:
                     if msg.data == "pong":
                         continue
+                    if isinstance(msg.data, ServerTimeoutError):
+                        raise msg.data
                     resp = json.loads(msg.data)
                     _ = asyncio.create_task(self._process_ws_msg(resp))
+            except ServerTimeoutError:
+                pass
             except Exception as e:
                 _LOGGER.warning("Cloud processing error", exc_info=e)
 
