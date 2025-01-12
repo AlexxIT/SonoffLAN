@@ -13,10 +13,10 @@ from homeassistant.components.light import (
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import (
-    TEMP_FAHRENHEIT,
-    UnitOfEnergy,
     MAJOR_VERSION,
     MINOR_VERSION,
+    TEMP_FAHRENHEIT,
+    UnitOfEnergy,
 )
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
@@ -31,38 +31,38 @@ from custom_components.sonoff.core.ewelink import (
     SIGNAL_CONNECTED,
     SIGNAL_UPDATE,
 )
-from custom_components.sonoff.cover import XCover, XCoverDualR3, XZigbeeCover, XCover91
+from custom_components.sonoff.cover import XCover, XCover91, XCoverDualR3, XZigbeeCover
 from custom_components.sonoff.fan import XFan, XToggleFan
 from custom_components.sonoff.light import (
     UIID22_MODES,
     XDiffuserLight,
+    XLightB05B,
     XLightB1,
     XLightGroup,
     XLightL1,
     XLightL3,
-    XLightB05B,
     XT5Light,
 )
 from custom_components.sonoff.number import XNumber, XPulseWidth
 from custom_components.sonoff.sensor import (
+    XEnergySensorDualR3,
+    XEnergyTotal,
     XOutdoorTempNS,
     XRemoteButton,
     XSensor,
+    XT5Action,
     XTemperatureNS,
     XUnknown,
-    XEnergySensorDualR3,
-    XT5Action,
-    XEnergyTotal,
 )
 from custom_components.sonoff.switch import (
+    XBoolSwitch,
     XSwitch,
-    XSwitches,
     XSwitchTH,
+    XSwitches,
     XToggle,
     XZigbeeSwitches,
-    XBoolSwitch,
 )
-from . import init, save_to, DEVICEID, DummyRegistry
+from . import DEVICEID, DummyRegistry, init, save_to
 
 
 def get_entitites(device: Union[dict, list], config: dict = None) -> list:

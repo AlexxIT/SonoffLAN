@@ -20,24 +20,24 @@ from homeassistant.components.switch import SwitchEntity
 from .ewelink import XDevice
 from ..binary_sensor import (
     XBinarySensor,
-    XWiFiDoor,
-    XZigbeeMotion,
     XHumanSensor,
     XLightSensor,
     XWaterSensor,
+    XWiFiDoor,
+    XZigbeeMotion,
 )
 from ..climate import XClimateNS, XClimateTH, XThermostat
 from ..core.entity import XEntity
-from ..cover import XCover, XCoverDualR3, XZigbeeCover, XCover91
-from ..fan import XDiffuserFan, XFan, XToggleFan, XFanDualR3
+from ..cover import XCover, XCover91, XCoverDualR3, XZigbeeCover
+from ..fan import XDiffuserFan, XFan, XFanDualR3, XToggleFan
 from ..light import (
     XDiffuserLight,
     XDimmer,
     XFanLight,
     XLight57,
-    XLightB1,
     XLightB02,
     XLightB05B,
+    XLightB1,
     XLightD1,
     XLightGroup,
     XLightL1,
@@ -50,28 +50,28 @@ from ..number import XPulseWidth, XSensitivity
 from ..remote import XRemote
 from ..sensor import (
     XEnergySensor,
+    XEnergySensorDualR3,
+    XEnergySensorPOWR3,
+    XEnergyTotal,
     XHumidityTH,
     XOutdoorTempNS,
     XRemoteButton,
     XSensor,
+    XT5Action,
     XTemperatureNS,
     XTemperatureTH,
     XUnknown,
     XWiFiDoorBattery,
-    XEnergySensorDualR3,
-    XEnergySensorPOWR3,
-    XEnergyTotal,
-    XT5Action,
 )
 from ..switch import (
+    XBoolSwitch,
+    XDetach,
     XSwitch,
-    XSwitches,
+    XSwitchPOWR3,
     XSwitchTH,
+    XSwitches,
     XToggle,
     XZigbeeSwitches,
-    XSwitchPOWR3,
-    XDetach,
-    XBoolSwitch,
 )
 
 # supported custom device_class

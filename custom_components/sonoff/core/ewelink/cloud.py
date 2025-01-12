@@ -9,7 +9,6 @@ import hmac
 import json
 import logging
 import time
-from typing import Optional, Dict
 
 from aiohttp import ClientConnectorError, ClientWebSocketResponse, WSMessage
 
@@ -252,7 +251,7 @@ class AuthError(Exception):
 class ResponseWaiter:
     """Class wait right sequences in response messages."""
 
-    _waiters: Dict[str, asyncio.Future] = {}
+    _waiters: dict[str, asyncio.Future] = {}
 
     def _set_response(self, sequence: str, error: int) -> bool:
         if sequence not in self._waiters:
@@ -474,7 +473,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
 
         self.set_online(None)
 
-    def set_online(self, value: Optional[bool]):
+    def set_online(self, value: bool = None):
         _LOGGER.debug(f"CLOUD change state old={self.online}, new={value}")
         if self.online == value:
             return

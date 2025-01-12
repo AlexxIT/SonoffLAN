@@ -16,7 +16,7 @@ from Crypto.Cipher import AES
 from Crypto.Hash import MD5
 from Crypto.Random import get_random_bytes
 from aiohttp.hdrs import CONTENT_TYPE
-from zeroconf import Zeroconf, ServiceStateChange
+from zeroconf import ServiceStateChange, Zeroconf
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo
 
 from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase

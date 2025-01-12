@@ -3,7 +3,7 @@ from homeassistant.components.climate.const import (
     ClimateEntityFeature,
     HVACMode,
 )
-from homeassistant.const import UnitOfTemperature, MAJOR_VERSION, MINOR_VERSION
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION, UnitOfTemperature
 
 from .core.const import DOMAIN
 from .core.entity import XEntity

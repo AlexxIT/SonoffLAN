@@ -6,7 +6,7 @@ from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
-from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry, XDevice
+from .core.ewelink import SIGNAL_ADD_ENTITIES, XDevice, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 

@@ -1,4 +1,4 @@
-from . import init, DEVICEID
+from . import DEVICEID, init
 
 
 def test_pow1_energy():

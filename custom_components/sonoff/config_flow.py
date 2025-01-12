@@ -7,7 +7,7 @@ from homeassistant.const import CONF_MODE, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .core.const import CONF_DEBUG, CONF_COUNTRY_CODE, CONF_MODES, DOMAIN
+from .core.const import CONF_COUNTRY_CODE, CONF_DEBUG, CONF_MODES, DOMAIN
 from .core.ewelink import XRegistryCloud
 from .core.ewelink.cloud import REGIONS
 

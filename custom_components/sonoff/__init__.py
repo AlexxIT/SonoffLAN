@@ -3,10 +3,10 @@ import logging
 
 import voluptuous as vol
 from homeassistant.components import zeroconf
-from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
+from homeassistant.config_entries import ConfigEntry, SOURCE_IMPORT
 from homeassistant.const import (
-    CONF_DEVICE_CLASS,
     CONF_DEVICES,
+    CONF_DEVICE_CLASS,
     CONF_MODE,
     CONF_NAME,
     CONF_PASSWORD,

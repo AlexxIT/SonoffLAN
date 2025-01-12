@@ -6,7 +6,7 @@ from homeassistant.config_entries import HomeAssistant  # fix circular import
 from homeassistant.helpers.entity import Entity
 
 from custom_components.sonoff.core.entity import XEntity
-from custom_components.sonoff.core.ewelink import XRegistry, SIGNAL_ADD_ENTITIES
+from custom_components.sonoff.core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 DEVICEID = "1000123abc"
 
