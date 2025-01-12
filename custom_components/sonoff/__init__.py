@@ -21,7 +21,6 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.device_registry import async_get as device_registry
 from homeassistant.helpers.storage import Store
 
@@ -39,6 +38,7 @@ from .core.const import (
 from .core.ewelink import SIGNAL_ADD_ENTITIES, SIGNAL_CONNECTED, XRegistry
 from .core.ewelink.camera import XCameras
 from .core.ewelink.cloud import APP, AuthError
+from .core.xutils import create_clientsession
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -173,9 +173,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     registry: XRegistry = hass.data[DOMAIN].get(config_entry.entry_id)
     if not registry:
-        integration = hass.data["integrations"][DOMAIN]
-        session = async_create_clientsession(hass)
-        session._default_headers = {"User-Agent": "SonoffLAN/" + integration.version}
+        session = create_clientsession(hass)
         hass.data[DOMAIN][config_entry.entry_id] = registry = XRegistry(session)
 
     mode = config_entry.options.get(CONF_MODE, "auto")
