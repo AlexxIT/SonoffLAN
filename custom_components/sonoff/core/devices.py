@@ -26,6 +26,7 @@ from ..binary_sensor import (
     XWiFiDoor,
     XZigbeeMotion,
 )
+from ..button import XT5Button
 from ..climate import XClimateNS, XClimateTH, XThermostat
 from ..core.entity import XEntity
 from ..cover import XCover, XCover91, XCoverDualR3, XZigbeeCover
@@ -149,6 +150,9 @@ EnergyPOW = spec(
 
 # backward compatibility for unique_id
 DoorLock = spec(XBinarySensor, param="lock", uid="", default_class="door")
+
+XT5Alarm = spec(XT5Button, soundAction=1, uid="alarm")
+XT5Bell = spec(XT5Button, soundAction=2, uid="bell")
 
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
 DEVICES = {
@@ -368,11 +372,28 @@ DEVICES = {
     # https://github.com/AlexxIT/SonoffLAN/issues/984
     195: [XTemperatureTH],  # NSPanel Pro
     # https://github.com/AlexxIT/SonoffLAN/issues/1183
-    209: [Switch1, XT5Light, XT5Action],  # T5-1C-86
-    210: [Switch1, Switch2, XT5Light, XT5Action],  # T5-2C-86
-    211: [Switch1, Switch2, Switch3, XT5Light, XT5Action],  # T5-3C-86
+    209: [Switch1, XT5Light, XT5Action, XT5Alarm, XT5Bell],  # T5-1C-86
+    210: [Switch1, Switch2, XT5Light, XT5Action, XT5Alarm, XT5Bell],  # T5-2C-86
+    211: [
+        Switch1,
+        Switch2,
+        Switch3,
+        XT5Light,
+        XT5Action,
+        XT5Alarm,
+        XT5Bell,
+    ],  # T5-3C-86
     # https://github.com/AlexxIT/SonoffLAN/issues/1251
-    212: [Switch1, Switch2, Switch3, Switch4, XT5Light, XT5Action],  # T5-4C-86
+    212: [
+        Switch1,
+        Switch2,
+        Switch3,
+        Switch4,
+        XT5Light,
+        XT5Action,
+        XT5Alarm,
+        XT5Bell,
+    ],  # T5-4C-86
     226: [
         XBoolSwitch,
         LED,

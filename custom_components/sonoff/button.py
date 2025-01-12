@@ -3,6 +3,7 @@ from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.helpers.entity import DeviceInfo
 
 from .core.const import DOMAIN
+from .core.entity import XEntity
 from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
@@ -41,3 +42,12 @@ class XRemoteButton(ButtonEntity):
             {"cmd": "transmit", "rfChl": int(self.channel)},
             cmd_lan="transmit",
         )
+
+
+class XT5Button(XEntity, ButtonEntity):
+    soundAction: int = None
+
+    _attr_entity_registry_enabled_default = False
+
+    async def async_press(self):
+        await self.ewelink.send(self.device, {"soundAction": self.soundAction})
