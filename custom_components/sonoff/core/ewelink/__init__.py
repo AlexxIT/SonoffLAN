@@ -346,7 +346,10 @@ class XRegistry(XRegistryBase):
         elif uiid == 130:
             # https://github.com/AlexxIT/SonoffLAN/issues/1366
             if self.can_cloud(device):
-                asyncio.create_task(self.update_spm_pow(device))
+                outlet = device.get("active_outlet", 0)
+                device["active_outlet"] = outlet + 1 if outlet < 3 else 0
+                params = {"uiActive": {"outlet": outlet, "time": 60}}
+                asyncio.create_task(self.cloud.send(device, params, timeout=0))
 
         # checks if device still available via LAN
         if "local_ts" not in device or device["local_ts"] > time.time():
@@ -354,13 +357,6 @@ class XRegistry(XRegistryBase):
 
         if self.local.online:
             asyncio.create_task(self.check_offline(device))
-
-    async def update_spm_pow(self, device: XDevice):
-        for i in range(4):
-            if i > 0:
-                await asyncio.sleep(5)
-            params = {"uiActive": {"outlet": i, "time": 60}}
-            await self.cloud.send(device, params, timeout=0)
 
     def can_cloud(self, device: XDevice) -> bool:
         if not self.cloud.online:

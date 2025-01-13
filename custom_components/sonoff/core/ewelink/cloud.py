@@ -301,6 +301,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     auth: dict | None = None
     devices: dict[str, dict] = None
     last_ts: float = 0
+    last_ui_active: float = 0
     online: bool | None = None
     region: str = None
 
@@ -430,6 +431,13 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         log = f"{device['deviceid']} => Cloud4 | "
         if params:
             log += f"{params} | "
+
+        # protect from fast switching uiActive param (device may not respond)
+        # https://github.com/AlexxIT/SonoffLAN/issues/1366
+        if params and "uiActive" in params:
+            while (delay := self.last_ui_active + 1.0 - time.time()) > 0:
+                await asyncio.sleep(delay)
+            self.last_ui_active = time.time()
 
         # protect cloud from DDoS (it can break connection)
         while (delay := self.last_ts + 0.1 - time.time()) > 0:

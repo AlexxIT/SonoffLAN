@@ -27,7 +27,7 @@ class XDevice(TypedDict, total=False):
 
     local_ts: Optional[float]  # time of last local msg from device
     params_bulk: Optional[dict]  # helper for send_bulk commands
-    pow_ts: Optional[float]  # required for pow devices with cloud connection
+    active_outlet: Optional[int]  # required for SPM-4Relay power updates
 
     parent: Optional[dict]
 
