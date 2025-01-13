@@ -13,7 +13,7 @@ Developer can change global properties of existing classes via spec function.
 """
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.components.light import LightEntity
+from homeassistant.components.light import ColorMode, LightEntity
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 
@@ -545,10 +545,12 @@ def get_spec_wrapper(func, sensors: list):
 
 
 def set_default_class(device_class: str):
-    XSwitch.__bases__ = XSwitches.__bases__ = (
-        XEntity,
-        LightEntity if device_class == "light" else SwitchEntity,
-    )
+    if device_class != "light":
+        return
+    for cls in (XSwitch, XSwitches):
+        cls.__bases__ = (XEntity, LightEntity)
+        cls._attr_color_mode = ColorMode.ONOFF
+        cls._attr_supported_color_modes = {ColorMode.ONOFF}
 
 
 # Cloud: NSPanel
