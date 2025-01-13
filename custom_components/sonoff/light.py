@@ -992,6 +992,49 @@ class XZigbeeLight(XLight):
         await self.ewelink.send(self.device, params)
 
 
+class XZigbeeColorTemp(XLight):
+    params = {"switch", "brightness", "colorTemp"}
+
+    _attr_max_mireds = int(1000000 / 2200)
+    _attr_min_mireds = int(1000000 / 4000)
+
+    _attr_color_mode = ColorMode.ONOFF
+    _attr_supported_color_modes = {ColorMode.COLOR_TEMP}
+
+    def set_state(self, params: dict):
+        XLight.set_state(self, params)
+
+        if "brightness" in params:
+            self._attr_brightness = conv(params["brightness"], 0, 100, 1, 255)
+
+        if "colorTemp" in params:
+            self._attr_color_temp = conv(
+                params["colorTemp"],
+                0,
+                100,
+                self._attr_max_mireds,
+                self._attr_min_mireds,
+            )
+
+    async def async_turn_on(
+        self,
+        brightness: int = None,
+        color_temp: int = None,
+        **kwargs,
+    ) -> None:
+        params = {self.param: "on"}
+
+        if brightness is not None:
+            params["brightness"] = conv(brightness, 1, 255, 0, 100)
+
+        if color_temp is not None:
+            params["colorTemp"] = conv(
+                color_temp, self._attr_max_mireds, self._attr_min_mireds, 0, 100
+            )
+
+        await self.ewelink.send(self.device, params)
+
+
 ###############################################################################
 # Category 3. Other
 ###############################################################################

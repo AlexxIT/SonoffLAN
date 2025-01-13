@@ -45,6 +45,7 @@ from ..light import (
     XLightL3,
     XOnOffLight,
     XT5Light,
+    XZigbeeColorTemp,
     XZigbeeLight,
 )
 from ..number import XPulseWidth, XSensitivity
@@ -407,6 +408,7 @@ DEVICES = {
     # https://github.com/AlexxIT/SonoffLAN/issues/1195
     1256: [spec(XSwitch)],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
     1257: [XLightD1],  # ZigbeeWhiteLight
+    1258: [XZigbeeColorTemp],  # https://github.com/AlexxIT/SonoffLAN/issues/1557
     # https://github.com/AlexxIT/SonoffLAN/issues/972
     1514: [XZigbeeCover, spec(XSensor, param="battery", multiply=2)],
     1770: [
