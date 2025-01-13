@@ -15,6 +15,7 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfPower,
     UnitOfTemperature,
+    UnitOfVolume,
 )
 from homeassistant.util import dt
 
@@ -55,6 +56,7 @@ UNITS = {
     "rssi": SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     "temperature": UnitOfTemperature.CELSIUS,
     "voltage": UnitOfElectricPotential.VOLT,
+    "water": UnitOfVolume.LITERS,
 }
 
 

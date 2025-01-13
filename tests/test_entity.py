@@ -15,8 +15,9 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import (
     MAJOR_VERSION,
     MINOR_VERSION,
-    TEMP_FAHRENHEIT,
     UnitOfEnergy,
+    UnitOfTemperature,
+    UnitOfVolume,
 )
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM
@@ -25,6 +26,7 @@ from custom_components.sonoff import remote
 from custom_components.sonoff.binary_sensor import XBinarySensor, XRemoteSensor
 from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
+from custom_components.sonoff.core.devices import Battery
 from custom_components.sonoff.core.entity import XEntity
 from custom_components.sonoff.core.ewelink import (
     SIGNAL_ADD_ENTITIES,
@@ -447,7 +449,7 @@ def test_dual_r3():
     energy_2: XEnergySensorDualR3 = next(e for e in entities if e.uid == "energy_2")
     energy_2.internal_update({"kwhHistories_01": "0201000000000000"})
     assert energy_2.state == 2.01
-    assert energy_2.extra_state_attributes == None
+    assert energy_2.extra_state_attributes is None
 
 
 def test_diffuser():
@@ -1137,7 +1139,7 @@ def test_temperature_convert():
 
     temp.hass.config.units = IMPERIAL_SYSTEM
     assert temp.state == "58.3"
-    assert temp.unit_of_measurement == TEMP_FAHRENHEIT
+    assert temp.unit_of_measurement == UnitOfTemperature.CELSIUS
 
 
 def test_ns_panel():
@@ -2052,3 +2054,32 @@ def test_226():
     assert current.state == 241.08
     energy: XSensor = next(e for e in entities if e.uid == "energy")
     assert energy.state == 0.7
+
+
+def test_swv():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 7027},
+            "params": {
+                "subDevRssi": -38,
+                "battery": 80,
+                "switch": True,
+                "realIrrigationVolume": 3,
+                "realIrrigationVolumeGal": 0,
+                "controlMode": "manual",
+                "todayWaterUsage": 8,
+                "todayWaterUsageGal": 2,
+                "runningMode": 2,
+            },
+        }
+    )
+
+    switch: XBoolSwitch = next(e for e in entities if isinstance(e, XBoolSwitch))
+    assert switch.state == "on"
+
+    battery: Battery = next(e for e in entities if isinstance(e, Battery))
+    assert battery.state == 80
+
+    water: XSensor = next(e for e in entities if e.uid == "water")
+    assert water.state == 8
+    assert water.unit_of_measurement == UnitOfVolume.LITERS

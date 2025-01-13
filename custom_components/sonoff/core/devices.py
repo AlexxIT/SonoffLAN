@@ -452,6 +452,13 @@ DEVICES = {
     7016: [XHumanSensor, XLightSensor, XSensitivity, ZRSSI],  # SNZB-06P
     # SNZB-05P https://github.com/AlexxIT/SonoffLAN/issues/1496
     7019: [XWaterSensor, Battery],
+    # SWV https://github.com/AlexxIT/SonoffLAN/issues/1497
+    7027: [
+        XBoolSwitch,
+        Battery,
+        spec(XSensor, param="todayWaterUsage", uid="water"),
+        ZRSSI,
+    ],
 }
 
 
