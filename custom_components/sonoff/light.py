@@ -1,5 +1,6 @@
 import time
 
+import homeassistant.util.color as color_util
 from homeassistant.components.light import (
     ColorMode,
     LightEntity,
@@ -136,6 +137,18 @@ class XLight(XEntity, LightEntity):
             )
 
         await self.async_turn_on(br1, ct1, rgb1)
+
+    @property
+    def color_temp_kelvin(self) -> int | None:
+        return color_util.color_temperature_mired_to_kelvin(self.color_temp)
+
+    @property
+    def min_color_temp_kelvin(self) -> int:
+        return color_util.color_temperature_mired_to_kelvin(self.max_mireds)
+
+    @property
+    def max_color_temp_kelvin(self) -> int:
+        return color_util.color_temperature_mired_to_kelvin(self.min_mireds)
 
 
 # noinspection PyAbstractClass, UIID36
