@@ -452,6 +452,40 @@ DEVICES = {
         Battery,
     ],  # https://github.com/AlexxIT/SonoffLAN/issues/1166
     7016: [XHumanSensor, XLightSensor, XSensitivity, ZRSSI],  # SNZB-06P
+    7017: [
+        spec(XSensor, param="workMode", uid="work_mode"),
+        spec(XSensor, param="workState", uid="work_state"),
+        spec(XSensor, param="temperature", multiply=0.1),
+        spec(
+            XSensor,
+            param="manTargetTemp",
+            multiply=0.1,
+            uid="manual_target_temperature",
+        ),
+        spec(
+            XSensor,
+            param="autoTargetTemp",
+            multiply=0.1,
+            uid="auto_target_temperature",
+        ),
+        spec(
+            XSensor,
+            param="curTargetTemp",
+            multiply=0.1,
+            uid="current_target_temperature",
+        ),
+        spec(
+            XSensor,
+            param="ecoTargetTemp",
+            multiply=0.1,
+            uid="eco_target_temperature",
+        ),
+        spec(XBoolSwitch, param="childLock", uid="child_lock"),
+        spec(XBoolSwitch, param="windowSwitch", uid="window_switch"),
+        XSwitch,
+        Battery,
+        ZRSSI,
+    ],
     # SNZB-05P https://github.com/AlexxIT/SonoffLAN/issues/1496
     7019: [XWaterSensor, Battery],
     # SWV https://github.com/AlexxIT/SonoffLAN/issues/1497
