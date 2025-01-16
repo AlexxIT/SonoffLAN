@@ -203,7 +203,7 @@ class XClimateNS(XEntity, ClimateEntity):
     def set_hvac_attr(self, hvac_mode: str) -> None:
         if hvac_mode == HVACMode.AUTO:
             self._attr_hvac_mode = hvac_mode
-            self._attr_supported_features = 0
+            self._attr_supported_features = ClimateEntityFeature(0)
         elif hvac_mode == HVACMode.OFF:
             self._attr_hvac_mode = hvac_mode
             self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
