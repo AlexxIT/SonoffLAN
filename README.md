@@ -88,6 +88,7 @@ These devices only work through the cloud!
 
 - Sonoff POW (first) fw 2.6.1
 - [Sonoff L1](https://www.itead.cc/sonoff-l1-smart-led-light-strip.html) (color, brightness, effects) fw 2.7.0
+- [Sonoff L2](https://sonoff.tech/product/smart-lighting/l2/) fw 1000.2.1050
 - [Sonoff B1](https://www.itead.cc/sonoff-b1.html) (color, brightness, color temp) fw 2.6.0
 - Sonoff B02, B05-B, B05-BL
 - [Sonoff SC](https://www.itead.cc/sonoff-sc.html) (five sensors) fw 2.7.0
