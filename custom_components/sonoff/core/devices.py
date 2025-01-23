@@ -64,6 +64,7 @@ from ..sensor import (
     XTemperatureTH,
     XUnknown,
     XWiFiDoorBattery,
+    XHexVoltageTRVZB,
 )
 from ..switch import (
     XBoolSwitch,
@@ -454,7 +455,7 @@ DEVICES = {
     ],  # https://github.com/AlexxIT/SonoffLAN/issues/1166
     7016: [XHumanSensor, XLightSensor, XSensitivity, ZRSSI],  # SNZB-06P
     7017: [
-		XThermostatTRVZB,
+        XThermostatTRVZB,
         spec(XSensor, param="workMode", uid="work_mode"),
         spec(XSensor, param="workState", uid="work_state"),
         spec(XSensor, param="temperature", multiply=0.1),
@@ -476,30 +477,29 @@ DEVICES = {
             multiply=0.1,
             uid="current_target_temperature",
         ),
-
         spec(
             XSensor,
             param="ecoTargetTemp",
             multiply=0.1,
             uid="eco_target_temperature",
         ),
-
-        spec(XBoolSwitchTRVZB, param="childLock",    uid="child_lock"),
+        spec(
+            XSensor,
+            param="tempCorrection",
+            multiply=0.1,
+            uid="temperature_correction",
+        ),
+        spec(XBoolSwitchTRVZB, param="childLock", uid="child_lock"),
         spec(XBoolSwitchTRVZB, param="windowSwitch", uid="window_switch"),
-
-		spec(XSensor, param="runVoltage",   uid="run_voltage"),
-        spec(XSensor, param="limitVoltage", uid="limit_voltage"),
-        spec(XSensor, param="openPercent",  uid="open_percent"),
-        spec(XSensor, param="closePercent", uid="close_percent"),
-
-#        spec(XSensor, param="mon"),
-#        spec(XSensor, param="tues"),
-#        spec(XSensor, param="wed"),
-#        spec(XSensor, param="thur"),
-#        spec(XSensor, param="fri"),
-#        spec(XSensor, param="sat"),
-#        spec(XSensor, param="sun"),
-
+        spec(XHexVoltageTRVZB, param="runVoltage", uid="run_voltage"),
+        spec(XHexVoltageTRVZB, param="limitVoltage", uid="limit_voltage"),
+        #        spec(XSensor, param="mon"),
+        #        spec(XSensor, param="tues"),
+        #        spec(XSensor, param="wed"),
+        #        spec(XSensor, param="thur"),
+        #        spec(XSensor, param="fri"),
+        #        spec(XSensor, param="sat"),
+        #        spec(XSensor, param="sun"),
         Battery,
         ZRSSI,
     ],
