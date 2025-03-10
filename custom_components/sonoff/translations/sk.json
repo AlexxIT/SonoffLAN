@@ -9,11 +9,11 @@
     },
     "step": {
       "user": {
-        "description": "Zadajte Vaše [eWeLink účet](https://www.ewelink.cc/en/) poverenia",
+        "description": "Zadajte svoje prihlasovacie údaje [eWeLink účtu](https://www.ewelink.cc/en/)",
         "data": {
-          "username": "E-mail alebo telefón (v režime DIY použite ľubovoľný)",
-          "password": "Heslo (pre DIY režim nechajte prázdne)",
-          "country_code": "Kód krajiny (pre automatický výber nechajte prázdne)"
+          "username": "E-mail alebo telefón (použite ľubovoľné pre režim DIY)",
+          "password": "Heslo (nechajte prázdne pre režim DIY)",
+          "country_code": "Kód krajiny (nechajte prázdne pre automatický výber)"
         }
       }
     }
@@ -22,9 +22,9 @@
     "step": {
       "init": {
         "data": {
-          "mode": "Režim (automatický režim sa odporúča pre väčšinu používateľov)",
-          "homes": "Domy (nechajte nezačiarknuté \"current\" Home)",
-          "debug": "Stránka ladenia (Integrácia > Ponuka > Známe problémy)"
+          "mode": "Režim (automatický sa odporúča pre väčšinu používateľov)",
+          "homes": "Domácnosti (nechajte prázdne pre aktívnu domácnosť v mobilnej aplikácii)",
+          "debug": "Ladiaca stránka (Integrácia > Menu > Známe problémy)"
         }
       }
     }
@@ -33,8 +33,8 @@
     "info": {
       "version": "Verzia",
       "cloud_online": "Cloudové zariadenia online",
-      "local_online": "Miestne zariadenia online",
-      "debug": "Stránka ladenia"
+      "local_online": "Lokálne zariadenia online",
+      "debug": "Ladiaca stránka"
     }
   }
 }
