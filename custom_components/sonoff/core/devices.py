@@ -29,7 +29,7 @@ from ..binary_sensor import (
 from ..button import XT5Button
 from ..climate import XClimateNS, XClimateTH, XThermostat
 from ..core.entity import XEntity
-from ..cover import XCover, XCover91, XCoverDualR3, XZigbeeCover
+from ..cover import XCover, XCover91, XCoverDualR3, XCoverT5, XZigbeeCover
 from ..fan import XDiffuserFan, XFan, XFanDualR3, XToggleFan
 from ..light import (
     XDiffuserLight,
@@ -383,6 +383,7 @@ DEVICES = {
         XT5Action,
         XT5Alarm,
         XT5Bell,
+        XCoverT5,
     ],  # T5-3C-86
     # https://github.com/AlexxIT/SonoffLAN/issues/1251
     212: [
