@@ -53,6 +53,7 @@ PLATFORMS = [
     "sensor",
     "switch",
     "number",
+    "select"
 ]
 
 CONFIG_SCHEMA = vol.Schema(
