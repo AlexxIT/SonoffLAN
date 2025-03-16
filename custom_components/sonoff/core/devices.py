@@ -74,6 +74,7 @@ from ..switch import (
     XSwitches,
     XToggle,
     XZigbeeSwitches,
+    XT5WorkMode,
 )
 
 # supported custom device_class
@@ -384,6 +385,7 @@ DEVICES = {
         XT5Alarm,
         XT5Bell,
         XCoverT5,
+        XT5WorkMode,
     ],  # T5-3C-86
     # https://github.com/AlexxIT/SonoffLAN/issues/1251
     212: [

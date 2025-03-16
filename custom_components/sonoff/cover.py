@@ -166,6 +166,8 @@ class XCover91(XEntity, CoverEntity):
 class XCoverT5(XCover):
     params = {"electromotor", "percentageControl"}
 
+    _attr_entity_registry_enabled_default = False
+
     _attr_is_closed = None  # unknown state
 
     def set_state(self, params: dict):
