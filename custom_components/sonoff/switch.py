@@ -134,7 +134,6 @@ class XDetach(XEntity, SwitchEntity):
     async def async_turn_off(self):
         await self.ewelink.send_cloud(self.device, {"relaySeparation": 0})
 
-
 class XBoolSwitch(XEntity, SwitchEntity):
     params = {"switch"}
 
@@ -146,3 +145,18 @@ class XBoolSwitch(XEntity, SwitchEntity):
 
     async def async_turn_off(self):
         await self.ewelink.send(self.device, {"switch": False})
+
+class XT5WorkMode(XEntity, SwitchEntity):
+    params = {"workMode"}
+    uid = "curtain_mode"
+
+    _attr_entity_registry_enabled_default = False
+
+    def set_state(self, params: dict):
+        self._attr_is_on = params["workMode"] == 2
+
+    async def async_turn_on(self, *args, **kwargs):
+        await self.ewelink.send(self.device, {"workMode": 2})
+
+    async def async_turn_off(self):
+        await self.ewelink.send(self.device, {"workMode": 1})
