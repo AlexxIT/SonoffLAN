@@ -171,9 +171,9 @@ class XCoverT5(XCover):
     _attr_is_closed = None  # unknown state
 
     def set_state(self, params: dict):
-        if "percentageControl" in params:
+        if "percentageControl" in params and calibState is True:
             self._attr_current_cover_position = 100 - params["percentageControl"]
-            self._attr_is_closed = self._attr_current_cover_position == 100
+            self._attr_is_closed = self._attr_current_cover_position == 0
 
         if "electromotor" in params:
             if params["electromotor"] == 1:  # stop
