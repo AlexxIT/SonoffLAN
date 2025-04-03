@@ -330,6 +330,7 @@ DEVICES = {
     # https://github.com/AlexxIT/SonoffLAN/issues/623#issuecomment-1365841454
     138: [
         Switch1,
+        Startup1,
         LED,
         RSSI,
         XDetach,
