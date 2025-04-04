@@ -27,7 +27,7 @@ from ..binary_sensor import (
     XZigbeeMotion,
 )
 from ..button import XT5Button
-from ..climate import XClimateNS, XClimateTH, XThermostat
+from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
 from ..cover import XCover, XCover91, XCoverDualR3, XZigbeeCover
 from ..fan import XDiffuserFan, XFan, XFanDualR3, XToggleFan
@@ -64,9 +64,11 @@ from ..sensor import (
     XTemperatureTH,
     XUnknown,
     XWiFiDoorBattery,
+    XHexVoltageTRVZB,
 )
 from ..switch import (
     XBoolSwitch,
+    XBoolSwitchTRVZB,
     XDetach,
     XSwitch,
     XSwitchPOWR3,
@@ -484,6 +486,7 @@ DEVICES = {
     ],  # https://github.com/AlexxIT/SonoffLAN/issues/1166
     7016: [XHumanSensor, XLightSensor, XSensitivity, ZRSSI],  # SNZB-06P
     7017: [
+        XThermostatTRVZB,
         spec(XSensor, param="workMode", uid="work_mode"),
         spec(XSensor, param="workState", uid="work_state"),
         spec(XSensor, param="temperature", multiply=0.1),
@@ -511,9 +514,23 @@ DEVICES = {
             multiply=0.1,
             uid="eco_target_temperature",
         ),
-        spec(XBoolSwitch, param="childLock", uid="child_lock"),
-        spec(XBoolSwitch, param="windowSwitch", uid="window_switch"),
-        XSwitch,
+        spec(
+            XSensor,
+            param="tempCorrection",
+            multiply=0.1,
+            uid="temperature_correction",
+        ),
+        spec(XBoolSwitchTRVZB, param="childLock", uid="child_lock"),
+        spec(XBoolSwitchTRVZB, param="windowSwitch", uid="window_switch"),
+        spec(XHexVoltageTRVZB, param="runVoltage", uid="run_voltage"),
+        spec(XHexVoltageTRVZB, param="limitVoltage", uid="limit_voltage"),
+        #        spec(XSensor, param="mon"),
+        #        spec(XSensor, param="tues"),
+        #        spec(XSensor, param="wed"),
+        #        spec(XSensor, param="thur"),
+        #        spec(XSensor, param="fri"),
+        #        spec(XSensor, param="sat"),
+        #        spec(XSensor, param="sun"),
         Battery,
         ZRSSI,
     ],

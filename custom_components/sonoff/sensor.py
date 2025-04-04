@@ -361,3 +361,18 @@ class XUnknown(XEntity, SensorEntity):
 
         if self.hass:
             self._async_write_ha_state()
+
+
+class XHexVoltageTRVZB(XSensor):
+    _attr_device_class = SensorDeviceClass.VOLTAGE
+    _attr_native_unit_of_measurement = UnitOfElectricPotential.VOLT
+
+    def set_state(self, params: dict = None, value: float = None):
+        try:
+            value = params[self.param]
+            value = int(value, 16) * 0.001
+
+            if value != 0:
+                XSensor.set_state(self, value=value)
+        except Exception:
+            XSensor.set_state(self)
