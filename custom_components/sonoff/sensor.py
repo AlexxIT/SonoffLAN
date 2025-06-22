@@ -264,7 +264,7 @@ class XEnergySensorPOWR3(XEnergySensor, SensorEntity):
 class XEnergyTotal(XSensor):
     _attr_device_class = SensorDeviceClass.ENERGY
     _attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
-    _attr_state_class = SensorStateClass.TOTAL
+    _attr_state_class = SensorStateClass.TOTAL_INCREASING
 
 
 class XTemperatureNS(XSensor):
