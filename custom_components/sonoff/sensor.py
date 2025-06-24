@@ -56,7 +56,7 @@ UNITS = {
     "rssi": SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     "temperature": UnitOfTemperature.CELSIUS,
     "voltage": UnitOfElectricPotential.VOLT,
-    "water": UnitOfVolume.LITERS,
+    "DailyWaterConsumption": UnitOfVolume.LITERS,
 }
 
 
