@@ -523,7 +523,7 @@ DEVICES = {
     7027: [
         XBoolSwitch,
         Battery,
-        spec(XSensor, param="todayWaterUsage", uid="water"),
+        spec(XSensor, param="TodayWaterUsage", uid="DailyWaterConsumption"),
         ZRSSI,
     ],
 }
