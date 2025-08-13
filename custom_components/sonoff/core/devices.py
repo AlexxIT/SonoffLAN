@@ -50,6 +50,7 @@ from ..light import (
 )
 from ..number import XPulseWidth, XSensitivity
 from ..remote import XRemote
+from ..select import XSelectStartup
 from ..sensor import (
     XEnergySensor,
     XEnergySensorDualR3,
@@ -72,12 +73,9 @@ from ..switch import (
     XSwitchPOWR3,
     XSwitchTH,
     XSwitches,
+    XT5WorkMode,
     XToggle,
     XZigbeeSwitches,
-    XT5WorkMode,
-)
-from ..select import (
-    XSelectStartup,
 )
 
 # supported custom device_class
@@ -346,7 +344,13 @@ DEVICES = {
     160: SPEC_1CH,  # Sonoff SwitchMan M5-1C, https://github.com/AlexxIT/SonoffLAN/issues/1432
     161: SPEC_2CH,  # Sonoff SwitchMan M5-2C, https://github.com/AlexxIT/SonoffLAN/issues/1432
     162: SPEC_3CH,  # Sonoff SwitchMan M5-3C, https://github.com/AlexxIT/SonoffLAN/issues/659
-    165: [Switch1, Switch2, Startup1, Startup2, RSSI],  # DualR3 Lite, without power consumption
+    165: [
+        Switch1,
+        Switch2,
+        Startup1,
+        Startup2,
+        RSSI,
+    ],  # DualR3 Lite, without power consumption
     # https://github.com/AlexxIT/SonoffLAN/issues/857
     168: [RSSI],  # new ZBBridge-P
     173: [XLightL3, RSSI],  # Sonoff L3-5M-P
