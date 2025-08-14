@@ -16,7 +16,7 @@ LOCAL_TTL = 60
 
 class XRegistry(XRegistryBase):
     config: dict = None
-    task: asyncio.Task = None
+    task: asyncio.Task | None = None
 
     def __init__(self, session: ClientSession):
         super().__init__(session)
@@ -79,6 +79,7 @@ class XRegistry(XRegistryBase):
 
         if self.task:
             self.task.cancel()
+            self.task = None
 
     async def send(
         self,
