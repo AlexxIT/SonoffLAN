@@ -1655,7 +1655,7 @@ def test_t5():
         }
     )
 
-    light: XT5Light = entities[3]
+    light: XT5Light = next(e for e in entities if isinstance(e, XT5Light))
     assert light.state == "off"
     assert light.effect == "Childhood"
 
@@ -1665,7 +1665,7 @@ def test_t5():
     light.internal_update({"lightMode": 1})
     assert light.effect == "Party"
 
-    action: XT5Action = entities[4]
+    action: XT5Action = next(e for e in entities if isinstance(e, XT5Action))
     assert action.state == ""
 
     action.internal_update(
