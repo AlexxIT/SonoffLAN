@@ -27,7 +27,7 @@ from ..binary_sensor import (
     XZigbeeMotion,
 )
 from ..button import XT5Button
-from ..climate import XClimateNS, XClimateTH, XThermostat
+from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
 from ..cover import XCover, XCover91, XCoverDualR3, XCoverT5, XZigbeeCover
 from ..fan import XDiffuserFan, XFan, XFanDualR3, XToggleFan
@@ -65,6 +65,7 @@ from ..sensor import (
     XTemperatureTH,
     XUnknown,
     XWiFiDoorBattery,
+    XHexVoltageTRVZB,
 )
 from ..switch import (
     XBoolSwitch,
@@ -434,7 +435,7 @@ DEVICES = {
         XT5Bell,
     ],  # T5-4C-86
     226: [
-        XBoolSwitch,
+        spec(XBoolSwitch, param="switch"),
         LED,
         RSSI,
         spec(XSensor, param="phase_0_c", uid="current"),
@@ -491,6 +492,7 @@ DEVICES = {
     ],  # https://github.com/AlexxIT/SonoffLAN/issues/1166
     7016: [XHumanSensor, XLightSensor, XSensitivity, ZRSSI],  # SNZB-06P
     7017: [
+        XThermostatTRVZB,
         spec(XSensor, param="workMode", uid="work_mode"),
         spec(XSensor, param="workState", uid="work_state"),
         spec(XSensor, param="temperature", multiply=0.1),
@@ -518,9 +520,16 @@ DEVICES = {
             multiply=0.1,
             uid="eco_target_temperature",
         ),
+        spec(
+            XSensor,
+            param="tempCorrection",
+            multiply=0.1,
+            uid="temperature_correction",
+        ),
         spec(XBoolSwitch, param="childLock", uid="child_lock"),
         spec(XBoolSwitch, param="windowSwitch", uid="window_switch"),
-        XSwitch,
+        spec(XHexVoltageTRVZB, param="runVoltage", uid="run_voltage"),
+        spec(XHexVoltageTRVZB, param="limitVoltage", uid="limit_voltage"),
         Battery,
         ZRSSI,
     ],
@@ -528,7 +537,7 @@ DEVICES = {
     7019: [XWaterSensor, Battery],
     # SWV https://github.com/AlexxIT/SonoffLAN/issues/1497
     7027: [
-        XBoolSwitch,
+        spec(XBoolSwitch, param="switch"),
         Battery,
         spec(XSensor, param="todayWaterUsage", uid="water"),
         ZRSSI,
