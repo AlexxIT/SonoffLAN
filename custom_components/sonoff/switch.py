@@ -136,21 +136,6 @@ class XDetach(XEntity, SwitchEntity):
 
 
 class XBoolSwitch(XEntity, SwitchEntity):
-    params = {"switch"}
-
-    def set_state(self, params: dict):
-        self._attr_is_on = params["switch"]
-
-    async def async_turn_on(self, *args, **kwargs):
-        await self.ewelink.send(self.device, {"switch": True})
-
-    async def async_turn_off(self):
-        await self.ewelink.send(self.device, {"switch": False})
-
-
-class XBoolSwitchTRVZB(XEntity, SwitchEntity):
-    params = {}
-
     def set_state(self, params: dict):
         self._attr_is_on = params[self.param]
 

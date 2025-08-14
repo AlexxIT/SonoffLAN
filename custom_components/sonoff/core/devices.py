@@ -68,7 +68,6 @@ from ..sensor import (
 )
 from ..switch import (
     XBoolSwitch,
-    XBoolSwitchTRVZB,
     XDetach,
     XSwitch,
     XSwitchPOWR3,
@@ -398,7 +397,7 @@ DEVICES = {
         XT5Bell,
     ],  # T5-4C-86
     226: [
-        XBoolSwitch,
+        spec(XBoolSwitch, param="switch"),
         LED,
         RSSI,
         spec(XSensor, param="phase_0_c", uid="current"),
@@ -489,17 +488,10 @@ DEVICES = {
             multiply=0.1,
             uid="temperature_correction",
         ),
-        spec(XBoolSwitchTRVZB, param="childLock", uid="child_lock"),
-        spec(XBoolSwitchTRVZB, param="windowSwitch", uid="window_switch"),
+        spec(XBoolSwitch, param="childLock", uid="child_lock"),
+        spec(XBoolSwitch, param="windowSwitch", uid="window_switch"),
         spec(XHexVoltageTRVZB, param="runVoltage", uid="run_voltage"),
         spec(XHexVoltageTRVZB, param="limitVoltage", uid="limit_voltage"),
-        #        spec(XSensor, param="mon"),
-        #        spec(XSensor, param="tues"),
-        #        spec(XSensor, param="wed"),
-        #        spec(XSensor, param="thur"),
-        #        spec(XSensor, param="fri"),
-        #        spec(XSensor, param="sat"),
-        #        spec(XSensor, param="sun"),
         Battery,
         ZRSSI,
     ],
@@ -507,7 +499,7 @@ DEVICES = {
     7019: [XWaterSensor, Battery],
     # SWV https://github.com/AlexxIT/SonoffLAN/issues/1497
     7027: [
-        XBoolSwitch,
+        spec(XBoolSwitch, param="switch"),
         Battery,
         spec(XSensor, param="todayWaterUsage", uid="water"),
         ZRSSI,
