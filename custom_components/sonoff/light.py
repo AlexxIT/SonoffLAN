@@ -173,8 +173,9 @@ class XLight57(XLight):
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
-        if "channel0" in params:
-            self._attr_brightness = conv(params["channel0"], 25, 255, 1, 255)
+        # fix https://github.com/AlexxIT/SonoffLAN/issues/1637
+        if (v := params.get("channel0")) and isinstance(v, int):
+            self._attr_brightness = conv(v, 25, 255, 1, 255)
 
     def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
         if brightness:
