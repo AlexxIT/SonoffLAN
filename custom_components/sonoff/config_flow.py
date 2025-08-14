@@ -70,7 +70,7 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
                     step_id="user",
                     data_schema=data_schema,
                     errors={"base": "template"},
-                    description_placeholders={"error": str(e)},
+                    description_placeholders={"error": repr(e)},
                 )
 
         return self.async_show_form(step_id="user", data_schema=data_schema)
