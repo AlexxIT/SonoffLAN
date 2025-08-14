@@ -129,6 +129,7 @@ XSensor100 = spec(XSensor, multiply=0.01, round=2)
 Battery = spec(XSensor, param="battery")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
+STARTUP = spec(XToggle, param="startup", enabled=False)
 PULSE = spec(XToggle, param="pulse", enabled=False)
 ZRSSI = spec(XSensor, param="subDevRssi", uid="rssi", enabled=False)
 
@@ -435,6 +436,14 @@ DEVICES = {
         XT5Alarm,
         XT5Bell,
     ],  # T5-4C-86
+    # CK-BL602-PCSW-01(225) https://github.com/AlexxIT/SonoffLAN/issues/1616
+    225: [
+        XSwitch,
+        LED,
+        RSSI,
+        STARTUP,
+        spec(XBoolSwitch, param="childLock", uid="child_lock", enabled=False),
+    ],
     226: [
         spec(XBoolSwitch, param="switch"),
         LED,
