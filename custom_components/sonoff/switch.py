@@ -88,18 +88,22 @@ class XZigbeeSwitches(XSwitches):
         # zigbee switch should send all channels at once
         # https://github.com/AlexxIT/SonoffLAN/issues/714
         switches = [
-            {"outlet": self.channel, "switch": "on"}
-            if switch["outlet"] == self.channel
-            else switch
+            (
+                {"outlet": self.channel, "switch": "on"}
+                if switch["outlet"] == self.channel
+                else switch
+            )
             for switch in self.device["params"]["switches"]
         ]
         await self.ewelink.send(self.device, {"switches": switches})
 
     async def async_turn_off(self):
         switches = [
-            {"outlet": self.channel, "switch": "off"}
-            if switch["outlet"] == self.channel
-            else switch
+            (
+                {"outlet": self.channel, "switch": "off"}
+                if switch["outlet"] == self.channel
+                else switch
+            )
             for switch in self.device["params"]["switches"]
         ]
         await self.ewelink.send(self.device, {"switches": switches})
@@ -144,3 +148,19 @@ class XBoolSwitch(XEntity, SwitchEntity):
 
     async def async_turn_off(self):
         await self.ewelink.send(self.device, {self.param: False})
+
+
+class XT5WorkMode(XEntity, SwitchEntity):
+    params = {"workMode"}
+    uid = "curtain_mode"
+
+    _attr_entity_registry_enabled_default = False
+
+    def set_state(self, params: dict):
+        self._attr_is_on = params["workMode"] == 2
+
+    async def async_turn_on(self, *args, **kwargs):
+        await self.ewelink.send(self.device, {"workMode": 2})
+
+    async def async_turn_off(self):
+        await self.ewelink.send(self.device, {"workMode": 1})

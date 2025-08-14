@@ -33,6 +33,7 @@ class XClimateTH(XEntity, ClimateEntity):
     _attr_target_temperature_low = None
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 1
+    _heat_mode_flag = False
 
     # https://developers.home-assistant.io/blog/2024/01/24/climate-climateentityfeatures-expanded
     if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 2):
@@ -51,7 +52,7 @@ class XClimateTH(XEntity, ClimateEntity):
         if "targets" in params:
             hi, lo = params["targets"]
 
-            self._attr_is_aux_heat = lo["reaction"]["switch"] == "on"
+            self._heat_mode_flag = lo["reaction"]["switch"] == "on"
             self._attr_target_temperature_high = float(hi["targetHigh"])
             self._attr_target_temperature_low = float(lo["targetLow"])
 
@@ -59,7 +60,7 @@ class XClimateTH(XEntity, ClimateEntity):
                 self._attr_hvac_mode = HVACMode.OFF
             elif params["deviceType"] == "humidity":
                 self._attr_hvac_mode = HVACMode.DRY
-            elif self.is_aux_heat:
+            elif self._heat_mode_flag:
                 self._attr_hvac_mode = HVACMode.HEAT
             else:
                 self._attr_hvac_mode = HVACMode.COOL
@@ -103,7 +104,7 @@ class XClimateTH(XEntity, ClimateEntity):
             params = {
                 "mainSwitch": "on",
                 "deviceType": "humidity",
-                "targets": self.get_targets(self.is_aux_heat),
+                "targets": self.get_targets(self._heat_mode_flag),
             }
         else:
             params = {"mainSwitch": "off", "deviceType": "normal"}
@@ -116,7 +117,7 @@ class XClimateTH(XEntity, ClimateEntity):
         target_temp_low: float = None,
         **kwargs
     ) -> None:
-        heat = self.is_aux_heat
+        heat = self._heat_mode_flag
         if hvac_mode is None:
             params = {}
         elif hvac_mode == HVACMode.HEAT:

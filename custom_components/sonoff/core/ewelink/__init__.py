@@ -168,6 +168,27 @@ class XRegistry(XRegistryBase):
         if params := device.pop("params_bulk", None):
             return await self.send(device, params)
 
+    # TODO: Unify send_bulk and send_bulk_configure
+    async def send_bulk_configure(self, device: XDevice, params: dict):
+        assert "configure" in params
+
+        if "params_bulk" in device:
+            for new in params["configure"]:
+                for old in device["params_bulk"]["configure"]:
+                    # check on duplicates
+                    if new["outlet"] == old["outlet"]:
+                        old["startup"] = new["switch"]
+                        break
+                else:
+                    device["params_bulk"]["configure"].append(new)
+        else:
+            device["params_bulk"] = params
+
+        await asyncio.sleep(0.1)
+
+        if params := device.pop("params_bulk", None):
+            return await self.send(device, params)
+
     async def send_cloud(self, device: XDevice, params: dict = None, query=True):
         if not self.can_cloud(device):
             return

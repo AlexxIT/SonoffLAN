@@ -29,7 +29,7 @@ from ..binary_sensor import (
 from ..button import XT5Button
 from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
-from ..cover import XCover, XCover91, XCoverDualR3, XZigbeeCover
+from ..cover import XCover, XCover91, XCoverDualR3, XCoverT5, XZigbeeCover
 from ..fan import XDiffuserFan, XFan, XFanDualR3, XToggleFan
 from ..light import (
     XDiffuserLight,
@@ -50,6 +50,7 @@ from ..light import (
 )
 from ..number import XPulseWidth, XSensitivity
 from ..remote import XRemote
+from ..select import XSelectStartup
 from ..sensor import (
     XEnergySensor,
     XEnergySensorDualR3,
@@ -73,6 +74,7 @@ from ..switch import (
     XSwitchPOWR3,
     XSwitchTH,
     XSwitches,
+    XT5WorkMode,
     XToggle,
     XZigbeeSwitches,
 )
@@ -115,6 +117,11 @@ Switch1 = spec(XSwitches, channel=0, uid="1")
 Switch2 = spec(XSwitches, channel=1, uid="2")
 Switch3 = spec(XSwitches, channel=2, uid="3")
 Switch4 = spec(XSwitches, channel=3, uid="4")
+
+Startup1 = spec(XSelectStartup, channel=0, uid="1")
+Startup2 = spec(XSelectStartup, channel=1, uid="2")
+Startup3 = spec(XSelectStartup, channel=2, uid="3")
+Startup4 = spec(XSelectStartup, channel=3, uid="4")
 
 XSensor100 = spec(XSensor, multiply=0.01, round=2)
 
@@ -237,6 +244,8 @@ DEVICES = {
     126: [
         Switch1,
         Switch2,
+        Startup1,
+        Startup2,
         RSSI,
         Current1,
         Current2,
@@ -264,6 +273,10 @@ DEVICES = {
         Switch2,
         Switch3,
         Switch4,
+        Startup1,
+        Startup2,
+        Startup3,
+        Startup4,
         Current1,
         Current2,
         Current3,
@@ -321,6 +334,7 @@ DEVICES = {
     # https://github.com/AlexxIT/SonoffLAN/issues/623#issuecomment-1365841454
     138: [
         Switch1,
+        Startup1,
         LED,
         RSSI,
         XDetach,
@@ -331,7 +345,13 @@ DEVICES = {
     160: SPEC_1CH,  # Sonoff SwitchMan M5-1C, https://github.com/AlexxIT/SonoffLAN/issues/1432
     161: SPEC_2CH,  # Sonoff SwitchMan M5-2C, https://github.com/AlexxIT/SonoffLAN/issues/1432
     162: SPEC_3CH,  # Sonoff SwitchMan M5-3C, https://github.com/AlexxIT/SonoffLAN/issues/659
-    165: [Switch1, Switch2, RSSI],  # DualR3 Lite, without power consumption
+    165: [
+        Switch1,
+        Switch2,
+        Startup1,
+        Startup2,
+        RSSI,
+    ],  # DualR3 Lite, without power consumption
     # https://github.com/AlexxIT/SonoffLAN/issues/857
     168: [RSSI],  # new ZBBridge-P
     173: [XLightL3, RSSI],  # Sonoff L3-5M-P
@@ -374,16 +394,30 @@ DEVICES = {
     # https://github.com/AlexxIT/SonoffLAN/issues/984
     195: [XTemperatureTH],  # NSPanel Pro
     # https://github.com/AlexxIT/SonoffLAN/issues/1183
-    209: [Switch1, XT5Light, XT5Action, XT5Alarm, XT5Bell],  # T5-1C-86
-    210: [Switch1, Switch2, XT5Light, XT5Action, XT5Alarm, XT5Bell],  # T5-2C-86
-    211: [
+    209: [Switch1, Startup1, XT5Light, XT5Action, XT5Alarm, XT5Bell],  # T5-1C-86
+    210: [
         Switch1,
         Switch2,
-        Switch3,
+        Startup1,
+        Startup2,
         XT5Light,
         XT5Action,
         XT5Alarm,
         XT5Bell,
+    ],  # T5-2C-86
+    211: [
+        Switch1,
+        Switch2,
+        Switch3,
+        Startup1,
+        Startup2,
+        Startup3,
+        XT5Light,
+        XT5Action,
+        XT5Alarm,
+        XT5Bell,
+        XCoverT5,
+        XT5WorkMode,
     ],  # T5-3C-86
     # https://github.com/AlexxIT/SonoffLAN/issues/1251
     212: [
@@ -391,6 +425,10 @@ DEVICES = {
         Switch2,
         Switch3,
         Switch4,
+        Startup1,
+        Startup2,
+        Startup3,
+        Startup4,
         XT5Light,
         XT5Action,
         XT5Alarm,
