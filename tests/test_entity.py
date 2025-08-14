@@ -1716,7 +1716,7 @@ def test_powr3():
     energy: XEnergyTotal = next(e for e in entities if e.uid == "energy_day")
     assert energy.device_class == SensorDeviceClass.ENERGY
     assert energy.unit_of_measurement == UnitOfEnergy.KILO_WATT_HOUR
-    assert energy.state_class == SensorStateClass.TOTAL
+    assert energy.state_class == SensorStateClass.TOTAL_INCREASING
     energy.set_state({"dayKwh": 7})
     assert energy.native_value == 0.07
 
