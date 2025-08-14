@@ -446,6 +446,18 @@ DEVICES = {
     ],  # CK-BL602-W102SW18-01(226)
     # https://github.com/AlexxIT/SonoffLAN/issues/1634
     258: [XCover, LED, RSSI],
+    # CK-BL602-SWP1-02(262) https://github.com/AlexxIT/SonoffLAN/issues/1630
+    262: [
+        Switch1,
+        Switch2,
+        Switch3,
+        Switch4,
+        LED,
+        RSSI,
+        spec(XSensor100, param="power"),
+        spec(XSensor100, param="current"),
+        spec(XSensor100, param="voltage"),
+    ],
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     # https://github.com/AlexxIT/SonoffLAN/issues/1195
     1256: [spec(XSwitch)],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
