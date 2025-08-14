@@ -335,6 +335,7 @@ DEVICES = {
     136: [spec(XLightB05B, min_ct=0, max_ct=100), RSSI],  # Sonoff B05-BL
     137: [XLightL1, RSSI],
     # https://github.com/AlexxIT/SonoffLAN/issues/623#issuecomment-1365841454
+    # MINIR4M https://github.com/AlexxIT/SonoffLAN/issues/1632
     138: [
         Switch1,
         Startup1,
