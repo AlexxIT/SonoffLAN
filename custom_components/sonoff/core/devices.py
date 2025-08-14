@@ -470,7 +470,7 @@ DEVICES = {
     ],
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     # https://github.com/AlexxIT/SonoffLAN/issues/1195
-    1256: [spec(XSwitch)],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
+    1256: [XSwitch],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
     1257: [XLightD1],  # ZigbeeWhiteLight
     1258: [XZigbeeColorTemp],  # https://github.com/AlexxIT/SonoffLAN/issues/1557
     # https://github.com/AlexxIT/SonoffLAN/issues/972
