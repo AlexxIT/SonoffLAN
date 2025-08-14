@@ -52,6 +52,8 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
     except TypeError:
         hass = HomeAssistant()  # old Hass
 
+    hass.data["integrations"] = {}
+
     for entity in entities:
         if not isinstance(entity, Entity):
             continue
