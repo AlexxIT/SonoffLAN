@@ -275,7 +275,10 @@ class XTemperatureNS(XSensor):
         if params:
             # cache updated in XClimateNS entity
             cache = self.device["params"]
-            value = cache["temperature"] + cache.get("tempCorrection", 0)
+            value = cache["temperature"]
+            # fix str https://github.com/AlexxIT/SonoffLAN/issues/1628
+            if v := cache.get("tempCorrection"):
+                value += float(v)
         XSensor.set_state(self, value=value)
 
 
