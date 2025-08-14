@@ -267,19 +267,40 @@ class XEnergyTotal(XSensor):
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
 
 
-class XTemperatureNS(XSensor):
+def parse_float(v: int | float | str):
+    return float(v) if isinstance(v, str) else v
+
+
+class XTempCorrection(XSensor):
     params = {"temperature", "tempCorrection"}
     uid = "temperature"
 
     def set_state(self, params: dict = None, value: float = None):
-        if params:
-            # cache updated in XClimateNS entity
-            cache = self.device["params"]
-            value = cache["temperature"]
-            # fix str https://github.com/AlexxIT/SonoffLAN/issues/1628
+        try:
+            if (cache := self.device["params"]) != params:
+                cache.update(params)
+            value = parse_float(cache["temperature"])
             if v := cache.get("tempCorrection"):
-                value += float(v)
-        XSensor.set_state(self, value=value)
+                value += parse_float(v)
+            XSensor.set_state(self, value=value)
+        except:
+            pass
+
+
+class XHumCorrection(XSensor):
+    params = {"humidity", "humCorrection"}
+    uid = "humidity"
+
+    def set_state(self, params: dict = None, value: float = None):
+        try:
+            if (cache := self.device["params"]) != params:
+                cache.update(params)
+            value = parse_float(cache["humidity"])
+            if v := cache.get("humCorrection"):
+                value += parse_float(v)
+            XSensor.set_state(self, value=value)
+        except:
+            pass
 
 
 class XOutdoorTempNS(XSensor):

@@ -57,12 +57,13 @@ from ..sensor import (
     XEnergySensorPOWR3,
     XEnergyTotal,
     XHexVoltageTRVZB,
+    XHumCorrection,
     XHumidityTH,
     XOutdoorTempNS,
     XRemoteButton,
     XSensor,
     XT5Action,
-    XTemperatureNS,
+    XTempCorrection,
     XTemperatureTH,
     XTodayWaterUsage,
     XUnknown,
@@ -322,7 +323,7 @@ DEVICES = {
         Switch1,
         Switch2,
         XClimateNS,
-        XTemperatureNS,
+        XTempCorrection,
         XOutdoorTempNS,
     ],  # Sonoff NS Panel
     # https://github.com/AlexxIT/SonoffLAN/issues/1026
@@ -573,6 +574,8 @@ DEVICES = {
         spec(XSensor100, param="current"),
         spec(XSensor100, param="voltage"),
     ],
+    # SNZB-02WD https://github.com/AlexxIT/SonoffLAN/issues/1612
+    7033: [XTempCorrection, XHumCorrection, Battery, ZRSSI],
 }
 
 

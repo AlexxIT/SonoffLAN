@@ -53,7 +53,7 @@ from custom_components.sonoff.sensor import (
     XRemoteButton,
     XSensor,
     XT5Action,
-    XTemperatureNS,
+    XTempCorrection,
     XUnknown,
 )
 from custom_components.sonoff.switch import (
@@ -1207,7 +1207,7 @@ def test_ns_panel():
     for uid in ("1", "2"):
         assert any(e.uid == uid for e in entities)
 
-    temp = next(e for e in entities if isinstance(e, XTemperatureNS))
+    temp = next(e for e in entities if isinstance(e, XTempCorrection))
     state = temp.hass.states.get(temp.entity_id)
     assert state.state == "20"
     assert state.attributes == {
