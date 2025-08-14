@@ -15,6 +15,7 @@ from aiohttp import (
     ClientWebSocketResponse,
     ServerTimeoutError,
     WSMessage,
+    WSMessageTypeError,
 )
 
 from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
@@ -577,6 +578,9 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 asyncio.create_task(_ping(self.ws, config.get("hbInterval")))
 
             return True
+
+        except WSMessageTypeError:
+            pass  # https://github.com/AlexxIT/SonoffLAN/issues/1600
 
         except ClientConnectorError as e:
             _LOGGER.warning(f"Cloud WS Connection error: {e}")
