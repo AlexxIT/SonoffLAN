@@ -56,6 +56,7 @@ from ..sensor import (
     XEnergySensorDualR3,
     XEnergySensorPOWR3,
     XEnergyTotal,
+    XHexVoltageTRVZB,
     XHumidityTH,
     XOutdoorTempNS,
     XRemoteButton,
@@ -63,9 +64,9 @@ from ..sensor import (
     XT5Action,
     XTemperatureNS,
     XTemperatureTH,
+    XTodayWaterUsage,
     XUnknown,
     XWiFiDoorBattery,
-    XHexVoltageTRVZB,
 )
 from ..switch import (
     XBoolSwitch,
@@ -539,7 +540,7 @@ DEVICES = {
     7027: [
         spec(XBoolSwitch, param="switch"),
         Battery,
-        spec(XSensor, param="todayWaterUsage", uid="water"),
+        XTodayWaterUsage,
         ZRSSI,
     ],
 }

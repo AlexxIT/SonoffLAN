@@ -375,3 +375,14 @@ class XHexVoltageTRVZB(XSensor):
                 XSensor.set_state(self, value=value)
         except Exception:
             XSensor.set_state(self)
+
+
+class XTodayWaterUsage(XSensor):
+    params = {"todayWaterUsage", "TodayWaterUsage"}
+    uid = "water"
+
+    def set_state(self, params: dict = None, value: float = None):
+        # https://github.com/AlexxIT/SonoffLAN/issues/1497
+        # https://github.com/AlexxIT/SonoffLAN/issues/1608
+        value = next(params[k] for k in self.params if k in params)
+        XSensor.set_state(self, value=value)
