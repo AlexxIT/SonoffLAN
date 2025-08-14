@@ -444,6 +444,8 @@ DEVICES = {
         spec(XSensor, param="phase_0_v", uid="voltage"),
         spec(XEnergyTotal, param="totalPower", uid="energy"),
     ],  # CK-BL602-W102SW18-01(226)
+    # https://github.com/AlexxIT/SonoffLAN/issues/1634
+    258: [XCover, LED, RSSI],
     1000: [XRemoteButton, Battery],  # zigbee_ON_OFF_SWITCH_1000
     # https://github.com/AlexxIT/SonoffLAN/issues/1195
     1256: [spec(XSwitch)],  # ZCL_HA_DEVICEID_ON_OFF_LIGHT
