@@ -566,6 +566,13 @@ DEVICES = {
         XTodayWaterUsage,
         ZRSSI,
     ],
+    # S60ZBTPF https://github.com/AlexxIT/SonoffLAN/issues/1615
+    7032: [
+        Switch1,
+        spec(XSensor100, param="power"),
+        spec(XSensor100, param="current"),
+        spec(XSensor100, param="voltage"),
+    ],
 }
 
 
