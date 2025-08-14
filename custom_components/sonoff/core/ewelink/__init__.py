@@ -308,7 +308,9 @@ class XRegistry(XRegistryBase):
             params,
         )
 
-        if "sledOnline" in params:
+        if "params" not in device:
+            device["params"] = params
+        elif "sledOnline" in params:
             device["params"]["sledOnline"] = params["sledOnline"]
 
         # we can get data from device, but without host
