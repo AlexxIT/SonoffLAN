@@ -376,6 +376,8 @@ DEVICES = {
         spec(XSensor, param="voltage"),
         EnergyPOW,
     ],  # Sonoff S40
+    # Sonoff POWR3
+    # S60TPF https://github.com/AlexxIT/SonoffLAN/issues/1514
     190: [
         XSwitchPOWR3,
         LED,
@@ -393,7 +395,7 @@ DEVICES = {
             uid="energy",
             get_params={"getHoursKwh": {"start": 0, "end": 24 * 30 - 1}},
         ),
-    ],  # Sonoff POWR3
+    ],
     # https://github.com/AlexxIT/SonoffLAN/issues/984
     195: [XTemperatureTH],  # NSPanel Pro
     # https://github.com/AlexxIT/SonoffLAN/issues/1183
