@@ -338,7 +338,7 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
         "workState",
     }
 
-    # @bwp91 https://github.com/AlexxIT/SonoffLAN/issues/358
+    _attr_hvac_mode = None
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.AUTO]
     _attr_max_temp = 45
     _attr_min_temp = 5
@@ -365,13 +365,14 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
         if cache != params:
             cache.update(params)
 
-        if cache["switch"] == "on":
-            if cache["workState"] == 0:
-                self._attr_hvac_mode = HVACMode.AUTO
-            elif cache["workState"] == 1:
-                self._attr_hvac_mode = HVACMode.HEAT
-        else:
-            self._attr_hvac_mode = HVACMode.OFF
+        if "switch" in cache:
+            if cache["switch"] == "on":
+                if cache["workState"] == 0:
+                    self._attr_hvac_mode = HVACMode.AUTO
+                elif cache["workState"] == 1:
+                    self._attr_hvac_mode = HVACMode.HEAT
+            else:
+                self._attr_hvac_mode = HVACMode.OFF
 
         if "workMode" in cache:
             self._attr_preset_mode = self.preset_modes[int(cache["workMode"])]
