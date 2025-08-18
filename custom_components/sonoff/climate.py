@@ -320,29 +320,19 @@ class XThermostat(XEntity, ClimateEntity):
 
 
 TRVZB_PRESET_MODES = {
-    "manual": "manTargetTemp",  # workMode = 0 - Manual
-    "eco": "ecoTargetTemp",  # workMode = 1 - Off
-    "auto": "autoTargetTemp",  # workMode = 2 - Auto
+    HVACMode.HEAT: "manTargetTemp",  # workMode = 0 - Manual
+    HVACMode.OFF: "ecoTargetTemp",  # workMode = 1 - Off
+    HVACMode.AUTO: "autoTargetTemp",  # workMode = 2 - Auto
 }
 
 
 class XThermostatTRVZB(XEntity, ClimateEntity):
-    params = {
-        "switch",
-        "curTargetTemp",
-        "manTargetTemp",
-        "autoTargetTemp",
-        "ecoTargetTemp",
-        "temperature",
-        "workMode",
-        "workState",
-    }
+    params = {"workMode", "curTargetTemp", "temperature"}
 
     _attr_hvac_mode = None
-    _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.AUTO]
+    _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF, HVACMode.AUTO]
     _attr_max_temp = 45
     _attr_min_temp = 5
-    _attr_preset_modes = ["manual", "eco", "auto"]
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
 
@@ -350,7 +340,6 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
     if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 2):
         _attr_supported_features = (
             ClimateEntityFeature.TARGET_TEMPERATURE
-            | ClimateEntityFeature.PRESET_MODE
             | ClimateEntityFeature.TURN_ON
             | ClimateEntityFeature.TURN_OFF
         )
@@ -365,17 +354,8 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
         if cache != params:
             cache.update(params)
 
-        if "switch" in cache:
-            if cache["switch"] == "on":
-                if cache["workState"] == 0:
-                    self._attr_hvac_mode = HVACMode.AUTO
-                elif cache["workState"] == 1:
-                    self._attr_hvac_mode = HVACMode.HEAT
-            else:
-                self._attr_hvac_mode = HVACMode.OFF
-
         if "workMode" in cache:
-            self._attr_preset_mode = self.preset_modes[int(cache["workMode"])]
+            self._attr_hvac_mode = self.hvac_modes[int(cache["workMode"])]
 
         if "curTargetTemp" in cache:
             self._attr_target_temperature = cache["curTargetTemp"] * 0.1
@@ -390,26 +370,16 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
         await self.async_set_temperature(preset_mode=preset_mode)
 
     async def async_set_temperature(
-        self,
-        temperature: float = None,
-        hvac_mode: HVACMode = None,
-        preset_mode: str = None,
-        **kwargs
+        self, temperature: float = None, hvac_mode: HVACMode = None, **kwargs
     ) -> None:
-        if hvac_mode == HVACMode.AUTO:
-            params = {"switch": "on", "workState": 0}  # idle or eco?
-        elif hvac_mode == HVACMode.HEAT:
-            params = {"switch": "on", "workState": 1}
-        elif hvac_mode == HVACMode.OFF:
-            params = {"switch": "off"}
+        if hvac_mode is not None:
+            params = {"workMode": str(self.hvac_modes.index(hvac_mode))}
+            temp_key = TRVZB_PRESET_MODES.get(hvac_mode)
         else:
             params = {}
+            temp_key = TRVZB_PRESET_MODES.get(self._attr_hvac_mode)
 
-        if preset_mode is not None:
-            params["workMode"] = str(self.preset_modes.index(preset_mode))
-
-        if temperature is not None:
-            temp_key = TRVZB_PRESET_MODES[preset_mode or self._attr_preset_mode]
+        if temperature is not None and temp_key:
             params[temp_key] = temperature * 10
 
         await self.ewelink.send(self.device, params)
