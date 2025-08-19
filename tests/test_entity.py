@@ -38,6 +38,7 @@ from custom_components.sonoff.fan import XFan, XToggleFan
 from custom_components.sonoff.light import (
     UIID22_MODES,
     XDiffuserLight,
+    XLight57,
     XLightB05B,
     XLightB1,
     XLightGroup,
@@ -2084,3 +2085,32 @@ def test_swv():
     water: XSensor = next(e for e in entities if e.uid == "water")
     assert water.state == 8
     assert water.unit_of_measurement == UnitOfVolume.LITERS
+
+
+def test_mosquitto():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 57},
+            "params": {
+                "rssi": -47,
+                "staMac": "***",
+                "channel3": "255",
+                "channel4": "255",
+                "channel0": "25",
+                "fwVersion": "3.4.0",
+                "channel1": "255",
+                "channel2": "255",
+                "state": "on",
+                "version": 8,
+                "sledOnline": "on",
+                "init": 1,
+                "startup": "on",
+                "bindInfos": {},
+                "only_device": {"errorCh": 0, "errorPwm": 0},
+            },
+        }
+    )
+
+    light: XLight57 = entities[0]
+    assert light.state == "on"
+    assert light.brightness == 1
