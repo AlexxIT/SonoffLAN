@@ -15,7 +15,6 @@ from aiohttp import (
     ClientWebSocketResponse,
     ServerTimeoutError,
     WSMessage,
-    WSMessageTypeError,
 )
 
 from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
@@ -579,14 +578,12 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
 
             return True
 
-        except WSMessageTypeError:
-            pass  # https://github.com/AlexxIT/SonoffLAN/issues/1600
-
-        except ClientConnectorError as e:
-            _LOGGER.warning(f"Cloud WS Connection error: {e}")
-
         except Exception as e:
-            _LOGGER.error("Cloud WS exception", exc_info=e)
+            # https://github.com/AlexxIT/SonoffLAN/issues/1600
+            if isinstance(e, ClientConnectorError) or "TypeError" in repr(e):
+                _LOGGER.warning(f"Cloud WS Connection error: {repr(e)}")
+            else:
+                _LOGGER.error("Cloud WS exception", exc_info=e)
 
         return False
 
