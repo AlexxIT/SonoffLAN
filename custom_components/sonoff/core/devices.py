@@ -442,11 +442,13 @@ DEVICES = {
     ],  # T5-4C-86
     # CK-BL602-PCSW-01(225) https://github.com/AlexxIT/SonoffLAN/issues/1616
     225: [
-        XSwitch,
+        spec(XBoolSwitch, param="switch"),
+        spec(XButton, param="restart", value=True, uid="restart"),
+        spec(XButton, param="forceShutdown", value=True, uid="shutdown"),
+        spec(XBoolSwitch, param="childLock", uid="child_lock", enabled=False),
         LED,
         RSSI,
         STARTUP,
-        spec(XBoolSwitch, param="childLock", uid="child_lock", enabled=False),
     ],
     226: [
         spec(XBoolSwitch, param="switch"),
