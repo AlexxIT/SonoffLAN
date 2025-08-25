@@ -44,10 +44,8 @@ class XRemoteButton(ButtonEntity):
         )
 
 
-class XT5Button(XEntity, ButtonEntity):
-    soundAction: int = None
-
-    _attr_entity_registry_enabled_default = False
+class XButton(XEntity, ButtonEntity):
+    value = None
 
     async def async_press(self):
-        await self.ewelink.send(self.device, {"soundAction": self.soundAction})
+        await self.ewelink.send(self.device, {self.param: self.value})

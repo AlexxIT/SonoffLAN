@@ -26,7 +26,7 @@ from ..binary_sensor import (
     XWiFiDoor,
     XZigbeeMotion,
 )
-from ..button import XT5Button
+from ..button import XButton
 from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
 from ..cover import XCover, XCover91, XCoverDualR3, XCoverT5, XZigbeeCover
@@ -163,8 +163,8 @@ EnergyPOW = spec(
 # backward compatibility for unique_id
 DoorLock = spec(XBinarySensor, param="lock", uid="", default_class="door")
 
-XT5Alarm = spec(XT5Button, soundAction=1, uid="alarm")
-XT5Bell = spec(XT5Button, soundAction=2, uid="bell")
+XT5Alarm = spec(XButton, param="soundAction", value=1, uid="alarm", enabled=False)
+XT5Bell = spec(XButton, param="soundAction", value=2, uid="bell", enabled=False)
 
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
 DEVICES = {
