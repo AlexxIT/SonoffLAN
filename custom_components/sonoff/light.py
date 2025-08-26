@@ -823,6 +823,10 @@ class XLightB02(XLight):
 
         self._attr_effect = params["ltype"]
 
+        # fix https://github.com/AlexxIT/SonoffLAN/issues/1649
+        if self.effect not in params:
+            return
+
         state = params[self.effect]
         if "br" in state:
             self._attr_brightness = conv(state["br"], self.min_br, self.max_br, 1, 255)
