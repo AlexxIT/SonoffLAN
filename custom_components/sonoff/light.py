@@ -1236,8 +1236,8 @@ class XT5Light(XOnOffLight):
             )
 
     async def async_turn_on(self, effect: str = None, **kwargs) -> None:
-        if value := T5_EFFECTS.get(effect):
-            await self.ewelink.send(self.device, {"lightMode": value})
+        if effect and effect in T5_EFFECTS:
+            await self.ewelink.send(self.device, {"lightMode": T5_EFFECTS[effect]})
 
         await self.ewelink.send(self.device, {"lightSwitch": "on"})
 
