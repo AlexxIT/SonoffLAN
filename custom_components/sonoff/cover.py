@@ -134,8 +134,7 @@ class XZigbeeCover(XCover):
         await self.ewelink.send(self.device, {"openPercent": 100 - position})
 
 
-# https://github.com/AlexxIT/SonoffLAN/issues/1304
-class XCover91(XEntity, CoverEntity):
+class XCoverOP(XEntity, CoverEntity):
     param = "op"
 
     _attr_is_closed = None  # unknown state

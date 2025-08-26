@@ -33,7 +33,7 @@ from custom_components.sonoff.core.ewelink import (
     SIGNAL_CONNECTED,
     SIGNAL_UPDATE,
 )
-from custom_components.sonoff.cover import XCover, XCover91, XCoverDualR3, XZigbeeCover
+from custom_components.sonoff.cover import XCover, XCoverOP, XCoverDualR3, XZigbeeCover
 from custom_components.sonoff.fan import XFan, XToggleFan
 from custom_components.sonoff.light import (
     UIID22_MODES,
@@ -1681,7 +1681,7 @@ def test_t5():
 def test_91():
     entities = get_entitites({"extra": {"uiid": 91}, "params": {"op": 1}})
 
-    cover: XCover91 = entities[0]
+    cover: XCoverOP = entities[0]
     assert cover.state == "opening"
 
     cover.internal_update({"op": 2})

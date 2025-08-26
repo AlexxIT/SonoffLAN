@@ -29,7 +29,7 @@ from ..binary_sensor import (
 from ..button import XButton
 from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
-from ..cover import XCover, XCover91, XCoverDualR3, XCoverT5, XZigbeeCover
+from ..cover import XCover, XCoverOP, XCoverDualR3, XCoverT5, XZigbeeCover
 from ..fan import XDiffuserFan, XFan, XFanDualR3, XToggleFan
 from ..light import (
     XDiffuserLight,
@@ -233,13 +233,18 @@ DEVICES = {
     57: [XLight57, RSSI],  # Mosquito Killer Lamp
     59: [XLightL1, RSSI],  # Sonoff LED (only cloud)
     66: [RSSI, LED, spec(XBinarySensor, param="zled", enabled=False)],  # ZigBee Bridge
+    # KingArt Garage Door Opener (KING-Q1)
+    # https://github.com/AlexxIT/SonoffLAN/issues/1257
+    67: [XCoverOP],
     77: SPEC_1CH,  # Sonoff Micro
     78: SPEC_1CH,  # https://github.com/AlexxIT/SonoffLAN/issues/615
     81: SPEC_1CH,
     82: SPEC_2CH,
     83: SPEC_3CH,
     84: SPEC_4CH,
-    91: [XCover91],
+    # ST-03
+    # https://github.com/AlexxIT/SonoffLAN/issues/1304
+    91: [XCoverOP],
     102: [XWiFiDoor, XWiFiDoorBattery, RSSI],  # Sonoff DW2 Door/Window sensor
     103: [XLightB02, RSSI],  # Sonoff B02 CCT bulb
     104: [XLightB05B, RSSI],  # Sonoff B05-B RGB+CCT color bulb
