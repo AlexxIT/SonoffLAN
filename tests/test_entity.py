@@ -1684,6 +1684,9 @@ def test_91():
     cover: XCoverOP = entities[0]
     assert cover.state == "opening"
 
+    cover.internal_update({"per": 100, "op": 1})
+    assert cover.state == "open"
+
     cover.internal_update({"op": 2})
     assert cover.state is None
 
