@@ -18,6 +18,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 
 from .ewelink import XDevice
+from ..alarm_control_panel import XAlarmPanel
 from ..binary_sensor import (
     XBinarySensor,
     XHumanSensor,
@@ -439,7 +440,7 @@ DEVICES = {
         ),
     ],
     # NSPanel Pro, https://github.com/AlexxIT/SonoffLAN/issues/984
-    195: [XTemperatureTH],
+    195: [XTemperatureTH, XAlarmPanel],
     # Sonoff TX ULTIMATE T5-1C-86, https://github.com/AlexxIT/SonoffLAN/issues/1183
     209: [Switch1, Startup1, XT5Light, XT5Action, XT5Alarm, XT5Bell],
     # Sonoff TX ULTIMATE T5-2C-86

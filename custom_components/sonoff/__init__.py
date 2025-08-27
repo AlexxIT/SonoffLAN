@@ -43,6 +43,7 @@ from .core.xutils import create_clientsession
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [
+    "alarm_control_panel",
     "binary_sensor",
     "button",
     "climate",
