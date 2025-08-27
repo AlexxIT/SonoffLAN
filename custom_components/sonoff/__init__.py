@@ -50,6 +50,7 @@ PLATFORMS = [
     "cover",
     "fan",
     "light",
+    "media_player",
     "remote",
     "sensor",
     "switch",
