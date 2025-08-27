@@ -29,7 +29,7 @@ STATES = {
 }
 
 
-class XAlarmPanel(XEntity, AlarmControlPanelEntity):
+class XPanelAlarm(XEntity, AlarmControlPanelEntity):
     param = "securityType"
     uid = "alarm"
 
