@@ -164,3 +164,13 @@ class XT5WorkMode(XEntity, SwitchEntity):
 
     async def async_turn_off(self):
         await self.ewelink.send(self.device, {"workMode": 1})
+
+
+class XPanelScreen(XEntity, SwitchEntity):
+    uid = "screen"
+
+    async def async_turn_on(self, *args, **kwargs):
+        await self.ewelink.send(self.device, {"openLED": True})
+
+    async def async_turn_off(self):
+        await self.ewelink.send(self.device, {"openLED": False})

@@ -73,6 +73,7 @@ from ..sensor import (
 from ..switch import (
     XBoolSwitch,
     XDetach,
+    XPanelScreen,
     XSwitch,
     XSwitchPOWR3,
     XSwitchTH,
@@ -440,7 +441,7 @@ DEVICES = {
         ),
     ],
     # NSPanel Pro, https://github.com/AlexxIT/SonoffLAN/issues/984
-    195: [XTemperatureTH, XAlarmPanel],
+    195: [XTemperatureTH, XAlarmPanel, XPanelScreen],
     # Sonoff TX ULTIMATE T5-1C-86, https://github.com/AlexxIT/SonoffLAN/issues/1183
     209: [Switch1, Startup1, XT5Light, XT5Action, XT5Alarm, XT5Bell],
     # Sonoff TX ULTIMATE T5-2C-86
