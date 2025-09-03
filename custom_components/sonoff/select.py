@@ -21,9 +21,8 @@ class XSelectStartup(XEntity, SelectEntity):
 
     get_params = {"configure": "get"}
 
-    @property
-    def options(self):
-        return ["off", "on", "stay"]
+    _attr_current_option = None
+    _attr_options = ["off", "on", "stay"]
 
     def __init__(self, ewelink: XRegistry, device: dict):
         super().__init__(ewelink, device)
