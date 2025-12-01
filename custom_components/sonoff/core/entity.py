@@ -59,7 +59,8 @@ class XEntity(Entity):
                 s = NAMES.get(self.uid) or self.uid.title().replace("_", " ")
                 self._attr_name = f"{device['name']} {s}"
             else:
-                self._attr_name = device["name"]
+                s = NAMES.get(self.uid) or self.uid.title().replace("_", " ")
+                self._attr_name = f"{device['name']} -  {s}"
 
         else:
             self._attr_name = device["name"]
