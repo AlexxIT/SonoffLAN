@@ -637,6 +637,8 @@ DEVICES = {
         spec(XSensor100, param="power"),
         spec(XSensor100, param="current"),
         spec(XSensor100, param="voltage"),
+        spec(XEnergyTotal, param="dayKwh",       uid="energy_day",   multiply=0.01, round=2),
+        spec(XEnergyTotal, param="monthKwh",     uid="energy_month", multiply=0.01, round=2)
     ],
     # SNZB-02WD, https://github.com/AlexxIT/SonoffLAN/issues/1612
     7033: [XTempCorrection, XHumCorrection, Battery, ZRSSI],
