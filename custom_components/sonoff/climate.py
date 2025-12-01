@@ -2,6 +2,7 @@ from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
     ClimateEntityFeature,
     HVACMode,
+    HVACAction,
 )
 from homeassistant.const import MAJOR_VERSION, MINOR_VERSION, UnitOfTemperature
 
@@ -327,7 +328,7 @@ TRVZB_PRESET_MODES = {
 
 
 class XThermostatTRVZB(XEntity, ClimateEntity):
-    params = {"workMode", "curTargetTemp", "temperature"}
+    params = {"workMode", "workState", "curTargetTemp", "temperature"}
 
     _attr_hvac_mode = None
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF, HVACMode.AUTO]
@@ -354,6 +355,10 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
         if cache != params:
             cache.update(params)
 
+        if "workState" in cache:
+            hvac_actions = [HVACAction.OFF, HVACAction.HEATING]
+            self._attr_hvac_action = hvac_actions[int(cache["workState"])]
+			
         if "workMode" in cache:
             self._attr_hvac_mode = self.hvac_modes[int(cache["workMode"])]
 
