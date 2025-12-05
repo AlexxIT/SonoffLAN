@@ -1,3 +1,4 @@
+"""Base entity class for Sonoff devices."""
 import logging
 
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
@@ -65,8 +66,36 @@ class XEntity(Entity):
             self._attr_name = device["name"]
             self._attr_unique_id = device["deviceid"]
 
-        # domain will be replaced in entity_registry.async_generate_entity_id
-        self.entity_id = f"{DOMAIN}.{DOMAIN}_{self._attr_unique_id.lower()}"
+        # LEVONISYAS DÜZENLEMESİ: Entity ID'ye friendly name ekle
+        import re
+        
+        # Orijinal unique_id'yi koru ama entity_id'yi değiştir
+        device_name = device["name"]
+        
+        # Türkçe karakter dönüşümü
+        turkish_map = {
+            'ı': 'i', 'İ': 'i', 'ğ': 'g', 'Ğ': 'g',
+            'ü': 'u', 'Ü': 'u', 'ş': 's', 'Ş': 's',
+            'ö': 'o', 'Ö': 'o', 'ç': 'c', 'Ç': 'c'
+        }
+        for tr, en in turkish_map.items():
+            device_name = device_name.replace(tr, en)
+        
+        # Küçük harf ve temizleme
+        device_name = device_name.lower()
+        device_name = re.sub(r'[^a-z0-9]', '_', device_name)
+        device_name = re.sub(r'_+', '_', device_name).strip('_')
+        
+        # Device ID'yi al
+        deviceid = device["deviceid"]
+        
+        # Eğer bu bir channel switch ise (numara içeren uid)
+        if self.uid and self.uid.isdigit():
+            # Multi-switch için: switch.sonoff_{cihazadi}_{deviceid}_{channel}
+            self.entity_id = f"{DOMAIN}.{DOMAIN}_{device_name}_{deviceid}_{self.uid}"
+        else:
+            # Normal entity için: switch.sonoff_{cihazadi}_{deviceid}
+            self.entity_id = f"{DOMAIN}.{DOMAIN}_{device_name}_{deviceid}"
 
         deviceid: str = device["deviceid"]
         params: dict = device["params"]
