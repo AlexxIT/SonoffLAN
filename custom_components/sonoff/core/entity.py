@@ -74,18 +74,18 @@ class XEntity(Entity):
                 self._attr_icon = ICONS.get(self.uid)
                 s = NAMES.get(self.uid) or self.uid.title().replace("_", " ")
                 self._attr_name = f"{device['name']} {s}"
-                # SENSOR, LED vs: salon_lamba_1000xxx_current
-                self._attr_unique_id = f"{device_name}_{device_id}_{self.uid}"
+                # SENSOR, LED vs: sonoff_salon_lamba_1000xxx_current
+                self._attr_unique_id = f"sonoff_{device_name}_{device_id}_{self.uid}"
             else:
                 self._attr_name = device["name"]
-                # MULTI-SWITCH: salon_lamba_1000xxx_1
-                self._attr_unique_id = f"{device_name}_{device_id}_{self.uid}"
+                # MULTI-SWITCH: sonoff_salon_lamba_1000xxx_1
+                self._attr_unique_id = f"sonoff_{device_name}_{device_id}_{self.uid}"
 
         else:
             # TEK SWITCH/COVER/CLIMATE vs.
             self._attr_name = device["name"]
-            # TEK CİHAZ: salon_lamba_1000xxx
-            self._attr_unique_id = f"{device_name}_{device_id}"
+            # TEK CİHAZ: sonoff_salon_lamba_1000xxx
+            self._attr_unique_id = f"sonoff_{device_name}_{device_id}"
 
         # LEVONISYAS DÜZENLEMESİ: Entity ID formatı
         self.entity_id = f"{DOMAIN}.{self._attr_unique_id.lower()}"
