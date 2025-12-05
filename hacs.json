@@ -1,5 +1,5 @@
 {
-    "name": "Sonoff LAN NameTR",
+    "name": "Sonoff LAN with Device Names",
     "homeassistant": "2023.2.0",
     "render_readme": true
 }
