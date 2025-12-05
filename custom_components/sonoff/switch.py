@@ -1,7 +1,7 @@
 from homeassistant.components.switch import SwitchEntity
 
 from .core.const import DOMAIN
-from .core.entity import XEntity
+from .core.entity import XEntity, clean_device_name  # clean_device_name'ı import ettik
 from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
@@ -41,8 +41,10 @@ class XSwitches(XEntity, SwitchEntity):
             self._attr_name = device["tags"]["ck_channel_name"][str(self.channel)]
         except KeyError:
             pass
-        # backward compatibility
-        self._attr_unique_id = f"{device['deviceid']}_{self.channel + 1}"
+        # LEVONISYAS DÜZENLEMESİ: Multi-switch için friendly name
+        device_name = clean_device_name(device["name"])
+        device_id = device["deviceid"]
+        self._attr_unique_id = f"{device_name}_{device_id}_{self.channel + 1}"
 
     def set_state(self, params: dict):
         try:
