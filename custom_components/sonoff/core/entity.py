@@ -33,6 +33,19 @@ NAMES = {
 }
 
 
+def clean_device_name(name: str) -> str:
+    """Cihaz adını temizle (Türkçe karakter + özel karakter)."""
+    # Büyük harf Türkçe karakterler
+    name = name.replace('Ü', 'U').replace('İ', 'I').replace('Ğ', 'G').replace('Ş', 'S').replace('Ç', 'C').replace('Ö', 'O')
+    # Küçük harf Türkçe karakterler  
+    name = name.replace('ü', 'u').replace('ı', 'i').replace('ğ', 'g').replace('ş', 's').replace('ç', 'c').replace('ö', 'o')
+    # Özel karakterleri temizle
+    name = name.replace('(', '').replace(')', '').replace('&', 'and').replace('/', '_').replace(':', '')
+    # Son olarak boşlukları ve kısa çizgileri alt çizgi yap ve küçük harfe çevir
+    name = name.replace(' ', '_').replace('-', '_').lower()
+    return name
+
+
 class XEntity(Entity):
     event: bool = False  # if True - skip set_state on entity init
     params: set = {}
@@ -50,52 +63,32 @@ class XEntity(Entity):
         if self.param and not self.params:
             self.params = {self.param}
 
-        if self.uid:
-            self._attr_unique_id = f"{device['deviceid']}_{self.uid}"
+        # TÜM ENTİTY'LER İÇİN ORTAK: Cihaz adını temizle
+        device_name = clean_device_name(device["name"])
+        device_id = device["deviceid"]
 
+        if self.uid:
+            # SENSOR, MULTI-SWITCH, LED vs. için
             if not self.uid.isdigit():
                 self._attr_entity_category = ENTITY_CATEGORIES.get(self.uid)
                 self._attr_icon = ICONS.get(self.uid)
-
                 s = NAMES.get(self.uid) or self.uid.title().replace("_", " ")
                 self._attr_name = f"{device['name']} {s}"
+                # SENSOR, LED vs: salon_lamba_1000xxx_current
+                self._attr_unique_id = f"{device_name}_{device_id}_{self.uid}"
             else:
                 self._attr_name = device["name"]
+                # MULTI-SWITCH: salon_lamba_1000xxx_1
+                self._attr_unique_id = f"{device_name}_{device_id}_{self.uid}"
 
         else:
+            # TEK SWITCH/COVER/CLIMATE vs.
             self._attr_name = device["name"]
-            self._attr_unique_id = device["deviceid"]
+            # TEK CİHAZ: salon_lamba_1000xxx
+            self._attr_unique_id = f"{device_name}_{device_id}"
 
-        # LEVONISYAS DÜZENLEMESİ: Entity ID'ye friendly name ekle
-        import re
-        
-        # Orijinal unique_id'yi koru ama entity_id'yi değiştir
-        device_name = device["name"]
-        
-        # Türkçe karakter dönüşümü
-        turkish_map = {
-            'ı': 'i', 'İ': 'i', 'ğ': 'g', 'Ğ': 'g',
-            'ü': 'u', 'Ü': 'u', 'ş': 's', 'Ş': 's',
-            'ö': 'o', 'Ö': 'o', 'ç': 'c', 'Ç': 'c'
-        }
-        for tr, en in turkish_map.items():
-            device_name = device_name.replace(tr, en)
-        
-        # Küçük harf ve temizleme
-        device_name = device_name.lower()
-        device_name = re.sub(r'[^a-z0-9]', '_', device_name)
-        device_name = re.sub(r'_+', '_', device_name).strip('_')
-        
-        # Device ID'yi al
-        deviceid = device["deviceid"]
-        
-        # Eğer bu bir channel switch ise (numara içeren uid)
-        if self.uid and self.uid.isdigit():
-            # Multi-switch için: switch.sonoff_{cihazadi}_{deviceid}_{channel}
-            self.entity_id = f"{DOMAIN}.{DOMAIN}_{device_name}_{deviceid}_{self.uid}"
-        else:
-            # Normal entity için: switch.sonoff_{cihazadi}_{deviceid}
-            self.entity_id = f"{DOMAIN}.{DOMAIN}_{device_name}_{deviceid}"
+        # LEVONISYAS DÜZENLEMESİ: Entity ID formatı
+        self.entity_id = f"{DOMAIN}.{self._attr_unique_id.lower()}"
 
         deviceid: str = device["deviceid"]
         params: dict = device["params"]
