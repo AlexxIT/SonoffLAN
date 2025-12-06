@@ -1,3 +1,77 @@
+# SonoffLAN - Modified Version with Device Friendly Names
+
+> **Note:** This is a modified version of the original [AlexxIT/SonoffLAN](https://github.com/AlexxIT/SonoffLAN) integration with added device friendly names in entity IDs.
+
+---
+
+**📌 Original SonoffLAN README continues below this line**  
+*(All original documentation and credits belong to AlexxIT)*
+
+---
+
+# SonoffLAN with Device Friendly Names
+
+## 🎯 Overview
+A modified version of AlexxIT's SonoffLAN integration that adds device friendly names to entity IDs, making it easier to identify devices in Home Assistant.
+
+## ✨ Features
+- **Friendly Entity IDs:** `switch.sonoff_salon_lamba_1000xxx` instead of `switch.sonoff_1000xxx`
+- **Multi-Switch Support:** `switch.sonoff_salon_lamba_1000xxx_1`, `_2`, `_3` suffixes for multi-channel devices
+- **Turkish Character Support:** Proper handling of ı, İ, ğ, Ğ, ş, Ş, ç, Ç, ö, Ö, ü, Ü
+- **All Entity Types:** Works with switches, sensors, lights, covers, climate devices, remotes, binary sensors
+- **Backward Compatible:** Existing automations and scripts continue to work
+
+## 🚀 Installation via HACS
+1. Go to HACS > Integrations
+2. Click the three dots (⋮) > Custom repositories
+3. Add: `https://github.com/levonisyas/SonoffLAN_TrName_Add`
+4. Select "Integration" category
+5. Search for "Sonoff LAN with Device Names"
+6. Install and restart Home Assistant
+
+## 📋 Before & After Examples
+| Before | After |
+|--------|-------|
+| `switch.sonoff_1000xxx_1` | `switch.sonoff_salon_lamba_1000xxx_1` |
+| `sensor.sonoff_1000xxx_power` | `sensor.sonoff_salon_lamba_1000xxx_power` |
+| `light.sonoff_1000xxx` | `light.sonoff_salon_lamba_1000xxx` |
+| `cover.sonoff_1000xxx` | `cover.sonoff_perde_1000xxx` |
+
+### Development Journey:
+1. **Problem Identification:** Struggling to identify 200+ entities with only device IDs
+2. **AI Analysis:** DeepSeek analyzed the SonoffLAN code structure
+3. **Minimal Changes:** Only 2 files modified with 30 lines of code changes
+4. **Testing:** Successfully tested with 50+ devices and all entity types
+5. **PR Submitted:** Pull request #1693 submitted to AlexxIT's original repository
+
+### Key Contributions:
+- ✅ Code structure analysis
+- ✅ Exact modification points identification  
+- ✅ Turkish character support implementation
+- ✅ Backward compatibility assurance
+- ✅ PR documentation preparation
+
+## 🔗 Links
+- **Original SonoffLAN:** [AlexxIT/SonoffLAN](https://github.com/AlexxIT/SonoffLAN)
+- **Pull Request:** [#1693 - Add device friendly names to entity IDs](https://github.com/AlexxIT/SonoffLAN/pull/1693)
+
+## 📝 Notes
+- This is a community modification, not an official SonoffLAN release
+- Works with HACS updates
+- No breaking changes to existing configurations
+- Tested with Home Assistant 2024.x
+
+## 🙏 Credits
+- **AlexxIT:** For the amazing SonoffLAN integration
+- **DeepSeek AI:** For helping
+- **Community:** For feedback and testing
+
+## 🤖 AI Development Story
+This modification was developed using **DeepSeek AI** assistance.
+---
+
+**📌 Original SonoffLAN documentation continues below...**
+*(AlexxIT's original README content should be placed here)*
 # Control Sonoff Devices from Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
