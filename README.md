@@ -38,7 +38,7 @@ A modified version of AlexxIT's SonoffLAN integration that adds device friendly 
 | `cover.sonoff_1000xxx` | `cover.sonoff_perde_1000xxx` |
 
 ## 🤖 AI Development Story
-This modification was developed **with zero coding knowledge** using **DeepSeek AI** assistance. The entire process demonstrates how AI can help non-coders solve complex integration problems:
+This modification was developed using **DeepSeek AI** assistance.
 
 ### Development Journey:
 1. **Problem Identification:** Struggling to identify 200+ entities with only device IDs
@@ -47,7 +47,7 @@ This modification was developed **with zero coding knowledge** using **DeepSeek 
 4. **Testing:** Successfully tested with 50+ devices and all entity types
 5. **PR Submitted:** Pull request #1693 submitted to AlexxIT's original repository
 
-### Key AI Contributions:
+### Key Contributions:
 - ✅ Code structure analysis
 - ✅ Exact modification points identification  
 - ✅ Turkish character support implementation
@@ -57,7 +57,6 @@ This modification was developed **with zero coding knowledge** using **DeepSeek 
 ## 🔗 Links
 - **Original SonoffLAN:** [AlexxIT/SonoffLAN](https://github.com/AlexxIT/SonoffLAN)
 - **Pull Request:** [#1693 - Add device friendly names to entity IDs](https://github.com/AlexxIT/SonoffLAN/pull/1693)
-- **DeepSeek AI:** [deepseek.com](https://www.deepseek.com)
 
 ## 📝 Notes
 - This is a community modification, not an official SonoffLAN release
@@ -67,7 +66,7 @@ This modification was developed **with zero coding knowledge** using **DeepSeek 
 
 ## 🙏 Credits
 - **AlexxIT:** For the amazing SonoffLAN integration
-- **DeepSeek AI:** For making complex coding accessible to non-coders
+- **DeepSeek AI:** For helping
 - **Community:** For feedback and testing
 
 ---
