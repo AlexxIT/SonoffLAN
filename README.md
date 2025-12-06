@@ -37,9 +37,6 @@ A modified version of AlexxIT's SonoffLAN integration that adds device friendly 
 | `light.sonoff_1000xxx` | `light.sonoff_salon_lamba_1000xxx` |
 | `cover.sonoff_1000xxx` | `cover.sonoff_perde_1000xxx` |
 
-## 🤖 AI Development Story
-This modification was developed using **DeepSeek AI** assistance.
-
 ### Development Journey:
 1. **Problem Identification:** Struggling to identify 200+ entities with only device IDs
 2. **AI Analysis:** DeepSeek analyzed the SonoffLAN code structure
@@ -69,6 +66,8 @@ This modification was developed using **DeepSeek AI** assistance.
 - **DeepSeek AI:** For helping
 - **Community:** For feedback and testing
 
+## 🤖 AI Development Story
+This modification was developed using **DeepSeek AI** assistance.
 ---
 
 **📌 Original SonoffLAN documentation continues below...**
