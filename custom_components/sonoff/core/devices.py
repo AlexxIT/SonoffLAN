@@ -441,6 +441,7 @@ DEVICES = {
             get_params={"getHoursKwh": {"start": 0, "end": 24 * 30 - 1}},
         ),
     ],
+    191: [*SPEC_1CH, Startup1],
     # NSPanel Pro, https://github.com/AlexxIT/SonoffLAN/issues/984
     195: [XTemperatureTH, XPanelAlarm, XPanelBuzzer, XPanelScreen],
     # Sonoff TX ULTIMATE T5-1C-86, https://github.com/AlexxIT/SonoffLAN/issues/1183

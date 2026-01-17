@@ -16,7 +16,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
 
 
 class XSelectStartup(XEntity, SelectEntity):
-    params = {"startup"}
+    params = {"configure"}
     channel: int = 0
 
     get_params = {"configure": "get"}
@@ -49,7 +49,7 @@ class XSelectStartup(XEntity, SelectEntity):
     def set_state(self, params: dict):
         # Just update _attr_current_option based on what the device reports
         if "params" in self.device and isinstance(self.device["params"], dict):
-            configure_list = self.device["params"].get("configure")
+            configure_list = params.get("configure")
             if isinstance(configure_list, list):
                 for item in configure_list:
                     if item.get("outlet") == self.channel:
