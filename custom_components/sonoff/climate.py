@@ -331,8 +331,8 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
 
     _attr_hvac_mode = None
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF, HVACMode.AUTO]
-    _attr_max_temp = 45
-    _attr_min_temp = 5
+    _attr_max_temp = 35
+    _attr_min_temp = 4
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
 
@@ -361,7 +361,7 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
             self._attr_target_temperature = cache["curTargetTemp"] * 0.1
 
         if "temperature" in cache:
-            self._attr_current_temperature = cache["temperature"] * 0.1
+            self._attr_current_temperature = int(cache["temperature"]) * 0.1
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         await self.async_set_temperature(hvac_mode=hvac_mode)
