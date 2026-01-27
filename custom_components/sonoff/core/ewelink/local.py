@@ -12,9 +12,55 @@ import json
 import logging
 
 import aiohttp
-from Crypto.Cipher import AES
-from Crypto.Hash import MD5
-from Crypto.Random import get_random_bytes
+try:
+    # PyCryptodome (if available)
+    from Crypto.Cipher import AES  # type: ignore
+    from Crypto.Hash import MD5  # type: ignore
+    from Crypto.Random import get_random_bytes  # type: ignore
+
+except Exception:
+    # Fallback for HAOS: usa cryptography (included in HA) + hashlib/os
+    import hashlib
+    import os
+
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+    class MD5:
+        @staticmethod
+        def new(data: bytes = b""):
+            return hashlib.md5(data)
+
+    def get_random_bytes(n: int) -> bytes:
+        return os.urandom(n)
+
+    class AES:
+        MODE_CBC = 2
+        block_size = 16  # equivalente a AES.block_size en PyCryptodome
+
+        @staticmethod
+        def new(key: bytes, mode: int, iv: bytes):
+            if mode != AES.MODE_CBC:
+                raise ValueError("Fallback AES only supports MODE_CBC")
+            cipher = Cipher(
+                algorithms.AES(key),
+                modes.CBC(iv),
+                backend=default_backend(),
+            )
+            return _AESCipher(cipher)
+
+    class _AESCipher:
+        def __init__(self, cipher: Cipher):
+            self._cipher = cipher
+
+        def encrypt(self, data: bytes) -> bytes:
+            enc = self._cipher.encryptor()
+            return enc.update(data) + enc.finalize()
+
+        def decrypt(self, data: bytes) -> bytes:
+            dec = self._cipher.decryptor()
+            return dec.update(data) + dec.finalize()
+            
 from aiohttp.hdrs import CONTENT_TYPE
 from zeroconf import ServiceStateChange, Zeroconf
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo
