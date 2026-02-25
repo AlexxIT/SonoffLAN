@@ -1,4 +1,5 @@
-from homeassistant.components.number import NumberEntity
+from homeassistant.components.number import NumberEntity, NumberMode
+from homeassistant.const import UnitOfTemperature
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -57,6 +58,18 @@ class XPulseWidth(XNumber):
         await self.ewelink.send(
             self.device, {"pulse": "on", "pulseWidth": int(value / 0.5) * 500}
         )
+
+
+class XTempCorrectionNumber(XNumber):
+    param = "tempCorrection"
+    uid = "temperature_correction"
+    multiply = 0.1
+
+    _attr_native_min_value = -7
+    _attr_native_max_value = 7
+    _attr_native_step = 0.1
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_mode = NumberMode.BOX
 
 
 class XSensitivity(XNumber):
