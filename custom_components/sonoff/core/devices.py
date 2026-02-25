@@ -50,7 +50,7 @@ from ..light import (
     XZigbeeLight,
 )
 from ..media_player import XPanelBuzzer
-from ..number import XPulseWidth, XSensitivity
+from ..number import XPulseWidth, XSensitivity, XTempCorrectionNumber
 from ..remote import XRemote
 from ..select import XSelectStartup
 from ..sensor import (
@@ -609,12 +609,7 @@ DEVICES = {
             multiply=0.1,
             uid="eco_target_temperature",
         ),
-        spec(
-            XSensor,
-            param="tempCorrection",
-            multiply=0.1,
-            uid="temperature_correction",
-        ),
+        XTempCorrectionNumber,
         spec(XBoolSwitch, param="childLock", uid="child_lock"),
         spec(XBoolSwitch, param="windowSwitch", uid="window_switch"),
         spec(XHexVoltageTRVZB, param="runVoltage", uid="run_voltage"),

@@ -16,6 +16,7 @@ ENTITY_CATEGORIES = {
     "pulseWidth": EntityCategory.CONFIG,
     "rssi": EntityCategory.DIAGNOSTIC,
     "sensitivity": EntityCategory.CONFIG,
+    "temperature_correction": EntityCategory.CONFIG,
 }
 
 ICONS = {
