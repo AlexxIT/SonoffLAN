@@ -146,7 +146,7 @@ class XRemoteSensor(BinarySensorEntity, RestoreEntity):
             and self.timeout
             and (ts := restore.attributes.get(ATTR_LAST_TRIGGERED))
         ):
-            left = self.timeout - (dt.utcnow() - dt.parse_datetime(ts)).seconds
+            left = self.timeout - int((dt.utcnow() - dt.parse_datetime(ts)).total_seconds())
             if left > 0:
                 self.task = asyncio.create_task(self.clear_state(left))
             else:

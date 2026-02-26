@@ -10,6 +10,18 @@ from custom_components.sonoff.core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 DEVICEID = "1000123abc"
 
+# Create a shared event loop for all tests (Python 3.12+ no longer implicitly
+# creates one via asyncio.get_event_loop()).
+try:
+    _loop = asyncio.get_event_loop()
+except RuntimeError:
+    _loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(_loop)
+
+
+def get_loop() -> asyncio.AbstractEventLoop:
+    return _loop
+
 
 class DummyRegistry(XRegistry):
     def __init__(self):
@@ -21,7 +33,7 @@ class DummyRegistry(XRegistry):
         self.send_args = args
 
     def call(self, coro):
-        asyncio.get_event_loop().run_until_complete(coro)
+        get_loop().run_until_complete(coro)
         return self.send_args
 
 
@@ -36,7 +48,13 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
         params = device.setdefault("params", {})
         params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
 
-    asyncio.create_task = lambda _: None
+    def _mock_create_task(coro):
+        """Discard the coroutine without scheduling it, closing it to avoid
+        'coroutine was never awaited' RuntimeWarnings."""
+        coro.close()
+        return None
+
+    asyncio.create_task = _mock_create_task
     asyncio.get_running_loop = lambda: type("", (), {"_thread_id": threading.get_ident()})
 
     entities = []

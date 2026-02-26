@@ -82,7 +82,7 @@ class XPanelBuzzer(XEntity, MediaPlayerEntity):
         if media_source.is_media_source_id(media_id):
             media_id = media_id[len(media_source.URI_SCHEME) :]
 
-        extra = kwargs["extra"]
+        extra = kwargs.get("extra") or {}
         params = {
             "test": True,
             "fileName": media_id,

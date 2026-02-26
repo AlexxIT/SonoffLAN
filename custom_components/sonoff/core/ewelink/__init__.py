@@ -178,7 +178,7 @@ class XRegistry(XRegistryBase):
                 for old in device["params_bulk"]["configure"]:
                     # check on duplicates
                     if new["outlet"] == old["outlet"]:
-                        old["startup"] = new["switch"]
+                        old["startup"] = new["startup"]
                         break
                 else:
                     device["params_bulk"]["configure"].append(new)

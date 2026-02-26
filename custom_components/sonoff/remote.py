@@ -101,7 +101,9 @@ class XRemote(XEntity, RemoteEntity):
             self.childs = childs
 
         except Exception as e:
-            _LOGGER.error(f"{self.unique_id} | can't setup RFBridge", exc_info=e)
+            _LOGGER.error(
+                f"{device['deviceid']} | can't setup RFBridge", exc_info=e
+            )
 
         # init bridge after childs for update available
         XEntity.__init__(self, ewelink, device)

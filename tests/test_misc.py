@@ -4,14 +4,14 @@ from custom_components.sonoff.core.devices import spec
 from custom_components.sonoff.core.ewelink import XDevice, XRegistry, XRegistryLocal
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import XLightL1
-from . import save_to
+from . import get_loop, save_to
 
 
 def test_bulk():
     registry_send = []
 
     device = XDevice()
-    loop = asyncio.get_event_loop()
+    loop = get_loop()
     # noinspection PyTypeChecker
     registry: XRegistry = XRegistry(None)
     registry.send = save_to(registry_send)

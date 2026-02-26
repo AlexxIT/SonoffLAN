@@ -65,7 +65,7 @@ from custom_components.sonoff.switch import (
     XToggle,
     XZigbeeSwitches,
 )
-from . import DEVICEID, DummyRegistry, init, save_to
+from . import DEVICEID, DummyRegistry, get_loop, init, save_to
 
 
 def get_entitites(device: Union[dict, list], config: dict = None) -> list:
@@ -73,7 +73,7 @@ def get_entitites(device: Union[dict, list], config: dict = None) -> list:
 
 
 def await_(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return get_loop().run_until_complete(coro)
 
 
 def test_simple_switch():

@@ -2,7 +2,7 @@ import asyncio
 import logging
 import socket
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from threading import Thread
 from typing import Union
 
@@ -46,9 +46,9 @@ class Camera:
     init_data: bytes = None
 
     last_time: int = 0
-    sequence = 0
+    sequence: int = 0
 
-    wait_event = asyncio.Event()
+    wait_event: asyncio.Event = field(default_factory=asyncio.Event)
     wait_data: int = None
     wait_sequence: bytes = b"\x00\x00"
 
@@ -119,7 +119,11 @@ class XCameras(Thread):
 
         if device.wait_data == cmd:
             if cmd != 0xD1 or device.wait_sequence == data[8:10]:
-                device.wait_event.set()
+                try:
+                    loop = asyncio.get_event_loop()
+                    loop.call_soon_threadsafe(device.wait_event.set)
+                except RuntimeError:
+                    device.wait_event.set()
 
     def sendto(self, data: Union[bytes, str], device: Camera):
         if isinstance(data, str):

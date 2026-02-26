@@ -168,6 +168,11 @@ class XClimateNS(XEntity, ClimateEntity):
     else:
         _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
 
+    def __init__(self, ewelink, device: dict):
+        # copy mutable list so each instance has its own hvac_modes
+        self._attr_hvac_modes = list(self._attr_hvac_modes)
+        super().__init__(ewelink, device)
+
     def set_state(self, params: dict):
         cache = self.device["params"]
         if cache != params:
