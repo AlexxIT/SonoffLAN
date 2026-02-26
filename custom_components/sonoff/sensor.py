@@ -266,6 +266,26 @@ class XEnergyTotal(XSensor):
     _attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
 
+    def set_state(self, params: dict = None, value: float = None):
+        # ensure value never decreases to avoid HA "not strictly increasing"
+        # warning caused by device rounding (e.g. 10.51 -> 10.5)
+        # https://github.com/AlexxIT/SonoffLAN/issues/1692
+        if params:
+            value = params[self.param]
+            if self.multiply:
+                value *= self.multiply
+            if self.round is not None:
+                value = round(value, self.round or None)
+        if (
+            value is not None
+            and self._attr_native_value is not None
+            and value < self._attr_native_value
+            and self._attr_native_value - value < 1
+        ):
+            # small decrease is rounding noise — keep old value
+            return
+        super().set_state(params=None, value=value)
+
 
 def parse_float(v: int | float | str):
     return float(v) if isinstance(v, str) else v

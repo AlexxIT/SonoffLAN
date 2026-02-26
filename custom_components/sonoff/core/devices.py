@@ -72,6 +72,7 @@ from ..sensor import (
     XWiFiDoorBattery,
 )
 from ..switch import (
+    XAutoModeSwitch,
     XBoolSwitch,
     XDetach,
     XPanelScreen,
@@ -408,6 +409,7 @@ DEVICES = {
         XSwitchTH,
         XTemperatureTH,
         XHumidityTH,
+        XAutoModeSwitch,
         LED,
         RSSI,
     ],

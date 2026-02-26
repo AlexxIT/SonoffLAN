@@ -58,6 +58,7 @@ from custom_components.sonoff.sensor import (
     XUnknown,
 )
 from custom_components.sonoff.switch import (
+    XAutoModeSwitch,
     XBoolSwitch,
     XSwitch,
     XSwitchTH,
@@ -2117,3 +2118,87 @@ def test_mosquitto():
     light: XLight57 = entities[0]
     assert light.state == "on"
     assert light.brightness == 1
+
+
+def test_thr316d_auto_mode():
+    """Test THR316D/THR320D auto-mode switch entity (issue #1729)."""
+    entities = get_entitites(
+        {
+            "name": "THR316D",
+            "deviceid": DEVICEID,
+            "extra": {"uiid": 181},
+            "online": True,
+            "params": {
+                "currentTemperature": "22.5",
+                "currentHumidity": "55",
+                "deviceType": "normal",
+                "switch": "off",
+                "mainSwitch": "off",
+                "autoControlEnabled": 1,
+                "sledOnline": "on",
+                "startup": "stay",
+            },
+        }
+    )
+
+    # UIID 181 should produce: XSwitchTH, temp, hum, XAutoModeSwitch, LED, RSSI
+    auto_mode = next(
+        (e for e in entities if isinstance(e, XAutoModeSwitch)), None
+    )
+    assert auto_mode is not None, f"XAutoModeSwitch not found in {entities}"
+    assert auto_mode.uid == "auto_mode"
+    assert auto_mode.is_on is True
+
+    # test turn off
+    auto_mode.internal_update({"autoControlEnabled": 0})
+    assert auto_mode.is_on is False
+
+    # test turn on with integer
+    auto_mode.internal_update({"autoControlEnabled": 1})
+    assert auto_mode.is_on is True
+
+    # test with string values (defensive)
+    auto_mode.internal_update({"autoControlEnabled": "0"})
+    assert auto_mode.is_on is False
+
+    auto_mode.internal_update({"autoControlEnabled": "1"})
+    assert auto_mode.is_on is True
+
+    # test send commands
+    registry, entities2 = init(
+        {
+            "name": "THR316D",
+            "deviceid": DEVICEID,
+            "extra": {"uiid": 181},
+            "online": True,
+            "params": {
+                "currentTemperature": "22.5",
+                "currentHumidity": "55",
+                "deviceType": "normal",
+                "switch": "off",
+                "mainSwitch": "off",
+                "autoControlEnabled": 0,
+                "sledOnline": "on",
+                "startup": "stay",
+            },
+        }
+    )
+    auto_mode = next(
+        e for e in entities2
+        if isinstance(e, XAutoModeSwitch)
+    )
+    assert auto_mode.is_on is False
+
+    # Python 3.12+ requires an explicit event loop
+    import asyncio
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        result = registry.call(auto_mode.async_turn_on())
+        assert result[1] == {"autoControlEnabled": 1}
+
+        result = registry.call(auto_mode.async_turn_off())
+        assert result[1] == {"autoControlEnabled": 0}
+    finally:
+        asyncio.set_event_loop(None)
+        loop.close()
