@@ -123,20 +123,15 @@ class XToggle(XEntity, SwitchEntity):
 
 
 # noinspection PyAbstractClass
-class XDetach(XEntity, SwitchEntity):
-    param = "relaySeparation"
-    uid = "detach"
-
-    _attr_entity_registry_enabled_default = False
-
+class XIntSwitch(XEntity, SwitchEntity):
     def set_state(self, params: dict):
-        self._attr_is_on = params["relaySeparation"] == 1
+        self._attr_is_on = params[self.param] == 1
 
     async def async_turn_on(self, **kwargs):
-        await self.ewelink.send_cloud(self.device, {"relaySeparation": 1})
+        await self.ewelink.send_cloud(self.device, {self.param: 1})
 
     async def async_turn_off(self):
-        await self.ewelink.send_cloud(self.device, {"relaySeparation": 0})
+        await self.ewelink.send_cloud(self.device, {self.param: 0})
 
 
 class XBoolSwitch(XEntity, SwitchEntity):
@@ -164,32 +159,6 @@ class XT5WorkMode(XEntity, SwitchEntity):
 
     async def async_turn_off(self):
         await self.ewelink.send(self.device, {"workMode": 1})
-
-
-class XAutoModeSwitch(XEntity, SwitchEntity):
-    """Auto-Mode switch for THR316D/THR320D (UIID 181).
-
-    Exposes the autoControlEnabled parameter as a toggle entity.
-    https://github.com/AlexxIT/SonoffLAN/issues/1729
-    """
-
-    param = "autoControlEnabled"
-    uid = "auto_mode"
-
-    _attr_entity_registry_enabled_default = False
-
-    def set_state(self, params: dict):
-        val = params[self.param]
-        if isinstance(val, str):
-            self._attr_is_on = val in ("1", "true", "on")
-        else:
-            self._attr_is_on = bool(val)
-
-    async def async_turn_on(self, *args, **kwargs):
-        await self.ewelink.send(self.device, {self.param: 1})
-
-    async def async_turn_off(self):
-        await self.ewelink.send(self.device, {self.param: 0})
 
 
 class XPanelScreen(XEntity, SwitchEntity):

@@ -72,9 +72,8 @@ from ..sensor import (
     XWiFiDoorBattery,
 )
 from ..switch import (
-    XAutoModeSwitch,
     XBoolSwitch,
-    XDetach,
+    XIntSwitch,
     XPanelScreen,
     XSwitch,
     XSwitchPOWR3,
@@ -377,7 +376,7 @@ DEVICES = {
         Startup1,
         LED,
         RSSI,
-        XDetach,
+        spec(XIntSwitch, param="relaySeparation", uid="detach", enabled=False),
         spec(XRemoteButton, param="action"),
     ],
     # DW2-Wi-Fi-L, https://github.com/AlexxIT/SonoffLAN/issues/808
@@ -409,7 +408,7 @@ DEVICES = {
         XSwitchTH,
         XTemperatureTH,
         XHumidityTH,
-        XAutoModeSwitch,
+        spec(XIntSwitch, param="autoControlEnabled", uid="auto_mode", enabled=False),
         LED,
         RSSI,
     ],
