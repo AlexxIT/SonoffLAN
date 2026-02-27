@@ -1721,8 +1721,16 @@ def test_powr3():
     assert energy.device_class == SensorDeviceClass.ENERGY
     assert energy.unit_of_measurement == UnitOfEnergy.KILO_WATT_HOUR
     assert energy.state_class == SensorStateClass.TOTAL_INCREASING
-    energy.set_state({"dayKwh": 7})
     assert energy.native_value == 0.07
+
+    energy.set_state({"dayKwh": 8})
+    assert energy.native_value == 0.08
+
+    energy.set_state({"dayKwh": 6})
+    assert energy.native_value == 0.08
+
+    energy.set_state()
+    assert energy.native_value == 0.08
 
 
 def test_issue1235():
