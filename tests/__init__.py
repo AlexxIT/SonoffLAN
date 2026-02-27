@@ -20,6 +20,9 @@ class DummyRegistry(XRegistry):
     async def send(self, *args, **kwargs):
         self.send_args = args
 
+    async def send_cloud(self, *args, **kwargs):
+        self.send_args = args
+
     def call(self, coro):
         asyncio.get_event_loop().run_until_complete(coro)
         return self.send_args

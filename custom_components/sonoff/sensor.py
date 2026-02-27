@@ -116,6 +116,13 @@ class XSensor(XEntity, SensorEntity):
                 # convert to int when round is zero
                 value = round(value, self.round or None)
 
+        if self.state_class == SensorStateClass.TOTAL_INCREASING:
+            if not isinstance(value, (int, float)) or (
+                isinstance(self.native_value, (int, float))
+                and value <= self.native_value
+            ):
+                return
+
         if self.report_ts is not None:
             ts = time.time()
 

@@ -617,6 +617,11 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             # nothing useful: https://github.com/AlexxIT/SonoffLAN/issues/767
             pass
 
+        elif data["action"] == "notify":
+            # incrementalDataNotify and similar server-side notifications
+            # https://github.com/AlexxIT/SonoffLAN/issues/1700
+            pass
+
         else:
             _LOGGER.warning(f"UNKNOWN cloud msg: {data}")
 
