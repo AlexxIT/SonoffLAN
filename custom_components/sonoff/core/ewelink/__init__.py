@@ -356,7 +356,7 @@ class XRegistry(XRegistryBase):
         if uiid in (5, 32, 181, 182, 190, 226, 262, 7032):
             if self.can_cloud(device):
                 params = {"uiActive": 60}
-                asyncio.create_task(self.cloud.send(device, params, timeout=0))
+                self._schedule_ui_active(device, self.cloud.send(device, params, timeout=0))
 
         # DUALR3 - two channels, local and cloud update
         elif uiid == 126:
@@ -365,7 +365,7 @@ class XRegistry(XRegistryBase):
                 asyncio.create_task(self.local.send(device, command="statistics"))
             elif self.can_cloud(device):
                 params = {"uiActive": {"all": 1, "time": 60}}
-                asyncio.create_task(self.cloud.send(device, params, timeout=0))
+                self._schedule_ui_active(device, self.cloud.send(device, params, timeout=0))
 
         # SPM-4Relay - four channels, separate update for each channel
         elif uiid == 130:
@@ -374,7 +374,7 @@ class XRegistry(XRegistryBase):
                 outlet = device.get("active_outlet", 0)
                 device["active_outlet"] = outlet + 1 if outlet < 3 else 0
                 params = {"uiActive": {"outlet": outlet, "time": 60}}
-                asyncio.create_task(self.cloud.send(device, params, timeout=0))
+                self._schedule_ui_active(device, self.cloud.send(device, params, timeout=0))
 
         # checks if device still available via LAN
         if "local_ts" not in device or device["local_ts"] > time.time():
@@ -394,3 +394,20 @@ class XRegistry(XRegistryBase):
         if "parent" in device:
             return device["parent"].get("local")
         return device.get("local")
+
+    @staticmethod
+    def _schedule_ui_active(device: XDevice, coro) -> None:
+        """Avoid unbounded backlog of periodic uiActive refresh tasks per device."""
+        task: asyncio.Task | None = device.get("ui_active_task")
+        if task and not task.done():
+            coro.close()
+            return
+
+        task = asyncio.create_task(coro)
+        device["ui_active_task"] = task
+
+        def _clear_task(done_task: asyncio.Task) -> None:
+            if device.get("ui_active_task") is done_task:
+                device.pop("ui_active_task", None)
+
+        task.add_done_callback(_clear_task)
