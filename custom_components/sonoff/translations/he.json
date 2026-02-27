@@ -9,7 +9,7 @@
     },
     "step": {
       "user": {
-        "description": "הזן את פרטי ההתחברות ל[חשבון eWeLink](https://www.ewelink.cc/en/)",
+        "description": "הזן את פרטי ההתחברות ל[חשבון eWeLink]({ewelink_url})",
         "data": {
           "username": "דוא\"ל או טלפון (השתמש בכל ערך עבור מצב DIY)",
           "password": "סיסמה (השאר ריק עבור מצב DIY)",

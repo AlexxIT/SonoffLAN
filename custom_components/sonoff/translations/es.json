@@ -9,7 +9,7 @@
     },
     "step": {
       "user": {
-        "description": "Ingrese las credenciales de su [cuenta eWeLink](https://www.ewelink.cc/es/)",
+        "description": "Ingrese las credenciales de su [cuenta eWeLink]({ewelink_url})",
         "data": {
           "username": "Email o teléfono (Use cualquiera para el modo DIY)",
           "password": "Contraseña (Dejar en blanco para el modo DIY)"

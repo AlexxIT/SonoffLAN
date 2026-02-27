@@ -9,7 +9,7 @@
     },
     "step": {
       "user": {
-        "description": "[eWeLink hesabınızın](https://www.ewelink.cc/en/) bilgilerini girin",
+        "description": "[eWeLink hesabınızın]({ewelink_url}) bilgilerini girin",
         "data": {
           "username": "E-posta veya telefon (DIY modu için herhangi birini kullanın)",
           "password": "Parola (DIY modu için boş bırakın)"

@@ -9,7 +9,7 @@
       },
       "step": {
         "user": {
-          "description": "Sisesta oma [eWeLink account](https://www.ewelink.cc/en/) andmed",
+          "description": "Sisesta oma [eWeLink account]({ewelink_url}) andmed",
           "data": {
             "username": "Email või telefon (DIY režhiimis suvaline)",
             "password": "Parool (DIY režhiimis jäta tühjaks)"

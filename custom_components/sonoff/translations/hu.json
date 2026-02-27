@@ -9,7 +9,7 @@
     },
     "step": {
       "user": {
-        "description": "Adja meg [eWeLink](https://www.ewelink.cc/hu/) fiókadatait",
+        "description": "Adja meg [eWeLink]({ewelink_url}) fiókadatait",
         "data": {
           "username": "E-mail vagy telefonszám (bármelyik DIY mód esetén)",
           "password": "Jelszó (hagyja üresen DIY mód estén)",

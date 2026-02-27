@@ -9,7 +9,7 @@
       },
       "step": {
         "user": {
-          "description": "Masukkan kredensial [akun eWeLink](https://www.ewelink.cc/en/) Anda",
+          "description": "Masukkan kredensial [akun eWeLink]({ewelink_url}) Anda",
           "data": {
             "username": "Surel atau telepon (gunakan manapun untuk mode DIY)",
             "password": "Kata sandi (biarkan kosong untuk mode DIY)"

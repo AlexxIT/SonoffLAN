@@ -9,7 +9,7 @@
     },
     "step": {
       "user": {
-        "description": "Введите ваш аккаунт [eWeLink](https://www.ewelink.cc/en/)",
+        "description": "Введите ваш аккаунт [eWeLink]({ewelink_url})",
         "data": {
           "username": "Email или телефон (любой для DIY режима)",
           "password": "Пароль (оставьте пустым для DIY режима)"
