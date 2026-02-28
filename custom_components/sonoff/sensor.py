@@ -347,21 +347,20 @@ class XEventSesor(XEntity, SensorEntity):
 
 class XRemoteButton(XEventSesor):
     params = {"key"}
-    _last_trig_time = None
+    last_trig_time = None
 
     def __init__(self, ewelink: XRegistry, device: dict):
         # remember initial trigTime so stale replays after reconnect are skipped
-        self._last_trig_time = device["params"].get("trigTime")
+        self.last_trig_time = device["params"].get("trigTime")
         super().__init__(ewelink, device)
 
     def set_state(self, params: dict):
         # skip stale events replayed after device reconnect
         # https://github.com/AlexxIT/SonoffLAN/issues/1669
-        trig_time = params.get("trigTime")
-        if trig_time is not None:
-            if trig_time == self._last_trig_time:
+        if trig_time := params.get("trigTime"):
+            if trig_time == self.last_trig_time:
                 return
-            self._last_trig_time = trig_time
+            self.last_trig_time = trig_time
 
         button = params.get("outlet")
         key = BUTTON_STATES[params["key"]]
