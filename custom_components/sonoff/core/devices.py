@@ -426,6 +426,7 @@ DEVICES = {
     # S60TPF, https://github.com/AlexxIT/SonoffLAN/issues/1514
     190: [
         XSwitchPOWR3,
+        Startup1,
         LED,
         RSSI,
         spec(XSensor100, param="current"),
