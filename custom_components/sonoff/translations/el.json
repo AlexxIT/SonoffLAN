@@ -9,7 +9,7 @@
     },
     "step": {
       "user": {
-        "description": "Εισάγετε τα διαπιστευτήρια του [λογαριασμού σας eWeLink](https://www.ewelink.cc/en/)",
+        "description": "Εισάγετε τα διαπιστευτήρια του [λογαριασμού σας eWeLink]({ewelink_url})",
         "data": {
           "username": "Email ή τηλέφωνο (χρήση τυχαίου για λειτουργία DIY)",
           "password": "Κωδικός πρόσβασης (αφήστε το κενό για λειτουργία DIY)",

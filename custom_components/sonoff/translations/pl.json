@@ -9,7 +9,7 @@
     },
     "step": {
       "user": {
-        "description": "Wpisz dane konta [eWeLink](https://www.ewelink.cc/pl/)",
+        "description": "Wpisz dane konta [eWeLink]({ewelink_url})",
         "data": {
           "username": "Adres e-mail lub numer telefonu (użyj dowolnych dla trybu DIY)",
           "password": "Hasło (pozostaw puste dla trybu DIY)",
