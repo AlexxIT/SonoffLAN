@@ -49,7 +49,7 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
                         errors={"base": "template"},
                         description_placeholders={
                             "error": "Token: " + self.cloud.token,
-                            "ewelink_url": "https://www.ewelink.cc/en/",
+                            "ewelink_url": "https://www.ewelink.cc/",
                         },
                     )
 
@@ -73,7 +73,7 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
                     errors={"base": "template"},
                     description_placeholders={
                         "error": repr(e),
-                        "ewelink_url": "https://www.ewelink.cc/en/",
+                        "ewelink_url": "https://www.ewelink.cc/",
                     },
                 )
 
@@ -81,7 +81,7 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=data_schema,
             description_placeholders={
-                "ewelink_url": "https://www.ewelink.cc/en/"
+                "ewelink_url": "https://www.ewelink.cc/"
             },
         )
 
