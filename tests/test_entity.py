@@ -73,7 +73,13 @@ def get_entitites(device: Union[dict, list], config: dict = None) -> list:
 
 
 def await_(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
+        asyncio.set_event_loop(None)
 
 
 def test_simple_switch():

@@ -11,7 +11,8 @@ def test_bulk():
     registry_send = []
 
     device = XDevice()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     # noinspection PyTypeChecker
     registry: XRegistry = XRegistry(None)
     registry.send = save_to(registry_send)
@@ -39,6 +40,9 @@ def test_bulk():
     assert registry_send[0][1] == {
         "switches": [{"outlet": 1, "switch": "on"}, {"outlet": 2, "switch": "off"}]
     }
+
+    loop.close()
+    asyncio.set_event_loop(None)
 
 
 def test_issue_1160():

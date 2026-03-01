@@ -24,7 +24,13 @@ class DummyRegistry(XRegistry):
         self.send_args = args
 
     def call(self, coro):
-        asyncio.get_event_loop().run_until_complete(coro)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(coro)
+        finally:
+            loop.close()
+            asyncio.set_event_loop(None)
         return self.send_args
 
 
