@@ -413,7 +413,16 @@ class XHexVoltageTRVZB(XSensor):
 
     def set_state(self, params: dict = None, value: float = None):
         try:
-            value = int(params[self.param], 16) * 0.001
+            raw = params[self.param]
+            if isinstance(raw, str):
+                # Old firmware: hex string representing millivolts
+                value = int(raw, 16) * 0.001
+            elif isinstance(raw, (int, float)):
+                # FW 1.4.0+: numeric value (centivolts)
+                value = raw * 0.01
+            else:
+                XSensor.set_state(self)
+                return
 
             if value != 0:
                 XSensor.set_state(self, value=value)
