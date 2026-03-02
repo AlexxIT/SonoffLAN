@@ -151,7 +151,6 @@ class XClimateNS(XEntity, ClimateEntity):
     params = {"ATCEnable", "ATCMode", "temperature", "tempCorrection"}
 
     _attr_entity_registry_enabled_default = False
-    _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT_COOL, HVACMode.AUTO]
     _attr_max_temp = 31
     _attr_min_temp = 16
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
@@ -167,6 +166,11 @@ class XClimateNS(XEntity, ClimateEntity):
         _enable_turn_on_off_backwards_compatibility = False
     else:
         _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
+
+    def __init__(self, ewelink, device: dict):
+        # copy mutable list so each instance has its own hvac_modes
+        self._attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT_COOL, HVACMode.AUTO]
+        super().__init__(ewelink, device)
 
     def set_state(self, params: dict):
         cache = self.device["params"]
