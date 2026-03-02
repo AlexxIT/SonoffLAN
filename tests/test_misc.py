@@ -12,7 +12,6 @@ def test_bulk():
 
     device = XDevice()
     loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     # noinspection PyTypeChecker
     registry: XRegistry = XRegistry(None)
     registry.send = save_to(registry_send)
@@ -42,7 +41,6 @@ def test_bulk():
     }
 
     loop.close()
-    asyncio.set_event_loop(None)
 
 
 def test_issue_1160():
