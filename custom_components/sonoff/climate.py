@@ -329,14 +329,21 @@ TRVZB_PRESET_MODES = {
     HVACMode.AUTO: "autoTargetTemp",  # workMode = 2 - Auto
 }
 
+# Map workMode string values to HVACMode (FW 1.4.0+ may send modes 3+)
+TRVZB_WORK_MODES = {
+    "0": HVACMode.HEAT,   # Manual
+    "1": HVACMode.OFF,    # Eco/Off
+    "2": HVACMode.AUTO,   # Auto/Schedule
+}
+
 
 class XThermostatTRVZB(XEntity, ClimateEntity):
     params = {"workMode", "curTargetTemp", "temperature"}
 
     _attr_hvac_mode = None
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF, HVACMode.AUTO]
-    _attr_max_temp = 45
-    _attr_min_temp = 5
+    _attr_max_temp = 35
+    _attr_min_temp = 4
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
 
@@ -359,13 +366,19 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
             cache.update(params)
 
         if "workMode" in cache:
-            self._attr_hvac_mode = self.hvac_modes[int(cache["workMode"])]
+            # Use dict lookup instead of list index to avoid IndexError
+            # on unknown workMode values (FW 1.4.0+ may add new modes)
+            mode = TRVZB_WORK_MODES.get(str(cache["workMode"]))
+            if mode is not None:
+                self._attr_hvac_mode = mode
 
         if "curTargetTemp" in cache:
-            self._attr_target_temperature = cache["curTargetTemp"] * 0.1
+            # FW 1.4.0+ may send as int or string; ensure numeric
+            self._attr_target_temperature = int(cache["curTargetTemp"]) * 0.1
 
         if "temperature" in cache:
-            self._attr_current_temperature = cache["temperature"] * 0.1
+            # FW 1.4.0+ sends temperature as string (e.g. "205")
+            self._attr_current_temperature = int(cache["temperature"]) * 0.1
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         await self.async_set_temperature(hvac_mode=hvac_mode)
@@ -377,13 +390,18 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
         self, temperature: float = None, hvac_mode: HVACMode = None, **kwargs
     ) -> None:
         if hvac_mode is not None:
-            params = {"workMode": str(self.hvac_modes.index(hvac_mode))}
+            # Reverse lookup: HVACMode -> workMode string
+            work_mode = next(
+                k for k, v in TRVZB_WORK_MODES.items() if v == hvac_mode
+            )
+            params = {"workMode": work_mode}
             temp_key = TRVZB_PRESET_MODES.get(hvac_mode)
         else:
             params = {}
             temp_key = TRVZB_PRESET_MODES.get(self._attr_hvac_mode)
 
         if temperature is not None and temp_key:
-            params[temp_key] = temperature * 10
+            # FW 1.4.0+ requires integer values, not float
+            params[temp_key] = int(temperature * 10)
 
         await self.ewelink.send(self.device, params)
