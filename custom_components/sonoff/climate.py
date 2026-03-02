@@ -329,13 +329,6 @@ TRVZB_PRESET_MODES = {
     HVACMode.AUTO: "autoTargetTemp",  # workMode = 2 - Auto
 }
 
-# Map workMode string values to HVACMode (FW 1.4.0+ may send modes 3+)
-TRVZB_WORK_MODES = {
-    "0": HVACMode.HEAT,   # Manual
-    "1": HVACMode.OFF,    # Eco/Off
-    "2": HVACMode.AUTO,   # Auto/Schedule
-}
-
 
 class XThermostatTRVZB(XEntity, ClimateEntity):
     params = {"workMode", "curTargetTemp", "temperature"}
@@ -366,11 +359,12 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
             cache.update(params)
 
         if "workMode" in cache:
-            # Use dict lookup instead of list index to avoid IndexError
-            # on unknown workMode values (FW 1.4.0+ may add new modes)
-            mode = TRVZB_WORK_MODES.get(str(cache["workMode"]))
-            if mode is not None:
-                self._attr_hvac_mode = mode
+            # Use TRVZB_PRESET_MODES keys (ordered) to map workMode index
+            # to HVACMode, with bounds check for unknown values (FW 1.4.0+)
+            modes = list(TRVZB_PRESET_MODES)
+            wm = int(cache["workMode"])
+            if 0 <= wm < len(modes):
+                self._attr_hvac_mode = modes[wm]
 
         if "curTargetTemp" in cache:
             # FW 1.4.0+ may send as int or string; ensure numeric
@@ -390,11 +384,8 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
         self, temperature: float = None, hvac_mode: HVACMode = None, **kwargs
     ) -> None:
         if hvac_mode is not None:
-            # Reverse lookup: HVACMode -> workMode string
-            work_mode = next(
-                k for k, v in TRVZB_WORK_MODES.items() if v == hvac_mode
-            )
-            params = {"workMode": work_mode}
+            # Reverse lookup: HVACMode -> workMode index string
+            params = {"workMode": str(list(TRVZB_PRESET_MODES).index(hvac_mode))}
             temp_key = TRVZB_PRESET_MODES.get(hvac_mode)
         else:
             params = {}
