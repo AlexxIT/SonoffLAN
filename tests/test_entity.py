@@ -45,6 +45,7 @@ from custom_components.sonoff.light import (
     XT5Light,
 )
 from custom_components.sonoff.number import XNumber, XPulseWidth
+from custom_components.sonoff.select import XSelectStartup
 from custom_components.sonoff.sensor import (
     XEnergySensorDualR3,
     XEnergyTotal,
@@ -1718,6 +1719,10 @@ def test_powr3():
         "operSide": 1,
     }
     entities = get_entitites({"extra": {"uiid": 190}, "params": params})
+
+    startup: XSelectStartup = next(e for e in entities if e.uid == "1" and isinstance(e, XSelectStartup))
+    assert startup._attr_current_option == "off"
+    assert startup._attr_options == ["off", "on", "stay"]
 
     energy: XEnergyTotal = next(e for e in entities if e.uid == "energy_day")
     assert energy.device_class == SensorDeviceClass.ENERGY
