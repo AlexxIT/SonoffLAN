@@ -16,11 +16,9 @@ from homeassistant.const import (
     MAJOR_VERSION,
     MINOR_VERSION,
     UnitOfEnergy,
-    UnitOfTemperature,
     UnitOfVolume,
 )
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
-from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from custom_components.sonoff import remote
 from custom_components.sonoff.binary_sensor import XBinarySensor, XRemoteSensor
@@ -33,7 +31,7 @@ from custom_components.sonoff.core.ewelink import (
     SIGNAL_CONNECTED,
     SIGNAL_UPDATE,
 )
-from custom_components.sonoff.cover import XCover, XCoverOP, XCoverDualR3, XZigbeeCover
+from custom_components.sonoff.cover import XCover, XCoverDualR3, XCoverOP, XZigbeeCover
 from custom_components.sonoff.fan import XFan, XToggleFan
 from custom_components.sonoff.light import (
     UIID22_MODES,
@@ -73,7 +71,11 @@ def get_entitites(device: Union[dict, list], config: dict = None) -> list:
 
 
 def await_(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    loop = asyncio.new_event_loop()
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
 
 
 def test_simple_switch():
