@@ -356,7 +356,7 @@ class XRegistry(XRegistryBase):
         if uiid in (5, 32, 181, 182, 190, 226, 262, 7032):
             if self.can_cloud(device):
                 params = {"uiActive": 60}
-                asyncio.create_task(self.cloud.send(device, params, timeout=0))
+                self.schedule_ui_active(device, params)
 
         # DUALR3 - two channels, local and cloud update
         elif uiid == 126:
@@ -365,7 +365,7 @@ class XRegistry(XRegistryBase):
                 asyncio.create_task(self.local.send(device, command="statistics"))
             elif self.can_cloud(device):
                 params = {"uiActive": {"all": 1, "time": 60}}
-                asyncio.create_task(self.cloud.send(device, params, timeout=0))
+                self.schedule_ui_active(device, params)
 
         # SPM-4Relay - four channels, separate update for each channel
         elif uiid == 130:
@@ -374,7 +374,7 @@ class XRegistry(XRegistryBase):
                 outlet = device.get("active_outlet", 0)
                 device["active_outlet"] = outlet + 1 if outlet < 3 else 0
                 params = {"uiActive": {"outlet": outlet, "time": 60}}
-                asyncio.create_task(self.cloud.send(device, params, timeout=0))
+                self.schedule_ui_active(device, params)
 
         # checks if device still available via LAN
         if "local_ts" not in device or device["local_ts"] > time.time():
@@ -394,3 +394,12 @@ class XRegistry(XRegistryBase):
         if "parent" in device:
             return device["parent"].get("local")
         return device.get("local")
+
+    def schedule_ui_active(self, device: XDevice, params: dict) -> None:
+        """Avoid unbounded backlog of periodic uiActive refresh tasks per device."""
+        task: asyncio.Task | None = device.get("ui_active_task")
+        if task and not task.done():
+            return
+
+        coro = self.cloud.send(device, params, timeout=0)
+        device["ui_active_task"] = asyncio.create_task(coro)

@@ -28,6 +28,7 @@ class XDevice(TypedDict, total=False):
     local_ts: Optional[float]  # time of last local msg from device
     params_bulk: Optional[dict]  # helper for send_bulk commands
     active_outlet: Optional[int]  # required for SPM-4Relay power updates
+    ui_active_task: Optional[asyncio.Task]  # internal periodic uiActive dedupe task
 
     parent: Optional[dict]
 
