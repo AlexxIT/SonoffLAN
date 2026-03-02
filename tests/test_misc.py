@@ -94,7 +94,9 @@ def test_ui_active_refresh_task_dedup():
     registry.cloud.online = True
     registry.cloud.send = dummy_send
 
-    device = XDevice(deviceid= "sonoff_100000abc1", online= True, extra= {"uiid": 181}, params={})
+    device = XDevice(
+        deviceid="sonoff_100000abc1", online=True, extra={"uiid": 181}, params={}
+    )
 
     original_create_task = asyncio.create_task
     asyncio.create_task = fake_create_task
@@ -109,7 +111,7 @@ def test_ui_active_refresh_task_dedup():
 
         # once task completes, next refresh can be scheduled again
         tasks[0].complete()
-        assert "ui_active_task" not in device
+        assert device["ui_active_task"].done()
 
         registry.update_device(device)
         assert len(tasks) == 2
