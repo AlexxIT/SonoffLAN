@@ -641,6 +641,8 @@ DEVICES = {
     ],
     # SNZB-02WD, https://github.com/AlexxIT/SonoffLAN/issues/1612
     7033: [XTempCorrection, XHumCorrection, Battery, ZRSSI],
+    # MINI-ZBRBS, https://github.com/AlexxIT/SonoffLAN/issues/1666
+    7034: [XCover, LED, RSSI],
 }
 
 
