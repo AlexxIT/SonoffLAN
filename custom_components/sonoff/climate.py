@@ -359,12 +359,11 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
             cache.update(params)
 
         if "workMode" in cache:
-            # Use TRVZB_PRESET_MODES keys (ordered) to map workMode index
-            # to HVACMode, with bounds check for unknown values (FW 1.4.0+)
-            modes = list(TRVZB_PRESET_MODES)
-            wm = int(cache["workMode"])
-            if 0 <= wm < len(modes):
-                self._attr_hvac_mode = modes[wm]
+            try:
+                # Bounds check for unknown values (FW 1.4.0+)
+                self._attr_hvac_mode = self.hvac_modes[int(cache["workMode"])]
+            except (IndexError, ValueError):
+                pass
 
         if "curTargetTemp" in cache:
             # FW 1.4.0+ may send as int or string; ensure numeric
@@ -385,7 +384,7 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
     ) -> None:
         if hvac_mode is not None:
             # Reverse lookup: HVACMode -> workMode index string
-            params = {"workMode": str(list(TRVZB_PRESET_MODES).index(hvac_mode))}
+            params = {"workMode": str(self.hvac_modes.index(hvac_mode))}
             temp_key = TRVZB_PRESET_MODES.get(hvac_mode)
         else:
             params = {}

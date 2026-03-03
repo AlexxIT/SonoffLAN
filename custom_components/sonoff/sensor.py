@@ -420,14 +420,11 @@ class XHexVoltageTRVZB(XSensor):
             elif isinstance(raw, (int, float)):
                 # FW 1.4.0+: numeric value (centivolts)
                 value = raw * 0.01
-            else:
-                XSensor.set_state(self)
-                return
+        except:
+            pass
 
-            if value != 0:
-                XSensor.set_state(self, value=value)
-        except Exception:
-            XSensor.set_state(self)
+        # default value=None (from func params)
+        XSensor.set_state(self, value=value)
 
 
 class XTodayWaterUsage(XSensor):

@@ -126,13 +126,13 @@ def test_trvzb_fw14():
     assert climate is not None
 
     # FW 1.4.0+ sends temperature as string "205" = 20.5°C
-    assert climate._attr_current_temperature == 20.5
+    assert climate.current_temperature == 20.5
 
     # Target temp from int
-    assert climate._attr_target_temperature == 27.0
+    assert climate.target_temperature == 27.0
 
     # HVAC mode from string workMode
-    assert climate._attr_hvac_mode == HVACMode.HEAT
+    assert climate.hvac_mode == HVACMode.HEAT
 
     # Test setting temperature sends int, not float
     device, params = reg.call(climate.async_set_temperature(temperature=23.5))
@@ -173,13 +173,13 @@ def test_trvzb_string_temperature_update():
     climate = next(e for e in entities if isinstance(e, XThermostatTRVZB))
 
     # Initial state: string temp "195" = 19.5°C
-    assert climate._attr_current_temperature == 19.5
-    assert climate._attr_hvac_mode == HVACMode.AUTO
+    assert climate.current_temperature == 19.5
+    assert climate.hvac_mode == HVACMode.AUTO
 
     # Simulate firmware update pushing new string temperature
     climate.set_state({"temperature": "225", "curTargetTemp": 240})
-    assert climate._attr_current_temperature == 22.5
-    assert climate._attr_target_temperature == 24.0
+    assert climate.current_temperature == 22.5
+    assert climate.target_temperature == 24.0
 
 
 def test_trvzb_unknown_workmode():
@@ -203,8 +203,8 @@ def test_trvzb_unknown_workmode():
     climate = next(e for e in entities if isinstance(e, XThermostatTRVZB))
 
     # Temperature should still parse correctly
-    assert climate._attr_current_temperature == 18.0
-    assert climate._attr_target_temperature == 20.0
+    assert climate.current_temperature == 18.0
+    assert climate.target_temperature == 20.0
 
     # Unknown workMode should not crash; hvac_mode left at default (None)
     # since no known workMode was ever set
@@ -212,8 +212,8 @@ def test_trvzb_unknown_workmode():
 
     # Updating with another unknown workMode should not crash
     climate.set_state({"workMode": "5", "temperature": "190"})
-    assert climate._attr_current_temperature == 19.0
+    assert climate.current_temperature == 19.0
 
     # Setting a known workMode after unknown ones should work
     climate.set_state({"workMode": "0"})
-    assert climate._attr_hvac_mode == HVACMode.HEAT
+    assert climate.hvac_mode == HVACMode.HEAT
