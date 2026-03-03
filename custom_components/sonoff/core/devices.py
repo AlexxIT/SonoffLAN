@@ -611,6 +611,8 @@ DEVICES = {
             multiply=0.1,
             uid="eco_target_temperature",
         ),
+        # FW 1.4.0+: valve opening percentage
+        spec(XSensor, param="openPercent", uid="valve_opening"),
         XTempCorrectionNumber,
         spec(XBoolSwitch, param="childLock", uid="child_lock"),
         spec(XBoolSwitch, param="windowSwitch", uid="window_switch"),
