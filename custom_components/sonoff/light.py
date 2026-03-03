@@ -361,7 +361,7 @@ class XLightL1(XLight):
 
         if "bright" in params:
             self._attr_brightness = conv(params["bright"], 1, 100, 1, 255)
-        if "colorR" in params and "colorG" in params and "colorB":
+        if "colorR" in params and "colorG" in params and "colorB" in params:
             self._attr_rgb_color = (
                 params["colorR"],
                 params["colorG"],
@@ -1180,7 +1180,7 @@ class XDiffuserLight(XOnOffLight):
         params = {}
 
         if effect is not None:
-            params["lightmode"] = mode = self.effect.index(effect) + 1
+            params["lightmode"] = mode = self._attr_effect_list.index(effect) + 1
             if mode == 2 and rgb_color is None:
                 rgb_color = self._attr_rgb_color
 

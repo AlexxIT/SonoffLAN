@@ -16,11 +16,9 @@ from homeassistant.const import (
     MAJOR_VERSION,
     MINOR_VERSION,
     UnitOfEnergy,
-    UnitOfTemperature,
     UnitOfVolume,
 )
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
-from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 from custom_components.sonoff import remote
 from custom_components.sonoff.binary_sensor import XBinarySensor, XRemoteSensor
@@ -33,7 +31,7 @@ from custom_components.sonoff.core.ewelink import (
     SIGNAL_CONNECTED,
     SIGNAL_UPDATE,
 )
-from custom_components.sonoff.cover import XCover, XCoverOP, XCoverDualR3, XZigbeeCover
+from custom_components.sonoff.cover import XCover, XCoverDualR3, XCoverOP, XZigbeeCover
 from custom_components.sonoff.fan import XFan, XToggleFan
 from custom_components.sonoff.light import (
     UIID22_MODES,
@@ -47,6 +45,7 @@ from custom_components.sonoff.light import (
     XT5Light,
 )
 from custom_components.sonoff.number import XNumber, XPulseWidth
+from custom_components.sonoff.select import XSelectStartup
 from custom_components.sonoff.sensor import (
     XEnergySensorDualR3,
     XEnergyTotal,
@@ -73,7 +72,11 @@ def get_entitites(device: Union[dict, list], config: dict = None) -> list:
 
 
 def await_(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    loop = asyncio.new_event_loop()
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
 
 
 def test_simple_switch():
@@ -1717,12 +1720,24 @@ def test_powr3():
     }
     entities = get_entitites({"extra": {"uiid": 190}, "params": params})
 
+    startup: XSelectStartup = next(e for e in entities if e.uid == "1" and isinstance(e, XSelectStartup))
+    assert startup._attr_current_option == "off"
+    assert startup._attr_options == ["off", "on", "stay"]
+
     energy: XEnergyTotal = next(e for e in entities if e.uid == "energy_day")
     assert energy.device_class == SensorDeviceClass.ENERGY
     assert energy.unit_of_measurement == UnitOfEnergy.KILO_WATT_HOUR
     assert energy.state_class == SensorStateClass.TOTAL_INCREASING
-    energy.set_state({"dayKwh": 7})
     assert energy.native_value == 0.07
+
+    energy.set_state({"dayKwh": 8})
+    assert energy.native_value == 0.08
+
+    energy.set_state({"dayKwh": 6})
+    assert energy.native_value == 0.08
+
+    energy.set_state()
+    assert energy.native_value == 0.08
 
 
 def test_issue1235():
@@ -2117,3 +2132,46 @@ def test_mosquitto():
     light: XLight57 = entities[0]
     assert light.state == "on"
     assert light.brightness == 1
+
+
+def test_thr316d_auto_mode():
+    """Test THR316D/THR320D auto-mode switch entity (issue #1729)."""
+    entities = get_entitites(
+        {
+            "name": "THR316D",
+            "deviceid": DEVICEID,
+            "extra": {"uiid": 181},
+            "online": True,
+            "params": {
+                "currentTemperature": "22.5",
+                "currentHumidity": "55",
+                "deviceType": "normal",
+                "switch": "off",
+                "mainSwitch": "off",
+                "autoControlEnabled": 1,
+                "sledOnline": "on",
+                "startup": "stay",
+            },
+        }
+    )
+
+    # UIID 181 should produce: XSwitchTH, temp, hum, XAutoModeSwitch, LED, RSSI
+    auto_mode = next(e for e in entities if e.uid == "auto_mode")
+    assert auto_mode.is_on is True
+
+    # test turn off
+    auto_mode.internal_update({"autoControlEnabled": 0})
+    assert auto_mode.is_on is False
+
+    # test turn on with integer
+    auto_mode.internal_update({"autoControlEnabled": 1})
+    assert auto_mode.is_on is True
+
+    # noinspection PyTypeChecker
+    registry: DummyRegistry = auto_mode.ewelink
+
+    result = registry.call(auto_mode.async_turn_on())
+    assert result[1] == {"autoControlEnabled": 1}
+
+    result = registry.call(auto_mode.async_turn_off())
+    assert result[1] == {"autoControlEnabled": 0}

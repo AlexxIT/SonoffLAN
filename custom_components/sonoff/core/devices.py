@@ -50,7 +50,7 @@ from ..light import (
     XZigbeeLight,
 )
 from ..media_player import XPanelBuzzer
-from ..number import XPulseWidth, XSensitivity
+from ..number import XPulseWidth, XSensitivity, XTempCorrectionNumber
 from ..remote import XRemote
 from ..select import XSelectStartup
 from ..sensor import (
@@ -73,7 +73,7 @@ from ..sensor import (
 )
 from ..switch import (
     XBoolSwitch,
-    XDetach,
+    XIntSwitch,
     XPanelScreen,
     XSwitch,
     XSwitchPOWR3,
@@ -142,6 +142,7 @@ SPEC_1CH = [Switch1, LED, RSSI]
 SPEC_2CH = [Switch1, Switch2, LED, RSSI]
 SPEC_3CH = [Switch1, Switch2, Switch3, LED, RSSI]
 SPEC_4CH = [Switch1, Switch2, Switch3, Switch4, LED, RSSI]
+SPEC_NSP = [XTemperatureTH, XPanelAlarm, XPanelBuzzer, XPanelScreen]
 
 Current1 = spec(XSensor100, param="current_00", uid="current_1")
 Current2 = spec(XSensor100, param="current_01", uid="current_2")
@@ -376,7 +377,7 @@ DEVICES = {
         Startup1,
         LED,
         RSSI,
-        XDetach,
+        spec(XIntSwitch, param="relaySeparation", uid="detach", enabled=False),
         spec(XRemoteButton, param="action"),
     ],
     # DW2-Wi-Fi-L, https://github.com/AlexxIT/SonoffLAN/issues/808
@@ -408,6 +409,7 @@ DEVICES = {
         XSwitchTH,
         XTemperatureTH,
         XHumidityTH,
+        spec(XIntSwitch, param="autoControlEnabled", uid="auto_mode", enabled=False),
         LED,
         RSSI,
     ],
@@ -425,6 +427,7 @@ DEVICES = {
     # S60TPF, https://github.com/AlexxIT/SonoffLAN/issues/1514
     190: [
         XSwitchPOWR3,
+        Startup1,
         LED,
         RSSI,
         spec(XSensor100, param="current"),
@@ -442,7 +445,7 @@ DEVICES = {
         ),
     ],
     # NSPanel Pro, https://github.com/AlexxIT/SonoffLAN/issues/984
-    195: [XTemperatureTH, XPanelAlarm, XPanelBuzzer, XPanelScreen],
+    195: SPEC_NSP,
     # Sonoff TX ULTIMATE T5-1C-86, https://github.com/AlexxIT/SonoffLAN/issues/1183
     209: [Switch1, Startup1, XT5Light, XT5Action, XT5Alarm, XT5Bell],
     # Sonoff TX ULTIMATE T5-2C-86
@@ -506,6 +509,8 @@ DEVICES = {
         spec(XSensor, param="phase_0_v", uid="voltage"),
         spec(XEnergyTotal, param="totalPower", uid="energy"),
     ],
+    # NSPanel Pro 120, https://github.com/AlexxIT/SonoffLAN/issues/1622
+    228: SPEC_NSP,
     # https://github.com/AlexxIT/SonoffLAN/issues/1634
     258: [XCover, LED, RSSI],
     # CK-BL602-SWP1-02(262), https://github.com/AlexxIT/SonoffLAN/issues/1630
@@ -609,12 +614,9 @@ DEVICES = {
             multiply=0.1,
             uid="eco_target_temperature",
         ),
-        spec(
-            XSensor,
-            param="tempCorrection",
-            multiply=0.1,
-            uid="temperature_correction",
-        ),
+        # FW 1.4.0+: valve opening percentage
+        spec(XSensor, param="openPercent", uid="valve_opening"),
+        XTempCorrectionNumber,
         spec(XBoolSwitch, param="childLock", uid="child_lock"),
         spec(XBoolSwitch, param="windowSwitch", uid="window_switch"),
         spec(XHexVoltageTRVZB, param="runVoltage", uid="run_voltage"),
@@ -642,6 +644,8 @@ DEVICES = {
     ],
     # SNZB-02WD, https://github.com/AlexxIT/SonoffLAN/issues/1612
     7033: [XTempCorrection, XHumCorrection, Battery, ZRSSI],
+    # MINI-ZBRBS, https://github.com/AlexxIT/SonoffLAN/issues/1666
+    7034: [XCover, LED, RSSI],
 }
 
 

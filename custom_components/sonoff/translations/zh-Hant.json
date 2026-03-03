@@ -9,7 +9,7 @@
     },
     "step": {
       "user": {
-        "description": "輸入您的 [eWeLink帳號](https://www.ewelink.cc/) 資訊",
+        "description": "輸入您的 [eWeLink帳號]({ewelink_url}) 資訊",
         "data": {
           "username": "Email或手機 (DIY模式請輸入any)",
           "password": "密碼 (DIY模式請留空)",

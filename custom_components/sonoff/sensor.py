@@ -116,6 +116,13 @@ class XSensor(XEntity, SensorEntity):
                 # convert to int when round is zero
                 value = round(value, self.round or None)
 
+        if self.state_class == SensorStateClass.TOTAL_INCREASING:
+            if not isinstance(value, (int, float)) or (
+                isinstance(self.native_value, (int, float))
+                and value <= self.native_value
+            ):
+                return
+
         if self.report_ts is not None:
             ts = time.time()
 
@@ -347,8 +354,21 @@ class XEventSesor(XEntity, SensorEntity):
 
 class XRemoteButton(XEventSesor):
     params = {"key"}
+    last_trig_time = None
+
+    def __init__(self, ewelink: XRegistry, device: dict):
+        # remember initial trigTime so stale replays after reconnect are skipped
+        self.last_trig_time = device["params"].get("trigTime")
+        super().__init__(ewelink, device)
 
     def set_state(self, params: dict):
+        # skip stale events replayed after device reconnect
+        # https://github.com/AlexxIT/SonoffLAN/issues/1669
+        if trig_time := params.get("trigTime"):
+            if trig_time == self.last_trig_time:
+                return
+            self.last_trig_time = trig_time
+
         button = params.get("outlet")
         key = BUTTON_STATES[params["key"]]
         self._attr_native_value = (
@@ -393,12 +413,18 @@ class XHexVoltageTRVZB(XSensor):
 
     def set_state(self, params: dict = None, value: float = None):
         try:
-            value = int(params[self.param], 16) * 0.001
+            raw = params[self.param]
+            if isinstance(raw, str):
+                # Old firmware: hex string representing millivolts
+                value = int(raw, 16) * 0.001
+            elif isinstance(raw, (int, float)):
+                # FW 1.4.0+: numeric value (centivolts)
+                value = raw * 0.01
+        except:
+            pass
 
-            if value != 0:
-                XSensor.set_state(self, value=value)
-        except Exception:
-            XSensor.set_state(self)
+        # default value=None (from func params)
+        XSensor.set_state(self, value=value)
 
 
 class XTodayWaterUsage(XSensor):

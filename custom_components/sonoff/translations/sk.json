@@ -9,7 +9,7 @@
     },
     "step": {
       "user": {
-        "description": "Zadajte svoje prihlasovacie údaje [eWeLink účtu](https://www.ewelink.cc/en/)",
+        "description": "Zadajte svoje prihlasovacie údaje [eWeLink účtu]({ewelink_url})",
         "data": {
           "username": "E-mail alebo telefón (použite ľubovoľné pre režim DIY)",
           "password": "Heslo (nechajte prázdne pre režim DIY)",

@@ -20,8 +20,13 @@ class DummyRegistry(XRegistry):
     async def send(self, *args, **kwargs):
         self.send_args = args
 
+    async def send_cloud(self, *args, **kwargs):
+        self.send_args = args
+
     def call(self, coro):
-        asyncio.get_event_loop().run_until_complete(coro)
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(coro)
+        loop.close()
         return self.send_args
 
 
@@ -36,7 +41,7 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
         params = device.setdefault("params", {})
         params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
 
-    asyncio.create_task = lambda _: None
+    asyncio.create_task = lambda coro: coro.close()
     asyncio.get_running_loop = lambda: type("", (), {"_thread_id": threading.get_ident()})
 
     entities = []

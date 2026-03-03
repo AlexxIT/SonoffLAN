@@ -48,7 +48,8 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
                         data_schema=data_schema,
                         errors={"base": "template"},
                         description_placeholders={
-                            "error": "Token: " + self.cloud.token
+                            "error": "Token: " + self.cloud.token,
+                            "ewelink_url": "https://www.ewelink.cc/",
                         },
                     )
 
@@ -70,10 +71,19 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
                     step_id="user",
                     data_schema=data_schema,
                     errors={"base": "template"},
-                    description_placeholders={"error": repr(e)},
+                    description_placeholders={
+                        "error": repr(e),
+                        "ewelink_url": "https://www.ewelink.cc/",
+                    },
                 )
 
-        return self.async_show_form(step_id="user", data_schema=data_schema)
+        return self.async_show_form(
+            step_id="user",
+            data_schema=data_schema,
+            description_placeholders={
+                "ewelink_url": "https://www.ewelink.cc/"
+            },
+        )
 
     async def async_step_reauth(self, user_input=None):
         return await self.async_step_user()
