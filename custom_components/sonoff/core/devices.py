@@ -166,6 +166,17 @@ Power2 = spec(XSensor100, param="actPow_01", uid="power_2")
 Power3 = spec(XSensor100, param="actPow_02", uid="power_3")
 Power4 = spec(XSensor100, param="actPow_03", uid="power_4")
 
+EnergyDay = spec(XEnergyTotal, param="dayKwh", uid="energy_day", multiply=0.01, round=2)
+EnergyWeek = spec(
+    XEnergyTotal, param="weekKwh", uid="energy_week", multiply=0.01, round=2
+)
+EnergyMonth = spec(
+    XEnergyTotal, param="monthKwh", uid="energy_month", multiply=0.01, round=2
+)
+EnergyYear = spec(
+    XEnergyTotal, param="yearKwh", uid="energy_year", multiply=0.01, round=2
+)
+
 EnergyPOW = spec(
     XEnergySensor,
     param="hundredDaysKwhData",
@@ -442,10 +453,8 @@ DEVICES = {
         spec(XSensor100, param="current"),
         spec(XSensor100, param="power"),
         spec(XSensor100, param="voltage"),
-        spec(XEnergyTotal, param="dayKwh", uid="energy_day", multiply=0.01, round=2),
-        spec(
-            XEnergyTotal, param="monthKwh", uid="energy_month", multiply=0.01, round=2
-        ),
+        EnergyDay,
+        EnergyMonth,
         spec(
             XEnergySensorPOWR3,
             param="hoursKwhData",
@@ -533,6 +542,19 @@ DEVICES = {
         spec(XSensor100, param="power"),
         spec(XSensor100, param="current"),
         spec(XSensor100, param="voltage"),
+    ],
+    # Sonoff S61STPF:
+    276: [
+        Switch1,
+        spec(XSensor100, param="power"),
+        spec(XSensor100, param="current"),
+        spec(XSensor100, param="voltage"),
+        EnergyDay,
+        EnergyWeek,
+        EnergyMonth,
+        EnergyYear,
+        LED,
+        RSSI,
     ],
     # zigbee_ON_OFF_SWITCH_1000
     1000: [XRemoteButton, Battery],
@@ -648,8 +670,8 @@ DEVICES = {
         spec(XSensor100, param="power"),
         spec(XSensor100, param="current"),
         spec(XSensor100, param="voltage"),
-        spec(XEnergyTotal, param="dayKwh",       uid="energy_day",   multiply=0.01, round=2),
-        spec(XEnergyTotal, param="monthKwh",     uid="energy_month", multiply=0.01, round=2)
+        EnergyDay,
+        EnergyMonth,
     ],
     # SNZB-02WD, https://github.com/AlexxIT/SonoffLAN/issues/1612
     7033: [XTempCorrection, XHumCorrection, Battery, ZRSSI],
