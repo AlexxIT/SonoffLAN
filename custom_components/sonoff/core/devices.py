@@ -543,6 +543,15 @@ DEVICES = {
         spec(XSensor100, param="current"),
         spec(XSensor100, param="voltage"),
     ],
+    # MINI-2GS https://github.com/AlexxIT/SonoffLAN/issues/1694
+    275: [
+        Switch1,
+        Switch2,
+        Startup1,
+        Startup2,
+        LED,
+        RSSI,
+    ],
     # Sonoff S61STPF:
     276: [
         Switch1,
