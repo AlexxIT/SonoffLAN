@@ -143,7 +143,15 @@ SPEC_1CH = [Switch1, LED, RSSI]
 SPEC_2CH = [Switch1, Switch2, LED, RSSI]
 SPEC_3CH = [Switch1, Switch2, Switch3, LED, RSSI]
 SPEC_4CH = [Switch1, Switch2, Switch3, Switch4, LED, RSSI]
-SPEC_NSP = [XTemperatureTH, XPanelAlarm, XPanelBuzzer, XPanelScreen, XCPUTemperature]
+
+SPEC_NSP = [
+    XTemperatureTH,
+    XPanelAlarm,
+    XPanelBuzzer,
+    XPanelScreen,
+    XCPUTemperature,
+    spec(XButton, param="reboot", value=True),
+]
 
 Current1 = spec(XSensor100, param="current_00", uid="current_1")
 Current2 = spec(XSensor100, param="current_01", uid="current_2")

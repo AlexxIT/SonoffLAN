@@ -1,5 +1,6 @@
-from homeassistant.components.button import ButtonEntity
+from homeassistant.components.button import ButtonDeviceClass, ButtonEntity
 from homeassistant.components.script import ATTR_LAST_TRIGGERED
+from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity import DeviceInfo
 
 from .core.const import DOMAIN
@@ -46,6 +47,13 @@ class XRemoteButton(ButtonEntity):
 
 class XButton(XEntity, ButtonEntity):
     value = None
+
+    def __init__(self, ewelink: XRegistry, device: dict):
+        XEntity.__init__(self, ewelink, device)
+
+        if self.params == "reboot":
+            self._attr_device_class = ButtonDeviceClass.RESTART
+            self._attr_entity_category = EntityCategory.CONFIG
 
     async def async_press(self):
         await self.ewelink.send(self.device, {self.param: self.value})
