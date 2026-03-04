@@ -37,6 +37,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
 DEVICE_CLASSES = {
     "battery": SensorDeviceClass.BATTERY,
     "battery_voltage": SensorDeviceClass.VOLTAGE,
+    "cpu_temperature": SensorDeviceClass.TEMPERATURE,
     "current": SensorDeviceClass.CURRENT,
     "humidity": SensorDeviceClass.HUMIDITY,
     "outdoor_temp": SensorDeviceClass.TEMPERATURE,
@@ -49,6 +50,7 @@ DEVICE_CLASSES = {
 UNITS = {
     "battery": PERCENTAGE,
     "battery_voltage": UnitOfElectricPotential.VOLT,
+    "cpu_temperature": UnitOfTemperature.CELSIUS,
     "current": UnitOfElectricCurrent.AMPERE,
     "humidity": PERCENTAGE,
     "outdoor_temp": UnitOfTemperature.CELSIUS,
@@ -435,4 +437,15 @@ class XTodayWaterUsage(XSensor):
         # https://github.com/AlexxIT/SonoffLAN/issues/1497
         # https://github.com/AlexxIT/SonoffLAN/issues/1608
         value = next(params[k] for k in self.params if k in params)
+        XSensor.set_state(self, value=value)
+
+
+class XCPUTemperature(XSensor):
+    params = {"cpuInfo"}
+    uid = "cpu_temperature"
+
+    _attr_entity_registry_enabled_default = False
+
+    def set_state(self, params: dict = None, value: float = None):
+        value = params.get("cpuInfo", {}).get("temperature")
         XSensor.set_state(self, value=value)
