@@ -275,6 +275,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     registry: XRegistry = hass.data[DOMAIN][entry.entry_id]
     await registry.stop()
 
+    internal_free_devices(entry.entry_id)
+
     return ok
 
 
@@ -287,6 +289,11 @@ def internal_unique_devices(uid: str, devices: list) -> list:
         for device in devices
         if UNIQUE_DEVICES.setdefault(device["deviceid"], uid) == uid
     ]
+
+
+def internal_free_devices(uid: str):
+    for k in [k for k, v in UNIQUE_DEVICES.items() if v == uid]:
+        UNIQUE_DEVICES.pop(k)
 
 
 async def async_remove_config_entry_device(
