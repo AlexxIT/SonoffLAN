@@ -7,15 +7,16 @@ devices and their devicekey.
 import asyncio
 import base64
 import errno
+import hashlib
 import ipaddress
 import json
 import logging
+import os
 
 import aiohttp
-from Crypto.Cipher import AES
-from Crypto.Hash import MD5
-from Crypto.Random import get_random_bytes
 from aiohttp.hdrs import CONTENT_TYPE
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from zeroconf import ServiceStateChange, Zeroconf
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo
 
@@ -24,35 +25,17 @@ from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
 _LOGGER = logging.getLogger(__name__)
 
 
-# some venv users don't have Crypto.Util.Padding
-# I don't know why pycryptodome is not installed on their systems
-# https://github.com/AlexxIT/SonoffLAN/issues/129
-
-
-def pad(data_to_pad: bytes, block_size: int):
-    padding_len = block_size - len(data_to_pad) % block_size
-    padding = bytes([padding_len]) * padding_len
-    return data_to_pad + padding
-
-
-def unpad(padded_data: bytes, block_size: int):
-    padding_len = padded_data[-1]
-    return padded_data[:-padding_len]
-
-
 def encrypt(payload: dict, devicekey: str):
-    devicekey = devicekey.encode("utf-8")
-
-    hash_ = MD5.new()
-    hash_.update(devicekey)
-    key = hash_.digest()
-
-    iv = get_random_bytes(16)
     plaintext = json.dumps(payload["data"]).encode("utf-8")
+    key = hashlib.md5(devicekey.encode("utf-8")).digest()
+    iv = os.urandom(16)
 
-    cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-    padded = pad(plaintext, AES.block_size)
-    ciphertext = cipher.encrypt(padded)
+    padder = padding.PKCS7(128).padder()
+    padded_data = padder.update(plaintext) + padder.finalize()
+
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+    encryptor = cipher.encryptor()
+    ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
     payload["encrypt"] = True
     payload["data"] = base64.b64encode(ciphertext).decode("utf-8")
@@ -62,16 +45,16 @@ def encrypt(payload: dict, devicekey: str):
 
 
 def decrypt(payload: dict, devicekey: str):
-    devicekey = devicekey.encode("utf-8")
-
-    hash_ = MD5.new()
-    hash_.update(devicekey)
-    key = hash_.digest()
-
-    cipher = AES.new(key, AES.MODE_CBC, iv=base64.b64decode(payload["iv"]))
     ciphertext = base64.b64decode(payload["data"])
-    padded = cipher.decrypt(ciphertext)
-    return unpad(padded, AES.block_size)
+    key = hashlib.md5(devicekey.encode("utf-8")).digest()
+    iv = base64.b64decode(payload["iv"])
+
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+    decryptor = cipher.decryptor()
+    padded_data = decryptor.update(ciphertext) + decryptor.finalize()
+
+    unpadder = padding.PKCS7(128).unpadder()
+    return unpadder.update(padded_data) + unpadder.finalize()
 
 
 class XRegistryLocal(XRegistryBase):

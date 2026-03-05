@@ -1012,6 +1012,7 @@ class XZigbeeLight(XLight):
 
 class XZigbeeColorTemp(XLight):
     params = {"switch", "brightness", "colorTemp"}
+    param = "switch"
 
     _attr_max_mireds = int(1000000 / 2200)
     _attr_min_mireds = int(1000000 / 4000)

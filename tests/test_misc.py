@@ -1,7 +1,9 @@
 import asyncio
+import json
 
 from custom_components.sonoff.core.devices import spec
 from custom_components.sonoff.core.ewelink import XDevice, XRegistry, XRegistryLocal
+from custom_components.sonoff.core.ewelink.local import decrypt, encrypt
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import XLightL1
 from . import save_to
@@ -120,3 +122,14 @@ def test_ui_active_refresh_task_dedup():
         assert device["ui_active_task"] is tasks[1]
     finally:
         asyncio.create_task = original_create_task
+
+
+def test_cryptography():
+    params = {"switch": "on"}
+    key = "9b0810bc-557a-406c-8266-614767890531"
+
+    payload = encrypt({"data": params}, key)
+    assert payload["encrypt"] and payload["data"] and payload["iv"]
+
+    raw = decrypt(payload, key)
+    assert json.loads(raw) == params

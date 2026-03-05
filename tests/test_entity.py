@@ -2175,3 +2175,23 @@ def test_thr316d_auto_mode():
 
     result = registry.call(auto_mode.async_turn_off())
     assert result[1] == {"autoControlEnabled": 0}
+
+
+def test_nspanel():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 195},
+            "params": {
+                "cpuInfo": {"temperature": 42.727},
+            },
+        }
+    )
+
+    cpu_temp: XSensor = next(e for e in entities if e.uid == "cpu_temperature")
+    assert cpu_temp.state == 42.727
+
+    reboot = next(e for e in entities if e.uid == "reboot")
+
+    registry: DummyRegistry = reboot.ewelink
+    result = registry.call(reboot.async_press())
+    assert result[1] == {"reboot": True}
