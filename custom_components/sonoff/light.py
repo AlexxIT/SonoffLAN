@@ -1,6 +1,5 @@
 import time
 
-import homeassistant.util.color as color_util
 from homeassistant.components.light import (
     ColorMode,
     LightEntity,
@@ -56,13 +55,13 @@ class XLight(XEntity, LightEntity):
         if self.param in params:
             self._attr_is_on = params[self.param] == "on"
 
-    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
         pass
 
     async def async_turn_on(
         self,
         brightness: int = None,
-        color_temp: int = None,
+        color_temp_kelvin: int = None,
         rgb_color=None,
         xy_color=None,
         hs_color=None,
@@ -76,15 +75,15 @@ class XLight(XEntity, LightEntity):
             rgb_color = color.color_hs_to_RGB(*hs_color)
 
         if transition:
-            await self.transiton(brightness, color_temp, rgb_color, transition)
+            await self.transiton(brightness, color_temp_kelvin, rgb_color, transition)
             return
 
         if brightness == 0:
             await self.async_turn_off()
             return
 
-        if brightness or color_temp or rgb_color or effect:
-            params = self.get_params(brightness, color_temp, rgb_color, effect)
+        if brightness or color_temp_kelvin or rgb_color or effect:
+            params = self.get_params(brightness, color_temp_kelvin, rgb_color, effect)
         else:
             params = None
 
@@ -111,14 +110,14 @@ class XLight(XEntity, LightEntity):
     async def transiton(
         self,
         brightness: int,
-        color_temp: int,
+        color_temp_kelvin: int,
         rgb_color,
         transition: float,
     ):
         br0 = self.brightness or 0
         br1 = brightness
-        ct0 = self.color_temp or self.min_mireds
-        ct1 = color_temp
+        ct0 = self.color_temp_kelvin or self.max_color_temp_kelvin
+        ct1 = color_temp_kelvin
         rgb0 = self.rgb_color or [0, 0, 0]
         rgb1 = rgb_color
 
@@ -128,27 +127,15 @@ class XLight(XEntity, LightEntity):
             if br1 is not None:
                 brightness = br0 + round((br1 - br0) * k)
             if ct1 is not None:
-                color_temp = ct0 + round((ct1 - ct0) * k)
+                color_temp_kelvin = ct0 + round((ct1 - ct0) * k)
             if rgb1 is not None:
                 rgb_color = [rgb0[i] + round((rgb1[i] - rgb0[i]) * k) for i in range(3)]
 
             await self.async_turn_on(
-                brightness, color_temp, rgb_color, query_cloud=False
+                brightness, color_temp_kelvin, rgb_color, query_cloud=False
             )
 
         await self.async_turn_on(br1, ct1, rgb1)
-
-    @property
-    def color_temp_kelvin(self) -> int | None:
-        return color_util.color_temperature_mired_to_kelvin(self.color_temp)
-
-    @property
-    def min_color_temp_kelvin(self) -> int:
-        return color_util.color_temperature_mired_to_kelvin(self.max_mireds)
-
-    @property
-    def max_color_temp_kelvin(self) -> int:
-        return color_util.color_temperature_mired_to_kelvin(self.min_mireds)
 
 
 # noinspection PyAbstractClass, UIID36
@@ -161,7 +148,7 @@ class XDimmer(XLight):
         if "bright" in params:
             self._attr_brightness = conv(params["bright"], 10, 100, 1, 255)
 
-    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
         if brightness:
             return {"bright": conv(brightness, 1, 255, 10, 100)}
 
@@ -177,7 +164,7 @@ class XLight57(XLight):
         if "channel0" in params:
             self._attr_brightness = conv(int(params["channel0"]), 25, 255, 1, 255)
 
-    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
         if brightness:
             return {"channel0": str(conv(brightness, 1, 255, 25, 255))}
 
@@ -192,7 +179,7 @@ class XLightD1(XLight):
         if "brightness" in params:
             self._attr_brightness = conv(params["brightness"], 0, 100, 1, 255)
 
-    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
         if brightness:
             # brightness can be only with switch=on in one message (error 400)
             # the purpose of the mode is unclear
@@ -253,8 +240,8 @@ class XLightB1(XLight):
     params = {"state", "zyx_mode", "channel0", "channel2"}
     param = "state"
 
-    _attr_min_mireds = 1  # cold
-    _attr_max_mireds = 3  # warm
+    _attr_max_color_temp_kelvin = 6500  # cold
+    _attr_min_color_temp_kelvin = 2000  # warm
     _attr_effect_list = list(UIID22_MODES.keys())
     # support on/off, brightness, color_temp and RGB
     _attr_supported_color_modes = {ColorMode.COLOR_TEMP, ColorMode.RGB}
@@ -279,11 +266,11 @@ class XLightB1(XLight):
             cold = int(params["channel0"])
             warm = int(params["channel1"])
             if warm == 0:
-                self._attr_color_temp = 1
+                self._attr_color_temp_kelvin = 6500
             elif cold == warm:
-                self._attr_color_temp = 2
+                self._attr_color_temp_kelvin = 4250
             elif cold == 0:
-                self._attr_color_temp = 3
+                self._attr_color_temp_kelvin = 2000
             self._attr_brightness = conv(max(cold, warm), 25, 255, 1, 255)
 
         else:
@@ -293,19 +280,17 @@ class XLightB1(XLight):
                 int(params["channel4"]),
             )
 
-    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
-        if brightness or color_temp:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+        if brightness or color_temp_kelvin:
             ch = str(conv(brightness or self.brightness, 1, 255, 25, 255))
-            if not color_temp:
-                color_temp = self.color_temp
-            if color_temp == 1:
+            if not color_temp_kelvin:
+                color_temp_kelvin = self.color_temp_kelvin
+            if color_temp_kelvin >= 5000:
                 params = {"channel0": ch, "channel1": "0"}
-            elif color_temp == 2:
-                params = {"channel0": ch, "channel1": ch}
-            elif color_temp == 3:
+            elif color_temp_kelvin >= 3500:
                 params = {"channel0": ch, "channel1": ch}
             else:
-                raise NotImplementedError
+                params = {"channel0": ch, "channel1": ch}
 
             return {
                 **params,
@@ -372,7 +357,7 @@ class XLightL1(XLight):
                 (k for k, v in self.modes.items() if v["mode"] == params["mode"]), None
             )
 
-    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
         params = {}
         if effect:
             params.update(self.modes[effect])
@@ -766,13 +751,13 @@ class XLightL3(XLightL1):
                 None,
             )
 
-    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
         # fix https://github.com/AlexxIT/SonoffLAN/issues/1394
         if brightness is not None and rgb_color is None:
             rgb_color = self.rgb_color
         if brightness is None and rgb_color is not None:
             brightness = self.brightness
-        return super().get_params(brightness, color_temp, rgb_color, effect)
+        return super().get_params(brightness, color_temp_kelvin, rgb_color, effect)
 
 
 B02_MODE_PAYLOADS = {
@@ -789,8 +774,8 @@ class XLightB02(XLight):
     param = "switch"
 
     # FS-1, B02-F-A60 and other
-    _attr_max_mireds: int = int(1000000 / 2200)  # 454
-    _attr_min_mireds: int = int(1000000 / 6500)  # 153
+    _attr_min_color_temp_kelvin: int = 2200
+    _attr_max_color_temp_kelvin: int = 6500
 
     _attr_color_mode = ColorMode.COLOR_TEMP
     _attr_effect_list = list(B02_MODE_PAYLOADS.keys())
@@ -809,11 +794,11 @@ class XLightB02(XLight):
 
         model = device.get("productModel")
         if model == "B02-F-ST64":
-            self._attr_max_mireds = int(1000000 / 1800)  # 555
-            self._attr_min_mireds = int(1000000 / 5000)  # 200
+            self._attr_min_color_temp_kelvin = 1800
+            self._attr_max_color_temp_kelvin = 5000
         elif model == "QMS-2C-CW":
-            self._attr_max_mireds = int(1000000 / 2700)  # 370
-            self._attr_min_mireds = int(1000000 / 6500)  # 153
+            self._attr_min_color_temp_kelvin = 2700
+            self._attr_max_color_temp_kelvin = 6500
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
@@ -831,12 +816,16 @@ class XLightB02(XLight):
         if "br" in state:
             self._attr_brightness = conv(state["br"], self.min_br, self.max_br, 1, 255)
         if "ct" in state:
-            self._attr_color_temp = conv(
-                state["ct"], self.min_ct, self.max_ct, self.max_mireds, self.min_mireds
+            self._attr_color_temp_kelvin = conv(
+                state["ct"],
+                self.min_ct,
+                self.max_ct,
+                self.min_color_temp_kelvin,
+                self.max_color_temp_kelvin,
             )
 
-    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
-        if brightness or color_temp:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+        if brightness or color_temp_kelvin:
             return {
                 "ltype": "white",
                 "white": {
@@ -844,9 +833,9 @@ class XLightB02(XLight):
                         brightness or self.brightness, 1, 255, self.min_br, self.max_br
                     ),
                     "ct": conv(
-                        color_temp or self.color_temp,
-                        self.max_mireds,
-                        self.min_mireds,
+                        color_temp_kelvin or self.color_temp_kelvin,
+                        self.min_color_temp_kelvin,
+                        self.max_color_temp_kelvin,
                         self.min_ct,
                         self.max_ct,
                     ),
@@ -874,8 +863,8 @@ class XLightB05B(XLightB02):
     _attr_effect_list = list(B05_MODE_PAYLOADS.keys())
     # support on/off, brightness, color_temp and RGB
     _attr_supported_color_modes = {ColorMode.COLOR_TEMP, ColorMode.RGB}
-    _attr_max_mireds = 500
-    _attr_min_mireds = 153
+    _attr_min_color_temp_kelvin = 2000
+    _attr_max_color_temp_kelvin = 6500
 
     def set_state(self, params: dict):
         XLight.set_state(self, params)
@@ -898,8 +887,12 @@ class XLightB05B(XLightB02):
             self._attr_brightness = conv(state["br"], self.min_br, self.max_br, 1, 255)
 
         if "ct" in state:
-            self._attr_color_temp = conv(
-                state["ct"], self.min_ct, self.max_ct, self.max_mireds, self.min_mireds
+            self._attr_color_temp_kelvin = conv(
+                state["ct"],
+                self.min_ct,
+                self.max_ct,
+                self.min_color_temp_kelvin,
+                self.max_color_temp_kelvin,
             )
 
         if "r" in state or "g" in state or "b" in state:
@@ -909,8 +902,8 @@ class XLightB05B(XLightB02):
                 state.get("b", 0),
             )
 
-    def get_params(self, brightness, color_temp, rgb_color, effect) -> dict:
-        if color_temp:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+        if color_temp_kelvin:
             return {
                 "ltype": "white",
                 "white": {
@@ -918,9 +911,9 @@ class XLightB05B(XLightB02):
                         brightness or self.brightness, 1, 255, self.min_br, self.max_br
                     ),
                     "ct": conv(
-                        color_temp,
-                        self.max_mireds,
-                        self.min_mireds,
+                        color_temp_kelvin,
+                        self.min_color_temp_kelvin,
+                        self.max_color_temp_kelvin,
                         self.min_ct,
                         self.max_ct,
                     ),
@@ -940,7 +933,7 @@ class XLightB05B(XLightB02):
             }
         if brightness:
             if self.color_mode == ColorMode.COLOR_TEMP:
-                return self.get_params(brightness, self.color_temp, None, None)
+                return self.get_params(brightness, self.color_temp_kelvin, None, None)
             else:
                 return self.get_params(brightness, None, self.rgb_color, None)
         if effect is not None:
@@ -950,6 +943,8 @@ class XLightB05B(XLightB02):
 class XZigbeeLight(XLight):
     param = "switch"
 
+    _attr_min_color_temp_kelvin = 2000
+    _attr_max_color_temp_kelvin = 6500
     _attr_supported_color_modes = {ColorMode.COLOR_TEMP, ColorMode.HS}
 
     def set_state(self, params: dict):
@@ -963,12 +958,12 @@ class XZigbeeLight(XLight):
             self._attr_color_mode = ColorMode.HS
 
         if "colorTemp" in params:
-            self._attr_color_temp = conv(
+            self._attr_color_temp_kelvin = conv(
                 params["colorTemp"],
                 0,
                 100,
-                self._attr_max_mireds,  # yellow
-                self._attr_min_mireds,  # blue
+                self._attr_min_color_temp_kelvin,  # yellow
+                self._attr_max_color_temp_kelvin,  # blue
             )
 
         if br := params.get(f"{mode}Brightness"):
@@ -980,16 +975,20 @@ class XZigbeeLight(XLight):
     async def async_turn_on(
         self,
         brightness: int = None,
-        color_temp: int = None,
+        color_temp_kelvin: int = None,
         hs_color: tuple = None,
         **kwargs,
     ) -> None:
         params = {self.param: "on"}
 
-        if color_temp is not None:
+        if color_temp_kelvin is not None:
             params["colorMode"] = "cct"
             params["colorTemp"] = conv(
-                color_temp, self._attr_max_mireds, self._attr_min_mireds, 0, 100
+                color_temp_kelvin,
+                self._attr_min_color_temp_kelvin,
+                self._attr_max_color_temp_kelvin,
+                0,
+                100,
             )
 
         if hs_color is not None:
@@ -1014,8 +1013,8 @@ class XZigbeeColorTemp(XLight):
     params = {"switch", "brightness", "colorTemp"}
     param = "switch"
 
-    _attr_max_mireds = int(1000000 / 2200)
-    _attr_min_mireds = int(1000000 / 4000)
+    _attr_min_color_temp_kelvin = 2200
+    _attr_max_color_temp_kelvin = 4000
 
     _attr_color_mode = ColorMode.ONOFF
     _attr_supported_color_modes = {ColorMode.COLOR_TEMP}
@@ -1027,18 +1026,18 @@ class XZigbeeColorTemp(XLight):
             self._attr_brightness = conv(params["brightness"], 0, 100, 1, 255)
 
         if "colorTemp" in params:
-            self._attr_color_temp = conv(
+            self._attr_color_temp_kelvin = conv(
                 params["colorTemp"],
                 0,
                 100,
-                self._attr_max_mireds,
-                self._attr_min_mireds,
+                self._attr_min_color_temp_kelvin,
+                self._attr_max_color_temp_kelvin,
             )
 
     async def async_turn_on(
         self,
         brightness: int = None,
-        color_temp: int = None,
+        color_temp_kelvin: int = None,
         **kwargs,
     ) -> None:
         params = {self.param: "on"}
@@ -1046,9 +1045,13 @@ class XZigbeeColorTemp(XLight):
         if brightness is not None:
             params["brightness"] = conv(brightness, 1, 255, 0, 100)
 
-        if color_temp is not None:
+        if color_temp_kelvin is not None:
             params["colorTemp"] = conv(
-                color_temp, self._attr_max_mireds, self._attr_min_mireds, 0, 100
+                color_temp_kelvin,
+                self._attr_min_color_temp_kelvin,
+                self._attr_max_color_temp_kelvin,
+                0,
+                100,
             )
 
         await self.ewelink.send(self.device, params)
