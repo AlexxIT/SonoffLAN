@@ -5,8 +5,6 @@ from typing import Union
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity, FanEntityFeature
 from homeassistant.components.light import (
-    COLOR_MODE_COLOR_TEMP,
-    COLOR_MODE_RGB,
     ColorMode,
     LightEntity,
 )
@@ -1393,14 +1391,14 @@ def test_light_22():
     light: XLightB1 = entities[0]
     assert light.state == "on"
     assert light.state_attributes["brightness"] == 149
-    assert light.state_attributes["color_mode"] == COLOR_MODE_COLOR_TEMP
-    assert light.state_attributes["color_temp"] == 2
+    assert light.state_attributes["color_mode"] == ColorMode.COLOR_TEMP
+    assert light.state_attributes["color_temp_kelvin"] == 500000
     # assert "effect" not in light.state_attributes
 
     params = UIID22_MODES["Good Night"]
     light.internal_update(params)
     assert light.state_attributes["brightness"] == 149  # don't change
-    assert light.state_attributes["color_mode"] == COLOR_MODE_RGB
+    assert light.state_attributes["color_mode"] == ColorMode.RGB
     assert light.state_attributes["effect"] == "Good Night"
     # assert "color_temp" not in light.state_attributes
 
@@ -1590,7 +1588,7 @@ def test_light_136():
     light: XLightB05B = entities[0]
     assert light.state == "on"
     assert light.state_attributes["brightness"] == 255
-    assert light.state_attributes["color_temp"] == light.min_mireds
+    assert light.state_attributes["color_temp_kelvin"] == light.max_color_temp_kelvin
 
 
 def test_minir4():
