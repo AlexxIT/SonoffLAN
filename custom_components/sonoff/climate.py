@@ -325,6 +325,7 @@ TRVZB_PRESET_MODES = {
     HVACMode.OFF: "ecoTargetTemp",  # workMode = 1 - Off
     HVACMode.AUTO: "autoTargetTemp",  # workMode = 2 - Auto
 }
+TRVZB_ACTIONS = {"0": HVACAction.OFF, "1": HVACAction.HEATING}
 
 
 class XThermostatTRVZB(XEntity, ClimateEntity):
@@ -356,9 +357,8 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
             cache.update(params)
 
         if "workState" in cache:
-            hvac_actions = [HVACAction.OFF, HVACAction.HEATING]
-            self._attr_hvac_action = hvac_actions[int(cache["workState"])]
-			
+            self._attr_hvac_action = TRVZB_ACTIONS.get(cache["workState"])
+
         if "workMode" in cache:
             self._attr_hvac_mode = self.hvac_modes[int(cache["workMode"])]
 
