@@ -134,7 +134,6 @@ XSensor100 = spec(XSensor, multiply=0.01, round=2)
 Battery = spec(XSensor, param="battery")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
-STARTUP = spec(XToggle, param="startup", enabled=False)
 PULSE = spec(XToggle, param="pulse", enabled=False)
 ZRSSI = spec(XSensor, param="subDevRssi", uid="rssi", enabled=False)
 
@@ -531,7 +530,7 @@ DEVICES = {
         spec(XBoolSwitch, param="childLock", uid="child_lock", enabled=False),
         LED,
         RSSI,
-        STARTUP,
+        XStartup,
     ],
     # CK-BL602-W102SW18-01(226)
     226: [
