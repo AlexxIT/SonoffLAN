@@ -1718,7 +1718,9 @@ def test_powr3():
     }
     entities = get_entitites({"extra": {"uiid": 190}, "params": params})
 
-    startup: XSelectStartup = next(e for e in entities if e.uid == "1" and isinstance(e, XSelectStartup))
+    startup: XSelectStartup = next(
+        e for e in entities if e.uid == "1" and isinstance(e, XSelectStartup)
+    )
     assert startup._attr_current_option == "off"
     assert startup._attr_options == ["off", "on", "stay"]
 
@@ -2218,3 +2220,24 @@ def test_snzb_02dr2():
 
     temperature: XSensor = next(e for e in entities if e.uid == "remote_temperature")
     assert temperature.state == 21.6
+
+
+def test_snzb_ck_bk7238():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 242},
+            "params": {
+                "battery": 100,
+                "humCalibration": 0,
+                "humidity": 5238,
+                "temCalibration": 0,
+                "temperature": 2362,
+            },
+        }
+    )
+
+    temperature: XSensor = next(e for e in entities if e.uid == "temperature")
+    assert temperature.state == 23.62
+
+    humidity: XSensor = next(e for e in entities if e.uid == "humidity")
+    assert humidity.state == 52.38

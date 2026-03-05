@@ -544,6 +544,13 @@ DEVICES = {
     ],
     # NSPanel Pro 120, https://github.com/AlexxIT/SonoffLAN/issues/1622
     228: SPEC_NSP,
+    # CK-BK7238-W105SE10-01-HB(242) https://github.com/AlexxIT/SonoffLAN/issues/1673
+    242: [
+        spec(XTempCorrection, multiply=0.01),
+        spec(XHumCorrection, multiply=0.01),
+        Battery,
+        ZRSSI,
+    ],
     # https://github.com/AlexxIT/SonoffLAN/issues/1634
     258: [XCover, LED, RSSI],
     # CK-BL602-SWP1-02(262), https://github.com/AlexxIT/SonoffLAN/issues/1630
