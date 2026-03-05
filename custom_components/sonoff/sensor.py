@@ -42,6 +42,7 @@ DEVICE_CLASSES = {
     "humidity": SensorDeviceClass.HUMIDITY,
     "outdoor_temp": SensorDeviceClass.TEMPERATURE,
     "power": SensorDeviceClass.POWER,
+    "remote_temperature": SensorDeviceClass.TEMPERATURE,
     "rssi": SensorDeviceClass.SIGNAL_STRENGTH,
     "temperature": SensorDeviceClass.TEMPERATURE,
     "voltage": SensorDeviceClass.VOLTAGE,
@@ -55,6 +56,7 @@ UNITS = {
     "humidity": PERCENTAGE,
     "outdoor_temp": UnitOfTemperature.CELSIUS,
     "power": UnitOfPower.WATT,
+    "remote_temperature": UnitOfTemperature.CELSIUS,
     "rssi": SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     "temperature": UnitOfTemperature.CELSIUS,
     "voltage": UnitOfElectricPotential.VOLT,
@@ -289,6 +291,8 @@ class XTempCorrection(XSensor):
             if (cache := self.device["params"]) != params:
                 cache.update(params)
             value = parse_float(cache["temperature"])
+            if self.multiply:
+                value *= self.multiply
             if v := cache.get("tempCorrection"):
                 value += parse_float(v)
             XSensor.set_state(self, value=value)
@@ -305,6 +309,8 @@ class XHumCorrection(XSensor):
             if (cache := self.device["params"]) != params:
                 cache.update(params)
             value = parse_float(cache["humidity"])
+            if self.multiply:
+                value *= self.multiply
             if v := cache.get("humCorrection"):
                 value += parse_float(v)
             XSensor.set_state(self, value=value)

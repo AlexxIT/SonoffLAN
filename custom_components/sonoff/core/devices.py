@@ -686,6 +686,16 @@ DEVICES = {
     7033: [XTempCorrection, XHumCorrection, Battery, ZRSSI],
     # MINI-ZBRBS, https://github.com/AlexxIT/SonoffLAN/issues/1666
     7034: [XCover, LED, RSSI],
+    # SNZB-02DR2
+    7038: [
+        spec(XTempCorrection, multiply=0.01),
+        spec(XHumCorrection, multiply=0.01),
+        Battery,
+        ZRSSI,
+        spec(
+            XSensor, param="remoteTemperature", uid="remote_temperature", multiply=0.01
+        ),
+    ],
 }
 
 

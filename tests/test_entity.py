@@ -2193,3 +2193,28 @@ def test_nspanel():
     registry: DummyRegistry = reboot.ewelink
     result = registry.call(reboot.async_press())
     assert result[1] == {"reboot": True}
+
+
+def test_snzb_02dr2():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 7038},
+            "params": {
+                "battery": 100,
+                "temperature": 2250,
+                "humidity": 5540,
+                "humCorrection": "-0.8",
+                "tempCorrection": 0,
+                "remoteTemperature": 2160,
+            },
+        }
+    )
+
+    temperature: XSensor = next(e for e in entities if e.uid == "temperature")
+    assert temperature.state == 22.5
+
+    humidity: XSensor = next(e for e in entities if e.uid == "humidity")
+    assert humidity.state == 54.6
+
+    temperature: XSensor = next(e for e in entities if e.uid == "remote_temperature")
+    assert temperature.state == 21.6
