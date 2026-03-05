@@ -52,7 +52,7 @@ from ..light import (
 from ..media_player import XPanelBuzzer
 from ..number import XPulseWidth, XSensitivity, XTempCorrectionNumber
 from ..remote import XRemote
-from ..select import XSelectStartup
+from ..select import XSelectStartup, XStartup
 from ..sensor import (
     XCPUTemperature,
     XEnergySensor,
@@ -253,6 +253,7 @@ DEVICES = {
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
         EnergyPOW,
+        XStartup,
     ],
     # https://github.com/AlexxIT/SonoffLAN/issues/985
     33: [XLightL1, RSSI],
