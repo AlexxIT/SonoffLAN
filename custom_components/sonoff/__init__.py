@@ -58,12 +58,16 @@ PLATFORMS = [
     "select"
 ]
 
+DEFAULT_APPID = "4s1FXKC9FaGfoqXhmXSJneb3qcm1gOak"
+DEFAULT_SECRET = "oKvCM06gvwkRbfetd6qWRrbC3rFrbIpV"
+
 CONFIG_SCHEMA = vol.Schema(
     {
         DOMAIN: vol.Schema(
             {
-                vol.Optional(CONF_APPID): cv.string,
-                vol.Optional(CONF_APPSECRET): cv.string,
+                # Default AppID because https://github.com/AlexxIT/SonoffLAN/issues/1707
+                vol.Optional(CONF_APPID, default=DEFAULT_APPID): cv.string,
+                vol.Optional(CONF_APPSECRET, default=DEFAULT_SECRET): cv.string,
                 vol.Optional(CONF_USERNAME): cv.string,
                 vol.Optional(CONF_PASSWORD): cv.string,
                 vol.Optional(CONF_DEFAULT_CLASS): cv.string,
