@@ -622,6 +622,10 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             # https://github.com/AlexxIT/SonoffLAN/issues/1700
             pass
 
+        elif data["action"] == "subDevice":
+            # https://github.com/AlexxIT/SonoffLAN/issues/1681
+            pass
+
         else:
             _LOGGER.warning(f"UNKNOWN cloud msg: {data}")
 
