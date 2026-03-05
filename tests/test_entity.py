@@ -1392,7 +1392,7 @@ def test_light_22():
     assert light.state == "on"
     assert light.state_attributes["brightness"] == 149
     assert light.state_attributes["color_mode"] == ColorMode.COLOR_TEMP
-    assert light.state_attributes["color_temp_kelvin"] == 500000
+    assert light.state_attributes["color_temp_kelvin"] == 4250
     # assert "effect" not in light.state_attributes
 
     params = UIID22_MODES["Good Night"]
