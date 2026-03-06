@@ -58,16 +58,12 @@ PLATFORMS = [
     "select"
 ]
 
-DEFAULT_APPID = "4s1FXKC9FaGfoqXhmXSJneb3qcm1gOak"
-DEFAULT_SECRET = "oKvCM06gvwkRbfetd6qWRrbC3rFrbIpV"
-
 CONFIG_SCHEMA = vol.Schema(
     {
         DOMAIN: vol.Schema(
             {
-                # Default AppID because https://github.com/AlexxIT/SonoffLAN/issues/1707
-                vol.Optional(CONF_APPID, default=DEFAULT_APPID): cv.string,
-                vol.Optional(CONF_APPSECRET, default=DEFAULT_SECRET): cv.string,
+                vol.Optional(CONF_APPID): cv.string,
+                vol.Optional(CONF_APPSECRET): cv.string,
                 vol.Optional(CONF_USERNAME): cv.string,
                 vol.Optional(CONF_PASSWORD): cv.string,
                 vol.Optional(CONF_DEFAULT_CLASS): cv.string,
@@ -115,7 +111,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         XRegistry.config = conf = config[DOMAIN]
         if CONF_APPID in conf and CONF_APPSECRET in conf:
             APP[0] = conf[CONF_APPID]
-            APP.append(conf[CONF_APPSECRET])
+            APP[1] = conf[CONF_APPSECRET]
         if CONF_DEFAULT_CLASS in conf:
             core_devices.set_default_class(conf.get(CONF_DEFAULT_CLASS))
         if CONF_SENSORS in conf:
@@ -189,6 +185,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     # if has cloud password and not auth
     if not registry.cloud.auth and data.get(CONF_PASSWORD):
         try:
+            _LOGGER.debug(f"Login to cloud with APPID {APP[0][:4]}...")
             await registry.cloud.login(**data)
             # store country_code for future requests optimisation
             if not data.get(CONF_COUNTRY_CODE):
