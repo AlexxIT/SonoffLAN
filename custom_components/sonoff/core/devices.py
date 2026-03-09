@@ -402,7 +402,7 @@ DEVICES = {
         LED,
         RSSI,
         spec(XIntSwitch, param="relaySeparation", uid="detach", enabled=False),
-        spec(XRemoteButton, param="action"),
+        XRemoteAction,
     ],
     # DW2-Wi-Fi-L, https://github.com/AlexxIT/SonoffLAN/issues/808
     154: [XWiFiDoor, Battery, RSSI],

@@ -680,6 +680,8 @@ def test_zigbee_button():
     )
 
     button: XRemoteButton = entities[0]
+    assert button.entity_id == "sonoff.sonoff_1000123abc"
+    assert button.name == "Device1"
     assert button.state == ""
 
     button.ewelink.cloud.dispatcher_send(
