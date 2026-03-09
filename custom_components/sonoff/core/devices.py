@@ -579,6 +579,7 @@ DEVICES = {
         Startup2,
         LED,
         RSSI,
+        XRemoteAction,
     ],
     # Sonoff S61STPF:
     276: [
