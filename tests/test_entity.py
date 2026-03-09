@@ -2241,3 +2241,21 @@ def test_snzb_ck_bk7238():
 
     humidity: XSensor = next(e for e in entities if e.uid == "humidity")
     assert humidity.state == 52.38
+
+
+def test_zb2gs():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 7029},
+            "params": {"localKeyPass": {"key": 0, "outlet": 0}},
+        }
+    )
+
+    button: XRemoteButton = next(e for e in entities if e.uid == "action")
+    assert button.state == ""
+
+    button.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 0}}},
+    )
+    assert button.state == "button_1_single"

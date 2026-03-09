@@ -363,7 +363,7 @@ class XEventSesor(XEntity, SensorEntity):
 
 
 class XRemoteButton(XEventSesor):
-    params = {"key"}
+    params = {"key", "localKeyPass"}
     last_trig_time = None
 
     def __init__(self, ewelink: XRegistry, device: dict):
@@ -378,6 +378,11 @@ class XRemoteButton(XEventSesor):
             if trig_time == self.last_trig_time:
                 return
             self.last_trig_time = trig_time
+
+        # MINI-2GS https://github.com/AlexxIT/SonoffLAN/issues/1694
+        # MINI-ZB2GS-L https://github.com/AlexxIT/SonoffLAN/issues/1701
+        if "localKeyPass" in params:
+            params = params["localKeyPass"]
 
         button = params.get("outlet")
         key = BUTTON_STATES[params["key"]]

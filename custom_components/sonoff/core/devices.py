@@ -189,6 +189,10 @@ DoorLock = spec(XBinarySensor, param="lock", uid="", default_class="door")
 XT5Alarm = spec(XButton, param="soundAction", value=1, uid="alarm", enabled=False)
 XT5Bell = spec(XButton, param="soundAction", value=2, uid="bell", enabled=False)
 
+# XRemoteButton - used when the button is the main element of the device
+# XRemoteAction - used when the button is an additional element of the device
+XRemoteAction = spec(XRemoteButton, uid="action")
+
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
 DEVICES = {
     1: SPEC_SWITCH,
@@ -697,6 +701,8 @@ DEVICES = {
         XTodayWaterUsage,
         ZRSSI,
     ],
+    # MINI-ZB2GS-L https://github.com/AlexxIT/SonoffLAN/issues/1701
+    7029: [Switch1, Switch2, XRemoteAction],
     # S60ZBTPF, https://github.com/AlexxIT/SonoffLAN/issues/1615
     7032: [
         Switch1,
