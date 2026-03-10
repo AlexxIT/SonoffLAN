@@ -30,6 +30,8 @@ class XDevice(TypedDict, total=False):
     active_outlet: Optional[int]  # required for SPM-4Relay power updates
     ui_active_task: Optional[asyncio.Task]  # internal periodic uiActive dedupe task
 
+    sequence: int | None  # sequence for update from cloud (if exists - cmd from app)
+
     parent: Optional[dict]
 
 

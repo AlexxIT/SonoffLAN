@@ -30,7 +30,7 @@ from ..binary_sensor import (
 from ..button import XButton
 from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
-from ..cover import XCover, XCoverDualR3, XCoverOP, XCoverT5, XZigbeeCover
+from ..cover import XCover, XCoverDualR3, XCoverOP, XCoverT5, XZBCover, XZigbeeCover
 from ..fan import XDiffuserFan, XFan, XFanDualR3, XToggleFan
 from ..light import (
     XDiffuserLight,
@@ -716,7 +716,7 @@ DEVICES = {
     # SNZB-02WD, https://github.com/AlexxIT/SonoffLAN/issues/1612
     7033: [XTempCorrection, XHumCorrection, Battery, ZRSSI],
     # MINI-ZBRBS, https://github.com/AlexxIT/SonoffLAN/issues/1666
-    7034: [XCover, LED, RSSI],
+    7034: [XZBCover, LED, RSSI],
     # SNZB-02DR2
     7038: [
         spec(XTempCorrection, multiply=0.01),

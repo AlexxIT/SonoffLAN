@@ -77,6 +77,45 @@ class XCover(XEntity, CoverEntity):
         await self.ewelink.send(self.device, params, query_cloud=False)
 
 
+class XZBCover(XCover):
+    def internal_set_position(self, value: int):
+        self._attr_current_cover_position = 100 - value
+        self._attr_is_closed = self.current_cover_position == 0
+        self._attr_is_closing = self._attr_is_opening = False
+
+    def internal_set_motion(self, value: str):
+        self._attr_is_closing = value == "off"
+        self._attr_is_opening = value == "on"
+
+    def set_state(self, params: dict):
+        # device init
+        if "setclose" in params and "switch" in params:
+            self.internal_set_position(params["setclose"])
+            return
+
+        # check if this is command from mobile app
+        if self.device.get("sequence"):
+            return
+
+        if "setclose" in params:
+            self.internal_set_position(params["setclose"])
+        elif "switch" in params:
+            self.internal_set_motion(params["switch"])
+
+    async def async_stop_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {"switch": "pause"}, query_cloud=False)
+
+    async def async_open_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {"switch": "on"}, query_cloud=False)
+
+    async def async_close_cover(self, **kwargs):
+        await self.ewelink.send(self.device, {"switch": "off"}, query_cloud=False)
+
+    async def async_set_cover_position(self, position: int, **kwargs):
+        params = {"setclose": 100 - position}
+        await self.ewelink.send(self.device, params, query_cloud=False)
+
+
 # noinspection PyAbstractClass
 class XCoverDualR3(XCover):
     params = {"currLocation", "motorTurn"}

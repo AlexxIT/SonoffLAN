@@ -240,8 +240,9 @@ class XRegistry(XRegistryBase):
             return
 
         params = msg["params"]
+        device["sequence"] = seq = msg.get("sequence")
 
-        _LOGGER.debug(f"{did} <= Cloud3 | %s | {msg.get('sequence')}", params)
+        _LOGGER.debug(f"{did} <= Cloud3 | %s | {seq}", params)
 
         # process online change
         if "online" in params:
