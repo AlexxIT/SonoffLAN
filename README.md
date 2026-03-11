@@ -4,6 +4,9 @@
 
 Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devices with [eWeLink](https://www.ewelink.cc/en/) (original) firmware over LAN and/or Cloud.
 
+> [!CAUTION]
+> Starting in 2026, sensors for almost all eWeLink power devices will no longer be updated in real time. These updates do not support the local protocol and placed a heavy load on the eWeLink cloud. As a result, they were blocked by the cloud.
+
 **New features in version 3.0**
 
 - support Integration UI, Devices and Zones
@@ -342,6 +345,9 @@ sonoff:
 - "delayed" value will be checked for the above conditions every 30 seconds
 
 ## Sonoff Pow
+
+> [!IMPORTANT]  
+> Read the warning at the beginning of the readme file.
 
 Support `power`, `current` and `voltage` sensors via LAN and Cloud connections. Also support energy (consumption) sensor only with **Cloud** connection.
 
