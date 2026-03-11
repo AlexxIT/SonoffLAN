@@ -111,7 +111,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         XRegistry.config = conf = config[DOMAIN]
         if CONF_APPID in conf and CONF_APPSECRET in conf:
             APP[0] = conf[CONF_APPID]
-            APP[1] = conf[CONF_APPSECRET]
+            APP.append(conf[CONF_APPSECRET])
         if CONF_DEFAULT_CLASS in conf:
             core_devices.set_default_class(conf.get(CONF_DEFAULT_CLASS))
         if CONF_SENSORS in conf:
