@@ -338,6 +338,14 @@ class XRegistry(XRegistryBase):
             for device in self.devices.values():
                 try:
                     self.update_device(device)
+
+                    # checks if device still available via LAN
+                    if (
+                        self.local.online
+                        and "local_ts" in device
+                        and device["local_ts"] < time.time()
+                    ):
+                        asyncio.create_task(self.check_offline(device))
                 except Exception as e:
                     _LOGGER.warning("run_forever", exc_info=e)
 
@@ -374,13 +382,6 @@ class XRegistry(XRegistryBase):
                 device["active_outlet"] = outlet + 1 if outlet < 3 else 0
                 params = {"uiActive": {"outlet": outlet, "time": 60}}
                 self.schedule_ui_active(device, params)
-
-        # checks if device still available via LAN
-        if "local_ts" not in device or device["local_ts"] > time.time():
-            return
-
-        if self.local.online:
-            asyncio.create_task(self.check_offline(device))
 
     def can_cloud(self, device: XDevice) -> bool:
         if not self.cloud.online:
