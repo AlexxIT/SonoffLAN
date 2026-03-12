@@ -170,13 +170,13 @@ class XRegistryLocal(XRegistryBase):
         if "devicekey" in device:
             payload = encrypt(payload, device["devicekey"])
 
-        log = f"{device['deviceid']} => Local4 | {device.get('host', '')} | {params}"
+        host = device["host"]
+        if ":" not in host:
+            host += ":8081"  # default port, some devices may have another
+
+        log = f"{device['deviceid']} => Local4 | {host} | {command} {params or {}}"
 
         try:
-            host = device["host"]
-            if ":" not in host:
-                host += ":8081"  # default port, some devices may have another
-
             # noinspection HttpUrlsUsage
             r = await self.session.post(
                 f"http://{host}/zeroconf/{command}",
@@ -188,13 +188,15 @@ class XRegistryLocal(XRegistryBase):
             try:
                 # some devices don't support getState command
                 # https://github.com/AlexxIT/SonoffLAN/issues/1442
-                if command == "getState" and r.headers.get(CONTENT_TYPE) == "text/html":
-                    return "online"
+                if r.headers.get(CONTENT_TYPE) == "text/html":
+                    _LOGGER.debug(f"{log} <= text/html")
+                    if command == "getState":
+                        return "online"
+                    return "error"
 
                 resp: dict = await r.json()
+                _LOGGER.debug(f"{log} <= {resp}")
                 if resp["error"] == 0:
-                    _LOGGER.debug(f"{log} <= {resp}")
-
                     if "iv" in resp:
                         msg = {
                             "deviceid": device["deviceid"],
@@ -209,8 +211,10 @@ class XRegistryLocal(XRegistryBase):
 
                     return "online"
 
+                elif command == "getState":
+                    return "online"
+
                 else:
-                    _LOGGER.debug(f"{log} <= {resp}")
                     return "error"
 
             except Exception as e:
@@ -249,10 +253,7 @@ class XRegistryLocal(XRegistryBase):
 
             return "E#CRE"  # ConnectionResetError
 
-        except (
-            aiohttp.ServerDisconnectedError,
-            asyncio.CancelledError,
-        ) as e:
+        except (aiohttp.ServerDisconnectedError, asyncio.CancelledError) as e:
             _LOGGER.debug(log, exc_info=e)
             return "E#COS"
 

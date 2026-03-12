@@ -303,11 +303,9 @@ class XRegistry(XRegistryBase):
         # realid can be different from mainid for SPM-4RELAY
         realid = msg.get("subdevid", mainid)
         tag = "Local3" if "host" in msg else "Local0"
+        host = msg.get("host", "^^^")
 
-        _LOGGER.debug(
-            f"{realid} <= {tag} | {msg.get('host', '')} | %s | {msg.get('seq', '')}",
-            params,
-        )
+        _LOGGER.debug(f"{realid} <= {tag} | {host} | %s | {msg.get('seq', '')}", params)
 
         if "params" not in device:
             device["params"] = params
