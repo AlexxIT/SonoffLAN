@@ -154,10 +154,15 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                 device.update(v)
                 return
 
-            params_lan = params.pop("params_lan", None)
-            command_lan = params.pop("command_lan", None)
+            command = params.pop("command", None)
+            mode = params.pop("mode", None)
 
-            await registry.send(device, params, params_lan, command_lan)
+            if mode == "local":
+                await registry.local.send(device, params, command)
+            elif mode == "cloud":
+                await registry.cloud.send(device, params)
+            else:
+                await registry.send(device, params, cmd_lan=command)
 
         elif len(deviceid) == 6:
             await cameras.send(deviceid, params["cmd"])
