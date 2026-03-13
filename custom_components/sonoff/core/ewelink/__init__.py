@@ -190,12 +190,15 @@ class XRegistry(XRegistryBase):
         if params := device.pop("params_bulk", None):
             return await self.send(device, params)
 
-    async def send_cloud(self, device: XDevice, params: dict = None, query=True):
+    async def send_cloud(
+        self, device: XDevice, params: dict = None, query=True
+    ) -> str | None:
         if not self.can_cloud(device):
-            return
+            return None
         ok = await self.cloud.send(device, params)
         if ok == "online" and query and params:
             await self.cloud.send(device, timeout=0)
+        return ok
 
     async def check_offline(self, device: XDevice):
         if not device.get("host"):
