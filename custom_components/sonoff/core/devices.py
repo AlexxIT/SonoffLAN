@@ -555,6 +555,8 @@ DEVICES = {
         Battery,
         ZRSSI,
     ],
+    # ZbBridge-U https://github.com/AlexxIT/SonoffLAN/issues/1494
+    243: [LED],
     # https://github.com/AlexxIT/SonoffLAN/issues/1634
     258: [XCover, LED, RSSI],
     # CK-BL602-SWP1-02(262), https://github.com/AlexxIT/SonoffLAN/issues/1630
