@@ -69,6 +69,7 @@ async def setup_debug(hass: HomeAssistant, logger: Logger):
     logger.debug(f"SysInfo: {info}")
 
     integration.manifest["issue_tracker"] = view.url
+    integration.__dict__.pop("manifest_json_fragment", None)  # drop cached_property
 
 
 class DebugView(logging.Handler, HomeAssistantView):
