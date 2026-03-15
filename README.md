@@ -7,7 +7,33 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 > [!CAUTION]
 > Starting in 2026, sensors for almost all eWeLink power devices will no longer be updated in real time. These updates do not support the local protocol and placed a heavy load on the eWeLink cloud. As a result, they were blocked by the cloud.
 
-**New features in version 3.0**
+## Table of contents
+- [New features in version 3.0](#new-features-in-version-30)
+- [Pros](#pros)
+- [Tested Devices](#tested-devices)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Posting new issues](#posting-new-issues)
+- [Configuration UI](#configuration-ui)
+  * [Mode](#mode)
+  * [Debug page](#debug-page)
+  * [Homes](#homes)
+- [Configuration YAML](#configuration-yaml)
+  * [Custom device_class](#custom-device-class)
+  * [Custom devices](#custom-devices)
+  * [Custom sensors](#custom-sensors)
+  * [Force update](#force-update)
+  * [Preventing DB size growth](#preventing-db-size-growth)
+- [Sonoff Pow](#sonoff-pow)
+- [Sonoff TH](#sonoff-th)
+- [Sonoff RF Bridge 433](#sonoff-rf-bridge-433)
+- [Sonoff GK-200MP2-B Camera](#sonoff-gk-200mp2-b-camera)
+- [Common problems in only LAN mode](#common-problems-in-only-lan-mode)
+- [Raw commands](#raw-commands)
+- [Getting devicekey manually](#getting-devicekey-manually)
+- [Useful Links](#useful-links)
+
+## New features in version 3.0
 
 - support Integration UI, Devices and Zones
 - support new [eWeLink API](https://coolkit-technologies.github.io/eWeLink-API/#/en/PlatformOverview)
@@ -28,7 +54,7 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 - support ZigBee Bridge and Devices
 - added new [debug mode](#debug-page) for troubleshooting
 
-**Pros**
+## Pros
 
 - work with original eWeLink / Sonoff firmware, no need to flash devices
 - work over Local Network and/or Cloud Server
@@ -140,7 +166,7 @@ You can setup multiple integrations with different ewelink accounts.
 - Problems: another Home Assistant, Homebridge, [eWeLink addon](https://www.ewelink.cc/en/2021/06/23/ewelink-home-assistant-add-on-github-archive/), etc.
 - No Problems: latest [eWeLink mobile app v4+](https://www.ewelink.cc/en/)
 
-## Issues
+## Posting new issues
 
 Before posting new issue:
 
