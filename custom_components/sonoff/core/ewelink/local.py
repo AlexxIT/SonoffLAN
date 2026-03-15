@@ -155,10 +155,11 @@ class XRegistryLocal(XRegistryBase):
         # known commands for DIY: switch, startup, pulse, sledonline
         # other commands: switch, switches, transmit, dimmable, light, fan
 
+        # If the command is empty, we try to retrieve it from the parameters
         if command is None:
-            if params is None:
-                return "noquery"
-            command = next(iter(params))
+            # If the parameters are empty, use the dummy command
+            # Even if the device doesn't support it, it will still respond in some way
+            command = next(iter(params)) if params else "getState"
 
         payload = {
             "sequence": sequence or await self.sequence(),
