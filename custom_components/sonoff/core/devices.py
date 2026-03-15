@@ -55,6 +55,7 @@ from ..remote import XRemote
 from ..select import XSelectStartup, XStartup
 from ..sensor import (
     XCPUTemperature,
+    XConnection,
     XEnergySensor,
     XEnergySensorDualR3,
     XEnergySensorPOWR3,
@@ -759,6 +760,9 @@ def get_spec(device: dict) -> list:
 
     if "device_class" in device:
         classes = get_custom_spec(classes, device["device_class"])
+
+    if XConnection not in classes:
+        classes.append(XConnection)
 
     return classes
 

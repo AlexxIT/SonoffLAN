@@ -11,6 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 ENTITY_CATEGORIES = {
     "battery": EntityCategory.DIAGNOSTIC,
     "battery_voltage": EntityCategory.DIAGNOSTIC,
+    "connection": EntityCategory.DIAGNOSTIC,
     "led": EntityCategory.CONFIG,
     "pulse": EntityCategory.CONFIG,
     "pulseWidth": EntityCategory.CONFIG,
@@ -20,6 +21,7 @@ ENTITY_CATEGORIES = {
 }
 
 ICONS = {
+    "connection": "mdi:network",
     "dusty": "mdi:cloud",
     "led": "mdi:led-off",
     "noise": "mdi:bell-ring",

@@ -462,3 +462,24 @@ class XCPUTemperature(XSensor):
     def set_state(self, params: dict = None, value: float = None):
         value = params.get("cpuInfo", {}).get("temperature")
         XSensor.set_state(self, value=value)
+
+
+class XConnection(XEntity, SensorEntity):
+    uid = "connection"
+
+    _attr_available = True
+    _attr_device_class = SensorDeviceClass.ENUM
+
+    def internal_update(self, params: dict = None):
+        cloud = self.ewelink.can_cloud(self.device)
+        local = self.ewelink.can_local(self.device)
+
+        if cloud:
+            value = "both" if local else "cloud"
+        else:
+            value = "local" if local else "none"
+
+        if self._attr_native_value != value:
+            self._attr_native_value = value
+            if self.hass:
+                self._async_write_ha_state()
