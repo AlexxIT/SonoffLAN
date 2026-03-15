@@ -85,6 +85,7 @@ class XEntity(Entity):
             model=device.get("productModel"),
             name=device["name"],
             sw_version=params.get("fwVersion"),
+            hw_version=device.get("extra", {}).get("uiid"),
         )
 
         try:
