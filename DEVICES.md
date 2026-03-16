@@ -63,8 +63,8 @@
 |                               | 107  | 1ch      |             |                 |                                               |
 | DUALR3                        | 126  | pow      | 1.6.1       | multifun_switch | Sonoff DualR3                                 |
 |                               | 127  | climate  |             |                 |                                               |
-| SPM-Main                      | 128  |          | 1.3.0       |                 | SPM-Main                                      |
-| GD32-SM4(130)                 | 130  |          |             |                 | SPM-4Relay                                    |
+| SPM-Main                      | 128  | pow?     | 1.3.0       |                 | SPM-Main                                      |
+| GD32-SM4(130)                 | 130  | pow?     |             |                 | SPM-4Relay                                    |
 |                               | 133  | panel    |             |                 | Sonoff NS Panel                               |
 |                               | 135  | light    |             |                 | Sonoff B02-BL                                 |
 | B05-BL                        | 136  | light    | 1.7.0       | light           | Sonoff B05-BL                                 |
@@ -77,7 +77,7 @@
 | DW2-Wi-Fi-L                   | 154  |          | 1000.2.1130 | ---             |                                               |
 |                               | 160  | 1ch      |             |                 | Sonoff SwitchMan M5-1C                        |
 |                               | 161  | 2ch      |             |                 | Sonoff SwitchMan M5-2C                        |
-|                               | 162  | 3ch      |             |                 | Sonoff SwitchMan M5-3C                        |
+| M5-3C-120W                    | 162  | 3ch      | 1.2.0       | plug            | Sonoff SwitchMan M5-3C                        |
 |                               | 165  | 2ch      |             |                 | DualR3 Lite, without power consumption        |
 | ZBBridge-P                    | 168  |          | 3.0.0       | zigbee_gateway  |                                               |
 |                               | 173  |          |             |                 | Sonoff L3-5M-P                                |
@@ -85,7 +85,7 @@
 |                               | 177  | button   |             |                 | Sonoff S-Mate                                 |
 | THR316D                       | 181  | th       | 1.3.0       | th_plug         | Auto report every 5 sec                       |
 | THR320D                       | 181  | th       | 1.3.0       | th_plug         | Auto report every 5 sec                       |
-|                               | 182  |          |             |                 | Sonoff S40                                    |
+|                               | 182  | pow      |             |                 | Sonoff S40                                    |
 | CK-BL602-SWP1-01(182)         | 182  | pow      | 1.3.1       | ---             |                                               |
 | POWCT                         | 190  | pow      | 1.3.1       | plug            |                                               |
 | POWR320D                      | 190  | pow      | 1.2.0       | plug            |
@@ -101,7 +101,7 @@
 | CK-BK7238-W105SE10-01-HB(242) | 242  | sensor   | 1.0.0       |                 |                                               |
 | ZbBridge-U                    | 243  | bridge   | 1.4.0       |                 |                                               |
 | MINI-RBS                      | 258  | cover    | 1.0.2       | plug            |                                               |
-| CK-BL602-SWP1-02(262)         | 262  | pow      | 1.0.0       | ---             |                                               |
+| CK-BL602-SWP1-02(262)         | 262  | pow      | 1.0.0       | ???             |                                               |
 | BASIC-1GS                     | 268  | 1ch      | 1.0.2       | plug            |                                               |
 | MINI-2GS                      | 275  | 2ch      | 1.0.0       | plug            |                                               |
 |                               | 276  | pow      | 1.0.3       |                 | S61STPF                                       |
