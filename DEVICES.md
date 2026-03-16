@@ -1,12 +1,15 @@
 # Devices
 
-If you see "local type" - the device supports the **local protocol**. If you see a dash there, the device does not support it and works **only via the cloud**. If you see a blank space, it simply means there is **no verified information** about the device.
+- **Model** - can be completely different, but what matters much more is what your device's UIID is.
+- **UIID** - Model ID. In the integration, this is displayed as "Hardware firmware". Different devices with the same ID will have the same functionality. Including the ability to operate in local mode.
+- **Tag** - Just a label, no specifications.
+- **Local Type** - A text value indicates that the device supports the **local protocol**. If you see a dash there, the device does not support it and works **only via the cloud**. If you see a blank space, it simply means there is **no verified information** about the device.
 
 | Model                         | UIID | Tag      | Firmware    | Local Type      | Comment                                       |
 |-------------------------------|------|----------|-------------|-----------------|-----------------------------------------------|
 | BASICR2                       | 1    | 1ch      | 3.5.1       |                 |                                               |
 | BASIC_R3                      | 1    | 1ch      | 3.6.0       |                 |                                               |
-| M601-1                        | 2    | 2ch      | 3.4.0       | plug            |                                               |
+| M601-1                        | 1    | 1ch      | 3.4.0       | plug            |                                               |
 | MINI                          | 1    | 1ch      | 3.8.0       | plug            |                                               |
 | RE5V1C                        | 1    | 1ch      | 3.5.1       | plug            |                                               |
 | RFR2-8285                     | 1    | 1ch      | 3.8.2       | plug            |                                               |
@@ -35,6 +38,7 @@ If you see "local type" - the device supports the **local protocol**. If you see
 | POWR2                         | 32   | pow      | 3.7.0       | enhanced_plug   |                                               |
 | POWR3                         | 32   | pow      | 1.2.1       | enhanced_plug   |                                               |
 | PSF-X67                       | 32   | pow      | 3.6.4       | enhanced_plug   |                                               |
+| ZJSB9-80 J                    | 32   | pow      | 3.6.4       | enhanced_plug   |                                               |
 |                               | 33   | light    |             |                 | Sonoff L1                                     |
 | iFan03                        | 34   | fan      | 3.6.0       | fan_light       |                                               |
 | iFan04                        | 34   | fan      | 3.6.0       | fan_light       |                                               |
