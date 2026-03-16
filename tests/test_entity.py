@@ -98,7 +98,7 @@ def test_simple_switch():
             },
         }
     )
-    assert len(entities) == 5
+    assert len(entities) == 6
 
     switch: XSwitch = entities[0]
     assert switch.name == "Kitchen"
@@ -605,7 +605,7 @@ def test_rfbridge():
 
     assert logger_warning[0][0] == "Can't find payload_off: dummy"
 
-    assert len(entities) == 5
+    assert len(entities) == 6
 
     alarm: XRemoteSensor = next(
         e for e in entities if isinstance(e, XRemoteSensor) and e.name == "Custom1"
