@@ -45,10 +45,11 @@ from custom_components.sonoff.light import (
 from custom_components.sonoff.number import XNumber, XPulseWidth
 from custom_components.sonoff.select import XSelectStartup
 from custom_components.sonoff.sensor import (
+    XButtonKey,
+    XButtonLocalKey,
     XEnergySensorDualR3,
     XEnergyTotal,
     XOutdoorTempNS,
-    XRemoteButton,
     XSensor,
     XT5Action,
     XTempCorrection,
@@ -679,7 +680,7 @@ def test_zigbee_button():
         }
     )
 
-    button: XRemoteButton = entities[0]
+    button: XButtonKey = entities[0]
     assert button.entity_id == "sonoff.sonoff_1000123abc"
     assert button.name == "Device1"
     assert button.state == ""
@@ -713,7 +714,7 @@ def test_sonoff_r5():
         ]
     )
 
-    button: XRemoteButton = entities[0]
+    button: XButtonKey = entities[0]
     assert button.state == ""
 
     button.ewelink.cloud.dispatcher_send(
@@ -1634,7 +1635,7 @@ def test_minir4():
     switch: SwitchEntity = next(e for e in entities if e.uid == "detach")
     assert switch.state == "on"
 
-    action: XRemoteButton = next(e for e in entities if e.uid == "action")
+    action: XButtonKey = next(e for e in entities if e.uid == "action")
     assert action.state == ""
 
     action.internal_update({"key": 0})
@@ -2253,9 +2254,39 @@ def test_zb2gs():
         }
     )
 
-    button: XRemoteButton = next(e for e in entities if e.uid == "action")
+    button: XButtonLocalKey = next(e for e in entities if e.uid == "action")
     assert button.state == ""
 
+    button.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 0}}},
+    )
+    assert button.state == "button_1_single"
+
+
+def test_m5_matter():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1769
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 162},
+            "params": {"localKeyPass": {"key": 0, "outlet": 0}},
+        }
+    )
+
+    button: XButtonLocalKey = next(e for e in entities if e.uid == "action")
+    assert button.state == ""
+
+    # this is local event without trigger
+    button.ewelink.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"triggerType": 0, "localKeyPass": {"key": 0, "outlet": 0}},
+        },
+    )
+    assert button.state == ""
+
+    # this is cloud event with trigger
     button.ewelink.cloud.dispatcher_send(
         SIGNAL_UPDATE,
         {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 0}}},

@@ -54,6 +54,8 @@ from ..number import XPulseWidth, XSensitivity, XTempCorrectionNumber
 from ..remote import XRemote
 from ..select import XSelectStartup, XStartup
 from ..sensor import (
+    XButtonKey,
+    XButtonLocalKey,
     XCPUTemperature,
     XConnection,
     XEnergySensor,
@@ -64,7 +66,6 @@ from ..sensor import (
     XHumCorrection,
     XHumidityTH,
     XOutdoorTempNS,
-    XRemoteButton,
     XSensor,
     XT5Action,
     XTempCorrection,
@@ -189,10 +190,6 @@ DoorLock = spec(XBinarySensor, param="lock", uid="", default_class="door")
 
 XT5Alarm = spec(XButton, param="soundAction", value=1, uid="alarm", enabled=False)
 XT5Bell = spec(XButton, param="soundAction", value=2, uid="bell", enabled=False)
-
-# XRemoteButton - used when the button is the main element of the device
-# XRemoteAction - used when the button is an additional element of the device
-XRemoteAction = spec(XRemoteButton, uid="action")
 
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
 DEVICES = {
@@ -403,16 +400,16 @@ DEVICES = {
         LED,
         RSSI,
         spec(XIntSwitch, param="relaySeparation", uid="detach", enabled=False),
-        XRemoteAction,
+        spec(XButtonKey, uid="action"),
     ],
     # DW2-Wi-Fi-L, https://github.com/AlexxIT/SonoffLAN/issues/808
     154: [XWiFiDoor, Battery, RSSI],
     # Sonoff SwitchMan M5-1C, https://github.com/AlexxIT/SonoffLAN/issues/1432
-    160: SPEC_1CH,
+    160: [Switch1, LED, RSSI, spec(XButtonLocalKey, uid="action")],
     # Sonoff SwitchMan M5-2C, https://github.com/AlexxIT/SonoffLAN/issues/1432
-    161: SPEC_2CH,
+    161: [Switch1, Switch2, LED, RSSI, spec(XButtonLocalKey, uid="action")],
     # Sonoff SwitchMan M5-3C, https://github.com/AlexxIT/SonoffLAN/issues/659
-    162: SPEC_3CH,
+    162: [Switch1, Switch2, Switch3, LED, RSSI, spec(XButtonLocalKey, uid="action")],
     # DualR3 Lite, without power consumption
     165: [
         Switch1,
@@ -425,10 +422,10 @@ DEVICES = {
     168: [RSSI],
     # Sonoff L3-5M-P
     173: [XLightL3, RSSI],
-    # Sonoff R5 (6-key remote)
-    174: [XRemoteButton],
-    # Sonoff S-Mate
-    177: [XRemoteButton],
+    # Sonoff R5 (6-key remote) https://github.com/AlexxIT/SonoffLAN/issues/731
+    174: [XButtonKey],
+    # Sonoff S-Mate https://github.com/AlexxIT/SonoffLAN/issues/731
+    177: [XButtonKey],
     # Sonoff THR320D or THR316D
     181: [
         XSwitchTH,
@@ -582,7 +579,7 @@ DEVICES = {
         Startup2,
         LED,
         RSSI,
-        XRemoteAction,
+        spec(XButtonLocalKey, uid="action"),
     ],
     # Sonoff S61STPF:
     276: [
@@ -598,7 +595,7 @@ DEVICES = {
         RSSI,
     ],
     # zigbee_ON_OFF_SWITCH_1000
-    1000: [XRemoteButton, Battery],
+    1000: [XButtonKey, Battery],
     # ZCL_HA_DEVICEID_ON_OFF_LIGHT, https://github.com/AlexxIT/SonoffLAN/issues/1195
     1256: [XSwitch],
     # ZigbeeWhiteLight
@@ -636,7 +633,7 @@ DEVICES = {
         spec(XZigbeeSwitches, channel=2, uid="3"),
         spec(XZigbeeSwitches, channel=3, uid="4"),
     ],
-    7000: [XRemoteButton, Battery],
+    7000: [XButtonKey, Battery],
     # SNZB-03P, https://github.com/AlexxIT/SonoffLAN/issues/1435
     7002: [XZigbeeMotion, XLightSensor, Battery, ZRSSI],
     # SNZB-04P, https://github.com/AlexxIT/SonoffLAN/issues/1439
@@ -706,7 +703,7 @@ DEVICES = {
         ZRSSI,
     ],
     # MINI-ZB2GS-L https://github.com/AlexxIT/SonoffLAN/issues/1701
-    7029: [Switch1, Switch2, XRemoteAction],
+    7029: [Switch1, Switch2, spec(XButtonLocalKey, uid="action")],
     # S60ZBTPF, https://github.com/AlexxIT/SonoffLAN/issues/1615
     7032: [
         Switch1,
