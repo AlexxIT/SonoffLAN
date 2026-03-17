@@ -17,7 +17,7 @@
 | S26R2                         | 1    | 1ch      | 3.8.0       | plug            |                                               |
 | M602-1                        | 2    | 2ch      | 3.4.1       | strip           |                                               |
 |                               | 3    | 3ch      |             |                 |                                               |
-|                               | 4    | 4ch      |             |                 |                                               |
+| 4CH Pro                       | 4    | 4ch      | 3.8.2       | strip           |                                               |
 | Sonoff Pow                    | 5    | pow      | 2.6.1       | ---             | Sonoff POW (first)                            |
 | Slampher_RF                   | 6    | 1ch      | 3.8.0       |                 |                                               |
 | TX1C                          | 6    | 1ch      | 3.8.0       | plug            |                                               |
@@ -70,16 +70,17 @@
 | B05-BL                        | 136  | light    | 1.7.0       | light           | Sonoff B05-BL                                 |
 | L2                            | 137  | light    | 1000.2.1050 | ---             |                                               |
 | BASICR4                       | 138  | 1ch      | 1.1.0       | plug            |                                               |
-| CK-BL602-4SW-HS-03(138)-1     | 138  |          | 1.3.1       | plug            |                                               |
-| CK-BL602-4SW-HS(138)          | 138  |          | 1.6.1       | plug            |                                               |
-| MINI-D                        | 138  |          | 1.0.0       | plug            |                                               |
-| MINIR4M                       | 138  |          | 1.2.0       | plug            |                                               |
-| DW2-Wi-Fi-L                   | 154  |          | 1000.2.1130 | ---             |                                               |
+| CK-BL602-4SW-HS-03(138)-1     | 138  | 1ch      | 1.3.1       | plug            |                                               |
+| CK-BL602-4SW-HS(138)          | 138  | 1ch      | 1.6.1       | plug            |                                               |
+| MINI-D                        | 138  | 1ch      | 1.0.0       | plug            |                                               |
+| MINIR4                        | 138  | 1ch      | 1.2.0       | plug            |                                               |
+| MINIR4M                       | 138  | 1ch      | 1.2.0       | plug            |                                               |
+| DW2-Wi-Fi-L                   | 154  | sensor   | 1000.2.1130 | ---             |                                               |
 |                               | 160  | 1ch      |             |                 | Sonoff SwitchMan M5-1C                        |
 |                               | 161  | 2ch      |             |                 | Sonoff SwitchMan M5-2C                        |
 | M5-3C-120W                    | 162  | 3ch      | 1.2.0       | plug            | Sonoff SwitchMan M5-3C                        |
 |                               | 165  | 2ch      |             |                 | DualR3 Lite, without power consumption        |
-| ZBBridge-P                    | 168  |          | 3.0.0       | zigbee_gateway  |                                               |
+| ZBBridge-P                    | 168  | bridge   | 3.0.0       | zigbee_gateway  |                                               |
 |                               | 173  |          |             |                 | Sonoff L3-5M-P                                |
 |                               | 174  | button   |             |                 | Sonoff R5 (6-key remote)                      |
 |                               | 177  | button   |             |                 | Sonoff S-Mate                                 |
@@ -88,7 +89,7 @@
 |                               | 182  | pow      |             |                 | Sonoff S40                                    |
 | CK-BL602-SWP1-01(182)         | 182  | pow      | 1.3.1       | ---             |                                               |
 | POWCT                         | 190  | pow      | 1.3.1       | plug            |                                               |
-| POWR320D                      | 190  | pow      | 1.2.0       | plug            |
+| POWR320D                      | 190  | pow      | 1.2.0       | plug            |                                               |
 | S60TPF                        | 190  | pow      | 1.2.0       | plug            | Respond with current state to any lan request |
 |                               | 195  | panel    |             |                 | NSPanel Pro                                   |
 | T5-1C-86                      | 209  | 1ch      |             |                 | Sonoff TX ULTIMATE                            |
@@ -97,12 +98,19 @@
 | T5-4C-86                      | 212  | 4ch      |             |                 | Sonoff TX ULTIMATE                            |
 | CK-BL602-PCSW-01(225)         | 225  | 1ch      | 1.1.0       | plug            |                                               |
 | CK-BL602-W102SW18-01(226)     | 226  | pow      | 1.2.1       | ---             |                                               |
-|                               | 228  | panel    |             |                 | NSPanel Pro 120                               |
+| NSPanel120PB                  | 228  | panel    |             |                 | NSPanel Pro 120                               |
 | CK-BK7238-W105SE10-01-HB(242) | 242  | sensor   | 1.0.0       |                 |                                               |
-| ZbBridge-U                    | 243  | bridge   | 1.4.0       |                 |                                               |
+| ZbBridge-U                    | 243  | bridge   | 1.4.0       | ---             |                                               |
 | MINI-RBS                      | 258  | cover    | 1.0.2       | plug            |                                               |
 | CK-BL602-SWP1-02(262)         | 262  | pow      | 1.0.0       | ???             |                                               |
 | BASIC-1GS                     | 268  | 1ch      | 1.0.2       | plug            |                                               |
 | MINI-2GS                      | 275  | 2ch      | 1.0.0       | plug            |                                               |
-|                               | 276  | pow      | 1.0.3       |                 | S61STPF                                       |
+| S61STPF                       | 276  | pow      | 1.0.3       | ---             | Timeout on any local command!                 |
+| SNZB-03P                      | 7002 |          | 2.2.1       |                 |                                               |
+| SNZB-04P                      | 7003 |          | 2.2.0       |                 |                                               |
+| ZBMINIL2                      | 7004 |          | 1.0.14      |                 |                                               |
+| ZBMicro                       | 7010 |          | 1.0.5       |                 |                                               |
+| SNZB-02P                      | 7014 |          | 2.2.0       |                 |                                               |
 | S60ZBTPF                      | 7032 | pow      | 2.0.2       | ---             |                                               |
+| SNZB-02LD                     | 7033 |          | 1.1.0       |                 |                                               |
+| SNZB-02DR2                    | 7038 |          | 1.0.2       |                 |                                               |
