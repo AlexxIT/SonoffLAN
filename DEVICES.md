@@ -9,12 +9,15 @@
 |-------------------------------|------|----------|-------------|-----------------|-----------------------------------------------|
 | BASICR2                       | 1    | 1ch      | 3.5.1       |                 |                                               |
 | BASIC_R3                      | 1    | 1ch      | 3.6.0       |                 |                                               |
+| Basic2                        | 1    | 1ch      | 3.8.2       | ???             |                                               |
 | M601-1                        | 1    | 1ch      | 3.4.0       | plug            |                                               |
 | MINI                          | 1    | 1ch      | 3.8.0       | plug            |                                               |
 | RE5V1C                        | 1    | 1ch      | 3.5.1       | plug            |                                               |
 | RFR2-8285                     | 1    | 1ch      | 3.8.2       | plug            |                                               |
 | S26R1                         | 1    | 1ch      | 3.7.6       |                 |                                               |
 | S26R2                         | 1    | 1ch      | 3.8.0       | plug            |                                               |
+| SA-018                        | 1    | 1ch      | 3.8.1       | plug            |                                               |
+| SANTTON_2                     | 1    | 1ch      | 3.5.1       | plug            |                                               |
 | M602-1                        | 2    | 2ch      | 3.4.1       | strip           |                                               |
 |                               | 3    | 3ch      |             |                 |                                               |
 | 4CH Pro                       | 4    | 4ch      | 3.8.2       | strip           |                                               |
@@ -26,12 +29,13 @@
 |                               | 9    | 4ch      |             |                 |                                               |
 | BCM500DS-KZW                  | 11   | cover    | 3.4.3       | ---             |                                               |
 | Basic                         | 14   | 1ch      | 3.5.0       | plug            |                                               |
-| Sonoff                        | 14   | 1ch      | 3.5.0       | plug            |                                               |
+| Sonoff                        | 14   | 1ch      | 3.8.1       | plug            |                                               |
 | TH10R2                        | 15   | th       | 3.5.0       | ???             | Sonoff TH16                                   |
 |                               | 18   | sensor   | 2.7.0       |                 |                                               |
 |                               | 22   | light    |             | ---             | Sonoff B1                                     |
 | YB-01                         | 25   | diffuser | 3.4.0       |                 | Essential Oils Diffuser s                     |
 | RFBridge                      | 28   | bridge   | 3.5.0       |                 | Sonoff RF Brigde 433                          |
+| RFBridge433                   | 28   | bridge   | 3.6.2       | rf              |                                               |
 |                               | 29   | 2ch      |             |                 |                                               |
 |                               | 30   | 3ch      |             |                 |                                               |
 |                               | 31   | 4ch      |             |                 |                                               |
@@ -48,9 +52,10 @@
 | L1                            | 59   | light    | 3.4.3       | ---             | Sonoff L1                                     |
 | ZBBridge                      | 66   | bridge   | 1.1.0       |                 | ZigBee Bridge                                 |
 | KING-Q1                       | 67   | cover    | 3.4.3       | ---             | KingArt Garage Door Opener                    |
-| Micro                         | 77   | usb      | 3.7.1       |                 | Sonoff Micro                                  |
+| Micro                         | 77   | usb      | 3.7.1       | switch_radar    | Sonoff Micro                                  |
 | Micro-CFH                     | 77   | usb      | 3.6.0       | strip           |                                               |
 | Single...                     | 78   | 1ch      |             |                 |                                               |
+| GTWS78                        | 78   |          | 1.4.1       | strip           | AltoBeam GTWS78 #1160                         |
 |                               | 81   | 1ch      |             |                 |                                               |
 |                               | 82   | 2ch      |             |                 |                                               |
 |                               | 83   | 3ch      |             |                 |                                               |
@@ -63,8 +68,8 @@
 |                               | 107  | 1ch      |             |                 |                                               |
 | DUALR3                        | 126  | pow      | 1.6.1       | multifun_switch | Sonoff DualR3                                 |
 |                               | 127  | climate  |             |                 |                                               |
-| SPM-Main                      | 128  | pow?     | 1.3.0       |                 | SPM-Main                                      |
-| GD32-SM4(130)                 | 130  | pow?     |             |                 | SPM-4Relay                                    |
+| SPM-Main                      | 128  | bridge   | 1.3.0       | meter           | SPM-Main                                      |
+| GD32-SM4(130)                 | 130  | pow      | 1.3.0       | ---             | SPM-4Relay                                    |
 |                               | 133  | panel    |             |                 | Sonoff NS Panel                               |
 |                               | 135  | light    |             |                 | Sonoff B02-BL                                 |
 | B05-BL                        | 136  | light    | 1.7.0       | light           | Sonoff B05-BL                                 |
@@ -75,6 +80,7 @@
 | MINI-D                        | 138  | 1ch      | 1.0.0       | plug            |                                               |
 | MINIR4                        | 138  | 1ch      | 1.2.0       | plug            |                                               |
 | MINIR4M                       | 138  | 1ch      | 1.2.0       | plug            |                                               |
+| CK-BL602-4SW-HS(141)          | 141  | 4ch      | 1.6.1       | ---             |                                               |
 | DW2-Wi-Fi-L                   | 154  | sensor   | 1000.2.1130 | ---             |                                               |
 |                               | 160  | 1ch      |             |                 | Sonoff SwitchMan M5-1C                        |
 |                               | 161  | 2ch      |             |                 | Sonoff SwitchMan M5-2C                        |
