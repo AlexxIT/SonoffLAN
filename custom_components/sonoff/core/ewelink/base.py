@@ -26,6 +26,7 @@ class XDevice(TypedDict, total=False):
     devicekey: Optional[str]  # required for encrypted local devices (not DIY)
 
     params_bulk: Optional[dict]  # helper for send_bulk commands
+    active_outlet: Optional[int]  # required for SPM-4Relay power updates
 
     localfail: Optional[int]
     localrecv: Optional[float]

@@ -201,7 +201,7 @@ class XRegistryLocal(XRegistryBase):
                     if "iv" in resp:
                         msg = {
                             "deviceid": device["deviceid"],
-                            "localtype": device["localtype"],
+                            "localtype": device.get("localtype"),
                             "seq": resp["seq"],
                             "data": resp["data"],
                             "iv": resp["iv"],
@@ -264,10 +264,17 @@ class XRegistryLocal(XRegistryBase):
 
     @staticmethod
     def decrypt_msg(msg: dict, devicekey: str = None) -> dict:
+        # Fix Sonoff SPM-Main empty message {'seq': ***, 'data': '', 'iv': '***'}
+        if msg["data"] == "":
+            return {}
+
         data = decrypt(msg, devicekey)
+
         # Fix Sonoff RF Bridge sintax bug
         if data and data.startswith(b'{"rf'):
             data = data.replace(b'"="', b'":"')
-        # fix https://github.com/AlexxIT/SonoffLAN/issues/1160
+
+        # Fix https://github.com/AlexxIT/SonoffLAN/issues/1160
         data = data.rstrip(b"\x02")
+
         return json.loads(data)

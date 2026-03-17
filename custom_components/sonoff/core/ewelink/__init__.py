@@ -268,7 +268,7 @@ class XRegistry(XRegistryBase):
                 # decrypt payload for known device with devicekey
                 params = self.local.decrypt_msg(msg, device["devicekey"])
             except Exception as e:
-                _LOGGER.debug("Can't decrypt message", exc_info=e)
+                _LOGGER.debug("Can't decrypt message %s", msg, exc_info=e)
                 return
 
         elif "devicekey" in device:
@@ -310,26 +310,29 @@ class XRegistry(XRegistryBase):
         while True:
             ts = time.time()
             for device in self.devices.values():
-                if "local" not in device:
-                    continue
                 try:
-                    self.update_device(device, ts)
+                    if "local" in device:
+                        self.update_local(device, ts)
+                    elif parent := device.get("parent"):
+                        # Support childrens only for SPM-Main (128)
+                        if parent.get("localtype") == "meter":
+                            self.update_local_child(parent, device)
                 except Exception as e:
                     _LOGGER.warning("run_forever", exc_info=e)
             await asyncio.sleep(5)
 
-    def update_device(self, device: XDevice, ts: float):
+    def update_local(self, device: XDevice, ts: float):
         if (
             "extra" in device
             and ts >= device["localrecv"] + 4  # one second less than 5 second
             and device["localfail"] < 3  # no more than 3 times
         ):
             uiid = device["extra"]["uiid"]
-            if uiid in (5, 15, 32, 181, 182, 190, 226, 262, 276):
+            # TH10R2 (15) and THR316D/THR320D (181) shouldn't be here, but anyway
+            if uiid in (15, 32, 181, 182, 190, 262):
                 if led := device["params"].get("sledOnline"):
-                    asyncio.create_task(
-                        self.send_local(device, "sledonline", {"sledOnline": led})
-                    )
+                    params = {"sledOnline": led}
+                    asyncio.create_task(self.send_local(device, "sledonline", params))
                     return
             elif uiid == 126:
                 asyncio.create_task(self.send_local(device, "statistics"))
@@ -337,6 +340,17 @@ class XRegistry(XRegistryBase):
 
         if ts >= device["localping"]:
             asyncio.create_task(self.send_local(device))
+
+    def update_local_child(self, parent: XDevice | dict, device: XDevice):
+        if parent["localfail"] >= 3:
+            return
+        outlet = device.get("active_outlet", 0)
+        device["active_outlet"] = outlet + 1 if outlet < 3 else 0
+        params = {
+            "subDevId": device["deviceid"],
+            "uiActive": {"outlet": outlet, "time": 60},
+        }
+        asyncio.create_task(self.send_local(parent, "uiActive", params))
 
     def can_cloud(self, device: XDevice) -> bool:
         if not self.cloud.online:
