@@ -230,16 +230,24 @@ class XEnergySensor(XEntity, SensorEntity):
                 "history": history[0 : self.report_history]
             }
 
+    def can_update(self) -> bool:
+        return self.available and self.ewelink.cloud.online
+
+    async def get_update(self) -> bool:
+        ok = await self.ewelink.send_cloud(self.device, self.get_params, query=False)
+        return ok == "online"
+
     async def async_update(self):
         ts = time.time()
-        if ts < self.next_ts or not self.available or not self.ewelink.cloud.online:
-            return
-        ok = await self.ewelink.send_cloud(self.device, self.get_params, query=False)
-        if ok == "online":
+        if ts > self.next_ts and self.can_update() and await self.get_update():
             self.next_ts = ts + self.report_dt
 
 
 class XEnergySensorDualR3(XEnergySensor, SensorEntity):
+    def __init__(self, ewelink: XRegistry, device: dict):
+        XEnergySensor.__init__(self, ewelink, device)
+        device.setdefault("active_energy", []).append(self.uid)
+
     @staticmethod
     def decode_energy(value: str) -> Optional[list]:
         try:
@@ -251,6 +259,19 @@ class XEnergySensorDualR3(XEnergySensor, SensorEntity):
             ]
         except Exception:
             return None
+
+    def can_update(self) -> bool:
+        if XEnergySensor.can_update(self):
+            # Allow only one sensor update at a time
+            return self.device["active_energy"][0] == self.uid
+        return False
+
+    async def get_update(self) -> bool:
+        if await XEnergySensor.get_update(self):
+            active = self.device["active_energy"]
+            active.append(active.pop(0))
+            return True
+        return False
 
 
 class XEnergySensorPOWR3(XEnergySensor, SensorEntity):
@@ -264,14 +285,13 @@ class XEnergySensorPOWR3(XEnergySensor, SensorEntity):
         except Exception:
             return None
 
-    async def async_update(self):
-        ts = time.time()
-        if ts < self.next_ts or not self.available:
-            return
+    def can_update(self) -> bool:
+        return self.available
+
+    async def get_update(self) -> bool:
         # POWR3 support LAN energy request (POST /zeroconf/getHoursKwh)
         ok = await self.ewelink.send(self.device, self.get_params, timeout_lan=5)
-        if ok == "online":
-            self.next_ts = ts + self.report_dt
+        return ok == "online"
 
 
 class XEnergyTotal(XSensor):

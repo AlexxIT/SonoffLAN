@@ -27,6 +27,7 @@ class XDevice(TypedDict, total=False):
 
     params_bulk: Optional[dict]  # helper for send_bulk commands
     active_outlet: Optional[int]  # required for SPM-4Relay power updates
+    active_energy: Optional[list]  # required for multichannel energy
 
     localfail: Optional[int]
     localrecv: Optional[float]
