@@ -508,13 +508,14 @@ class XConnection(XEntity, SensorEntity):
 
     _attr_available = True
     _attr_device_class = SensorDeviceClass.ENUM
+    _attr_entity_registry_enabled_default = False
 
     def internal_update(self, params: dict = None):
         cloud = self.ewelink.can_cloud(self.device)
         local = self.ewelink.can_local(self.device)
 
         if cloud:
-            value = "both" if local else "cloud"
+            value = "duplex" if local else "cloud"
         else:
             value = "local" if local else "none"
 
