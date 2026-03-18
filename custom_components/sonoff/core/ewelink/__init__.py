@@ -363,8 +363,11 @@ class XRegistry(XRegistryBase):
     def can_local(self, device: XDevice) -> bool:
         if not self.local.online:
             return False
-        if "parent" in device:
-            return device["parent"].get("local")
+        if parent := device.get("parent"):
+            # Known local parents - SPM-Main, RFBridge and ZBBridge-P
+            # But ZBBridge-P can't control local devices
+            if parent.get("localtype") in ("meter", "rf"):
+                return parent.get("local")
         return device.get("local")
 
     async def send_local(
