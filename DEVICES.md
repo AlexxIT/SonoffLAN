@@ -33,7 +33,7 @@
 | TH10R2                        | 15   | th       | 3.5.0       | ???             | Sonoff TH16                                   |
 |                               | 18   | sensor   | 2.7.0       |                 |                                               |
 |                               | 22   | light    |             | ---             | Sonoff B1                                     |
-| YB-01                         | 25   | diffuser | 3.4.0       |                 | Essential Oils Diffuser s                     |
+| YB-01                         | 25   | diffuser | 3.4.0       |                 | Essential Oils Diffuser                       |
 | RFBridge                      | 28   | bridge   | 3.5.0       |                 | Sonoff RF Brigde 433                          |
 | RFBridge433                   | 28   | bridge   | 3.6.2       | rf              |                                               |
 |                               | 29   | 2ch      |             |                 |                                               |
@@ -46,7 +46,7 @@
 |                               | 33   | light    |             |                 | Sonoff L1                                     |
 | iFan03                        | 34   | fan      | 3.6.0       | fan_light       |                                               |
 | iFan04                        | 34   | fan      | 3.6.0       | fan_light       |                                               |
-|                               | 36   | dimmer   |             | ---             | KING-M4                                       |
+| KING-M4                       | 36   | dimmer   |             | ---             |                                               |
 | D1R1                          | 44   | dimmer   | 3.5.0       | ???             | Sonoff D1                                     |
 |                               | 57   | mosquito |             |                 | Mosquito Killer Lamp                          |
 | L1                            | 59   | light    | 3.4.3       | ---             | Sonoff L1                                     |
@@ -63,18 +63,19 @@
 | GK-200MP2B                    | 87   | camera   | 41220220712 | ---             |                                               |
 | ST-03                         | 91   | cover    | 3.4.3       | ---             |                                               |
 |                               | 102  | sensor   |             |                 | Sonoff DW2 Door/Window sensor                 |
-|                               | 103  | light    |             |                 | Sonoff B02 CCT bulb                           |
-|                               | 104  | light    |             |                 | Sonoff B05-B RGB+CCT color bulb               |
+|                               | 103  | light    |             | ???             | Sonoff B02 CCT bulb                           |
+|                               | 104  | light    |             | ???             | Sonoff B05-B RGB+CCT color bulb               |
 |                               | 107  | 1ch      |             |                 |                                               |
 | DUALR3                        | 126  | pow      | 1.6.1       | multifun_switch | Sonoff DualR3                                 |
 |                               | 127  | climate  |             |                 |                                               |
 | SPM-Main                      | 128  | bridge   | 1.3.0       | meter           | SPM-Main                                      |
-| GD32-SM4(130)                 | 130  | pow      | 1.3.0       | ---             | SPM-4Relay                                    |
+| GD32-SM4(130)                 | 130  | pow      | 1.3.0       | ---             | SPM-4Relay, can't safe get state via lan      |
 |                               | 133  | panel    |             |                 | Sonoff NS Panel                               |
-|                               | 135  | light    |             |                 | Sonoff B02-BL                                 |
+|                               | 135  | light    |             | ???             | Sonoff B02-BL                                 |
 | B05-BL                        | 136  | light    | 1.7.0       | light           | Sonoff B05-BL                                 |
 | L2                            | 137  | light    | 1000.2.1050 | ---             |                                               |
 | BASICR4                       | 138  | 1ch      | 1.1.0       | plug            |                                               |
+| CK-BL602-4SW-AY(138)          | 138  | 1ch      | 1.2.0       | ???             |                                               |
 | CK-BL602-4SW-HS-03(138)-1     | 138  | 1ch      | 1.3.1       | plug            |                                               |
 | CK-BL602-4SW-HS(138)          | 138  | 1ch      | 1.6.1       | plug            |                                               |
 | MINI-D                        | 138  | 1ch      | 1.0.0       | plug            |                                               |
@@ -85,15 +86,15 @@
 |                               | 160  | 1ch      |             |                 | Sonoff SwitchMan M5-1C                        |
 |                               | 161  | 2ch      |             |                 | Sonoff SwitchMan M5-2C                        |
 | M5-3C-120W                    | 162  | 3ch      | 1.2.0       | plug            | Sonoff SwitchMan M5-3C                        |
-|                               | 165  | 2ch      |             |                 | DualR3 Lite, without power consumption        |
+|                               | 165  | 2ch      |             | ???             | DualR3 Lite, without power consumption        |
 | ZBBridge-P                    | 168  | bridge   | 3.0.0       | zigbee_gateway  |                                               |
 |                               | 173  |          |             |                 | Sonoff L3-5M-P                                |
 |                               | 174  | button   |             |                 | Sonoff R5 (6-key remote)                      |
 |                               | 177  | button   |             |                 | Sonoff S-Mate                                 |
 | THR316D                       | 181  | th       | 1.3.0       | th_plug         | Auto report every 5 sec                       |
 | THR320D                       | 181  | th       | 1.3.0       | th_plug         | Auto report every 5 sec                       |
-|                               | 182  | pow      |             |                 | Sonoff S40                                    |
-| CK-BL602-SWP1-01(182)         | 182  | pow      | 1.3.1       | ---             |                                               |
+| CK-BL602-SWP1-01(182)         | 182  | pow      | 1.3.1       | ---             | Like S40, but without local protocol          |
+| S40TPB                        | 182  | pow      | 1.4.1       | plug            | Sonoff S40                                    |
 | POWCT                         | 190  | pow      | 1.3.1       | plug            |                                               |
 | POWR320D                      | 190  | pow      | 1.2.0       | plug            |                                               |
 | S60TPF                        | 190  | pow      | 1.2.0       | plug            | Respond with current state to any lan request |
