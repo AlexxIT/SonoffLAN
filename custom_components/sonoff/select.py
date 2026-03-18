@@ -23,6 +23,7 @@ class XSelectStartup(XEntity, SelectEntity):
     get_params = {"configure": "get"}
 
     _attr_current_option = None
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_options = ["off", "on", "stay"]
 
     def __init__(self, ewelink: XRegistry, device: dict):
