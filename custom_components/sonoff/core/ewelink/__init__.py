@@ -322,9 +322,10 @@ class XRegistry(XRegistryBase):
             await asyncio.sleep(5)
 
     def update_local(self, device: XDevice, ts: float):
+        # 1. Update sensors data for Power and TH devices if we haven't received them
+        #    for more than 5 seconds.
         if (
-            "extra" in device
-            and ts >= device["localrecv"] + 4  # one second less than 5 second
+            ts >= device["localrecv"] + 4  # one second less than 5 second
             and device["localfail"] < 3  # no more than 3 times
         ):
             uiid = device["extra"]["uiid"]
@@ -338,10 +339,12 @@ class XRegistry(XRegistryBase):
                 asyncio.create_task(self.send_local(device, "statistics"))
                 return
 
+        # 2. Update local availability for all local devices (online and offline).
         if ts >= device["localping"]:
             asyncio.create_task(self.send_local(device))
 
     def update_local_child(self, parent: XDevice | dict, device: XDevice):
+        # 3. Update sensors data for SPM-Main childrens.
         if parent["localfail"] >= 3:
             return
         outlet = device.get("active_outlet", 0)
