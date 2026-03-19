@@ -205,9 +205,9 @@ It is **highly recommended** that you use `mode: auto` and do not use `mode: loc
 
 ### Debug page
 
-* First enable debug logging: Settings > Devices & services > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > three dots at the very top right of the page > Enable debug logging.
+* First enable debug page: Settings > Devices & services > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > Configure (gear) > [x] Debug page.
 * Reload integrations page.
-* Debug page is called Known issues and can we found under the same three dots
+* Debug page is called Known issues: Settings > Devices & services > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > three dots at the very top right of the page > Known Issues.
 
 Debug page shows only integration logs and removes some private data.
 
