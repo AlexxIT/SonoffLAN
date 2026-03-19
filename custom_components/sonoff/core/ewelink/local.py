@@ -141,7 +141,8 @@ class XRegistryLocal(XRegistryBase):
             msg["data"] = raw
             msg["iv"] = data["iv"]
         else:
-            msg["params"] = json.loads(raw)
+            # no data field from zbbridgeu
+            msg["params"] = json.loads(raw) if raw else {}
 
         self.dispatcher_send(SIGNAL_UPDATE, msg)
 
