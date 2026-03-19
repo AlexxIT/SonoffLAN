@@ -34,12 +34,9 @@ async def system_health_info(hass: HomeAssistant):
                 cloud_total += 1
                 if registry.cloud.online and device["online"]:
                     cloud_online += 1
-            # localtype - all discovered local devices
-            # host - all online local devices (maybe encrypted)
-            # params - all local unencrypted devices
-            if "localtype" in device:
+            if "local" in device:
                 local_total += 1
-                if "host" in device and "params" in device:
+                if registry.local.online and device["local"]:
                     local_online += 1
 
     source_hash = await hass.async_add_executor_job(xutils.source_hash)
