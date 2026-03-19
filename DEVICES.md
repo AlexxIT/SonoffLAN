@@ -1,7 +1,7 @@
 # Devices
 
-- **Model** - can be completely different, but what matters much more is what your device's UIID is.
-- **UIID** - Model ID. In the integration, this is displayed as "Hardware firmware". Different devices with the same ID will have the same functionality. Including the ability to operate in local mode.
+- **Model** - device model from the ewelink cloud.
+- **UIID** - [CoolKit UIID Protocol](https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md). This is displayed as "Hardware firmware" on device page.
 - **Tag** - Just a label, no specifications.
 - **Local Type** - A text value indicates that the device supports the **local protocol**. If you see a dash there, the device does not support it and works **only via the cloud**. If you see a blank space, it simply means there is **no verified information** about the device.
 

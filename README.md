@@ -5,12 +5,11 @@
 Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devices with [eWeLink](https://www.ewelink.cc/en/) (original) firmware over LAN and/or Cloud.
 
 > [!CAUTION]
-> Starting in 2026, sensors for almost all eWeLink power devices will no longer be updated in real time. These updates do not support the local protocol and placed a heavy load on the eWeLink cloud. As a result, they were blocked by the cloud.
+> Starting in 2026 - power, current, and voltage sensors will no longer be updated via the cloud connection. These updates placed a heavy load on the eWeLink cloud. As a result, they were blocked by the cloud.
 
-## Table of contents
-- [New features in version 3.0](#new-features-in-version-30)
-- [Pros](#pros)
-- [Tested Devices](#tested-devices)
+<details>
+<summary><b>Table of Contents</b></summary>
+
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Posting new issues](#posting-new-issues)
@@ -33,28 +32,17 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 - [Getting devicekey manually](#getting-devicekey-manually)
 - [Useful Links](#useful-links)
 
-## New features in version 3.0
+</details>
 
-- support Integration UI, Devices and Zones
+A list of known devices can be found here - [DEVICES](DEVICES.md).
+
+**Features**
+
 - support new [eWeLink API](https://coolkit-technologies.github.io/eWeLink-API/#/en/PlatformOverview)
 - support [multiple eWeLink accounts](#configuration) and [homes](#homes)
-- support many sensors for each device (include [RFBridge](#sonoff-rf-bridge-433))
-- support thermostats for [Sonoff TH](#sonoff-th) ans NS Panel
-- support [preventing DB size growth](#preventing-db-size-growth)
-- support many new Hass features
-
-**Features from previous versions**
-
 - can manage **both local and cloud control at the same time**!
-- support old devices wih 2.7 firmware (only cloud connection)
-- support new device types: color lights, sensors, covers
-- support [eWeLink cameras](#sonoff-gk-200mp2-b-camera) with PTZ
-- support unavailable device state for both local and cloud connection
-- support sensors for Sonoff [RF Bridge 433](#sonoff-rf-bridge-433)
-- support ZigBee Bridge and Devices
-- added new [debug mode](#debug-page) for troubleshooting
 
-## Pros
+**Pros**
 
 - work with original eWeLink / Sonoff firmware, no need to flash devices
 - work over Local Network and/or Cloud Server
@@ -63,7 +51,6 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 - support single and multi-channel devices
 - support TH and Pow device sensors
 - support Sonoff [RF Bridge 433](#sonoff-rf-bridge-433) for receive and send commands
-- support Sonoff [GK-200MP2-B Camera](#sonoff-gk-200mp2-b-camera)
 - instant device state update with local Multicast or cloud Websocket connection
 - load devices list from eWeLink Servers (with names and encryption keys) and save it locally
 - (optional) change [device type](#custom-device_class) from `switch` to `light`
@@ -72,99 +59,20 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 
 [![Sonoffs can work with Home Assistant without changing the Firmware!](https://img.youtube.com/vi/DsTqOlrQQ1k/mqdefault.jpg)](https://www.youtube.com/watch?v=DsTqOlrQQ1k)
 
-There is another great component by [@peterbuga](https://github.com/peterbuga/HASS-sonoff-ewelink), that works with cloud servers.
-
 Thanks to [@beveradb](https://github.com/beveradb/sonoff-lan-mode-homeassistant) and [@mattsaxon](https://github.com/mattsaxon/sonoff-lan-mode-homeassistant) for researching the local Sonoff protocol.
 Thanks to [@michthom](https://github.com/michthom) and [@EpicLPer](https://github.com/EpicLPer) for researching the local Sonoff Camera protocol.
 
-## Tested Devices
-
-Almost any single or multi-channel Switch working in the eWeLink application will work with this Integration even if it is not on the list.
-
-**Tested (LAN and Cloud)**
-
-These devices work both on a local network and through the cloud.
-
-- Sonoff Basic, [BASICR2](https://itead.cc/product/sonoff-basicr2/), [BASICR3](https://itead.cc/product/sonoff-basicr3-wifi-diy-smart-switch/), [RFR2](https://itead.cc/product/sonoff-rf/), [RFR3](https://itead.cc/product/sonoff-rfr3/)
-- [Sonoff Mini/MINIR2](https://itead.cc/product/sonoff-mini/), [MINI R3](https://itead.cc/product/sonoff-minir3-smart-switch/) (no need use DIY-mode)
-- [Sonoff Micro](https://itead.cc/product/sonoff-micro-5v-usb-smart-adaptor/)
-- [Sonoff TH10/TH16](https://itead.cc/product/sonoff-th/) (support Thermostat)
-- Sonoff 4CH, 4CHR2, [4CHR3 & 4CHPROR3](https://itead.cc/product/sonoff-4ch-r3-pro-r3/)
-- Sonoff [POWR2](https://itead.cc/product/sonoff-pow-r2/) (show power consumption)
-- [Sonoff DUALR3/DUALR3 Lite](https://itead.cc/product/sonoff-dualr3/)
-- [Sonoff RF Bridge 433](https://www.itead.cc/sonoff-rf-bridge-433.html) (receive and send commands) fw 3.5.0
-- [Sonoff D1](https://www.itead.cc/sonoff-d1-smart-dimmer-switch.html) (dimmer with brightness control) fw 3.4.0, 3.5.0
-- [Sonoff G1](https://www.itead.cc/sonoff-g1.html) fw 3.5.0
-- [Sonoff Dual](https://www.itead.cc/sonoff-dual.html)
-- Sonoff iFan02, iFan03, [iFan04](https://www.itead.cc/sonoff-ifan03-wifi-ceiling-fan-light-controller.html) (light and fan with speed control) fw 3.4.0
-- Sonoff S20, [S26](https://itead.cc/product/sonoff-s26-wifi-smart-plug/), [S31](https://itead.cc/product/sonoff-s31/), [S40](https://itead.cc/product/sonoff-iplug-series-wi-fi-smart-plug-s40-s40-lite/) fw 1.3, 1.4, [S55](https://itead.cc/product/sonoff-s55/), [S60](https://itead.cc/product/sonoff-iplug-wi-fi-smart-plug-s60/) 
-- [Sonoff SV](https://www.itead.cc/sonoff-sv.html) fw 3.0.1
-- Sonoff T1, [TX Series](https://itead.cc/product/sonoff-tx-series-wifi-smart-wall-switches/)
-- [Sonoff T4EU1C](https://www.itead.cc/sonoff-t4eu1c-wi-fi-smart-single-wire-wall-switch.html)
-- [Sonoff IW100/IW101](https://www.itead.cc/sonoff-iw100-iw101.html)
-- [Sonoff Slampher R2](https://www.itead.cc/sonoff-slampher-r2.html)
-- [Sonoff 5V DIY](https://www.aliexpress.com/item/32818293817.html)
-- [Sonoff RE5V1C](https://www.itead.cc/sonoff-re5v1c.html)
-- [Sonoff NSPanel](https://itead.cc/product/sonoff-nspanel-smart-scene-wall-switch/)
-- [MiniTiger Wall Switch](https://www.aliexpress.com/item/33016227381.html) (I have 8 without zero-line) fw 3.3.0
-- [Smart Circuit Breaker](https://www.aliexpress.com/item/4000454408211.html), [link](https://www.aliexpress.com/item/4000351300288.html), [link](https://www.aliexpress.com/item/4000077475264.html)
-- [Smart Timer Switch](https://www.aliexpress.com/item/4000189016383.html)
-- [Eachen WiFi Smart Touch](https://ewelink.eachen.cc/product/eachen-single-live-wall-switch-us-ac-l123ewelink-app/) fw 3.3.0
-
-**Tested (only Cloud)**
-
-These devices only work through the cloud!
-
-- Sonoff POW (first) fw 2.6.1
-- [Sonoff L1](https://www.itead.cc/sonoff-l1-smart-led-light-strip.html) (color, brightness, effects) fw 2.7.0
-- [Sonoff L2](https://sonoff.tech/product/smart-lighting/l2/) fw 1000.2.1050
-- [Sonoff B1](https://www.itead.cc/sonoff-b1.html) (color, brightness, color temp) fw 2.6.0
-- Sonoff B02, B05-B, B05-BL
-- [Sonoff SC](https://www.itead.cc/sonoff-sc.html) (five sensors) fw 2.7.0
-- [Sonoff DW2](https://www.itead.cc/sonoff-dw2.html)
-- [Sonoff SwitchMan R5](https://itead.cc/product/sonoff-switchman-scene-controller-r5/)
-- [Sonoff S-MATE](https://sonoff.tech/product/diy-smart-switch/s-mate/)
-- [Sonoff S40](https://itead.cc/product/sonoff-iplug-series-wi-fi-smart-plug-s40-s40-lite/) fw 1.1
-- [King Art - King Q4 Cover](https://www.aliexpress.com/item/32956776611.html) (pause, position) fw 2.7.0
-- [KING-M4](https://www.aliexpress.com/item/33013358523.html) (brightness) fw 2.7.0
-- [Eachen WiFi Door/Window Sensor](https://ewelink.eachen.cc/product/eachen-wifi-smart-door-window-sensor-wdw-ewelink/)
-- [Essential Oils Diffuser](https://www.amazon.co.uk/dp/B07WF7MQ17) (fan and color light) fw 2.9.0
-- [Smart USB Mosquito Killer](https://www.aliexpress.com/item/33037963105.html)
-- [Smart Bulb RGB+CCT](https://www.aliexpress.com/item/4000764330397.html)
-
-**Tested ZigBee (only Cloud)**
-
-- [Sonoff ZigBee Bridge](https://www.itead.cc/sonoff-zbbridge.html) - turn on for pairing mode
-- SONOFF SNZB-01 - Zigbee Wireless Switch
-- SONOFF SNZB-02 - ZigBee Temperature and Humidity Sensor
-- SONOFF SNZB-03 - ZigBee Motion Sensor
-- SONOFF SNZB-04 - ZigBee Wireless door/window sensor
-
-**Tested Cameras (only LAN)**
-
-Maybe other eWeLink cameras also work, I don’t know.
-
-- [Camera GK-100CD10B](https://www.gearbest.com/smart-home-controls/pp_009678072743.html) (camera with PTZ)
-- [Sonoff GK-200MP2-B](https://www.itead.cc/sonoff-gk-200mp2-b-wi-fi-wireless-ip-security-camera.html) (camera with PTZ)
-
 ## Installation
 
-[HACS](https://hacs.xyz/) > Integrations > Plus > **SonoffLAN**
+[![](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=AlexxIT&repository=SonoffLAN&category=Integration)
 
-Or manually copy `sonoff` folder from [latest release](https://github.com/AlexxIT/SonoffLAN/releases/latest) to `custom_components` folder in your config folder.
+Via [HACS](https://hacs.xyz/) or manually copy `sonoff` folder from [latest release](https://github.com/AlexxIT/SonoffLAN/releases/latest) to `custom_components` folder in your config folder.
 
 ## Configuration
 
-Configuration > [Integrations](https://my.home-assistant.io/redirect/integrations/) > Add Integration > [Sonoff](https://my.home-assistant.io/redirect/config_flow_start/?domain=sonoff)
+[![](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=sonoff)
 
-*If the integration is not in the list, you need to clear the browser cache.*
-
-You can setup multiple integrations with different ewelink accounts.
-
-**Important**. If you use the same account in different smart home systems, you will be constantly unlogged from everywhere. In this case, you need to create a second ewelink account and share your devices or home with it.
-
-- Problems: another Home Assistant, Homebridge, [eWeLink addon](https://www.ewelink.cc/en/2021/06/23/ewelink-home-assistant-add-on-github-archive/), etc.
-- No Problems: latest [eWeLink mobile app v4+](https://www.ewelink.cc/en/)
+Add integration via Home Assistant UI. You can setup multiple integrations with different ewelink accounts.
 
 ## Posting new issues
 
@@ -174,16 +82,13 @@ Before posting new issue:
 2. Check warning and errors on the [Logs page](https://my.home-assistant.io/redirect/logs/)
 3. Check **debug logs** on the [Debug page](#debug-page) (must be enabled in integration options)
 4. Check **open and closed** [issues](https://github.com/AlexxIT/SonoffLAN/issues?q=is%3Aissue)
-5. Share integration [diagnostics](https://www.home-assistant.io/integrations/diagnostics/) (supported from Hass v2022.2):
-
-- All devices: Configuration > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > 3 dots > Download diagnostics
-- One device: Configuration > [Devices](https://my.home-assistant.io/redirect/devices/) > Device > Download diagnostics
-
-*There is no private data, but you can delete anything you think is private.*
+5. Share integration [diagnostics](https://www.home-assistant.io/integrations/diagnostics/):
+   - All devices: Settings > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > 3 dots > Download diagnostics
+   - One device: Settings > [Devices](https://my.home-assistant.io/redirect/devices/) > Device > Download diagnostics
 
 ## Configuration UI
 
-Configuration > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > Configure
+Settings > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > Configure (gear)
 
 ### Mode
 
@@ -205,7 +110,7 @@ It is **highly recommended** that you use `mode: auto` and do not use `mode: loc
 
 ### Debug page
 
-Enable debug page in integration options. Reload integrations page. Open: Integraion > Menu > Known issues.
+Enable debug page in integration configuration (gear) via UI. Reload integrations page. Open: Integraion > Menu (top right dots) > Known issues.
 
 Debug page shows only integration logs and removes some private data. You can filter log and enable auto refresh (in seconds).
 
@@ -372,12 +277,10 @@ sonoff:
 
 ## Sonoff Pow
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > Read the warning at the beginning of the readme file.
 
-Support `power`, `current` and `voltage` sensors via LAN and Cloud connections. Also support energy (consumption) sensor only with **Cloud** connection.
-
-Many models of Sonoff power devices DON'T send `power`, `current` and `voltage`  by default. You need to ASK these devices to send this data. This can ONLY be done through a cloud-based request. The mobile app does it. And the integration does it (only in the `auto` and `cloud` modes).
+Support `power`, `current` and `voltage` sensors via **local** connection. Also support energy (consumption) sensor only with **Cloud** connection.
 
 By default `energy` data loads from cloud every hour. You can change interval via YAML and add history data to sensor attributes (max size - 30 days, disable - 0). For multi-channel devices use `energy_1`, `energy_2`.
 
@@ -407,6 +310,9 @@ sensor:
 ```
 
 ## Sonoff TH
+
+> [!IMPORTANT]
+> For the THR316D/THR320D models, temperature and humidity sensor updates only work when connected locally. It's the same issue as with power devices - the message at the beginning of the readme file.
 
 Support optional [Climate](https://www.home-assistant.io/integrations/climate/) entity that controls Thermostat. You can control low and high temperature values and hvac modes:
 
@@ -471,24 +377,6 @@ sonoff:
 
 You can read more about using this bridge in [wiki](https://github.com/AlexxIT/SonoffLAN/wiki/RF-Bridge).
 
-## Sonoff GK-200MP2-B Camera
-
-Currently only PTZ commands are supported. Camera entity is not created now.
-
-You can send `left`, `right`, `up`, `down` commands with `sonoff.send_command` service:
-
-```yaml
-script:
-  left:
-    sequence:
-      - service: sonoff.send_command
-        data:
-          device: '012345'  # use quotes, this is important
-          cmd: left
-```
-
-`device` - this is the number from the camera ID `EWLK-012345-XXXXX`, exactly 6 digits (leading zeros - it is important).
-
 ## Common problems in only LAN mode
 
 `auto` mode and `cloud` mode users don't have these problems.
@@ -535,7 +423,7 @@ Example service params to dimmer:
 
 ```yaml
 device: 1000123456
-cmd: dimmable
+command: dimmable
 switch: 'on'
 brightness: 50
 mode: 0
