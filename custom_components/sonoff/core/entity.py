@@ -96,6 +96,7 @@ class XEntity(Entity):
         ewelink.dispatcher_connect(deviceid, self.internal_update)
 
         if parent := device.get("parent"):
+            self._attr_device_info["via_device"] = (DOMAIN, parent["deviceid"])
             ewelink.dispatcher_connect(parent["deviceid"], self.internal_parent_update)
 
     def set_state(self, params: dict):

@@ -36,6 +36,9 @@ class XRegistry(XRegistryBase):
 
         entities = []
 
+        # Devices without parent will be first, so via_device option won't fail
+        devices = sorted(devices, key=lambda d: d.get("params", {}).get("parentid", ""))
+
         for device in devices:
             did = device["deviceid"]
             try:
