@@ -64,7 +64,7 @@
 | ST-03                         | 91   | cover    | 3.4.3       | ---             |                                               |
 |                               | 102  | sensor   |             |                 | Sonoff DW2 Door/Window sensor                 |
 |                               | 103  | light    |             | ???             | Sonoff B02 CCT bulb                           |
-|                               | 104  | light    |             | ???             | Sonoff B05-B RGB+CCT color bulb               |
+| B05-B                         | 104  | light    | 1.3.2       | light           | Sonoff B05-B RGB+CCT color bulb               |
 |                               | 107  | 1ch      |             |                 |                                               |
 | DUALR3                        | 126  | pow      | 1.6.1       | multifun_switch | Sonoff DualR3                                 |
 |                               | 127  | climate  |             |                 |                                               |
@@ -78,6 +78,7 @@
 | CK-BL602-4SW-AY(138)          | 138  | 1ch      | 1.2.0       | ???             |                                               |
 | CK-BL602-4SW-HS-03(138)-1     | 138  | 1ch      | 1.3.1       | plug            |                                               |
 | CK-BL602-4SW-HS(138)          | 138  | 1ch      | 1.6.1       | plug            |                                               |
+| CK-BL602-4SW-WH(138)          | 138  | 1ch      | 1.3.1       | plug            |                                               |
 | MINI-D                        | 138  | 1ch      | 1.0.0       | plug            |                                               |
 | MINIR4                        | 138  | 1ch      | 1.2.0       | plug            |                                               |
 | MINIR4M                       | 138  | 1ch      | 1.2.0       | plug            |                                               |
@@ -93,7 +94,7 @@
 |                               | 177  | button   |             |                 | Sonoff S-Mate                                 |
 | THR316D                       | 181  | th       | 1.3.0       | th_plug         | Auto report every 5 sec                       |
 | THR320D                       | 181  | th       | 1.3.0       | th_plug         | Auto report every 5 sec                       |
-| CK-BL602-SWP1-01(182)         | 182  | pow      | 1.3.1       | ---             | Like S40, but without local protocol          |
+| CK-BL602-SWP1-01(182)         | 182  | pow      | 1.3.1       | ???             | Like S40, but without local protocol          |
 | S40TPB                        | 182  | pow      | 1.4.1       | plug            | Sonoff S40                                    |
 | POWCT                         | 190  | pow      | 1.3.1       | plug            |                                               |
 | POWR320D                      | 190  | pow      | 1.2.0       | plug            |                                               |
@@ -107,7 +108,7 @@
 | CK-BL602-W102SW18-01(226)     | 226  | pow      | 1.2.1       | ---             |                                               |
 | NSPanel120PB                  | 228  | panel    |             |                 | NSPanel Pro 120                               |
 | CK-BK7238-W105SE10-01-HB(242) | 242  | sensor   | 1.0.0       |                 |                                               |
-| ZbBridge-U                    | 243  | bridge   | 1.4.0       | ---             |                                               |
+| ZbBridge-U                    | 243  | bridge   | 1.4.0       | zbbridgeu       |                                               |
 | MINI-RBS                      | 258  | cover    | 1.0.2       | plug            |                                               |
 | CK-BL602-SWP1-02(262)         | 262  | pow      | 1.0.0       | ???             |                                               |
 | BASIC-1GS                     | 268  | 1ch      | 1.0.2       | plug            |                                               |
