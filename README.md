@@ -176,8 +176,8 @@ Before posting new issue:
 4. Check **open and closed** [issues](https://github.com/AlexxIT/SonoffLAN/issues?q=is%3Aissue)
 5. Share integration [diagnostics](https://www.home-assistant.io/integrations/diagnostics/) (supported from Hass v2022.2):
 
-- All devices: Configuration > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > 3 dots > Download diagnostics
-- One device: Configuration > [Devices](https://my.home-assistant.io/redirect/devices/) > Device > Download diagnostics
+- All devices: Settings > Devices & services > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > 3 dots > Download diagnostics
+- One device: Settings > Devices & services > [Devices](https://my.home-assistant.io/redirect/devices/) > Device > Download diagnostics
 
 *There is no private data, but you can delete anything you think is private.*
 
@@ -205,13 +205,11 @@ It is **highly recommended** that you use `mode: auto` and do not use `mode: loc
 
 ### Debug page
 
-Enable debug page in integration options. Reload integrations page. Open: Integraion > Menu > Known issues.
+* First enable debug logging: Settings > Devices & services > [Integrations](https://my.home-assistant.io/redirect/integrations/) > **Sonoff** > three dots at the very top right of the page > Enable debug logging.
+* Reload integrations page.
+* Debug page is called Known issues and can we found under the same three dots
 
-Debug page shows only integration logs and removes some private data. You can filter log and enable auto refresh (in seconds).
-
-```
-http://192.168.1.123:8123/api/sonoff/c8503fee-88fb-4a18-84d9-abb782bf0aa7?q=1000xxxxxx&r=2
-```
+Debug page shows only integration logs and removes some private data.
 
 ### Homes
 
