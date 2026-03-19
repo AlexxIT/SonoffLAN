@@ -140,9 +140,8 @@ class XRegistryLocal(XRegistryBase):
         if data.get("encrypt"):
             msg["data"] = raw
             msg["iv"] = data["iv"]
-        else:
-            # no data field from zbbridgeu
-            msg["params"] = json.loads(raw) if raw else {}
+        elif raw:  # no data field from zbbridgeu
+            msg["params"] = json.loads(raw)
 
         self.dispatcher_send(SIGNAL_UPDATE, msg)
 
@@ -268,7 +267,8 @@ class XRegistryLocal(XRegistryBase):
     @staticmethod
     def decrypt_msg(msg: dict, devicekey: str = None) -> dict:
         # Fix Sonoff SPM-Main empty message {'seq': ***, 'data': '', 'iv': '***'}
-        if msg["data"] == "":
+        # Fix Sonoff ZbBridge-U without any message
+        if not msg.get("data"):
             return {}
 
         data = decrypt(msg, devicekey)
