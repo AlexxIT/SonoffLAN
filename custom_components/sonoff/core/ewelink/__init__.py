@@ -229,7 +229,8 @@ class XRegistry(XRegistryBase):
             # check if LAN online after cloud status change
             device["localping"] = 0  # instant local ping request
 
-        elif device["online"] is False:
+        # Fix bug - cloud sends `{"subDevRssi": 127}` even for offline devices
+        elif device["online"] is False and params.keys() != {"subDevRssi"}:
             device["online"] = True
 
         if "sledOnline" in params:

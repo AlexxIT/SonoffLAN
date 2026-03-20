@@ -6,7 +6,7 @@ from custom_components.sonoff.core.ewelink import XDevice, XRegistry, XRegistryL
 from custom_components.sonoff.core.ewelink.local import decrypt, encrypt
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import XLightL1
-from . import save_to
+from . import DEVICEID, save_to
 
 
 def test_bulk():
@@ -73,3 +73,19 @@ def test_cryptography():
 
     raw = decrypt(payload, key)
     assert json.loads(raw) == params
+
+
+def test_cloud_zigbee_offline():
+    device: XDevice = {
+        "online": False,
+    }
+
+    # noinspection PyTypeChecker
+    registry: XRegistry = XRegistry(None)
+    registry.devices = {DEVICEID: device}
+
+    registry.cloud_update({"deviceid": DEVICEID, "params": {"subDevRssi": 127}})
+    assert registry.devices[DEVICEID]["online"] is False
+
+    registry.cloud_update({"deviceid": DEVICEID, "params": {"temperature": 0}})
+    assert registry.devices[DEVICEID]["online"] is True
