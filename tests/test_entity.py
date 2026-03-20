@@ -1733,14 +1733,21 @@ def test_powr3():
     assert energy.state_class == SensorStateClass.TOTAL_INCREASING
     assert energy.native_value == 0.07
 
-    energy.set_state({"dayKwh": 8})
-    assert energy.native_value == 0.08
+    # up - OK
+    energy.set_state({"dayKwh": 1051})
+    assert energy.native_value == 10.51
 
-    energy.set_state({"dayKwh": 6})
-    assert energy.native_value == 0.08
+    # small down - skip
+    energy.set_state({"dayKwh": 1050})
+    assert energy.native_value == 10.51
 
-    energy.set_state()
-    assert energy.native_value == 0.08
+    # big down - skip
+    energy.set_state({"dayKwh": 1041})
+    assert energy.native_value == 10.51
+
+    # very big down - OK (new day)
+    energy.set_state({"dayKwh": 1040})
+    assert energy.native_value == 10.40
 
 
 def test_issue1235():
