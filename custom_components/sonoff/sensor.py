@@ -418,15 +418,27 @@ class XButtonKey(XButtonBase):
 class XButtonLocalKey(XButtonBase):
     params = {"localKeyPass"}
 
+    def __init__(self, ewelink: XRegistry, device: dict):
+        super().__init__(ewelink, device)
+        self.last_seq = None
+
     def set_state(self, params: dict):
         # skip multiple clicks (from cloud and local)
         if self._attr_native_value:
             return
 
         # cloud click: {'localKeyPass': {'outlet': 0, 'key': 0}}
+        if len(params) == 1:
+            pass
         # local click: {'triggerType': 11, 'localKeyPass': {'outlet': 0, 'key': 0}}
         # local trash: {'triggerType': 0, 'localKeyPass': {'outlet': 0, 'key': 0}}
-        if not len(params) == 1 and not params.get("triggerType"):
+        elif params.get("triggerType"):
+            # Fix duplicates from mDNS https://github.com/AlexxIT/SonoffLAN/issues/1769
+            if seq := self.device.get("local_seq"):
+                if seq == self.last_seq:
+                    return
+                self.last_seq = seq
+        else:
             return
 
         # MINI-2GS https://github.com/AlexxIT/SonoffLAN/issues/1694

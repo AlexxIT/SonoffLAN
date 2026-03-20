@@ -33,7 +33,8 @@ class XDevice(TypedDict, total=False):
     localrecv: Optional[float]
     localping: Optional[float]
 
-    sequence: int | None  # sequence for update from cloud (if exists - cmd from app)
+    cloud_seq: int | None  # sequence for update from cloud (if exists - cmd from app)
+    local_seq: int | None  # sequence for update from local
 
     parent: Optional[dict]
 

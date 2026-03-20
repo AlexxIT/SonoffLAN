@@ -2300,6 +2300,30 @@ def test_m5_matter():
     )
     assert button.state == "button_1_single"
 
+    # this is local event with trigger
+    setattr(button, "_attr_native_value", "")  # reset state
+    button.ewelink.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"triggerType": 11, "localKeyPass": {"key": 0, "outlet": 1}},
+            "seq": 1,
+        },
+    )
+    assert button.state == "button_2_single"
+
+    # this is local event with same sequence
+    setattr(button, "_attr_native_value", "")  # reset state
+    button.ewelink.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"triggerType": 11, "localKeyPass": {"key": 0, "outlet": 2}},
+            "seq": 1,
+        },
+    )
+    assert button.state == ""
+
 
 def test_powct():
     entities = get_entitites({"extra": {"uiid": 190}, "params": {"supplyPower": 0}})

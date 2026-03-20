@@ -219,7 +219,7 @@ class XRegistry(XRegistryBase):
             return
 
         params = msg["params"]
-        device["sequence"] = seq = msg.get("sequence")
+        device["cloud_seq"] = seq = msg.get("sequence")
 
         _LOGGER.debug(f"{did} <= Cloud3 | %s | {seq}", params)
 
@@ -284,8 +284,9 @@ class XRegistry(XRegistryBase):
         realid = msg.get("subdevid", mainid)
         tag = "Local3" if "host" in msg else "Local0"
         host = msg.get("host", "^^^")
+        device["local_seq"] = seq = msg.get("seq")
 
-        _LOGGER.debug(f"{realid} <= {tag} | {host} | %s | {msg.get('seq', '')}", params)
+        _LOGGER.debug(f"{realid} <= {tag} | {host} | %s | {seq}", params)
 
         if "params" in device:
             device["params"].update(params)

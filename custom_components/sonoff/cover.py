@@ -94,7 +94,7 @@ class XZBCover(XCover):
             return
 
         # check if this is command from mobile app
-        if self.device.get("sequence"):
+        if self.device.get("cloud_seq"):
             return
 
         if "setclose" in params:
