@@ -714,7 +714,7 @@ def test_sonoff_r5():
         ]
     )
 
-    button: XButtonKey = entities[0]
+    button: XButtonKey = next(e for e in entities if isinstance(e, XButtonKey))
     assert button.state == ""
 
     button.ewelink.cloud.dispatcher_send(
