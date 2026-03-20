@@ -163,6 +163,8 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                 await registry.local.send(device, params, command)
             elif mode == "cloud":
                 await registry.cloud.send(device, params)
+            elif mode == "api":
+                await registry.cloud.set_device(device, params)
             else:
                 await registry.send(device, params, cmd_lan=command)
 

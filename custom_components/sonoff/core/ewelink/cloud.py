@@ -418,6 +418,20 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             ]
         return devices
 
+    async def set_device(self, device: XDevice, params: dict, timeout: float = 5):
+        did = device["deviceid"]
+        try:
+            r = await self.session.post(
+                self.host + "/v2/device/thing/status",
+                headers=self.headers,
+                timeout=timeout,
+                json={"type": 1, "id": did, "params": params},
+            )
+            resp = await r.json()
+            _LOGGER.debug(f"{did} => Cloud5 | {params} <= {resp}")
+        except Exception as e:
+            _LOGGER.debug(f"{did} => Cloud5 | {params} <= {repr(e)}")
+
     async def send(
         self,
         device: XDevice,
