@@ -96,7 +96,7 @@
 | THR320D                       | 181  | th       | 1.3.0       | th_plug         | Auto report every 5 sec                       |
 | CK-BL602-SWP1-01(182)         | 182  | pow      | 1.3.1       | ???             | Like S40, but without local protocol          |
 | S40TPB                        | 182  | pow      | 1.4.1       | plug            | Sonoff S40                                    |
-| POWCT                         | 190  | pow      | 1.3.1       | plug            |                                               |
+| POWCT                         | 190  | pow      | 1.3.1       | plug            | Support supply                                |
 | POWR320D                      | 190  | pow      | 1.2.0       | plug            |                                               |
 | S60TPF                        | 190  | pow      | 1.2.0       | plug            | Respond with current state to any lan request |
 |                               | 195  | panel    |             |                 | NSPanel Pro                                   |

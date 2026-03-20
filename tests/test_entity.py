@@ -2292,3 +2292,11 @@ def test_m5_matter():
         {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 0}}},
     )
     assert button.state == "button_1_single"
+
+
+def test_powct():
+    entities = get_entitites({"extra": {"uiid": 190}, "params": {"supplyPower": 0}})
+    assert any(e.uid.endswith("supply") for e in entities if e.uid)
+
+    entities = get_entitites({"extra": {"uiid": 190}, "params": {}})
+    assert entities and all("supply" not in e.uid for e in entities if e.uid)

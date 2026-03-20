@@ -455,10 +455,17 @@ DEVICES = {
         spec(XSensor100, param="current"),
         spec(XSensor100, param="power"),
         spec(XSensor100, param="voltage"),
-        spec(XSensor100, param="supplyCurrent", uid="current_supply"),
-        spec(XSensor100, param="supplyPower", uid="power_supply"),
         EnergyDay,
         EnergyMonth,
+        spec(
+            XEnergySensorPOWR3,
+            param="hoursKwhData",
+            uid="energy",
+            get_params={"getHoursKwh": {"start": 0, "end": 24 * 30 - 1}},
+        ),
+        # only for POWCT
+        spec(XSensor100, param="supplyCurrent", uid="current_supply"),
+        spec(XSensor100, param="supplyPower", uid="power_supply"),
         spec(
             XEnergyTotal,
             param="dayPowerSupply",
@@ -472,12 +479,6 @@ DEVICES = {
             uid="energy_month_supply",
             multiply=0.01,
             round=2,
-        ),
-        spec(
-            XEnergySensorPOWR3,
-            param="hoursKwhData",
-            uid="energy",
-            get_params={"getHoursKwh": {"start": 0, "end": 24 * 30 - 1}},
         ),
     ],
     # NSPanel Pro, https://github.com/AlexxIT/SonoffLAN/issues/984
@@ -749,12 +750,15 @@ def get_spec(device: dict) -> list:
         classes = [XCoverDualR3, XFanDualR3] + classes
 
     # NSPanel Climate disable without switch configuration
-    if uiid in [133] and not device["params"].get("HMI_ATCDevice"):
+    if uiid == 133 and not device["params"].get("HMI_ATCDevice"):
         classes = [cls for cls in classes if XClimateNS not in cls.__bases__]
 
     # SNZB-06P has no battery
-    if uiid in [2026] and not device["params"].get("battery"):
+    if uiid == 2026 and not device["params"].get("battery"):
         classes = [cls for cls in classes if cls != Battery]
+
+    if uiid == 190 and "supplyPower" not in device["params"]:
+        classes = [cls for cls in classes if cls.uid is None or "supply" not in cls.uid]
 
     if "device_class" in device:
         classes = get_custom_spec(classes, device["device_class"])
