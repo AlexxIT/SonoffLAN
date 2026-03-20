@@ -42,7 +42,10 @@ from .core.xutils import create_clientsession
 
 _LOGGER = logging.getLogger(__name__)
 
+# It is important to have the `sensor` first so that the bridges are initialized before
+# the child devices. Fix `device_info["via_device"]` problem.
 PLATFORMS = [
+    "sensor",
     "alarm_control_panel",
     "binary_sensor",
     "button",
@@ -52,7 +55,6 @@ PLATFORMS = [
     "light",
     "media_player",
     "remote",
-    "sensor",
     "switch",
     "number",
     "select"
