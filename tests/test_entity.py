@@ -2300,7 +2300,7 @@ def test_m5_matter():
     )
     assert button.state == "button_1_single"
 
-    # this is local event with trigger
+    # this is first local event with trigger (device discovery)
     setattr(button, "_attr_native_value", "")  # reset state
     button.ewelink.local.dispatcher_send(
         SIGNAL_UPDATE,
@@ -2308,6 +2308,18 @@ def test_m5_matter():
             "deviceid": DEVICEID,
             "params": {"triggerType": 11, "localKeyPass": {"key": 0, "outlet": 1}},
             "seq": 1,
+        },
+    )
+    assert button.state == ""
+
+    # this is second local event with trigger
+    setattr(button, "_attr_native_value", "")  # reset state
+    button.ewelink.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"triggerType": 11, "localKeyPass": {"key": 0, "outlet": 1}},
+            "seq": 2,
         },
     )
     assert button.state == "button_2_single"
@@ -2319,7 +2331,7 @@ def test_m5_matter():
         {
             "deviceid": DEVICEID,
             "params": {"triggerType": 11, "localKeyPass": {"key": 0, "outlet": 2}},
-            "seq": 1,
+            "seq": 2,
         },
     )
     assert button.state == ""

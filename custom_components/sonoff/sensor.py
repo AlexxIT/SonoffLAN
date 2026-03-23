@@ -423,6 +423,11 @@ class XButtonLocalKey(XButtonBase):
         self.last_seq = None
 
     def set_state(self, params: dict):
+        if seq := self.device.get("local_seq"):
+            # Skip clicks from first local message, because it's just device discovery
+            if self.last_seq is None:
+                self.last_seq = seq
+
         # skip multiple clicks (from cloud and local)
         if self._attr_native_value:
             return
@@ -434,10 +439,9 @@ class XButtonLocalKey(XButtonBase):
         # local trash: {'triggerType': 0, 'localKeyPass': {'outlet': 0, 'key': 0}}
         elif params.get("triggerType"):
             # Fix duplicates from mDNS https://github.com/AlexxIT/SonoffLAN/issues/1769
-            if seq := self.device.get("local_seq"):
-                if seq == self.last_seq:
-                    return
-                self.last_seq = seq
+            if seq == self.last_seq:
+                return
+            self.last_seq = seq
         else:
             return
 
