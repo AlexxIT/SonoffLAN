@@ -280,9 +280,22 @@ sonoff:
 > [!IMPORTANT]
 > Read the warning at the beginning of the readme file.
 
-Support `power`, `current` and `voltage` sensors via **local** connection. Also support energy (consumption) sensor only with **Cloud** connection.
+Check which devices support the local protocol here - [DEVICES](DEVICES.md). Depending on your environment settings, the local protocol may not work. Every device has a connection sensor (disabled by default). You can check which protocol your specific device is using with this sensor.
 
-By default `energy` data loads from cloud every hour. You can change interval via YAML and add history data to sensor attributes (max size - 30 days, disable - 0). For multi-channel devices use `energy_1`, `energy_2`.
+Support `power`, `current` and `voltage` sensors via **local** connection.
+
+The **S60TPF** device automatically sends power data to the cloud whenever the day energy sensor reading increases by 1W. Therefore, even with a cloud connection, the data will update very slowly, depending on consumption. I don't know if other device models do the same.
+
+Supports two types of `energy`, depending on the device model:
+
+- Regular sensor - updated in real time via a **local** connection (if device supports it)
+  - Sensor name: `energy_day`, `energy_week`, `energy_month`, `energy_year`
+  - UIID (HW version): 190, 226, 276, 7032
+- Historical data - updated once an hour via a **cloud** connection
+  - Sensor name: `energy`, `energy_1`, `energy_2`...
+  - UIID (HW version): 5, 32, 126, 130, 182, 190
+
+By default, historical `energy` data loads from cloud every hour. You can change interval via YAML and add history data to sensor attributes (max size - 30 days, disable - 0). For multi-channel devices use `energy_1`, `energy_2`.
 
 ```yaml
 sonoff:
