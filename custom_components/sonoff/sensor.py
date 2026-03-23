@@ -191,7 +191,7 @@ class XHumidityTH(XSensor):
             XSensor.set_state(self)
 
 
-class XEnergySensor(XEntity, SensorEntity):
+class XCloudEnergy(XEntity, SensorEntity):
     get_params = None
     next_ts = 0
 
@@ -246,9 +246,9 @@ class XEnergySensor(XEntity, SensorEntity):
             self.next_ts = ts + self.report_dt
 
 
-class XEnergySensorDualR3(XEnergySensor, SensorEntity):
+class XCloudEnergyDualR3(XCloudEnergy, SensorEntity):
     def __init__(self, ewelink: XRegistry, device: dict):
-        XEnergySensor.__init__(self, ewelink, device)
+        XCloudEnergy.__init__(self, ewelink, device)
         device.setdefault("active_energy", []).append(self.uid)
 
     @staticmethod
@@ -264,20 +264,20 @@ class XEnergySensorDualR3(XEnergySensor, SensorEntity):
             return None
 
     def can_update(self) -> bool:
-        if XEnergySensor.can_update(self):
+        if XCloudEnergy.can_update(self):
             # Allow only one sensor update at a time
             return self.device["active_energy"][0] == self.uid
         return False
 
     async def get_update(self) -> bool:
-        if await XEnergySensor.get_update(self):
+        if await XCloudEnergy.get_update(self):
             active = self.device["active_energy"]
             active.append(active.pop(0))
             return True
         return False
 
 
-class XEnergySensorPOWR3(XEnergySensor, SensorEntity):
+class XCloudEnergyPOWR3(XCloudEnergy, SensorEntity):
     @staticmethod
     def decode_energy(value: str) -> Optional[list]:
         try:
