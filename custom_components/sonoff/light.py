@@ -1247,3 +1247,27 @@ class XT5Light(XOnOffLight):
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {"lightSwitch": "off"})
+
+
+class XMiniDim(XEntity, LightEntity):
+    params = {"switch", "brightness"}
+
+    _attr_color_mode = ColorMode.BRIGHTNESS
+    _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
+
+    def set_state(self, params: dict):
+        if "switch" in params:
+            self._attr_is_on = params["switch"] == "on"
+
+        if "brightness" in params:
+            self._attr_brightness = conv(params["brightness"], 1, 100, 1, 255)
+
+    async def async_turn_on(self, brightness: int = None, **kwargs) -> None:
+        if brightness is not None:
+            value = conv(brightness, 1, 255, 1, 100)
+            await self.ewelink.send(self.device, {"brightness": value})
+        else:
+            await self.ewelink.send(self.device, {"switch": "on"})
+
+    async def async_turn_off(self, **kwargs) -> None:
+        await self.ewelink.send(self.device, {"switch": "off"})

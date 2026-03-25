@@ -335,7 +335,7 @@ class XRegistry(XRegistryBase):
         ):
             uiid = device["extra"]["uiid"]
             # TH10R2 (15) and THR316D/THR320D (181) shouldn't be here, but anyway
-            if uiid in (15, 32, 181, 182, 190, 262):
+            if uiid in (15, 32, 181, 182, 190, 262, 277):
                 if led := device["params"].get("sledOnline"):
                     params = {"sledOnline": led}
                     asyncio.create_task(self.send_local(device, "sledonline", params))
