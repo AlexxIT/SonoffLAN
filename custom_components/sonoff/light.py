@@ -1264,10 +1264,10 @@ class XMiniDim(XEntity, LightEntity):
 
     async def async_turn_on(self, brightness: int = None, **kwargs) -> None:
         if brightness is not None:
-            value = conv(brightness, 1, 255, 1, 100)
-            await self.ewelink.send(self.device, {"brightness": value})
+            params = {"brightness": conv(brightness, 1, 255, 1, 100), "switch": "on"}
         else:
-            await self.ewelink.send(self.device, {"switch": "on"})
+            params = {"switch": "on"}
+        await self.ewelink.send(self.device, params)
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {"switch": "off"})
