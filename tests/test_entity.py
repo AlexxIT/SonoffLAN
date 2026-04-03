@@ -18,7 +18,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
-from custom_components.sonoff import remote
+from custom_components.sonoff import CONFIG_SCHEMA, remote
 from custom_components.sonoff.binary_sensor import XBinarySensor, XRemoteSensor
 from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
@@ -630,6 +630,46 @@ def test_rfbridge():
         },
     )
     assert alarm.state == "off"
+
+
+def test_rfbridge_button_override_without_timeout():
+    config = CONFIG_SCHEMA(
+        {"sonoff": {"rfbridge": {"Button A": {"device_class": "button"}}}}
+    )
+    assert config["sonoff"]["rfbridge"]["Button A"] == {"device_class": "button"}
+
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 28},
+            "params": {
+                "cmd": "trigger",
+                "fwVersion": "3.4.0",
+                "init": 1,
+                "rfChl": 0,
+                "rfList": [{"rfChl": 0, "rfVal": "xxx"}],
+                "rfTrig0": "2020-05-10T19:29:43.000Z",
+                "rssi": -55,
+                "setState": "arm",
+                "sledOnline": "on",
+                "timers": [],
+                "version": 8,
+            },
+            "tags": {
+                "disable_timers": [],
+                "zyx_info": [
+                    {
+                        "buttonName": [{"0": "Button1"}],
+                        "name": "Button A",
+                        "remote_type": "6",
+                    }
+                ],
+            },
+        },
+        config["sonoff"],
+    )
+
+    button = next(e for e in entities if e.__class__.__name__ == "XRemoteButton")
+    assert button.name == "Button A"
 
 
 def test_wifi_sensor():

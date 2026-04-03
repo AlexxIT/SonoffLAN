@@ -75,7 +75,7 @@ CONFIG_SCHEMA = vol.Schema(
                         {
                             vol.Optional(CONF_NAME): cv.string,
                             vol.Optional(CONF_DEVICE_CLASS): cv.string,
-                            vol.Optional(CONF_TIMEOUT, default=120): cv.positive_int,
+                            vol.Optional(CONF_TIMEOUT): cv.positive_int,
                             vol.Optional(CONF_PAYLOAD_OFF): cv.string,
                         },
                         extra=vol.ALLOW_EXTRA,
