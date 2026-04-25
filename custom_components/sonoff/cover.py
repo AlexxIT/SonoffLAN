@@ -25,7 +25,7 @@ class XCover(XEntity, CoverEntity):
 
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
-        self._attr_device_class = DEVICE_CLASSES.get(device.get("device_class"))
+        self._attr_device_class = DEVICE_CLASSES.get(device.get("device_class")) if isinstance(device.get("device_class"), str) else None
 
     def set_state(self, params: dict):
         # => command to cover from mobile app
