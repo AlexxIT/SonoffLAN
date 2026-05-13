@@ -123,6 +123,41 @@ def test_simple_switch():
     assert rssi.entity_registry_enabled_default is False
 
 
+def test_entity_id_domain():
+    # Regression for https://github.com/AlexxIT/SonoffLAN/issues/1787
+    # entity_id domain must match the entity's platform, not "sonoff".
+
+    # switch entity: switch.sonoff_<id>
+    switch_entities = get_entitites({"extra": {"uiid": 1}, "params": {"switch": "on"}})
+    sw = next(e for e in switch_entities if isinstance(e, XSwitch) and e.uid is None)
+    assert sw.entity_id.startswith("switch."), f"got {sw.entity_id}"
+    assert sw.entity_id == f"switch.sonoff_{DEVICEID}"
+
+    # sensor entity (rssi): sensor.sonoff_<id>_rssi
+    rssi = next(e for e in switch_entities if hasattr(e, "uid") and e.uid == "rssi")
+    assert rssi.entity_id.startswith("sensor."), f"got {rssi.entity_id}"
+    assert rssi.entity_id == f"sensor.sonoff_{DEVICEID}_rssi"
+
+    # light entity: light.sonoff_<id>
+    light_entities = get_entitites(
+        {
+            "extra": {"uiid": 22},
+            "params": {
+                "channel0": "159",
+                "channel1": "159",
+                "channel2": "0",
+                "channel3": "0",
+                "channel4": "0",
+                "state": "on",
+                "zyx_mode": 1,
+            },
+        }
+    )
+    light = next(e for e in light_entities if isinstance(e, XLightB1))
+    assert light.entity_id.startswith("light."), f"got {light.entity_id}"
+    assert light.entity_id == f"light.sonoff_{DEVICEID}"
+
+
 def test_available():
     entities = get_entitites(
         {
