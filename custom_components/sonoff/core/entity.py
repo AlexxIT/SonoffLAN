@@ -68,9 +68,6 @@ class XEntity(Entity):
             self._attr_name = device["name"]
             self._attr_unique_id = device["deviceid"]
 
-        # domain will be replaced in entity_registry.async_generate_entity_id
-        self.entity_id = f"{DOMAIN}.{DOMAIN}_{self._attr_unique_id.lower()}"
-
         deviceid: str = device["deviceid"]
         params: dict = device["params"]
 
@@ -98,6 +95,15 @@ class XEntity(Entity):
         if parent := device.get("parent"):
             self._attr_device_info["via_device"] = (DOMAIN, parent["deviceid"])
             ewelink.dispatcher_connect(parent["deviceid"], self.internal_parent_update)
+
+    @property
+    def suggested_object_id(self) -> str | None:
+        # Preserve historical "sonoff_<unique_id>" naming. HA prepends the
+        # platform domain (e.g. sensor., switch.) to build the entity_id.
+        # https://github.com/AlexxIT/SonoffLAN/issues/1787
+        if self._attr_unique_id:
+            return f"{DOMAIN}_{self._attr_unique_id.lower()}"
+        return None
 
     def set_state(self, params: dict):
         pass

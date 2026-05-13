@@ -2,6 +2,19 @@ import asyncio
 import threading
 from typing import List
 
+from homeassistant.components.alarm_control_panel import AlarmControlPanelEntity
+from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.button import ButtonEntity
+from homeassistant.components.climate import ClimateEntity
+from homeassistant.components.cover import CoverEntity
+from homeassistant.components.fan import FanEntity
+from homeassistant.components.light import LightEntity
+from homeassistant.components.media_player import MediaPlayerEntity
+from homeassistant.components.number import NumberEntity
+from homeassistant.components.remote import RemoteEntity
+from homeassistant.components.select import SelectEntity
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import HomeAssistant  # fix circular import
 from homeassistant.helpers.entity import Entity
 
@@ -9,6 +22,41 @@ from custom_components.sonoff.core.entity import XEntity
 from custom_components.sonoff.core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 DEVICEID = "1000123abc"
+
+# Mirror EntityPlatform: platform domain prepended to suggested_object_id when
+# building entity_id. Tests bypass EntityPlatform, so resolve manually.
+PLATFORM_DOMAINS = (
+    (SensorEntity, "sensor"),
+    (SwitchEntity, "switch"),
+    (BinarySensorEntity, "binary_sensor"),
+    (ButtonEntity, "button"),
+    (ClimateEntity, "climate"),
+    (CoverEntity, "cover"),
+    (FanEntity, "fan"),
+    (LightEntity, "light"),
+    (MediaPlayerEntity, "media_player"),
+    (NumberEntity, "number"),
+    (SelectEntity, "select"),
+    (RemoteEntity, "remote"),
+    (AlarmControlPanelEntity, "alarm_control_panel"),
+)
+
+
+def _resolve_entity_id(entity: Entity) -> None:
+    if entity.entity_id:
+        return
+    if not entity.unique_id:
+        return
+    object_id = entity.suggested_object_id or entity.unique_id
+    # Walk MRO directly instead of isinstance so ABC's subclass cache stays
+    # untouched. set_default_class() rewrites XSwitch.__bases__ in
+    # test_default_class; isinstance here would freeze the cached result and
+    # break that test.
+    mro = type(entity).__mro__
+    for cls, domain in PLATFORM_DOMAINS:
+        if cls in mro:
+            entity.entity_id = f"{domain}.{object_id}"
+            return
 
 
 class DummyRegistry(XRegistry):
@@ -62,6 +110,7 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
     for entity in entities:
         if not isinstance(entity, Entity):
             continue
+        _resolve_entity_id(entity)
         entity.hass = hass
         entity.async_write_ha_state()
 

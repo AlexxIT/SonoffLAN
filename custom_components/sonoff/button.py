@@ -31,7 +31,9 @@ class XRemoteButton(ButtonEntity):
         self._attr_name = child["name"]
         self._attr_unique_id = f"{bridge['deviceid']}_{self.channel}"
 
-        self.entity_id = DOMAIN + "." + self._attr_unique_id
+        # Use button domain to match the entity's platform.
+        # https://github.com/AlexxIT/SonoffLAN/issues/1787
+        self.entity_id = "button." + self._attr_unique_id
 
     def internal_update(self, ts: str):
         self._attr_extra_state_attributes = {ATTR_LAST_TRIGGERED: ts}
