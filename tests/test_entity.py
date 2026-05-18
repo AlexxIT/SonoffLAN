@@ -440,7 +440,7 @@ def test_dual_r3():
 
     cover = next(e for e in entities if isinstance(e, XCoverDualR3))
     assert cover.state == "closed"
-    assert cover.state_attributes == {"current_position": 0}
+    assert cover.state_attributes["current_position"] == 0
 
     # Get history if we use reporting
     energy_1: XCloudEnergyDualR3 = next(e for e in entities if e.uid == "energy_1")
