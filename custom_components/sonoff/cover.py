@@ -25,7 +25,10 @@ class XCover(XEntity, CoverEntity):
 
     def __init__(self, ewelink: XRegistry, device: dict):
         XEntity.__init__(self, ewelink, device)
-        self._attr_device_class = DEVICE_CLASSES.get(device.get("device_class")) if isinstance(device.get("device_class"), str) else None
+        # Fix device_class for multi-channel device UIID 211
+        # https://github.com/AlexxIT/SonoffLAN/pull/1785
+        if (v := device.get("device_class")) and isinstance(v, str):
+            self._attr_device_class = DEVICE_CLASSES.get(v)
 
     def set_state(self, params: dict):
         # => command to cover from mobile app
