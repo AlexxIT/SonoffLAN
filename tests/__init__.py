@@ -62,6 +62,7 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
     for entity in entities:
         if not isinstance(entity, Entity):
             continue
+        entity.entity_id = "sonoff.sonoff_" + entity.unique_id.lower()
         entity.hass = hass
         entity.async_write_ha_state()
 
