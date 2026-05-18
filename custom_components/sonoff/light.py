@@ -1,4 +1,3 @@
-import asyncio
 import time
 
 from homeassistant.components.light import (
@@ -1264,23 +1263,24 @@ class XMiniDim(XEntity, LightEntity):
         if "brightness" in params:
             self._attr_brightness = conv(params["brightness"], 1, 100, 1, 255)
 
-    async def async_turn_on(self, brightness: int = None, transition: float = None, **kwargs) -> None:
+    async def async_turn_on(
+        self, brightness: int = None, transition: float = None, **kwargs
+    ) -> None:
+        params = {"switch": "on"}
+
         if brightness is not None:
-            params = {"brightness": conv(brightness, 1, 255, 1, 100), "switch": "on"}
-        else:
-            params = {"switch": "on"}
+            params["brightness"] = conv(brightness, 1, 255, 1, 100)
 
-        await self.ewelink.send(self.device, params)
-
-        if transition is not None:
+        if transition is not None and self.ewelink.can_cloud(self.device):
             # The MINI-DIM firmware supports transitionTime (in ms) for smooth
             # hardware fading, but only through the cloud API — the local
             # /zeroconf endpoint ignores it and times out. So we send the
             # brightness via local first (fast), then fire the transition
             # command through cloud in the background.
-            cloud_params = dict(params)
-            cloud_params["transitionTime"] = int(transition * 1000)
-            asyncio.create_task(self.ewelink.cloud.send(self.device, cloud_params))
+            params["transitionTime"] = int(transition * 1000)
+            await self.ewelink.cloud.send(self.device, params)
+        else:
+            await self.ewelink.send(self.device, params)
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {"switch": "off"})
