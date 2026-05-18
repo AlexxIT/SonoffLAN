@@ -20,6 +20,7 @@ from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
 from custom_components.sonoff import CONFIG_SCHEMA, remote
 from custom_components.sonoff.binary_sensor import XBinarySensor, XRemoteSensor
+from custom_components.sonoff.button import XRemoteButton
 from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
 from custom_components.sonoff.core.devices import Battery
@@ -668,7 +669,7 @@ def test_rfbridge_button_override_without_timeout():
         config["sonoff"],
     )
 
-    button = next(e for e in entities if e.__class__.__name__ == "XRemoteButton")
+    button = next(e for e in entities if isinstance(e, XRemoteButton))
     assert button.name == "Button A"
 
 
