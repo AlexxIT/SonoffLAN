@@ -182,3 +182,68 @@ class XToggleFan(XEntity, FanEntity):
     @property
     def is_on(self):
         return self._attr_is_on
+
+
+class XFan17(XEntity, FanEntity):
+    params = {"fan", "speed", "mode", "shake"}
+
+    _attr_speed_count = 3
+    _attr_preset_modes = ["normal", "natural", "sleep"]
+    _attr_supported_features = (
+        FanEntityFeature.SET_SPEED
+        | FanEntityFeature.OSCILLATE
+        | FanEntityFeature.PRESET_MODE
+        | FanEntityFeature.TURN_OFF
+        | FanEntityFeature.TURN_ON
+    )
+
+    def set_state(self, params: dict):
+        if "fan" in params:
+            self._attr_is_on = params["fan"] == "on"
+
+        if "speed" in params:
+            if params["speed"] == "fast":
+                self._attr_percentage = 100
+            elif params["speed"] == "moderate":
+                self._attr_percentage = 66
+            elif params["speed"] == "slow":
+                self._attr_percentage = 33
+
+        if "mode" in params:
+            self._attr_preset_mode = params["mode"]
+
+        if "shake" in params:
+            self._attr_oscillating = params["shake"] == "on"
+
+    @property
+    def is_on(self) -> bool | None:
+        return self._attr_is_on
+
+    async def async_set_percentage(self, percentage: int) -> None:
+        if percentage is None:
+            params = {"fan": "on"}
+        elif percentage > 66:
+            params = {"speed": "fast"}
+        elif percentage > 33:
+            params = {"speed": "moderate"}
+        elif percentage > 0:
+            params = {"speed": "slow"}
+        else:
+            params = {"fan": "off"}
+        await self.ewelink.send(self.device, params)
+
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        await self.ewelink.send(self.device, {"mode": preset_mode})
+
+    async def async_oscillate(self, oscillating: bool) -> None:
+        params = {"shake": "on" if oscillating else "off"}
+        await self.ewelink.send(self.device, params)
+
+    async def async_turn_on(self, percentage=None, preset_mode=None, **kwargs):
+        if preset_mode:
+            await self.async_set_preset_mode(preset_mode)
+        else:
+            await self.async_set_percentage(percentage)
+
+    async def async_turn_off(self):
+        await self.async_set_percentage(0)

@@ -31,7 +31,7 @@ from ..button import XButton
 from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
 from ..cover import XCover, XCoverDualR3, XCoverOP, XCoverT5, XZBCover, XZigbeeCover
-from ..fan import XDiffuserFan, XFan, XFanDualR3, XToggleFan
+from ..fan import XDiffuserFan, XFan, XFan17, XFanDualR3, XToggleFan
 from ..light import (
     XDiffuserLight,
     XDimmer,
@@ -223,6 +223,7 @@ DEVICES = {
         LED,
         RSSI,
     ],
+    17: [XFan17, LED, RSSI],
     18: [
         spec(XSensor, param="temperature"),
         spec(XSensor, param="humidity"),

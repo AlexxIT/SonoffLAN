@@ -31,7 +31,7 @@ from custom_components.sonoff.core.ewelink import (
     SIGNAL_UPDATE,
 )
 from custom_components.sonoff.cover import XCover, XCoverDualR3, XCoverOP, XZigbeeCover
-from custom_components.sonoff.fan import XFan, XToggleFan
+from custom_components.sonoff.fan import XFan, XFan17, XToggleFan
 from custom_components.sonoff.light import (
     UIID22_MODES,
     XDiffuserLight,
@@ -2384,3 +2384,32 @@ def test_powct():
 
     entities = get_entitites({"extra": {"uiid": 190}, "params": {}})
     assert entities and all("supply" not in e.uid for e in entities if e.uid)
+
+
+def test_fan17():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1702
+    params = {
+        "version": 8,
+        "fwVersion": "1.2.0",
+        "rssi": -32,
+        "sledOnline": "on",
+        "fan": "on",
+        "mode": "normal",
+        "shake": "off",
+        "speed": "slow",
+        "only_device": {"ota": "success", "ota_fail_reason": 0},
+        "TZ": "Asia/Ho_Chi_Minh",
+    }
+    entities = get_entitites({"extra": {"uiid": 17}, "params": params})
+
+    fan: XFan17 = entities[0]
+    assert fan.state == "on"
+    assert fan.state_attributes == {
+        "oscillating": False,
+        "percentage": 33,
+        "percentage_step": 33.333333333333336,
+        "preset_mode": "normal",
+    }
+
+    fan.set_state({"fan": "off"})
+    assert fan.state == "off"
