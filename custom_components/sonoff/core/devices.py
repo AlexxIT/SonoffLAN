@@ -27,7 +27,7 @@ from ..binary_sensor import (
     XWiFiDoor,
     XZigbeeMotion,
 )
-from ..button import XButton
+from ..button import XButton, XT5Effect
 from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
 from ..cover import XCover, XCoverDualR3, XCoverOP, XCoverT5, XZBCover, XZigbeeCover
@@ -46,6 +46,9 @@ from ..light import (
     XLightL3,
     XMiniDim,
     XOnOffLight,
+    XT5EffectLight,
+    XT5EffectSound,
+    XT5EffectStatus,
     XT5Light,
     XZigbeeColorTemp,
     XZigbeeLight,
@@ -182,8 +185,16 @@ EnergyYear = spec(
 # backward compatibility for unique_id
 DoorLock = spec(XBinarySensor, param="lock", uid="", default_class="door")
 
-XT5Alarm = spec(XButton, param="soundAction", value=1, uid="alarm", enabled=False)
-XT5Bell = spec(XButton, param="soundAction", value=2, uid="bell", enabled=False)
+TX_ULTIMATE = [
+    XT5Light,
+    XT5Action,
+    spec(XButton, param="soundAction", value=1, uid="alarm", enabled=False),
+    spec(XButton, param="soundAction", value=2, uid="bell", enabled=False),
+    XT5EffectLight,
+    XT5EffectSound,
+    XT5EffectStatus,
+    XT5Effect,
+]
 
 # https://github.com/CoolKit-Technologies/eWeLink-API/blob/main/en/UIIDProtocol.md
 DEVICES = {
@@ -494,18 +505,9 @@ DEVICES = {
     # NSPanel Pro, https://github.com/AlexxIT/SonoffLAN/issues/984
     195: SPEC_NSP,
     # Sonoff TX ULTIMATE T5-1C-86, https://github.com/AlexxIT/SonoffLAN/issues/1183
-    209: [Switch1, Startup1, XT5Light, XT5Action, XT5Alarm, XT5Bell],
+    209: [Switch1, Startup1] + TX_ULTIMATE,
     # Sonoff TX ULTIMATE T5-2C-86
-    210: [
-        Switch1,
-        Switch2,
-        Startup1,
-        Startup2,
-        XT5Light,
-        XT5Action,
-        XT5Alarm,
-        XT5Bell,
-    ],
+    210: [Switch1, Switch2, Startup1, Startup2] + TX_ULTIMATE,
     # Sonoff TX ULTIMATE T5-3C-86
     211: [
         Switch1,
@@ -514,13 +516,10 @@ DEVICES = {
         Startup1,
         Startup2,
         Startup3,
-        XT5Light,
-        XT5Action,
-        XT5Alarm,
-        XT5Bell,
         XCoverT5,
         XT5WorkMode,
-    ],
+    ]
+    + TX_ULTIMATE,
     # Sonoff TX ULTIMATE T5-4C-86, https://github.com/AlexxIT/SonoffLAN/issues/1251
     212: [
         Switch1,
@@ -531,11 +530,8 @@ DEVICES = {
         Startup2,
         Startup3,
         Startup4,
-        XT5Light,
-        XT5Action,
-        XT5Alarm,
-        XT5Bell,
-    ],
+    ]
+    + TX_ULTIMATE,
     # CK-BL602-PCSW-01(225), https://github.com/AlexxIT/SonoffLAN/issues/1616
     225: [
         spec(XBoolSwitch, param="switch"),

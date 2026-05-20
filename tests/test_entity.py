@@ -20,7 +20,7 @@ from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
 from custom_components.sonoff import CONFIG_SCHEMA, remote
 from custom_components.sonoff.binary_sensor import XBinarySensor, XRemoteSensor
-from custom_components.sonoff.button import XRemoteButton
+from custom_components.sonoff.button import XRemoteButton, XT5Effect
 from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
 from custom_components.sonoff.core.devices import Battery
@@ -41,6 +41,9 @@ from custom_components.sonoff.light import (
     XLightGroup,
     XLightL1,
     XLightL3,
+    XT5EffectLight,
+    XT5EffectSound,
+    XT5EffectStatus,
     XT5Light,
 )
 from custom_components.sonoff.number import XNumber, XPulseWidth
@@ -2413,3 +2416,127 @@ def test_fan17():
 
     fan.set_state({"fan": "off"})
     assert fan.state == "off"
+
+
+def test_t5_effect():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1524
+    params = {
+        "version": 8,
+        "reset_reason": "ESP_RST_POWERON",
+        "fwVersion": "1.4.0",
+        "switches": [{"switch": "off", "outlet": 0}, {"switch": "off", "outlet": 1}],
+        "electromotor": 1,
+        "lightSwitch": "off",
+        "lightMode": 101,
+        "disableSwipeGesture": False,
+        "disableTapGesture": False,
+        "shock": 1,
+        "doNotDisturb": 1,
+        "doNotDisturbTime": {"from": "22:00", "to": "07:00"},
+        "onEffects": {
+            "lightEffect": 1,
+            "soundEffect": 0,
+            "statusLight": "on",
+            "statusLightTop": 1,
+            "statusLightBelow": 1,
+            "r": 197,
+            "g": 0,
+            "b": 255,
+            "br": 60,
+            "volume": 50,
+        },
+        "offEffects": {
+            "lightEffect": 2,
+            "soundEffect": 0,
+            "statusLight": "off",
+            "statusLightTop": 1,
+            "statusLightBelow": 1,
+            "r": 197,
+            "g": 0,
+            "b": 255,
+            "br": 5,
+            "volume": 50,
+        },
+        "configure": [
+            {"startup": "off", "enableDelay": 0, "width": 2000, "outlet": 0},
+            {"startup": "off", "enableDelay": 0, "width": 36000, "outlet": 1},
+        ],
+        "pulses": [
+            {"pulse": "off", "switch": "off", "outlet": 0, "width": 500},
+            {"pulse": "off", "switch": "off", "outlet": 1, "width": 500},
+        ],
+        "sledOnline": "off",
+        "rssi": -68,
+        "timeZone": 1,
+        "percentageControl": 0,
+        "calibState": False,
+        "preEffects": {
+            "lightEffect": 1,
+            "soundEffect": 1,
+            "statusLight": "on",
+            "statusLightTop": 1,
+            "statusLightBelow": 1,
+            "r": 197,
+            "g": 0,
+            "b": 255,
+            "br": 60,
+            "volume": 50,
+        },
+    }
+    entities = get_entitites({"extra": {"uiid": 210}, "params": params})
+
+    light: XT5EffectLight = next(e for e in entities if e.uid == "effect_light")
+    assert light.name == "Device1 Effect Light"
+    assert light.state == "on"
+    assert light.state_attributes == {
+        "brightness": 152,
+        "color_mode": ColorMode.RGB,
+        "effect": "Wave",
+        "hs_color": (286.353, 100.0),
+        "rgb_color": (197, 0, 255),
+        "xy_color": (0.309, 0.12),
+    }
+
+    sound: XT5EffectSound = next(e for e in entities if e.uid == "effect_sound")
+    assert sound.name == "Device1 Effect Sound"
+    assert sound.state == "on"
+    assert sound.state_attributes == {
+        "brightness": 127,
+        "color_mode": ColorMode.BRIGHTNESS,
+        "effect": "Beep",
+    }
+
+    status: XT5EffectStatus = next(e for e in entities if e.uid == "effect_status")
+    assert status.name == "Device1 Effect Status"
+    assert status.state == "on"
+    assert status.state_attributes == {
+        "color_mode": ColorMode.ONOFF,
+        "effect": "Default",
+    }
+
+    effect: XT5Effect = next(e for e in entities if e.uid == "effect")
+    assert effect.name == "Device1 Effect"
+
+    registry: DummyRegistry = effect.ewelink
+    result = registry.call(effect.async_press())
+    assert result[1]["preEffects"] == params["preEffects"]
+
+    registry.call(light.async_turn_on(brightness=100, effect="Breath"))
+    registry.call(sound.async_turn_off())
+    registry.call(status.async_turn_off())
+
+    result = registry.call(effect.async_press())
+    assert result[1] == {
+        "preEffects": {
+            "r": 197,
+            "g": 0,
+            "b": 255,
+            "br": 40,
+            "lightEffect": 2,
+            "soundEffect": 0,
+            "statusLight": "off",
+            "statusLightBelow": 1,
+            "statusLightTop": 1,
+            "volume": 50,
+        }
+    }

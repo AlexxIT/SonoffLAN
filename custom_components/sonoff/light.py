@@ -5,6 +5,7 @@ from homeassistant.components.light import (
     LightEntity,
     LightEntityFeature,
 )
+from homeassistant.const import EntityCategory
 from homeassistant.util import color
 
 from .core.const import DOMAIN
@@ -1286,3 +1287,125 @@ class XMiniDim(XEntity, LightEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         await self.ewelink.send(self.device, {"switch": "off"})
+
+
+class XT5EffectLight(XEntity, LightEntity):
+    params = {"preEffects"}
+    uid = "effect_light"
+
+    _attr_entity_category  = EntityCategory.CONFIG
+    _attr_color_mode = ColorMode.RGB
+    _attr_supported_color_modes = {ColorMode.RGB}
+    _attr_supported_features = LightEntityFeature.EFFECT
+    _attr_effect_list = [
+        "Wave",
+        "Breath",
+        "Cycle",
+        "Fast Transition",
+        "Color Burst",
+    ]
+
+    def set_state(self, params: dict):
+        self.device["params"]["preEffects"] = pre = params["preEffects"]
+        self._attr_brightness = conv(pre["br"], 1, 100, 1, 255)
+        self._attr_rgb_color = (pre["r"], pre["g"], pre["b"])
+        if i := pre["lightEffect"]:
+            self._attr_is_on = True
+            self._attr_effect = self.effect_list[i - 1]
+        else:
+            self._attr_is_on = False
+            self._attr_effect = None
+
+    async def async_turn_on(
+        self,
+        brightness: int = None,
+        rgb_color: tuple = None,
+        effect: str = None,
+        flash: str = None,
+        **kwargs,
+    ) -> None:
+        pre = self.device["params"]["preEffects"]
+        if brightness is not None:
+            pre["br"] = conv(brightness, 1, 255, 1, 100)
+        if rgb_color:
+            pre["r"], pre["g"], pre["b"] = rgb_color
+        if effect:
+            pre["lightEffect"] = 1 + self.effect_list.index(effect)
+
+    async def async_turn_off(self, **kwargs) -> None:
+        pre = self.device["params"]["preEffects"]
+        pre["statusLightTop"] = pre["statusLightBelow"] = 0
+
+
+class XT5EffectSound(XEntity, LightEntity):
+    params = {"preEffects"}
+    uid = "effect_sound"
+
+    _attr_entity_category  = EntityCategory.CONFIG
+    _attr_color_mode = ColorMode.BRIGHTNESS
+    _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
+    _attr_supported_features = LightEntityFeature.EFFECT
+    _attr_effect_list = [
+        "Beep",
+        "Double Beep",
+        "Melody 1",
+        "Alarm Chime",
+        "Notification Sound",
+    ]
+
+    def set_state(self, params: dict):
+        pre = params["preEffects"]
+        self._attr_brightness = conv(pre["volume"], 1, 100, 1, 255)
+        if i := pre["soundEffect"]:
+            self._attr_is_on = True
+            self._attr_effect = self.effect_list[i - 1]
+        else:
+            self._attr_is_on = False
+            self._attr_effect = None
+
+    async def async_turn_on(
+        self, brightness: int = None, effect: str = None, **kwargs
+    ) -> None:
+        pre = self.device["params"]["preEffects"]
+        if brightness is not None:
+            pre["volume"] = conv(brightness, 1, 255, 1, 100)
+        if effect:
+            pre["soundEffect"] = 1 + self.effect_list.index(effect)
+
+    async def async_turn_off(self, **kwargs) -> None:
+        pre = self.device["params"]["preEffects"]
+        pre["soundEffect"] = 0
+
+
+class XT5EffectStatus(XEntity, LightEntity):
+    params = {"preEffects"}
+    uid = "effect_status"
+
+    _attr_entity_category  = EntityCategory.CONFIG
+    _attr_color_mode = ColorMode.ONOFF
+    _attr_supported_color_modes = {ColorMode.ONOFF}
+    _attr_supported_features = LightEntityFeature.EFFECT
+    _attr_effect_list = ["Above", "Below", "Default"]
+
+    def set_state(self, params: dict):
+        pre = params["preEffects"]
+        self._attr_is_on = pre["statusLight"] == "on"
+        i = pre["statusLightTop"] + pre["statusLightBelow"] * 2
+        self._attr_effect = self.effect_list[i - 1] if i else None
+
+    async def async_turn_on(self, effect: str = None, **kwargs) -> None:
+        pre = self.device["params"]["preEffects"]
+        if effect:
+            if effect == "Above":
+                pre["statusLightTop"] = 1
+                pre["statusLightBelow"] = 0
+            elif effect == "Below":
+                pre["statusLightTop"] = 0
+                pre["statusLightBelow"] = 1
+            else:
+                pre["statusLightTop"] = pre["statusLightBelow"] = 1
+        pre["statusLight"] = "on"
+
+    async def async_turn_off(self, **kwargs) -> None:
+        pre = self.device["params"]["preEffects"]
+        pre["statusLight"] = "off"
