@@ -223,11 +223,11 @@ class XFan17(XEntity, FanEntity):
         if percentage is None:
             params = {"fan": "on"}
         elif percentage > 66:
-            params = {"speed": "fast"}
+            params = {"fan": "on", "speed": "fast"}
         elif percentage > 33:
-            params = {"speed": "moderate"}
+            params = {"fan": "on", "speed": "moderate"}
         elif percentage > 0:
-            params = {"speed": "slow"}
+            params = {"fan": "on", "speed": "slow"}
         else:
             params = {"fan": "off"}
         await self.ewelink.send(self.device, params)
