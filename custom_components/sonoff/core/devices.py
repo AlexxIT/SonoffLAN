@@ -69,6 +69,7 @@ from ..sensor import (
     XHexVoltageTRVZB,
     XHumCorrection,
     XHumidityTH,
+    XOrb,
     XOutdoorTempNS,
     XSensor,
     XT5Action,
@@ -743,6 +744,9 @@ DEVICES = {
             XSensor, param="remoteTemperature", uid="remote_temperature", multiply=0.01
         ),
     ],
+    # SNZB-01M Orb (4-button multi-action remote)
+    # https://github.com/AlexxIT/SonoffLAN/issues/1786
+    7039: [XOrb, Battery, ZRSSI],
 }
 
 

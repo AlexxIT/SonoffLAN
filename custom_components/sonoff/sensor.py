@@ -372,6 +372,7 @@ class XWiFiDoorBattery(XSensor):
 
 
 BUTTON_STATES = ["single", "double", "hold"]
+ORB_BUTTON_STATES = ["single", "double", "long", "triple"]
 
 
 class XEventSesor(XEntity, SensorEntity):
@@ -448,6 +449,34 @@ class XButtonLocalKey(XButtonBase):
         # MINI-2GS https://github.com/AlexxIT/SonoffLAN/issues/1694
         # MINI-ZB2GS-L https://github.com/AlexxIT/SonoffLAN/issues/1701
         XButtonBase.set_state(self, params["localKeyPass"])
+
+
+class XOrb(XButtonBase):
+    """SNZB-01M Orb button entity - supports 4 buttons with 4 actions each.
+    State format: {action}_button_{number}
+    """
+    params = {"key"}
+
+    def __init__(self, ewelink: XRegistry, device: dict):
+        # remember initial trigTime so stale replays after reconnect are skipped
+        params = device["params"]
+        self.last_trig_time = params.get("trigTime") or params.get("actionTime")
+        super().__init__(ewelink, device)
+
+    def set_state(self, params: dict):
+        # skip stale events replayed after device reconnect
+        if trig_time := (params.get("trigTime") or params.get("actionTime")):
+            if trig_time == self.last_trig_time:
+                return
+            self.last_trig_time = trig_time
+
+        button = params.get("outlet")
+        key = ORB_BUTTON_STATES[params["key"]]
+        # New format: action_button_number
+        self._attr_native_value = (
+            f"{key}_button_{button + 1}" if button is not None else key
+        )
+        asyncio.create_task(self.clear_state())
 
 
 class XT5Action(XEventSesor):

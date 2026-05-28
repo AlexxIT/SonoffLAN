@@ -53,6 +53,7 @@ from custom_components.sonoff.sensor import (
     XButtonLocalKey,
     XCloudEnergyDualR3,
     XEnergyTotal,
+    XOrb,
     XOutdoorTempNS,
     XSensor,
     XT5Action,
@@ -775,6 +776,75 @@ def test_sonoff_r5():
         },
     )
     assert button.state == "button_3_double"
+
+
+def test_snzb_01m_orb():
+    """Test SNZB-01M Orb 4-button multi-action remote.
+    
+    Orb uses new state format: {action}_button_{number}
+    - Outlets: 0-3 (buttons 1-4)
+    - Keys: 0=single, 1=double, 2=long, 3=triple
+    """
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 7039},
+            "params": {
+                "subDevId": "ffffd4a21038c1a47039",
+                "parentid": "10022bcf8f",
+                "key": 0,
+                "outlet": 0,
+                "battery": 100,
+                "subDevRssi": -45,
+                "actionTime": "2026-04-26T18:23:30.000Z",
+            },
+        }
+    )
+
+    # XOrb, Battery, ZRSSI
+    assert len(entities) == 3
+    
+    orb: XOrb = next(e for e in entities if isinstance(e, XOrb))
+    assert orb.state == ""
+
+    # Button 1, single press (key=0, outlet=0)
+    orb.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"key": 0, "outlet": 0, "actionTime": "2026-05-28T13:11:10.000Z"},
+        },
+    )
+    assert orb.state == "single_button_1"
+
+    # Button 2, double press (key=1, outlet=1)
+    orb.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"key": 1, "outlet": 1, "actionTime": "2026-05-28T13:11:13.000Z"},
+        },
+    )
+    assert orb.state == "double_button_2"
+
+    # Button 3, long press (key=2, outlet=2)
+    orb.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"key": 2, "outlet": 2, "actionTime": "2026-05-28T13:11:16.000Z"},
+        },
+    )
+    assert orb.state == "long_button_3"
+
+    # Button 4, triple press (key=3, outlet=3)
+    orb.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"key": 3, "outlet": 3, "actionTime": "2026-05-28T13:11:18.000Z"},
+        },
+    )
+    assert orb.state == "triple_button_4"
 
 
 def test_zigbee_th():
