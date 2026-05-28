@@ -774,7 +774,7 @@ def test_sonoff_r5():
             },
         },
     )
-    assert button.state == "button_3_double"
+    assert button.state == "double_button_3"
 
 
 def test_zigbee_th():
@@ -2312,7 +2312,7 @@ def test_zb2gs():
         SIGNAL_UPDATE,
         {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 0}}},
     )
-    assert button.state == "button_1_single"
+    assert button.state == "single_button_1"
 
 
 def test_m5_matter():
@@ -2342,7 +2342,7 @@ def test_m5_matter():
         SIGNAL_UPDATE,
         {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 0}}},
     )
-    assert button.state == "button_1_single"
+    assert button.state == "single_button_1"
 
     # this is first local event with trigger (device discovery)
     setattr(button, "_attr_native_value", "")  # reset state
@@ -2366,7 +2366,7 @@ def test_m5_matter():
             "seq": 2,
         },
     )
-    assert button.state == "button_2_single"
+    assert button.state == "single_button_2"
 
     # this is local event with same sequence
     setattr(button, "_attr_native_value", "")  # reset state

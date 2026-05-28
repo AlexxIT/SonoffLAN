@@ -371,7 +371,7 @@ class XWiFiDoorBattery(XSensor):
         return self.ewelink.cloud.online
 
 
-BUTTON_STATES = ["single", "double", "hold"]
+BUTTON_STATES = ["single", "double", "long", "triple"]
 
 
 class XEventSesor(XEntity, SensorEntity):
@@ -390,7 +390,7 @@ class XButtonBase(XEventSesor):
         button = params.get("outlet")
         key = BUTTON_STATES[params["key"]]
         self._attr_native_value = (
-            f"button_{button + 1}_{key}" if button is not None else key
+            f"{key}_button_{button + 1}" if button is not None else key
         )
         asyncio.create_task(self.clear_state())
 
@@ -421,6 +421,9 @@ class XButtonLocalKey(XButtonBase):
     def __init__(self, ewelink: XRegistry, device: dict):
         super().__init__(ewelink, device)
         self.last_seq = None
+        # remember initial trigTime/actionTime so stale replays after reconnect are skipped
+        params = device["params"]
+        self.last_trig_time = params.get("trigTime") or params.get("actionTime")
 
     def set_state(self, params: dict):
         if seq := self.device.get("local_seq"):
@@ -432,9 +435,21 @@ class XButtonLocalKey(XButtonBase):
         if self._attr_native_value:
             return
 
+        # Extract params from nested localKeyPass or top-level format
+        button_params = None
+
         # cloud click: {'localKeyPass': {'outlet': 0, 'key': 0}}
         if len(params) == 1:
-            pass
+            button_params = params.get("localKeyPass")
+        # cloud click (new format): {'key': 0, 'outlet': 0, 'actionTime': '...'}
+        elif "key" in params and ("outlet" in params or "actionTime" in params):
+            # skip stale events replayed after device reconnect
+            # https://github.com/AlexxIT/SonoffLAN/issues/1669
+            if trig_time := (params.get("trigTime") or params.get("actionTime")):
+                if trig_time == self.last_trig_time:
+                    return
+                self.last_trig_time = trig_time
+            button_params = params
         # local click: {'triggerType': 11, 'localKeyPass': {'outlet': 0, 'key': 0}}
         # local trash: {'triggerType': 0, 'localKeyPass': {'outlet': 0, 'key': 0}}
         elif params.get("triggerType"):
@@ -442,12 +457,14 @@ class XButtonLocalKey(XButtonBase):
             if seq == self.last_seq:
                 return
             self.last_seq = seq
-        else:
+            button_params = params.get("localKeyPass")
+
+        if button_params is None:
             return
 
         # MINI-2GS https://github.com/AlexxIT/SonoffLAN/issues/1694
         # MINI-ZB2GS-L https://github.com/AlexxIT/SonoffLAN/issues/1701
-        XButtonBase.set_state(self, params["localKeyPass"])
+        XButtonBase.set_state(self, button_params)
 
 
 class XT5Action(XEventSesor):
