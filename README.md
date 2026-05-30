@@ -5,7 +5,7 @@
 Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devices with [eWeLink](https://www.ewelink.cc/en/) (original) firmware over LAN and/or Cloud.
 
 > [!CAUTION]
-> Starting in 2026 - power, current, and voltage sensors will no longer be updated via the cloud connection. These updates placed a heavy load on the eWeLink cloud. As a result, they were blocked by the cloud.
+> Starting in 2026 - power, current, and voltage sensors will no longer be updated via the cloud connection. These updates placed a heavy load on the eWeLink cloud. As a result, they were blocked by the cloud. The integration reduces eWeLink API calls and refreshes live power telemetry locally when LAN is available.
 
 <details>
 <summary><b>Table of Contents</b></summary>
@@ -108,9 +108,11 @@ Devices in DIY mode can be used without ewelink credentials because their protoc
 
 It is **highly recommended** that you use `mode: auto` and do not use `mode: local` or DIY mode. Because the local protocol is not always stable and you will get a bad experience. Devices may sometimes disappear from the network or fail to respond to local requests. Also some POW and TH devices cannot update their sensors without a cloud connection.
 
+To reduce eWeLink API calls, cloud requests are rate limited across all Sonoff accounts in the integration. Background cloud refreshes also have a per-device cooldown and are skipped instead of queued when the shared cloud budget is busy.
+
 ### Debug page
 
-Enable debug page in integration configuration (gear) via UI. Reload integrations page. Open: Integraion > Menu (top right dots) > Known issues.
+Enable debug page in integration configuration (gear) via UI. Reload integrations page. Open: Integration > Menu (top right dots) > Known issues.
 
 Debug page shows only integration logs and removes some private data. You can filter log and enable auto refresh (in seconds).
 
@@ -282,7 +284,8 @@ sonoff:
 
 Check which devices support the local protocol here - [DEVICES](DEVICES.md). Depending on your environment settings, the local protocol may not work. Every device has a connection sensor (disabled by default). You can check which protocol your specific device is using with this sensor.
 
-Support `power`, `current` and `voltage` sensors via **local** connection.
+Support `power`, `current` and `voltage` sensors via **local** connection. When
+LAN is available, live power telemetry is refreshed locally.
 
 The **S60TPF** device automatically sends power data to the cloud whenever the day energy sensor reading increases by 1W. Therefore, even with a cloud connection, the data will update very slowly, depending on consumption. I don't know if other device models do the same.
 
@@ -295,7 +298,10 @@ Supports two types of `energy`, depending on the device model:
   - Sensor name: `energy`, `energy_1`, `energy_2`...
   - UIID (HW version): 5, 32, 126, 130, 182, 190
 
-By default, historical `energy` data loads from cloud every hour. You can change interval via YAML and add history data to sensor attributes (max size - 30 days, disable - 0). For multi-channel devices use `energy_1`, `energy_2`.
+By default, historical `energy` data loads from cloud every hour. These requests
+use the shared cloud rate limit and per-device cooldown. You can change interval
+via YAML and add history data to sensor attributes (max size - 30 days, disable - 0).
+For multi-channel devices use `energy_1`, `energy_2`.
 
 ```yaml
 sonoff:
@@ -325,7 +331,7 @@ sensor:
 ## Sonoff TH
 
 > [!IMPORTANT]
-> For the THR316D/THR320D models, temperature and humidity sensor updates only work when connected locally. It's the same issue as with power devices - the message at the beginning of the readme file.
+> For the THR316D/THR320D models, temperature and humidity sensor updates only work when connected locally.
 
 Support optional [Climate](https://www.home-assistant.io/integrations/climate/) entity that controls Thermostat. You can control low and high temperature values and hvac modes:
 

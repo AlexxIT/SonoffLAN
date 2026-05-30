@@ -12,6 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 
 SIGNAL_ADD_ENTITIES = "add_entities"
 LOCAL_TTL = 60
+LOCAL_POWER_UIIDS = {5, 32, 182, 190, 226, 262, 276, 277}
 
 
 class XRegistry(XRegistryBase):
@@ -191,11 +192,15 @@ class XRegistry(XRegistryBase):
             return await self.send(device, params)
 
     async def send_cloud(
-        self, device: XDevice, params: dict = None, query=True
+        self,
+        device: XDevice,
+        params: dict = None,
+        query=True,
+        background: bool = False,
     ) -> str | None:
         if not self.can_cloud(device):
             return None
-        ok = await self.cloud.send(device, params)
+        ok = await self.cloud.send(device, params, throttle_device=background)
         if ok == "online" and query and params:
             await self.cloud.send(device, timeout=0)
         return ok
@@ -334,12 +339,24 @@ class XRegistry(XRegistryBase):
             and device["localfail"] < 3  # no more than 3 times
         ):
             uiid = device["extra"]["uiid"]
-            # TH10R2 (15) and THR316D/THR320D (181) shouldn't be here, but anyway
-            if uiid in (15, 32, 181, 182, 190, 262, 277):
-                if led := device["params"].get("sledOnline"):
+            if uiid in LOCAL_POWER_UIIDS:
+                if "sledOnline" in device["params"]:
+                    led = device["params"]["sledOnline"]
                     params = {"sledOnline": led}
                     asyncio.create_task(self.send_local(device, "sledonline", params))
-                    return
+                else:
+                    asyncio.create_task(
+                        self.send_local(device, "uiActive", {"uiActive": 60})
+                    )
+                return
+
+            # TH10R2 (15) and THR316D/THR320D (181) shouldn't be here, but anyway
+            if uiid in (15, 181):
+                if "sledOnline" in device["params"]:
+                    led = device["params"]["sledOnline"]
+                    params = {"sledOnline": led}
+                    asyncio.create_task(self.send_local(device, "sledonline", params))
+                return
             elif uiid == 126:
                 asyncio.create_task(self.send_local(device, "statistics"))
                 return

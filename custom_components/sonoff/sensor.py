@@ -237,7 +237,11 @@ class XCloudEnergy(XEntity, SensorEntity):
         return self.available and self.ewelink.cloud.online
 
     async def get_update(self) -> bool:
-        ok = await self.ewelink.send_cloud(self.device, self.get_params, query=False)
+        ok = await self.ewelink.send_cloud(
+            self.device, self.get_params, query=False, background=True
+        )
+        if ok == "throttle":
+            self.next_ts = time.time() + min(self.report_dt, 300)
         return ok == "online"
 
     async def async_update(self):

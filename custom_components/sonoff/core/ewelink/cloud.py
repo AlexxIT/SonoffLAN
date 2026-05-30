@@ -9,6 +9,7 @@ import hmac
 import json
 import logging
 import time
+from collections import deque
 
 from aiohttp import (
     ClientConnectorError,
@@ -247,6 +248,10 @@ REGIONS = {
 DATA_ERROR = {0: "online", 503: "offline", 504: "timeout", None: "unknown"}
 
 APP = ["R8Oq3y0eSZSYdKccHlrQzT1ACCOUT9Gv"]
+CLOUD_MIN_INTERVAL = 1.0
+CLOUD_RATE_WINDOW = 300
+CLOUD_MAX_CALLS = 300
+CLOUD_DEVICE_MIN_INTERVAL = 30.0
 
 
 class AuthError(Exception):
@@ -300,13 +305,15 @@ def sign(msg: bytes) -> bytes:
 class XRegistryCloud(ResponseWaiter, XRegistryBase):
     auth: dict | None = None
     devices: dict[str, dict] = None
-    last_ts: float = 0
     last_ui_active: float = 0
     online: bool | None = None
     region: str = None
 
     task: asyncio.Task | None = None
     ws: ClientWebSocketResponse = None
+    calls: deque = deque()
+    device_calls: dict[str, float] = {}
+    throttle_lock: asyncio.Lock = asyncio.Lock()
 
     @property
     def host(self) -> str:
@@ -354,6 +361,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
             "Content-Type": "application/json",
             "X-CK-Appid": APP[0],
         }
+        await self.throttle()
         r = await self.session.post(
             self.host + "/v2/user/login", data=data, headers=headers, timeout=5
         )
@@ -362,6 +370,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         # wrong default region
         if resp["error"] == 10004:
             self.region = resp["data"]["region"]
+            await self.throttle()
             r = await self.session.post(
                 self.host + "/v2/user/login", data=data, headers=headers, timeout=5
             )
@@ -377,6 +386,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
 
     async def login_token(self, token: str, app: int = 0) -> bool:
         headers = {"Authorization": "Bearer " + token, "X-CK-Appid": APP[0]}
+        await self.throttle()
         r = await self.session.get(
             self.host + "/v2/user/profile", headers=headers, timeout=5
         )
@@ -391,6 +401,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         return True
 
     async def get_homes(self) -> dict:
+        await self.throttle()
         r = await self.session.get(
             self.host + "/v2/family", headers=self.headers, timeout=10
         )
@@ -400,6 +411,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     async def get_devices(self, homes: list = None) -> list[dict]:
         devices = []
         for home in homes or [None]:
+            await self.throttle()
             r = await self.session.get(
                 self.host + "/v2/device/thing",
                 headers=self.headers,
@@ -421,6 +433,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     async def set_device(self, device: XDevice, params: dict, timeout: float = 5):
         did = device["deviceid"]
         try:
+            await self.throttle()
             r = await self.session.post(
                 self.host + "/v2/device/thing/status",
                 headers=self.headers,
@@ -432,12 +445,48 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
         except Exception as e:
             _LOGGER.debug(f"{did} => Cloud5 | {params} <= {repr(e)}")
 
+    async def throttle(self, deviceid: str = None, wait: bool = True) -> bool:
+        """Keep cloud calls inside published eWeLink API limits."""
+        while True:
+            async with self.throttle_lock:
+                now = time.time()
+
+                while self.calls and now - self.calls[0] >= CLOUD_RATE_WINDOW:
+                    self.calls.popleft()
+
+                delay = 0
+                if self.calls:
+                    delay = max(delay, self.calls[-1] + CLOUD_MIN_INTERVAL - now)
+                if len(self.calls) >= CLOUD_MAX_CALLS:
+                    delay = max(delay, self.calls[0] + CLOUD_RATE_WINDOW - now)
+                if deviceid and deviceid in self.device_calls:
+                    delay = max(
+                        delay,
+                        self.device_calls[deviceid]
+                        + CLOUD_DEVICE_MIN_INTERVAL
+                        - now,
+                    )
+
+                if delay <= 0:
+                    self.calls.append(now)
+                    if deviceid:
+                        self.device_calls[deviceid] = now
+                    return True
+
+                if not wait:
+                    _LOGGER.debug(f"Cloud rate limit skip {delay:.1f}s")
+                    return False
+
+            _LOGGER.debug(f"Cloud rate limit wait {delay:.1f}s")
+            await asyncio.sleep(delay)
+
     async def send(
         self,
         device: XDevice,
         params: dict = None,
         sequence: str = None,
         timeout: float = 5,
+        throttle_device: bool = False,
     ):
         """With params - send new state to device, without - request device
         state. With zero timeout - won't wait response.
@@ -453,11 +502,9 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 await asyncio.sleep(delay)
             self.last_ui_active = time.time()
 
-        # protect cloud from DDoS (it can break connection)
-        while (delay := self.last_ts + 0.1 - time.time()) > 0:
-            log += "DDoS | "
-            await asyncio.sleep(delay)
-        self.last_ts = time.time()
+        did = device["deviceid"] if throttle_device else None
+        if not await self.throttle(did, wait=not throttle_device):
+            return "throttle"
 
         if sequence is None:
             sequence = await self.sequence()
@@ -550,6 +597,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
     async def connect(self) -> bool:
         try:
             # https://coolkit-technologies.github.io/eWeLink-API/#/en/APICenterV2?id=http-dispatchservice-app
+            await self.throttle()
             r = await self.session.get(self.ws_host, headers=self.headers)
             resp = await r.json()
 
@@ -571,6 +619,7 @@ class XRegistryCloud(ResponseWaiter, XRegistryBase):
                 "sequence": str(int(ts * 1000)),
                 "version": 8,
             }
+            await self.throttle()
             await self.ws.send_json(payload)
 
             resp = await self.ws.receive_json()
