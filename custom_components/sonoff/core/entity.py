@@ -75,6 +75,10 @@ class XEntity(Entity):
             {(CONNECTION_NETWORK_MAC, params["staMac"])} if "staMac" in params else None
         )
 
+        hw_version = device.get("extra", {}).get("uiid")
+        if hw_version is not None:
+            hw_version = str(hw_version)
+
         self._attr_device_info = DeviceInfo(
             connections=connections,
             identifiers={(DOMAIN, deviceid)},
@@ -82,7 +86,7 @@ class XEntity(Entity):
             model=device.get("productModel"),
             name=device["name"],
             sw_version=params.get("fwVersion"),
-            hw_version=device.get("extra", {}).get("uiid"),
+            hw_version=hw_version,
         )
 
         try:

@@ -114,6 +114,7 @@ def test_simple_switch():
     assert switch.device_info["manufacturer"] == "SONOFF"
     assert switch.device_info["model"] == "MINI"
     assert switch.device_info["sw_version"] == "3.3.0"
+    assert switch.device_info["hw_version"] == "1"
     assert switch.state == "on"
 
     led: XToggle = next(e for e in entities if e.uid == "led")
