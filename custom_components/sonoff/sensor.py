@@ -440,7 +440,9 @@ class XButtonLocalKey(XButtonBase):
             pass
         # local click: {'triggerType': 11, 'localKeyPass': {'outlet': 0, 'key': 0}}
         # local trash: {'triggerType': 0, 'localKeyPass': {'outlet': 0, 'key': 0}}
-        elif params.get("triggerType"):
+        # local trash: {'triggerType': 2, 'localKeyPass': {'outlet': 0, 'key': 0}}
+        # based on https://github.com/AlexxIT/SonoffLAN/issues/1789
+        elif params.get("triggerType") == 11:
             # Fix duplicates from mDNS https://github.com/AlexxIT/SonoffLAN/issues/1769
             if seq == self.last_seq:
                 return
