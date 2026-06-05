@@ -778,6 +778,40 @@ def test_sonoff_r5():
     assert button.state == "button_3_double"
 
 
+def test_snzb_01m():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1786
+    entities = get_entitites(
+        [
+            {
+                "extra": {"uiid": 7039},
+                "params": {
+                    "subDevId": "ffffd4a21038c1a47039",
+                    "parentid": "10022bcf8f",
+                    "subDevRssi": -45,
+                    "key": 0,
+                    "outlet": 3,
+                    "trigTime": "1777221719000",
+                    "battery": 100,
+                    "supportPowConfig": 0,
+                    "actionTime": "2026-04-26T18:23:30.000Z",
+                },
+            },
+        ]
+    )
+
+    button: XButtonKey = next(e for e in entities if isinstance(e, XButtonKey))
+    assert button.state == ""
+
+    button.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"key": 3, "outlet": 2, "actionTime": "2026-05-28T11:11:16.000Z"},
+        },
+    )
+    assert button.state == "button_3_triple"
+
+
 def test_zigbee_th():
     entities = get_entitites(
         {

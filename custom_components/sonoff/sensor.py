@@ -374,7 +374,7 @@ class XWiFiDoorBattery(XSensor):
         return self.ewelink.cloud.online
 
 
-BUTTON_STATES = ["single", "double", "hold"]
+BUTTON_STATES = ["single", "double", "hold", "triple"]
 
 
 class XEventSesor(XEntity, SensorEntity):

@@ -745,6 +745,8 @@ DEVICES = {
             XSensor, param="remoteTemperature", uid="remote_temperature", multiply=0.01
         ),
     ],
+    # SNZB-01M, https://github.com/AlexxIT/SonoffLAN/issues/1786
+    7039: [XButtonKey, Battery, ZRSSI],
 }
 
 
