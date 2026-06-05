@@ -2541,3 +2541,57 @@ def test_t5_effect():
             "volume": 50,
         }
     }
+
+
+def test_sawf_08p():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1809
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 266},
+            "params": {
+                "co2": 510,
+                "humidity": "47.3",
+                "temperature": "21.0",
+                "temperatureF": "69.8",
+                "humCorrection": "0.0",
+                "rssi": -49,
+                "sensorLight": True,
+                "sensorLightBr": 35,
+                "tempCorrection": "0.5",
+                "tempUnit": 0,
+            },
+        }
+    )
+
+    temperature: XSensor = next(e for e in entities if e.uid == "temperature")
+    assert temperature.state == 21.5
+
+    co2: XSensor = next(e for e in entities if e.uid == "co2")
+    assert co2.state == 510
+
+
+def test_sawf_08p():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1809
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 266},
+            "params": {
+                "co2": 510,
+                "humidity": "47.3",
+                "temperature": "21.0",
+                "temperatureF": "69.8",
+                "humCorrection": "0.0",
+                "rssi": -49,
+                "sensorLight": True,
+                "sensorLightBr": 35,
+                "tempCorrection": "0.5",
+                "tempUnit": 0,
+            },
+        }
+    )
+
+    temperature: XSensor = next(e for e in entities if e.uid == "temperature")
+    assert temperature.state == 21.5
+
+    co2: XSensor = next(e for e in entities if e.uid == "co2")
+    assert co2.state == 510

@@ -8,6 +8,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
+    CONCENTRATION_PARTS_PER_MILLION,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     UnitOfElectricCurrent,
@@ -37,6 +38,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
 DEVICE_CLASSES = {
     "battery": SensorDeviceClass.BATTERY,
     "battery_voltage": SensorDeviceClass.VOLTAGE,
+    "co2": SensorDeviceClass.CO2,
     "cpu_temperature": SensorDeviceClass.TEMPERATURE,
     "current": SensorDeviceClass.CURRENT,
     "current_supply": SensorDeviceClass.CURRENT,
@@ -53,6 +55,7 @@ DEVICE_CLASSES = {
 UNITS = {
     "battery": PERCENTAGE,
     "battery_voltage": UnitOfElectricPotential.VOLT,
+    "co2": CONCENTRATION_PARTS_PER_MILLION,
     "cpu_temperature": UnitOfTemperature.CELSIUS,
     "current": UnitOfElectricCurrent.AMPERE,
     "current_supply": UnitOfElectricCurrent.AMPERE,

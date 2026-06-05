@@ -577,6 +577,8 @@ DEVICES = {
         spec(XSensor100, param="current"),
         spec(XSensor100, param="voltage"),
     ],
+    # SAWF-08P, https://github.com/AlexxIT/SonoffLAN/issues/1809
+    266: [XTempCorrection, XHumCorrection, RSSI, spec(XSensor, param="co2")],
     # BASIC-1GS, https://github.com/AlexxIT/SonoffLAN/issues/1672
     268: [Switch1, LED, RSSI],
     # MINI-2GS https://github.com/AlexxIT/SonoffLAN/issues/1694
