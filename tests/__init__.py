@@ -3,7 +3,7 @@ import threading
 from typing import List
 
 from homeassistant.config_entries import HomeAssistant  # fix circular import
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity import Entity, EntityPlatformState
 
 from custom_components.sonoff.core.entity import XEntity
 from custom_components.sonoff.core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
@@ -62,6 +62,7 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
     for entity in entities:
         if not isinstance(entity, Entity):
             continue
+        entity._platform_state = EntityPlatformState.ADDED  # for __repr__
         entity.entity_id = "sonoff.sonoff_" + entity.unique_id.lower()
         entity.hass = hass
         entity.async_write_ha_state()
