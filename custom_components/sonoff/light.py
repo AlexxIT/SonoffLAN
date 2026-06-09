@@ -1309,7 +1309,7 @@ class XT5EffectLight(XEntity, LightEntity):
         self.set_effects(params["preEffects"])
 
     def set_effects(self, params: dict):
-        self.device["params"]["preEffects"].update(params)
+        self.device["params"].setdefault("preEffects", {}).update(params)
 
         if "br" in params:
             self._attr_brightness = conv(params["br"], 1, 100, 1, 255)
@@ -1364,7 +1364,7 @@ class XT5EffectSound(XEntity, LightEntity):
         self.set_effects(params["preEffects"])
 
     def set_effects(self, params: dict):
-        self.device["params"]["preEffects"].update(params)
+        self.device["params"].setdefault("preEffects", {}).update(params)
 
         if "volume" in params:
             self._attr_brightness = conv(params["volume"], 1, 100, 1, 255)
@@ -1404,7 +1404,7 @@ class XT5EffectStatus(XEntity, LightEntity):
         self.set_effects(params["preEffects"])
 
     def set_effects(self, params: dict):
-        self.device["params"]["preEffects"].update(params)
+        self.device["params"].setdefault("preEffects", {}).update(params)
 
         if "statusLight" in params:
             self._attr_is_on = params["statusLight"] == "on"
