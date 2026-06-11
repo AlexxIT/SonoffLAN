@@ -90,8 +90,12 @@ class XSensor(XEntity, SensorEntity):
         if self.param and self.uid is None:
             self.uid = self.param
 
-        # remove tailing _1 _2 _3 _4
-        default_class = self.uid.rstrip("_01234")
+        # remove tailing digits (_1 _2 _3 _4 ...)
+        default_class = self.uid
+        if "_" in self.uid:
+            base_class, suffix = self.uid.rsplit("_", 1)
+            if suffix.isdigit():
+                default_class = base_class
 
         if device["params"].get(self.param) in ("on", "off"):
             default_class = None
