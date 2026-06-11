@@ -38,7 +38,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
 DEVICE_CLASSES = {
     "battery": SensorDeviceClass.BATTERY,
     "battery_voltage": SensorDeviceClass.VOLTAGE,
-    "co2": SensorDeviceClass.CO2,
+    "co": SensorDeviceClass.CO2,
     "cpu_temperature": SensorDeviceClass.TEMPERATURE,
     "current": SensorDeviceClass.CURRENT,
     "current_supply": SensorDeviceClass.CURRENT,
@@ -55,7 +55,7 @@ DEVICE_CLASSES = {
 UNITS = {
     "battery": PERCENTAGE,
     "battery_voltage": UnitOfElectricPotential.VOLT,
-    "co2": CONCENTRATION_PARTS_PER_MILLION,
+    "co": CONCENTRATION_PARTS_PER_MILLION,
     "cpu_temperature": UnitOfTemperature.CELSIUS,
     "current": UnitOfElectricCurrent.AMPERE,
     "current_supply": UnitOfElectricCurrent.AMPERE,
@@ -90,12 +90,8 @@ class XSensor(XEntity, SensorEntity):
         if self.param and self.uid is None:
             self.uid = self.param
 
-        # remove tailing digits (_1 _2 _3 _4 ...)
-        default_class = self.uid
-        if "_" in self.uid:
-            base_class, suffix = self.uid.rsplit("_", 1)
-            if suffix.isdigit():
-                default_class = base_class
+        # remove tailing _1 _2 _3 _4
+        default_class = self.uid.rstrip("_01234")
 
         if device["params"].get(self.param) in ("on", "off"):
             default_class = None
