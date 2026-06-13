@@ -65,5 +65,5 @@ class XT5Effect(XEntity, ButtonEntity):
     uid = "effect"
 
     async def async_press(self):
-        pre = self.device["params"]["preEffects"]
-        await self.ewelink.send(self.device, {"preEffects": pre})
+        if pre := self.device["params"].get("preEffects"):
+            await self.ewelink.send(self.device, {"preEffects": pre})
