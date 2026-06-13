@@ -28,8 +28,11 @@ ICONS = {
 }
 
 NAMES = {
+    "co2": "CO2",
     "led": "LED",
     "rssi": "RSSI",
+    "pm25": "PM2.5",
+    "pm10": "PM10",
     "pulse": "INCHING",
     "pulseWidth": "INCHING Duration",
 }

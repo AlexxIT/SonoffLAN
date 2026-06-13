@@ -578,7 +578,15 @@ DEVICES = {
         spec(XSensor100, param="voltage"),
     ],
     # SAWF-08P, https://github.com/AlexxIT/SonoffLAN/issues/1809
-    266: [XTempCorrection, XHumCorrection, RSSI, spec(XSensor, param="co2")],
+    # SAWF-07P, https://github.com/AlexxIT/SonoffLAN/issues/1816
+    266: [
+        XTempCorrection,
+        XHumCorrection,
+        RSSI,
+        spec(XSensor, param="co2"),
+        spec(XSensor, param="pm10"),
+        spec(XSensor, param="pm2_5", uid="pm25"),
+    ],
     # BASIC-1GS, https://github.com/AlexxIT/SonoffLAN/issues/1672
     268: [Switch1, LED, RSSI],
     # MINI-2GS https://github.com/AlexxIT/SonoffLAN/issues/1694
@@ -777,6 +785,10 @@ def get_spec(device: dict) -> list:
 
     if uiid == 190 and "supplyPower" not in device["params"]:
         classes = [cls for cls in classes if cls.uid is None or "supply" not in cls.uid]
+
+    if uiid == 266:
+        params = device["params"]
+        classes = [cls for cls in classes if cls.uid in params or cls.param in params]
 
     if "device_class" in device:
         classes = get_custom_spec(classes, device["device_class"])

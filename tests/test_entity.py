@@ -14,7 +14,6 @@ from homeassistant.const import (
     CONCENTRATION_PARTS_PER_MILLION,
     MAJOR_VERSION,
     MINOR_VERSION,
-    UnitOfElectricCurrent,
     UnitOfEnergy,
     UnitOfVolume,
 )
@@ -2603,7 +2602,36 @@ def test_sawf_08p():
     assert temperature.state == 21.5
 
     co2: XSensor = next(e for e in entities if e.uid == "co2")
+    assert co2.name == "Device1 CO2"
     assert co2.state == 510
     assert co2.device_class == SensorDeviceClass.CO2
     assert co2.native_unit_of_measurement == CONCENTRATION_PARTS_PER_MILLION
     assert co2.state_class == SensorStateClass.MEASUREMENT
+
+
+def test_sawf_07p():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1816
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 266},
+            "params": {
+                "humidity": "56.6",
+                "pm10": 0,
+                "pm2_5": 0,
+                "temperature": "22.2",
+                "temperatureF": "72.0",
+                "humCorrection": "0.0",
+                "rssi": -44,
+                "tempCorrection": "0.0",
+                "tempUnit": 0,
+            },
+        }
+    )
+
+    temperature: XSensor = next(e for e in entities if e.uid == "temperature")
+    assert temperature.state == 22.2
+
+    pm10: XSensor = next(e for e in entities if e.uid == "pm10")
+    assert pm10.name == "Device1 PM10"
+    assert pm10.state == 0
+    assert pm10.device_class == SensorDeviceClass.PM10
