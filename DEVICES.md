@@ -111,8 +111,11 @@
 | ZbBridge-U                    | 243  | bridge    | 1.4.0       | zbbridgeu       |                                               |
 | MINI-RBS                      | 258  | cover     | 1.0.2       | plug            |                                               |
 | CK-BL602-SWP1-02(262)         | 262  | pow       | 1.0.0       | ???             |                                               |
+| SAWF-07P                      | 266  | sensor    | 1.1.1       |                 |                                               |
+| SAWF-08P                      | 266  | sensor    | 1.1.2       |                 |                                               |
 | BASIC-1GS                     | 268  | 1ch       | 1.0.2       | plug            |                                               |
 | MINI-2GS                      | 275  | 2ch       | 1.0.0       | plug            |                                               |
+| BASIC-1GSP                    | 276  | pow       | 1.0.4       | ---             | ???                                           |
 | S61STPF                       | 276  | pow       | 1.0.3       | ---             | Timeout on any local command!                 |
 | MINI-DIM                      | 277  | light/pow | 1.1.2       | plug            |                                               |
 | SNZB-03P                      | 7002 |           | 2.2.1       |                 |                                               |
