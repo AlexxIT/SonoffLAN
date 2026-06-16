@@ -12,6 +12,7 @@ import ipaddress
 import json
 import logging
 import os
+import re
 
 import aiohttp
 from aiohttp.hdrs import CONTENT_TYPE
@@ -23,6 +24,14 @@ from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo
 from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
 
 _LOGGER = logging.getLogger(__name__)
+DEVICE_ID_RE = re.compile(r"^ewelink[-_]?([0-9a-z]{10})(?:[._-]|$)", re.I)
+
+
+def parse_deviceid_from_service_name(name: str) -> str | None:
+    match = DEVICE_ID_RE.match(name)
+    if not match:
+        return None
+    return match.group(1)
 
 
 def encrypt(payload: dict, devicekey: str):
@@ -86,14 +95,16 @@ class XRegistryLocal(XRegistryBase):
             return
         # accept: eWeLink_1000xxxxxx and eWelink_1000xxxxxx (from uiid 104)
         # skip: ihost-1001xxxxxx, zbbridgeu-100xxxxxxx, zbbridgeu-100xxxxxxx-wlan0
-        if not name.lower().startswith("ewelink"):
+        deviceid = parse_deviceid_from_service_name(name)
+        if not deviceid:
             return
 
-        asyncio.create_task(self._handler2(zeroconf, service_type, name))
+        asyncio.create_task(self._handler2(zeroconf, service_type, name, deviceid))
 
-    async def _handler2(self, zeroconf: Zeroconf, service_type: str, name: str):
+    async def _handler2(
+        self, zeroconf: Zeroconf, service_type: str, name: str, deviceid: str
+    ):
         """Step 2. Request additional info about add and update event from device."""
-        deviceid = name[8:18]
         try:
             info = AsyncServiceInfo(service_type, name)
             if not await info.async_request(zeroconf, 3000) or not info.properties:
@@ -101,16 +112,17 @@ class XRegistryLocal(XRegistryBase):
                 return
 
             # support update with empty host and host without port
+            host = None
             for addr in info.addresses:
                 # zeroconf lib should return IPv4, but better check anyway
-                addr = ipaddress.IPv4Address(addr)
+                try:
+                    addr = ipaddress.IPv4Address(addr)
+                except ipaddress.AddressValueError:
+                    continue
                 host = f"{addr}:{info.port}" if info.port else str(addr)
                 break
-            else:
-                if info.server and info.port:
-                    host = f"{info.server}:{info.port}"
-                else:
-                    host = None
+            if not host and info.server and info.port:
+                host = f"{info.server}:{info.port}"
 
             data = {
                 k.decode(): v.decode() if isinstance(v, bytes) else v
