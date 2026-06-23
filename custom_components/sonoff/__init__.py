@@ -143,16 +143,32 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         :param call: `device` - required param, all other params - optional
         """
         params = dict(call.data)
-        deviceid = str(params.pop("device"))
+        deviceid = params.pop("device", None)
+
+        if not deviceid:
+            _LOGGER.error("Missing deviceid")
+            return
+
+        deviceid = str(deviceid)
 
         if len(deviceid) == 10:
-            registry: XRegistry = next(
-                r for r in hass.data[DOMAIN].values() if deviceid in r.devices
+            registry: XRegistry | None = next(
+                (r for r in hass.data[DOMAIN].values() if deviceid in r.devices),
+                None,
             )
+
+            if registry is None:
+                _LOGGER.error(f"Device not found: {deviceid}")
+                return
+
             device = registry.devices[deviceid]
 
             # for debugging purposes
             if v := params.get("set_device"):
+                if not isinstance(v, dict):
+                    _LOGGER.error(f"Invalid set_device payload for deviceid {deviceid}")
+                    return
+
                 device.update(v)
                 return
 
@@ -169,7 +185,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                 await registry.send(device, params, cmd_lan=command)
 
         elif len(deviceid) == 6:
-            await cameras.send(deviceid, params["cmd"])
+            cmd = params.get("cmd")
+            if not isinstance(cmd, str) or not cmd:
+                _LOGGER.error(f"Missing camera command for deviceid {deviceid}")
+                return
+
+            await cameras.send(deviceid, cmd)
 
         else:
             _LOGGER.error(f"Wrong deviceid {deviceid}")
