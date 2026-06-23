@@ -1491,6 +1491,35 @@ def test_light_22():
     assert reg.call(light.async_turn_on(effect="Good Night"))[1] == params
 
 
+def test_light_22_warm_color_temp_payload():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 22},
+            "params": {
+                "channel0": "159",
+                "channel1": "159",
+                "channel2": "0",
+                "channel3": "0",
+                "channel4": "0",
+                "state": "on",
+                "type": "middle",
+                "zyx_mode": 1,
+            },
+        }
+    )
+
+    light: XLightB1 = entities[0]
+
+    assert light.get_params(255, 2500, None, None) == {
+        "channel0": "0",
+        "channel1": "255",
+        "channel2": "0",
+        "channel3": "0",
+        "channel4": "0",
+        "zyx_mode": 1,
+    }
+
+
 def test_light_l1():
     entities = get_entitites(
         {

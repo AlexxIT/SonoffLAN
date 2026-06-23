@@ -293,7 +293,7 @@ class XLightB1(XLight):
             elif color_temp_kelvin >= 3500:
                 params = {"channel0": ch, "channel1": ch}
             else:
-                params = {"channel0": ch, "channel1": ch}
+                params = {"channel0": "0", "channel1": ch}
 
             return {
                 **params,
