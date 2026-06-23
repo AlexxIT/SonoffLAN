@@ -10,14 +10,17 @@ from homeassistant.components.light import (
 )
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
+from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.const import (
     CONCENTRATION_PARTS_PER_MILLION,
     MAJOR_VERSION,
     MINOR_VERSION,
+    STATE_ON,
     UnitOfEnergy,
     UnitOfVolume,
 )
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
+from homeassistant.util import dt
 
 from custom_components.sonoff import CONFIG_SCHEMA, remote
 from custom_components.sonoff.binary_sensor import XBinarySensor, XRemoteSensor
@@ -70,6 +73,8 @@ from custom_components.sonoff.switch import (
 )
 from . import DEVICEID, DummyRegistry, init, save_to
 
+from datetime import timedelta
+from types import SimpleNamespace
 
 def get_entitites(device: Union[dict, list], config: dict = None) -> list:
     return init(device, config)[1]
@@ -676,6 +681,29 @@ def test_rfbridge_button_override_without_timeout():
 
     button = next(e for e in entities if isinstance(e, XRemoteButton))
     assert button.name == "Button A"
+
+
+def test_remote_sensor_restore_uses_total_seconds():
+    sensor = XRemoteSensor(
+        DummyRegistry(),
+        {"deviceid": DEVICEID},
+        {"channel": "0", "name": "Button", "timeout": 120},
+    )
+
+    old_trigger = (dt.utcnow() - timedelta(days=1, seconds=30)).isoformat()
+
+    async def async_get_last_state():
+        return SimpleNamespace(
+            state=STATE_ON,
+            attributes={ATTR_LAST_TRIGGERED: old_trigger},
+        )
+
+    sensor.async_get_last_state = async_get_last_state
+
+    await_(sensor.async_added_to_hass())
+
+    assert sensor.is_on is False
+    assert sensor.task is None
 
 
 def test_wifi_sensor():
