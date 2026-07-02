@@ -164,7 +164,12 @@ class XRemote(XEntity, RemoteEntity):
 
             # transform button name to channel number
             if not channel.isdigit():
-                channel = next(k for k, v in self.childs.items() if v.name == channel)
+                child = next((k for k, v in self.childs.items() if v.name == channel), None)
+                if child is None:
+                    _LOGGER.error(f"Unknown RF command: {channel}")
+                    continue
+
+                channel = child
 
             # cmd param for local and for cloud mode
             await self.ewelink.send(
