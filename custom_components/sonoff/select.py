@@ -17,7 +17,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
 
 
 class XSelectStartup(XEntity, SelectEntity):
-    params = {"startup"}
+    params = {"configure"}
     channel: int = 0
 
     get_params = {"configure": "get"}
@@ -29,54 +29,54 @@ class XSelectStartup(XEntity, SelectEntity):
     def __init__(self, ewelink: XRegistry, device: dict):
         super().__init__(ewelink, device)
 
-        if "params" in device and isinstance(device["params"], dict):
-            configure_list = device["params"].get("configure")
-            if isinstance(configure_list, list):
-                for item in configure_list:
-                    if item.get("outlet") == self.channel:
-                        self._attr_current_option = item.get("startup", "stay")
-                        break
-
-        # Initialize a local dict if not present, to store each channel's startup config.
-        if "channel_startups" not in device:
-            device["channel_startups"] = {}
+        self.set_state(device.get("params", {}))
 
         try:
             self._attr_name = device["tags"]["ck_channel_name"][str(self.channel)]
         except KeyError:
             pass
+
         # backward compatibility
         self._attr_unique_id = f"{device['deviceid']}_{self.channel + 1}"
 
     def set_state(self, params: dict):
-        # Just update _attr_current_option based on what the device reports
-        if "params" in self.device and isinstance(self.device["params"], dict):
-            configure_list = self.device["params"].get("configure")
-            if isinstance(configure_list, list):
-                for item in configure_list:
-                    if item.get("outlet") == self.channel:
-                        self._attr_current_option = item.get("startup", "stay")
-                        break
+        # Update the selected startup option from the reported configure list
+        configure_list = params.get("configure")
+        if not isinstance(configure_list, list):
+            return
+
+        for item in configure_list:
+            if item.get("outlet") == self.channel:
+                self._attr_current_option = item.get("startup", "stay")
+                break
 
     async def async_update(self):
-        # Send a request to the device to get the latest state
+        # Request the latest startup configuration from the device
         await self.ewelink.send(self.device, self.get_params, timeout_lan=5)
 
     async def async_select_option(self, option: str):
-        # Update our local record for this channel
-        self.device["channel_startups"][self.channel] = option
+        # Start from the current device config so other channels are preserved
+        configure_list = [
+            dict(item)
+            for item in self.device.get("params", {}).get("configure", [])
+            if isinstance(item, dict)
+        ]
 
-        # Rebuild the entire list for every known channel so they're all sent together
-        configure_list = []
-        for ch, startup_opt in self.device["channel_startups"].items():
-            configure_list.append({
-                "outlet": ch,
-                "startup": startup_opt,
-                "enableDelay": 0, # this should be exposed as a config option in the future, for inching devices
-                "width": 1000 # i don't know what this is for, but it seems to not have any effect on the device
-            })
+        for item in configure_list:
+            if item.get("outlet") == self.channel:
+                item["startup"] = option
+                break
+        else:
+            configure_list.append(
+                {
+                    "outlet": self.channel,
+                    "startup": option,
+                    "enableDelay": 0, # this should be exposed as a config option in the future, for inching devices
+                    "width": 1000, # i don't know what this is for, but it seems to not have any effect on the device
+                }
+            )
 
-        # Send all channels at once
+        # Send the full configure list so other channels are preserved
         await self.ewelink.send(self.device, {"configure": configure_list})
 
 

@@ -2692,3 +2692,76 @@ def test_sawf_07p():
     assert pm10.name == "Device1 PM10"
     assert pm10.state == 0
     assert pm10.device_class == SensorDeviceClass.PM10
+
+
+def test_startup_select_updates_from_configure():
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 190},
+            "params": {
+                "switches": [{"switch": "off", "outlet": 0}],
+                "configure": [{"startup": "off", "outlet": 0}],
+            },
+        }
+    )
+
+    startup: XSelectStartup = next(
+        e for e in entities if e.uid == "1" and isinstance(e, XSelectStartup)
+    )
+
+    assert startup.current_option == "off"
+
+    startup.internal_update({"configure": [{"startup": "on", "outlet": 0}]})
+
+    assert startup.current_option == "on"
+
+
+def test_startup_select_preserves_existing_configure_channels():
+    registry, entities = init(
+        {
+            "extra": {"uiid": 210},
+            "params": {
+                "switches": [
+                    {"switch": "off", "outlet": 0},
+                    {"switch": "off", "outlet": 1},
+                ],
+                "configure": [
+                    {
+                        "startup": "off",
+                        "outlet": 0,
+                        "enableDelay": 0,
+                        "width": 1000,
+                    },
+                    {
+                        "startup": "stay",
+                        "outlet": 1,
+                        "enableDelay": 0,
+                        "width": 1000,
+                    },
+                ],
+            },
+        }
+    )
+
+    startup: XSelectStartup = next(
+        e for e in entities if e.uid == "2" and isinstance(e, XSelectStartup)
+    )
+
+    args = registry.call(startup.async_select_option("on"))
+
+    assert args[1] == {
+        "configure": [
+            {
+                "startup": "off",
+                "outlet": 0,
+                "enableDelay": 0,
+                "width": 1000,
+            },
+            {
+                "startup": "on",
+                "outlet": 1,
+                "enableDelay": 0,
+                "width": 1000,
+            },
+        ]
+    }
