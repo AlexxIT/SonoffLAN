@@ -7,11 +7,12 @@ from .core import xutils
 from .core.const import DOMAIN, PRIVATE_KEYS
 from .core.ewelink import XRegistry
 
+from copy import deepcopy
 
 async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigEntry):
     try:
         if XRegistry.config:
-            config = XRegistry.config.copy()
+            config = deepcopy(XRegistry.config)
             for k in (CONF_USERNAME, CONF_PASSWORD):
                 if config.get(k):
                     config[k] = "***"
