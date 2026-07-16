@@ -755,6 +755,8 @@ DEVICES = {
     ],
     # SNZB-01M, https://github.com/AlexxIT/SonoffLAN/issues/1786
     7039: [XButtonKey, Battery, ZRSSI],
+    # SWV-ZNE, https://github.com/AlexxIT/SonoffLAN/issues/1814
+    7047: [spec(XBoolSwitch, param="switch_00", uid="switch"), Battery, ZRSSI],
 }
 
 
