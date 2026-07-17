@@ -23,7 +23,8 @@ from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util import dt
 
 from custom_components.sonoff import CONFIG_SCHEMA, remote
-from custom_components.sonoff.binary_sensor import XBinarySensor, XRemoteSensor
+from custom_components.sonoff.binary_sensor import XBinarySensor, XHumanSensor, \
+    XRemoteSensor
 from custom_components.sonoff.button import XRemoteButton, XT5Effect
 from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
@@ -75,6 +76,7 @@ from . import DEVICEID, DummyRegistry, init, save_to
 
 from datetime import timedelta
 from types import SimpleNamespace
+
 
 def get_entitites(device: Union[dict, list], config: dict = None) -> list:
     return init(device, config)[1]
@@ -2765,3 +2767,28 @@ def test_startup_select_preserves_existing_configure_channels():
             },
         ]
     }
+
+
+def test_human_7055():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1824
+    params = {
+        "fwVersion": "1.0.5",
+        "battery": 100,
+        "supportPowConfig": 1,
+        "trigTime": "1784286966000",
+        "subDevRssi": -56,
+        "subDeviceManufacturer": "SONOFF",
+        "pirOcp2UnD": 5,
+        "subDevRssiSetting": {"duration": 5, "active": 60},
+        "illumination": 361,
+        "sensitivity": 70,
+        "human": 0,
+        "judgeTime": 5,
+    }
+    entities = get_entitites({"extra": {"uiid": 7055}, "params": params})
+
+    human: XHumanSensor = next(e for e in entities if e.uid == "occupancy")
+    assert human.state == "off"
+
+    sensor: XSensor = next(e for e in entities if e.uid == "illumination")
+    assert sensor.state == 361
