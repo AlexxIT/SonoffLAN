@@ -46,6 +46,19 @@ class XRegistry(XRegistryBase):
             except Exception:
                 pass
 
+            if "host" in device and "local" not in device:
+                # Static host from YAML config (`sonoff.devices.<id>.host`).
+                # Zeroconf never sent a packet for this device (ex. it lives on
+                # a different subnet/VLAN that isn't reachable by mDNS but is
+                # otherwise routable), so seed the local-tracking fields that
+                # run_forever()/update_local() expect, letting the periodic
+                # local ping take over from here instead of waiting forever
+                # for a discovery event that will never arrive.
+                device["local"] = False
+                device["localfail"] = 0
+                device["localping"] = 0
+                device["localrecv"] = 0
+
             try:
                 uiid = device["extra"]["uiid"]
                 _LOGGER.debug(f"{did} UIID {uiid:04} | %s", device["params"])
