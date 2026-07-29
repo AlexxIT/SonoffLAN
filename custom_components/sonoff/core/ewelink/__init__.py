@@ -1,16 +1,25 @@
 import asyncio
+from collections import deque
 import logging
 import time
 
 from aiohttp import ClientSession
 
-from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
+from .base import (
+    SIGNAL_CLOUD_ERROR,
+    SIGNAL_CONNECTED,
+    SIGNAL_UPDATE,
+    XDevice,
+    XRegistryBase,
+)
 from .cloud import XRegistryCloud
 from .local import XRegistryLocal
 
 _LOGGER = logging.getLogger(__name__)
 
 SIGNAL_ADD_ENTITIES = "add_entities"
+COMMAND_ERRORS_MAXLEN = 100
+RECONCILE_DELAY = 2
 LOCAL_TTL = 60
 
 
@@ -22,9 +31,18 @@ class XRegistry(XRegistryBase):
         super().__init__(session)
 
         self.devices: dict[str, XDevice] = {}
+        self.cloud_locks: dict[str, asyncio.Lock] = {}
+        self.cloud_pending: dict[str, dict] = {}
+        self.cloud_error_tasks: dict[str, asyncio.Task] = {}
+        self.cloud_errors: deque[dict] = deque(maxlen=COMMAND_ERRORS_MAXLEN)
+        # Opt-in: a retry is safe only for explicit switch on/off commands.
+        self.cloud_retry = False
 
         self.cloud = XRegistryCloud(session)
+        # Let cloud protocol logs resolve a device ID to its local friendly name.
+        self.cloud.devices = self.devices
         self.cloud.dispatcher_connect(SIGNAL_CONNECTED, self.cloud_connected)
+        self.cloud.dispatcher_connect(SIGNAL_CLOUD_ERROR, self.cloud_error)
         self.cloud.dispatcher_connect(SIGNAL_UPDATE, self.cloud_update)
 
         self.local = XRegistryLocal(session)
@@ -77,6 +95,12 @@ class XRegistry(XRegistryBase):
         self.devices.clear()
         self.dispatcher.clear()
 
+        for task in self.cloud_error_tasks.values():
+            task.cancel()
+        self.cloud_error_tasks.clear()
+        self.cloud_pending.clear()
+        self.cloud_locks.clear()
+
         await self.cloud.stop()
         await self.local.stop()
 
@@ -127,12 +151,9 @@ class XRegistry(XRegistryBase):
 
             # otherwise send a command through the cloud
             if ok != "online":
-                ok = await self.cloud.send(device, params, seq)
+                ok = await self.send_cloud(device, params, query_cloud, seq)
                 if ok != "online":
                     main_device["localping"] = 0  # instant local ping request
-                elif query_cloud and params:
-                    # force update device actual status
-                    await self.cloud.send(device, timeout=0)
 
         elif can_local:
             ok = await self.local.send(main_device, params_lan or params, cmd_lan, seq)
@@ -140,9 +161,7 @@ class XRegistry(XRegistryBase):
                 main_device["localping"] = 0  # instant local ping request
 
         elif can_cloud:
-            ok = await self.cloud.send(device, params, seq)
-            if ok == "online" and query_cloud and params:
-                await self.cloud.send(device, timeout=0)
+            await self.send_cloud(device, params, query_cloud, seq)
 
         else:
             return
@@ -191,14 +210,223 @@ class XRegistry(XRegistryBase):
             return await self.send(device, params)
 
     async def send_cloud(
-        self, device: XDevice, params: dict = None, query=True
+        self,
+        device: XDevice,
+        params: dict = None,
+        query: bool = True,
+        sequence: str = None,
+        timeout: float = 5,
+        force: bool = False,
+        origin: str = "command",
     ) -> str | None:
-        if not self.can_cloud(device):
+        """Send one cloud command, serialised per device and safely recorded.
+
+        The bridge framework 3.3.0 cannot control Zigbee children via LAN. This
+        method deliberately uses the cloud transport only and never retries a
+        failed actuator command unless the user explicitly opts in.
+        """
+        if not force and not self.can_cloud(device):
             return None
-        ok = await self.cloud.send(device, params)
-        if ok == "online" and query and params:
-            await self.cloud.send(device, timeout=0)
+
+        did = device["deviceid"]
+        if sequence is None:
+            sequence = await self.sequence()
+
+        command = {
+            "action": "update" if params else "query",
+            "params": params.copy() if params else None,
+            "param_keys": sorted(params) if params else [],
+            "safe_retry": self.is_safe_retry(params),
+            "sequence": sequence,
+            "timestamp": time.time(),
+            "started_monotonic": time.monotonic(),
+            "origin": origin,
+            **self.cloud_context(device),
+        }
+
+        lock = self.cloud_locks.setdefault(did, asyncio.Lock())
+        async with lock:
+            # Re-check while holding the per-device lock. A previous command may
+            # have completed while this one was waiting, making a second on/off
+            # request redundant and a potential source of cloud 411 responses.
+            if self.is_redundant_switch_command(device, params):
+                _LOGGER.debug("Skip redundant cloud command for %s", did)
+                return "online"
+
+            # Keep parameter values in memory only while the command is in flight.
+            self.cloud_pending[sequence] = command
+            device["last_cloud_command"] = {
+                k: v
+                for k, v in command.items()
+                if k not in ("params", "safe_retry", "started_monotonic")
+            }
+            try:
+                ok = await self.cloud.send(device, params, sequence, timeout)
+            finally:
+                self.cloud_pending.pop(sequence, None)
+
+            if ok == "online" and query and params:
+                # Queue the state query before the next command for this device.
+                # This keeps the command order deterministic without replaying an
+                # actuator command and improves the redundant-command check above.
+                query_sequence = await self.sequence()
+                self.cloud_pending[query_sequence] = {
+                    "action": "query",
+                    "param_keys": [],
+                    "sequence": query_sequence,
+                    "started_monotonic": time.monotonic(),
+                    "origin": "post-update-query",
+                    **self.cloud_context(device),
+                }
+                try:
+                    await self.cloud.send(device, sequence=query_sequence, timeout=0)
+                finally:
+                    self.cloud_pending.pop(query_sequence, None)
+
+        command["latency_ms"] = round(
+            (time.monotonic() - command["started_monotonic"]) * 1000
+        )
+        device["last_cloud_command"]["latency_ms"] = command["latency_ms"]
+
+        if ok == "online":
+            device["last_cloud_success"] = time.time()
+
         return ok
+
+    @staticmethod
+    def cloud_context(device: XDevice) -> dict:
+        """Return useful transport context without command values or credentials."""
+        context = {"transport": "cloud"}
+        if rssi := device.get("params", {}).get("subDevRssi"):
+            context["device_rssi"] = rssi
+
+        if not (parent := device.get("parent")):
+            return context
+
+        context["parentid"] = parent.get("deviceid")
+        context["parent_model"] = parent.get("productModel")
+        if rssi := parent.get("params", {}).get("rssi"):
+            context["bridge_rssi"] = rssi
+        if version := parent.get("params", {}).get("hostVersion"):
+            context["bridge_framework"] = version
+        if parent.get("productModel") == "ZBBridge-P":
+            context["transport_reason"] = "zbbridge_child_lan_unsupported"
+        return context
+
+    @staticmethod
+    def is_safe_retry(params: dict | None) -> bool:
+        """Only explicit on/off is safe to repeat after an ambiguous timeout."""
+        return params is not None and params.get("switch") in ("on", "off") and len(
+            params
+        ) == 1
+
+    @staticmethod
+    def is_redundant_switch_command(device: XDevice, params: dict | None) -> bool:
+        """Return true only for a known, already satisfied switch state."""
+        return XRegistry.is_safe_retry(params) and (
+            device.get("params", {}).get("switch") == params["switch"]
+        )
+
+    @staticmethod
+    def is_command_confirmed(device: XDevice, command: dict, sequence: str) -> bool:
+        """Confirm that the reconciliation response reports the requested state."""
+        params = command.get("params") or {}
+        return device.get("cloud_seq") == sequence and all(
+            device.get("params", {}).get(key) == value for key, value in params.items()
+        )
+
+    def cloud_error(self, event: dict) -> None:
+        """Record a redacted cloud error and schedule one status reconciliation."""
+        did = event.get("deviceid")
+        device = self.devices.get(did)
+        command = self.cloud_pending.get(event.get("sequence"), {})
+
+        record = {
+            "code": event.get("error"),
+            "deviceid": did,
+            "sequence": event.get("sequence"),
+            "action": command.get("action", event.get("action")),
+            "param_keys": command.get("param_keys", []),
+            "timestamp": time.time(),
+        }
+        for key in (
+            "origin",
+            "transport",
+            "transport_reason",
+            "device_rssi",
+            "bridge_rssi",
+            "bridge_framework",
+        ):
+            if command.get(key) is not None:
+                record[key] = command[key]
+        if started := command.get("started_monotonic"):
+            record["latency_ms"] = round((time.monotonic() - started) * 1000)
+        if device and (parent := device.get("parent")):
+            record["parentid"] = parent.get("deviceid")
+            record["parent_model"] = parent.get("productModel")
+
+        self.cloud_errors.append(record)
+        if not device:
+            return
+
+        device["last_cloud_error"] = record
+        code = record["code"]
+        if code not in (411, 504) or did in self.cloud_error_tasks:
+            return
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # Allows synchronous unit tests and does not affect Home Assistant.
+            return
+
+        self.cloud_error_tasks[did] = loop.create_task(
+            self.reconcile_cloud_error(device, record, command)
+        )
+
+    async def reconcile_cloud_error(
+        self, device: XDevice, record: dict, command: dict
+    ) -> None:
+        """Verify state after an eWeLink 411/504 without replaying the command."""
+        did = device["deviceid"]
+        try:
+            await asyncio.sleep(RECONCILE_DELAY)
+            sequence = await self.sequence()
+            result = await self.send_cloud(
+                device,
+                query=False,
+                sequence=sequence,
+                timeout=5,
+                force=True,
+                origin="error-reconciliation",
+            )
+            confirmed = result == "online" and self.is_command_confirmed(
+                device, command, sequence
+            )
+            record["reconcile"] = {"result": result, "confirmed": confirmed}
+
+            # An opt-in retry is limited to an unconfirmed, idempotent switch set.
+            if (
+                not confirmed
+                and record["code"] in (411, 504)
+                and self.cloud_retry
+                and command.get("safe_retry")
+            ):
+                await asyncio.sleep(RECONCILE_DELAY)
+                record["retry"] = await self.send_cloud(
+                    device,
+                    command["params"],
+                    query=True,
+                    force=True,
+                    origin="error-retry",
+                )
+        except asyncio.CancelledError:
+            raise
+        except Exception as err:
+            record["reconcile"] = type(err).__name__
+            _LOGGER.debug("Cloud error reconciliation failed for %s", did, exc_info=err)
+        finally:
+            self.cloud_error_tasks.pop(did, None)
 
     def cloud_connected(self):
         for deviceid in self.devices.keys():
@@ -235,6 +463,8 @@ class XRegistry(XRegistryBase):
 
         if "sledOnline" in params:
             device["params"]["sledOnline"] = params["sledOnline"]
+
+        device["params"].update(params)
 
         self.dispatcher_send(did, params)
 

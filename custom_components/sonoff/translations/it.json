@@ -24,7 +24,8 @@
           "data": {
             "mode": "Modalità (per la maggior parte degli utenti lasciare su auto)",
             "homes": "Case (non specificare per selezionare quella di default sull'app)",
-            "debug": "Pagina di Debug (Integrazioni > Menu > Known issues)"
+            "debug": "Pagina di Debug (Integrazioni > Menu > Known issues)",
+            "cloud_retry": "Ritenta un comando cloud on/off non confermato dopo errore 411 o 504 (disabilitato per impostazione predefinita)"
           }
         }
       }

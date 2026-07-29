@@ -24,7 +24,8 @@
         "data": {
           "mode": "Mode (auto is recommended for most users)",
           "homes": "Homes (leave blank for active home in mobile app)",
-          "debug": "Debug page (Integration > Menu > Known issues)"
+          "debug": "Debug page (Integration > Menu > Known issues)",
+          "cloud_retry": "Retry an unconfirmed cloud on/off command after a 411 or 504 error (disabled by default)"
         }
       }
     }
