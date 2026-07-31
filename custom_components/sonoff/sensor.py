@@ -8,8 +8,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    CONCENTRATION_PARTS_PER_MILLION,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     UnitOfElectricCurrent,
@@ -20,6 +18,17 @@ from homeassistant.const import (
     UnitOfVolume,
 )
 from homeassistant.util import dt
+
+try:
+    from homeassistant.const import UnitOfDensity, UnitOfRatio
+except ImportError:
+    from homeassistant.const import (
+        CONCENTRATION_MICROGRAMS_PER_CUBIC_METER as MICROGRAMS_PER_CUBIC_METER,
+        CONCENTRATION_PARTS_PER_MILLION as PARTS_PER_MILLION,
+    )
+else:
+    MICROGRAMS_PER_CUBIC_METER = UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
+    PARTS_PER_MILLION = UnitOfRatio.PARTS_PER_MILLION
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -58,7 +67,7 @@ DEVICE_CLASSES = {
 UNITS = {
     "battery": PERCENTAGE,
     "battery_voltage": UnitOfElectricPotential.VOLT,
-    "co2": CONCENTRATION_PARTS_PER_MILLION,
+    "co2": PARTS_PER_MILLION,
     "cpu_temperature": UnitOfTemperature.CELSIUS,
     "current": UnitOfElectricCurrent.AMPERE,
     "current_supply": UnitOfElectricCurrent.AMPERE,
@@ -66,8 +75,8 @@ UNITS = {
     "outdoor_temp": UnitOfTemperature.CELSIUS,
     "power": UnitOfPower.WATT,
     "power_supply": UnitOfPower.WATT,
-    "pm25": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    "pm10": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+    "pm25": MICROGRAMS_PER_CUBIC_METER,
+    "pm10": MICROGRAMS_PER_CUBIC_METER,
     "remote_temperature": UnitOfTemperature.CELSIUS,
     "rssi": SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     "temperature": UnitOfTemperature.CELSIUS,

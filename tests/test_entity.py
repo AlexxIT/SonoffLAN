@@ -12,7 +12,6 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.const import (
-    CONCENTRATION_PARTS_PER_MILLION,
     MAJOR_VERSION,
     MINOR_VERSION,
     STATE_ON,
@@ -54,6 +53,7 @@ from custom_components.sonoff.light import (
 from custom_components.sonoff.number import XNumber, XPulseWidth
 from custom_components.sonoff.select import XSelectStartup
 from custom_components.sonoff.sensor import (
+    PARTS_PER_MILLION,
     XButtonKey,
     XButtonLocalKey,
     XCloudEnergyDualR3,
@@ -2664,7 +2664,7 @@ def test_sawf_08p():
     assert co2.name == "Device1 CO2"
     assert co2.state == 510
     assert co2.device_class == SensorDeviceClass.CO2
-    assert co2.native_unit_of_measurement == CONCENTRATION_PARTS_PER_MILLION
+    assert co2.native_unit_of_measurement == PARTS_PER_MILLION
     assert co2.state_class == SensorStateClass.MEASUREMENT
 
 
