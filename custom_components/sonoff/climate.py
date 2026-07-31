@@ -4,7 +4,7 @@ from homeassistant.components.climate.const import (
     HVACMode,
     HVACAction,
 )
-from homeassistant.const import MAJOR_VERSION, MINOR_VERSION, UnitOfTemperature
+from homeassistant.const import UnitOfTemperature
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -36,16 +36,12 @@ class XClimateTH(XEntity, ClimateEntity):
     _attr_target_temperature_step = 1
     _heat_mode_flag = False
 
-    # https://developers.home-assistant.io/blog/2024/01/24/climate-climateentityfeatures-expanded
-    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 2):
-        _attr_supported_features = (
-            ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
-            | ClimateEntityFeature.TURN_ON
-            | ClimateEntityFeature.TURN_OFF
-        )
-        _enable_turn_on_off_backwards_compatibility = False
-    else:
-        _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+    _attr_supported_features = (
+        ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+        | ClimateEntityFeature.TURN_ON
+        | ClimateEntityFeature.TURN_OFF
+    )
+    _enable_turn_on_off_backwards_compatibility = False
 
     heat: bool = None
 
@@ -157,16 +153,12 @@ class XClimateNS(XEntity, ClimateEntity):
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
 
-    # https://developers.home-assistant.io/blog/2024/01/24/climate-climateentityfeatures-expanded
-    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 2):
-        _attr_supported_features = (
-            ClimateEntityFeature.TARGET_TEMPERATURE
-            | ClimateEntityFeature.TURN_ON
-            | ClimateEntityFeature.TURN_OFF
-        )
-        _enable_turn_on_off_backwards_compatibility = False
-    else:
-        _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
+    _attr_supported_features = (
+        ClimateEntityFeature.TARGET_TEMPERATURE
+        | ClimateEntityFeature.TURN_ON
+        | ClimateEntityFeature.TURN_OFF
+    )
+    _enable_turn_on_off_backwards_compatibility = False
 
     def __init__(self, ewelink, device: dict):
         # copy mutable list so each instance has its own hvac_modes
@@ -258,19 +250,13 @@ class XThermostat(XEntity, ClimateEntity):
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
 
-    # https://developers.home-assistant.io/blog/2024/01/24/climate-climateentityfeatures-expanded
-    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 2):
-        _attr_supported_features = (
-            ClimateEntityFeature.TARGET_TEMPERATURE
-            | ClimateEntityFeature.PRESET_MODE
-            | ClimateEntityFeature.TURN_ON
-            | ClimateEntityFeature.TURN_OFF
-        )
-        _enable_turn_on_off_backwards_compatibility = False
-    else:
-        _attr_supported_features = (
-            ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
-        )
+    _attr_supported_features = (
+        ClimateEntityFeature.TARGET_TEMPERATURE
+        | ClimateEntityFeature.PRESET_MODE
+        | ClimateEntityFeature.TURN_ON
+        | ClimateEntityFeature.TURN_OFF
+    )
+    _enable_turn_on_off_backwards_compatibility = False
 
     def set_state(self, params: dict):
         cache = self.device["params"]
@@ -342,18 +328,12 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
 
-    # https://developers.home-assistant.io/blog/2024/01/24/climate-climateentityfeatures-expanded
-    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 2):
-        _attr_supported_features = (
-            ClimateEntityFeature.TARGET_TEMPERATURE
-            | ClimateEntityFeature.TURN_ON
-            | ClimateEntityFeature.TURN_OFF
-        )
-        _enable_turn_on_off_backwards_compatibility = False
-    else:
-        _attr_supported_features = (
-            ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
-        )
+    _attr_supported_features = (
+        ClimateEntityFeature.TARGET_TEMPERATURE
+        | ClimateEntityFeature.TURN_ON
+        | ClimateEntityFeature.TURN_OFF
+    )
+    _enable_turn_on_off_backwards_compatibility = False
 
     def set_state(self, params: dict):
         cache = self.device["params"]

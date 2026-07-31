@@ -18,9 +18,9 @@ from . import init
 
 
 def test_backward():
-    # https://github.com/home-assistant/core/blob/2023.2.0/homeassistant/const.py
-    assert (MAJOR_VERSION, MINOR_VERSION) >= (2023, 2)
-    assert REQUIRED_PYTHON_VER >= (3, 10, 0)
+    # https://github.com/home-assistant/core/blob/2025.6.0/homeassistant/const.py
+    assert (MAJOR_VERSION, MINOR_VERSION) >= (2025, 6)
+    assert REQUIRED_PYTHON_VER >= (3, 13, 2)
 
     assert async_setup_entry
     assert async_get_config_entry_diagnostics
@@ -53,29 +53,19 @@ def test_2024_1_cached_properties():
 def test_2024_2_climate():
     _, entities = init({"extra": {"uiid": 15}})
     climate: ClimateEntity = next(e for e in entities if isinstance(e, XClimateTH))
-    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 2):
-        assert climate.supported_features == (
-            ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
-            | ClimateEntityFeature.TURN_ON
-            | ClimateEntityFeature.TURN_OFF
-        )
-    else:
-        assert (
-            climate.supported_features == ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
-        )
+    assert climate.supported_features == (
+        ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+        | ClimateEntityFeature.TURN_ON
+        | ClimateEntityFeature.TURN_OFF
+    )
 
 
 def test_2024_8_fan():
     _, entities = init({"extra": {"uiid": 34}})
     fan: FanEntity = next(e for e in entities if isinstance(e, XFan))
-    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 8):
-        assert fan.supported_features == (
-            FanEntityFeature.SET_SPEED
-            | FanEntityFeature.PRESET_MODE
-            | FanEntityFeature.TURN_OFF
-            | FanEntityFeature.TURN_ON
-        )
-    else:
-        assert fan.supported_features == (
-            FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
-        )
+    assert fan.supported_features == (
+        FanEntityFeature.SET_SPEED
+        | FanEntityFeature.PRESET_MODE
+        | FanEntityFeature.TURN_OFF
+        | FanEntityFeature.TURN_ON
+    )

@@ -1,8 +1,8 @@
 from homeassistant.components.alarm_control_panel import (
     AlarmControlPanelEntity,
     AlarmControlPanelEntityFeature,
+    AlarmControlPanelState,
 )
-from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -21,28 +21,18 @@ async def async_setup_entry(hass, config_entry, add_entities):
     )
 
 
-if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 11):
-    from homeassistant.components.alarm_control_panel import AlarmControlPanelState
+STATES = {
+    0: AlarmControlPanelState.DISARMED,
+    1: AlarmControlPanelState.ARMED_HOME,
+    2: AlarmControlPanelState.ARMED_AWAY,
+    3: AlarmControlPanelState.ARMED_NIGHT,
+}
 
-    STATES = {
-        0: AlarmControlPanelState.DISARMED,
-        1: AlarmControlPanelState.ARMED_HOME,
-        2: AlarmControlPanelState.ARMED_AWAY,
-        3: AlarmControlPanelState.ARMED_NIGHT,
-    }
 
-    class XAlarmControlBase(XEntity, AlarmControlPanelEntity):
-        def set_state(self, params: dict):
-            if self.param in params:
-                self._attr_alarm_state = STATES.get(params[self.param])
-
-else:
-    STATES = {0: "disarmed", 1: "armed_home", 2: "armed_away", 3: "armed_night"}
-
-    class XAlarmControlBase(XEntity, AlarmControlPanelEntity):
-        def set_state(self, params: dict):
-            if self.param in params:
-                self._attr_state = STATES.get(params[self.param])
+class XAlarmControlBase(XEntity, AlarmControlPanelEntity):
+    def set_state(self, params: dict):
+        if self.param in params:
+            self._attr_alarm_state = STATES.get(params[self.param])
 
 
 class XPanelAlarm(XAlarmControlBase):
