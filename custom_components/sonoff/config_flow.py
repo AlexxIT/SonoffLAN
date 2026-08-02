@@ -124,6 +124,7 @@ class OptionsFlowHandler(OptionsFlow):
             {
                 vol.Optional(CONF_MODE, default="auto"): vol.In(CONF_MODES),
                 vol.Optional(CONF_DEBUG, default=False): bool,
+                vol.Optional("cloud_retry", default=False): bool,
                 vol.Optional("homes"): cv.multi_select(homes),
             },
             dict(self.config_entry.options),

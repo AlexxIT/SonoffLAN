@@ -5,6 +5,7 @@ from typing import Callable, Optional, TypedDict
 from aiohttp import ClientSession
 
 SIGNAL_CONNECTED = "connected"
+SIGNAL_CLOUD_ERROR = "cloud_error"
 SIGNAL_UPDATE = "update"
 
 
@@ -34,6 +35,9 @@ class XDevice(TypedDict, total=False):
     localping: Optional[float]
 
     cloud_seq: int | None  # sequence for update from cloud (if exists - cmd from app)
+    last_cloud_command: Optional[dict]
+    last_cloud_error: Optional[dict]
+    last_cloud_success: Optional[float]
     local_seq: int | None  # sequence for update from local
 
     parent: Optional[dict]

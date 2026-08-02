@@ -178,7 +178,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             if mode == "local":
                 await registry.local.send(device, params, command)
             elif mode == "cloud":
-                await registry.cloud.send(device, params)
+                await registry.send_cloud(device, params, force=True)
             elif mode == "api":
                 await registry.cloud.set_device(device, params)
             else:
@@ -209,6 +209,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         session = create_clientsession(hass)
         hass.data[DOMAIN][config_entry.entry_id] = registry = XRegistry(session)
 
+    registry.cloud_retry = config_entry.options.get("cloud_retry", False)
     mode = config_entry.options.get(CONF_MODE, "auto")
     data = config_entry.data
 
