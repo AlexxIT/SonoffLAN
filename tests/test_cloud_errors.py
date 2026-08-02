@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from custom_components.sonoff.core.ewelink import XRegistry
 from custom_components.sonoff.core.ewelink.cloud import cloud_error_event
 
@@ -99,3 +101,24 @@ def test_cloud_context_marks_zbbridge_children_as_cloud_only():
         "bridge_framework": "3.3.0",
         "transport_reason": "zbbridge_child_lan_unsupported",
     }
+
+
+def test_unconfirmed_cloud_warnings_are_coalesced_per_device_and_code():
+    registry = XRegistry(None)
+    device = {"deviceid": "1000123abc", "name": "Test device"}
+    record = {"code": 411, "sequence": "one"}
+
+    with patch(
+        "custom_components.sonoff.core.ewelink._CLOUD_LOGGER.warning"
+    ) as warning:
+        registry.log_unconfirmed_cloud_error(device, record, now=1000)
+        registry.log_unconfirmed_cloud_error(
+            device, {"code": 411, "sequence": "two"}, now=1001
+        )
+        registry.log_unconfirmed_cloud_error(
+            device, {"code": 411, "sequence": "three"}, now=1901
+        )
+
+    assert warning.call_count == 2
+    assert warning.call_args_list[0].args[-1] == 0
+    assert warning.call_args_list[1].args[-1] == 1
