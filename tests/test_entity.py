@@ -8,6 +8,7 @@ from homeassistant.components.light import (
     ColorMode,
     LightEntity,
 )
+from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.components.script import ATTR_LAST_TRIGGERED
@@ -17,6 +18,7 @@ from homeassistant.const import (
     MINOR_VERSION,
     STATE_ON,
     UnitOfEnergy,
+    UnitOfTime,
     UnitOfVolume,
 )
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
@@ -565,6 +567,16 @@ def test_sonoff_pow():
     assert power.state == 12.34
     power: XSensor = next(e for e in entities if e.uid == "current")
     assert power.state == 1.23
+
+    pulse: XToggle = next(e for e in entities if e.uid == "pulse")
+    assert pulse.is_on is False
+    assert pulse.entity_registry_enabled_default is False
+
+    pulse_width = next(e for e in entities if isinstance(e, XPulseWidth))
+    assert pulse_width.native_value == 0.5
+    assert pulse_width.device_class == NumberDeviceClass.DURATION
+    assert pulse_width.native_unit_of_measurement == UnitOfTime.SECONDS
+    assert pulse_width.entity_registry_enabled_default is False
 
 
 def test_rfbridge():

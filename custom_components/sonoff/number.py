@@ -1,5 +1,5 @@
-from homeassistant.components.number import NumberEntity, NumberMode
-from homeassistant.const import UnitOfTemperature
+from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
+from homeassistant.const import UnitOfTemperature, UnitOfTime
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -39,11 +39,13 @@ class XNumber(XEntity, NumberEntity):
 class XPulseWidth(XNumber):
     param = "pulseWidth"
 
+    _attr_device_class = NumberDeviceClass.DURATION
     _attr_entity_registry_enabled_default = False
 
     _attr_native_max_value = 36000
     _attr_native_min_value = 0.5
     _attr_native_step = 0.5
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
 
     def set_state(self, params: dict):
         self._attr_native_value = params["pulseWidth"] / 1000

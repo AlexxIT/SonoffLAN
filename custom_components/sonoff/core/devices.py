@@ -261,6 +261,8 @@ DEVICES = {
         XSwitch,
         LED,
         RSSI,
+        PULSE,
+        XPulseWidth,
         spec(XSensor, param="current"),
         spec(XSensor, param="power"),
         spec(XSensor, param="voltage"),
