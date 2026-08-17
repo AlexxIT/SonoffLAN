@@ -21,13 +21,14 @@ from .ewelink import XDevice
 from ..alarm_control_panel import XPanelAlarm
 from ..binary_sensor import (
     XBinarySensor,
+    XExternalPower,
     XHumanSensor,
     XLightSensor,
     XWaterSensor,
     XWiFiDoor,
     XZigbeeMotion,
 )
-from ..button import XButton, XT5Effect
+from ..button import XAlarmButton, XButton, XT5Effect
 from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
 from ..cover import XCover, XCoverDualR3, XCoverOP, XCoverT5, XZBCover, XZigbeeCover
@@ -54,10 +55,17 @@ from ..light import (
     XZigbeeLight,
 )
 from ..media_player import XPanelBuzzer
-from ..number import XPulseWidth, XSensitivity, XTempCorrectionNumber
+from ..number import (
+    XAlarmDuration,
+    XAlarmVolume,
+    XPulseWidth,
+    XSensitivity,
+    XTempCorrectionNumber,
+)
 from ..remote import XRemote
 from ..select import XSelectStartup, XStartup
 from ..sensor import (
+    XAlarmSoundType,
     XButtonKey,
     XButtonLocalKey,
     XCPUTemperature,
@@ -79,6 +87,8 @@ from ..sensor import (
     XWiFiDoorBattery,
 )
 from ..switch import (
+    XAlarmLight,
+    XAlarmVoice,
     XBoolSwitch,
     XIntSwitch,
     XPanelScreen,
@@ -759,6 +769,19 @@ DEVICES = {
     7047: [spec(XBoolSwitch, param="switch_00", uid="switch"), Battery, ZRSSI],
     # SNZB-03PR2 https://github.com/AlexxIT/SonoffLAN/issues/1824
     7055: [XHumanSensor, spec(XSensor, param="illumination"), Battery, ZRSSI],
+    # SNZB-09P (Indoor Siren)
+    7056: [
+        XAlarmButton,
+        XAlarmVoice,
+        XAlarmLight,
+        XAlarmDuration,
+        XAlarmVolume,
+        XAlarmSoundType,
+        spec(XSensor, param="alarmType", uid="alarm_status"),
+        XExternalPower,
+        Battery,
+        ZRSSI,
+    ],
 }
 
 

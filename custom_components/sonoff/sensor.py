@@ -477,6 +477,22 @@ class XT5Action(XEventSesor):
             asyncio.create_task(self.clear_state())
 
 
+class XAlarmSoundType(XEntity, SensorEntity):
+    """SNZB-09P (uiid 7056) - read-only, value nested inside `alarmSetting`.
+
+    Kept read-only (rather than a select) because the full list of valid
+    `alertSound` values is unknown - only "alarm0" has been observed.
+    """
+
+    params = {"alarmSetting"}
+    uid = "alarm_sound_type"
+
+    _attr_entity_registry_enabled_default = False
+
+    def set_state(self, params: dict):
+        self._attr_native_value = params.get("alarmSetting", {}).get("alertSound")
+
+
 class XUnknown(XEntity, SensorEntity):
     _attr_device_class = SensorDeviceClass.TIMESTAMP
 

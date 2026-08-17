@@ -98,6 +98,18 @@ class XWaterSensor(XEntity, BinarySensorEntity):
         self._attr_is_on = params[self.param] == 1
 
 
+class XExternalPower(XEntity, BinarySensorEntity):
+    """SNZB-09P (uiid 7056) - whether it's on external/mains power."""
+
+    param = "powerExternalState"
+    uid = "external_power"
+    _attr_device_class = BinarySensorDeviceClass.PLUG
+    _attr_entity_registry_enabled_default = False
+
+    def set_state(self, params: dict):
+        self._attr_is_on = params["powerExternalState"] == "on"
+
+
 # noinspection PyAbstractClass
 class XRemoteSensor(BinarySensorEntity, RestoreEntity):
     _attr_is_on = False
