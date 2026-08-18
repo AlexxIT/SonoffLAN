@@ -11,6 +11,7 @@ from .local import XRegistryLocal
 _LOGGER = logging.getLogger(__name__)
 
 SIGNAL_ADD_ENTITIES = "add_entities"
+SIGNAL_BUTTON_EVENT = "button_event"
 LOCAL_TTL = 60
 
 

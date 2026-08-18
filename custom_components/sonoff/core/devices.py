@@ -16,6 +16,7 @@ from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.light import ColorMode, LightEntity
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 
 from .ewelink import XDevice
 from ..alarm_control_panel import XPanelAlarm
@@ -91,6 +92,9 @@ from ..switch import (
     XZigbeeSwitches,
 )
 
+if (MAJOR_VERSION, MINOR_VERSION) >= (2023, 8):
+    from ..event import XButtonEvent
+
 # supported custom device_class
 DEVICE_CLASS = {
     "binary_sensor": (XEntity, BinarySensorEntity),
@@ -123,6 +127,16 @@ def spec(cls, base: str = None, enabled: bool = None, **kwargs) -> type:
         attrs = unwrap_cached_properties({**attrs, **kwargs})
         return type(cls.__name__, DEVICE_CLASS[base], attrs)
     return type(cls.__name__, (cls,), kwargs)
+
+
+def button_events(count: int) -> list[type]:
+    """Return one event entity class per physical button when supported."""
+    if (MAJOR_VERSION, MINOR_VERSION) < (2023, 8):
+        return []
+    return [
+        spec(XButtonEvent, channel=channel, uid=f"button_{channel + 1}")
+        for channel in range(count)
+    ]
 
 
 Switch1 = spec(XSwitches, channel=0, uid="1")
@@ -421,11 +435,32 @@ DEVICES = {
     # DW2-Wi-Fi-L, https://github.com/AlexxIT/SonoffLAN/issues/808
     154: [XWiFiDoor, Battery, RSSI],
     # Sonoff SwitchMan M5-1C, https://github.com/AlexxIT/SonoffLAN/issues/1432
-    160: [Switch1, LED, RSSI, spec(XButtonLocalKey, uid="action")],
+    160: [
+        Switch1,
+        LED,
+        RSSI,
+        spec(XButtonLocalKey, uid="action"),
+        *button_events(1),
+    ],
     # Sonoff SwitchMan M5-2C, https://github.com/AlexxIT/SonoffLAN/issues/1432
-    161: [Switch1, Switch2, LED, RSSI, spec(XButtonLocalKey, uid="action")],
+    161: [
+        Switch1,
+        Switch2,
+        LED,
+        RSSI,
+        spec(XButtonLocalKey, uid="action"),
+        *button_events(2),
+    ],
     # Sonoff SwitchMan M5-3C, https://github.com/AlexxIT/SonoffLAN/issues/659
-    162: [Switch1, Switch2, Switch3, LED, RSSI, spec(XButtonLocalKey, uid="action")],
+    162: [
+        Switch1,
+        Switch2,
+        Switch3,
+        LED,
+        RSSI,
+        spec(XButtonLocalKey, uid="action"),
+        *button_events(3),
+    ],
     # DualR3 Lite, without power consumption
     165: [
         Switch1,

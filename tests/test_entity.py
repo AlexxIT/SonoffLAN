@@ -36,6 +36,7 @@ from custom_components.sonoff.core.ewelink import (
     SIGNAL_UPDATE,
 )
 from custom_components.sonoff.cover import XCover, XCoverDualR3, XCoverOP, XZigbeeCover
+from custom_components.sonoff.event import XButtonEvent
 from custom_components.sonoff.fan import XFan, XFan17, XToggleFan
 from custom_components.sonoff.light import (
     UIID22_MODES,
@@ -2420,6 +2421,14 @@ def test_m5_matter():
     )
 
     button: XButtonLocalKey = next(e for e in entities if e.uid == "action")
+    button_events: list[XButtonEvent] = [
+        e for e in entities if isinstance(e, XButtonEvent)
+    ]
+    assert [event.uid for event in button_events] == [
+        "button_1",
+        "button_2",
+        "button_3",
+    ]
     assert button.state == ""
 
     # this is local event without trigger
@@ -2431,6 +2440,7 @@ def test_m5_matter():
         },
     )
     assert button.state == ""
+    assert button_events[0].state is None
 
     # this is cloud event with trigger
     button.ewelink.cloud.dispatcher_send(
@@ -2438,6 +2448,17 @@ def test_m5_matter():
         {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 0}}},
     )
     assert button.state == "button_1_single"
+    assert button_events[0].state_attributes == {"event_type": "press_end"}
+
+    # A second physical button has an independent stream even while the legacy
+    # action sensor is still holding the first action for deduplication.
+    button.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 1}}},
+    )
+    assert button.state == "button_1_single"
+    assert button_events[1].state_attributes == {"event_type": "press_end"}
+    button_2_state = button_events[1].state
 
     # this is first local event with trigger (device discovery)
     setattr(button, "_attr_native_value", "")  # reset state
@@ -2450,6 +2471,7 @@ def test_m5_matter():
         },
     )
     assert button.state == ""
+    assert button_events[1].state == button_2_state
 
     # this is second local event with trigger
     setattr(button, "_attr_native_value", "")  # reset state
@@ -2474,6 +2496,103 @@ def test_m5_matter():
         },
     )
     assert button.state == ""
+    assert button_events[2].state is None
+
+
+def test_m5_button_event_types():
+    for key, event_type, attributes in (
+        (0, "press_end", {}),
+        (1, "multi_press_end", {"multi_press_count": 2}),
+        (2, "long_press_end", {}),
+        (3, "multi_press_end", {"multi_press_count": 3}),
+    ):
+        registry, entities = init(
+            {
+                "extra": {"uiid": 160},
+                "params": {"localKeyPass": {"key": 0, "outlet": 0}},
+            }
+        )
+        button: XButtonEvent = next(e for e in entities if isinstance(e, XButtonEvent))
+        registry.cloud.dispatcher_send(
+            SIGNAL_UPDATE,
+            {
+                "deviceid": DEVICEID,
+                "params": {"localKeyPass": {"key": key, "outlet": 0}},
+            },
+        )
+        assert button.state_attributes == {"event_type": event_type, **attributes}
+
+
+def test_m5_button_event_deduplicates_cloud_and_local():
+    registry, entities = init(
+        {
+            "extra": {"uiid": 160},
+            "params": {"localKeyPass": {"key": 0, "outlet": 0}},
+        }
+    )
+    button: XButtonEvent = next(e for e in entities if isinstance(e, XButtonEvent))
+
+    # First local packet is device discovery and establishes the sequence.
+    registry.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"triggerType": 11, "localKeyPass": {"key": 0, "outlet": 0}},
+            "seq": 1,
+        },
+    )
+    assert button.state is None
+
+    registry.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 0}}},
+    )
+    state = button.state
+    assert state is not None
+    event_at = button.last_event_at
+
+    registry.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 0}}},
+    )
+    assert button.last_event_at == event_at
+
+    registry.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"triggerType": 11, "localKeyPass": {"key": 0, "outlet": 0}},
+            "seq": 2,
+        },
+    )
+    assert button.state == state
+    assert button.last_event_at == event_at
+
+
+def test_m5_button_event_ignores_local_state_snapshot():
+    registry, entities = init(
+        {
+            "extra": {"uiid": 160},
+            "params": {"localKeyPass": {"key": 0, "outlet": 0}},
+        }
+    )
+    button: XButtonEvent = next(e for e in entities if isinstance(e, XButtonEvent))
+
+    for seq in (1, 2):
+        registry.local.dispatcher_send(
+            SIGNAL_UPDATE,
+            {
+                "deviceid": DEVICEID,
+                "params": {
+                    "switches": [{"outlet": 0, "switch": "off"}],
+                    "triggerType": 11,
+                    "localKeyPass": {"key": 0, "outlet": 0},
+                },
+                "seq": seq,
+            },
+        )
+
+    assert button.state is None
 
 
 def test_powct():

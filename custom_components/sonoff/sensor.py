@@ -23,7 +23,7 @@ from homeassistant.util import dt
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
-from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
+from .core.ewelink import SIGNAL_ADD_ENTITIES, SIGNAL_BUTTON_EVENT, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 
@@ -395,9 +395,13 @@ class XEventSesor(XEntity, SensorEntity):
 
 
 class XButtonBase(XEventSesor):
-    def set_state(self, params: dict):
+    @staticmethod
+    def decode_action(params: dict) -> tuple[int | None, str]:
         button = params.get("outlet")
-        key = BUTTON_STATES[params["key"]]
+        return button, BUTTON_STATES[params["key"]]
+
+    def set_state(self, params: dict):
+        button, key = self.decode_action(params)
         self._attr_native_value = (
             f"button_{button + 1}_{key}" if button is not None else key
         )
@@ -437,13 +441,9 @@ class XButtonLocalKey(XButtonBase):
             if self.last_seq is None:
                 self.last_seq = seq
 
-        # skip multiple clicks (from cloud and local)
-        if self._attr_native_value:
-            return
-
         # cloud click: {'localKeyPass': {'outlet': 0, 'key': 0}}
         if len(params) == 1:
-            pass
+            standalone_action = True
         # local click: {'triggerType': 11, 'localKeyPass': {'outlet': 0, 'key': 0}}
         # local trash: {'triggerType': 0, 'localKeyPass': {'outlet': 0, 'key': 0}}
         # local trash: {'triggerType': 2, 'localKeyPass': {'outlet': 0, 'key': 0}}
@@ -453,12 +453,26 @@ class XButtonLocalKey(XButtonBase):
             if seq == self.last_seq:
                 return
             self.last_seq = seq
+            # Full LAN state snapshots retain the previous localKeyPass value.
+            standalone_action = params.keys() == {"triggerType", "localKeyPass"}
         else:
             return
 
         # MINI-2GS https://github.com/AlexxIT/SonoffLAN/issues/1694
         # MINI-ZB2GS-L https://github.com/AlexxIT/SonoffLAN/issues/1701
-        XButtonBase.set_state(self, params["localKeyPass"])
+        payload = params["localKeyPass"]
+        if standalone_action:
+            button, action = self.decode_action(payload)
+            self.ewelink.dispatcher_send(
+                SIGNAL_BUTTON_EVENT,
+                self.device["deviceid"],
+                button,
+                action,
+            )
+
+        # Preserve the legacy common action sensor and its transport deduplication.
+        if not self._attr_native_value:
+            XButtonBase.set_state(self, payload)
 
 
 class XT5Action(XEventSesor):

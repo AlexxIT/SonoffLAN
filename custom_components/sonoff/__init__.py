@@ -57,8 +57,13 @@ PLATFORMS = [
     "remote",
     "switch",
     "number",
-    "select"
+    "select",
 ]
+
+# Event entities were added in Home Assistant 2023.8. Keep the legacy action
+# sensors available on older supported Home Assistant releases.
+if (MAJOR_VERSION, MINOR_VERSION) >= (2023, 8):
+    PLATFORMS.append("event")
 
 CONFIG_SCHEMA = vol.Schema(
     {

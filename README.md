@@ -234,6 +234,19 @@ sonoff:
   sensors: [staMac, bssid, host]
 ```
 
+### SwitchMan M5 button events
+
+SwitchMan M5 devices expose a separate `event` entity for each physical button.
+Actions accepted by the existing action sensor are routed to the matching
+button entity, so actions on different buttons do not suppress each other. The
+existing action sensor remains available for backward compatibility.
+Full LAN state snapshots are excluded because they can retain the previous
+button action after an unrelated relay update.
+
+Button actions use Home Assistant event types: `press_end`, `long_press_end`,
+and `multi_press_end`. Multi-press events include the `multi_press_count`
+attribute.
+
 ### Force update
 
 You can request actual device state and all its sensors manually at any time using `homeassistant.update_entity` service. Use it with any device entity except sensors. Use it with only one entity from each device.
