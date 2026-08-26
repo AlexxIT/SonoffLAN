@@ -449,6 +449,11 @@ class XButtonLocalKey(XButtonBase):
         # local trash: {'triggerType': 2, 'localKeyPass': {'outlet': 0, 'key': 0}}
         # based on https://github.com/AlexxIT/SonoffLAN/issues/1789
         elif params.get("triggerType") == 11:
+            # full state reports (e.g. after a relay command) also carry
+            # triggerType 11 and the stale localKeyPass of the last press
+            # https://github.com/AlexxIT/SonoffLAN/issues/1835
+            if "switches" in params:
+                return
             # Fix duplicates from mDNS https://github.com/AlexxIT/SonoffLAN/issues/1769
             if seq == self.last_seq:
                 return
