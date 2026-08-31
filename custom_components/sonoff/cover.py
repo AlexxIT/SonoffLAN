@@ -1,4 +1,8 @@
-from homeassistant.components.cover import CoverDeviceClass, CoverEntity
+from homeassistant.components.cover import (
+    CoverDeviceClass,
+    CoverEntity,
+    CoverEntityFeature,
+)
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -245,3 +249,59 @@ class XCoverT5(XCover):
 
     async def async_set_cover_position(self, position: int, **kwargs):
         await self.ewelink.send(self.device, {"percentageControl": 100 - position})
+
+
+# noinspection PyAbstractClass
+class XCoverBL602Door(XCover):
+    # CoolKit CK-BL602-TC-01 (uiid 216) — VEVOR MD370/MD750 sliding gate motor.
+    # Only a bottom endstop is reported: doorState 0=fully closed, 1=not-fully-closed.
+    # There is no reliable "fully open" or motion signal from the device, so we only
+    # expose closed/open and closing (whose end we know from doorState=0). We do not
+    # expose "opening" — it would just be a guess.
+    params = {"switch", "doorState"}
+    event = True  # skip initial set_state; seed from device["params"] in __init__
+    _attr_device_class = CoverDeviceClass.GATE
+    _attr_supported_features = (
+        CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
+    )
+    _attr_is_closed = None
+    # Only bottom endstop is known — "open" really means "not fully closed".
+    # Keep all controls active so the user can re-issue open/close/stop from any state.
+    _attr_assumed_state = True
+
+    def __init__(self, ewelink: XRegistry, device: dict):
+        super().__init__(ewelink, device)
+        ds = device["params"].get("doorState")
+        if ds is not None:
+            self._attr_is_closed = ds == 0
+
+    def set_state(self, params: dict):
+        # Only lone doorState pushes reflect real endstop transitions. Command echoes
+        # and full state dumps also contain doorState but with pre-command values.
+        if "doorState" not in params or "switch" in params:
+            return
+        state = params["doorState"]
+        self._attr_is_closed = state == 0
+        if state == 0:
+            # Bottom endstop reached → gate is fully closed, closing done.
+            self._attr_is_closing = False
+
+    async def async_open_cover(self, **kwargs):
+        self._attr_is_closing = False
+        self._attr_is_closed = False
+        self._async_write_ha_state()
+        await self.ewelink.send(self.device, {"switch": "on"}, query_cloud=False)
+
+    async def async_close_cover(self, **kwargs):
+        self._attr_is_closing = True
+        self._async_write_ha_state()
+        await self.ewelink.send(self.device, {"switch": "off"}, query_cloud=False)
+
+    async def async_stop_cover(self, **kwargs):
+        self._attr_is_closing = False
+        self._async_write_ha_state()
+        await self.ewelink.send(self.device, {"switch": "pause"}, query_cloud=False)
+
+    async def async_set_cover_position(self, position: int, **kwargs):
+        # Device has no position control — no-op.
+        return
