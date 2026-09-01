@@ -32,7 +32,7 @@ from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
 from ..cover import (
     XCover,
-    XCoverBL602Door,
+    XCover216,
     XCoverDualR3,
     XCoverOP,
     XCoverT5,
@@ -542,7 +542,7 @@ DEVICES = {
     + TX_ULTIMATE,
     # CK-BL602-TC-01(216), CoolKit gate motor controller
     # (VEVOR MD370/MD750 etc.), https://github.com/AlexxIT/SonoffLAN/issues/1819
-    216: [XCoverBL602Door, RSSI],
+    216: [XCover216, RSSI],
     # CK-BL602-PCSW-01(225), https://github.com/AlexxIT/SonoffLAN/issues/1616
     225: [
         spec(XBoolSwitch, param="switch"),
