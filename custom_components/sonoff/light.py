@@ -1019,7 +1019,7 @@ class XZigbeeColorTemp(XLight):
     _attr_min_color_temp_kelvin = 2200
     _attr_max_color_temp_kelvin = 4000
 
-    _attr_color_mode = ColorMode.ONOFF
+    _attr_color_mode = ColorMode.COLOR_TEMP
     _attr_supported_color_modes = {ColorMode.COLOR_TEMP}
 
     def set_state(self, params: dict):
