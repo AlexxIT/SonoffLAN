@@ -1,4 +1,8 @@
-from homeassistant.components.cover import CoverDeviceClass, CoverEntity
+from homeassistant.components.cover import (
+    CoverDeviceClass,
+    CoverEntity,
+    CoverEntityFeature,
+)
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -245,3 +249,24 @@ class XCoverT5(XCover):
 
     async def async_set_cover_position(self, position: int, **kwargs):
         await self.ewelink.send(self.device, {"percentageControl": 100 - position})
+
+
+# noinspection PyAbstractClass
+class XCover216(XCover):
+    params = {"switch", "doorState"}
+    _attr_device_class = CoverDeviceClass.GATE
+    _attr_is_closed = None
+
+    def set_state(self, params: dict):
+        # => command to cover from mobile app (ignore initial state)
+        if len(params) == 1 and "switch" in params:
+            # device receive command - on=open/off=close/pause=stop
+            self._attr_is_opening = params["switch"] == "on"
+            self._attr_is_closing = params["switch"] == "off"
+
+        if "doorState" in params:
+            self._attr_is_closing = self._attr_is_opening = False
+            self._attr_is_closed = params["doorState"] == 0
+
+    async def async_set_cover_position(self, position: int, **kwargs):
+        return  # Device has no position control — no-op.
