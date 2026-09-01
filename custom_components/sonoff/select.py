@@ -1,5 +1,5 @@
 from homeassistant.components.select import SelectEntity
-from homeassistant.const import EntityCategory
+from homeassistant.helpers.entity import EntityCategory
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -71,8 +71,8 @@ class XSelectStartup(XEntity, SelectEntity):
                 {
                     "outlet": self.channel,
                     "startup": option,
-                    "enableDelay": 0, # this should be exposed as a config option in the future, for inching devices
-                    "width": 1000, # i don't know what this is for, but it seems to not have any effect on the device
+                    "enableDelay": 0,  # this should be exposed as a config option in the future, for inching devices
+                    "width": 1000,  # i don't know what this is for, but it seems to not have any effect on the device
                 }
             )
 
@@ -83,6 +83,7 @@ class XSelectStartup(XEntity, SelectEntity):
 class XStartup(XEntity, SelectEntity):
     param = "startup"
 
+    _attr_current_option = None
     _attr_entity_category = EntityCategory.CONFIG
     _attr_options = ["off", "on", "stay"]
 

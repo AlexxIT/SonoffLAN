@@ -1,8 +1,4 @@
-from homeassistant.components.fan import (
-    FanEntity,
-    FanEntityFeature,
-)
-from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
+from homeassistant.components.fan import FanEntity, FanEntityFeature
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -25,21 +21,20 @@ SPEED_MEDIUM = "medium"
 SPEED_HIGH = "high"
 MODES = [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
 
+# backward support
+# https://developers.home-assistant.io/blog/2024/07/19/fan-fanentityfeatures-turn-on_off/
+FEATURE_TURN_OFF = getattr(FanEntityFeature, "TURN_OFF", 0)
+FEATURE_TURN_ON = getattr(FanEntityFeature, "TURN_ON", 0)
+
 
 # noinspection PyAbstractClass
 class XFan(XEntity, FanEntity):
     params = {"switches", "fan"}
     _attr_speed_count = 3
 
-    # https://developers.home-assistant.io/blog/2024/07/19/fan-fanentityfeatures-turn-on_off/
-    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 8):
-        _attr_supported_features = (
-            FanEntityFeature.SET_SPEED
-            | FanEntityFeature.TURN_OFF
-            | FanEntityFeature.TURN_ON
-        )
-    else:
-        _attr_supported_features = FanEntityFeature.SET_SPEED
+    _attr_supported_features = (
+        FanEntityFeature.SET_SPEED | FEATURE_TURN_OFF | FEATURE_TURN_ON
+    )
 
     def __init__(self, ewelink: XRegistry, device: XDevice) -> None:
         super().__init__(ewelink, device)
@@ -176,8 +171,7 @@ class XFanDualR3(XFan):
 
 # noinspection PyAbstractClass
 class XToggleFan(XEntity, FanEntity):
-    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 8):
-        _attr_supported_features = FanEntityFeature.TURN_OFF | FanEntityFeature.TURN_ON
+    _attr_supported_features = FEATURE_TURN_OFF | FEATURE_TURN_ON
 
     @property
     def is_on(self):
@@ -193,8 +187,8 @@ class XFan17(XEntity, FanEntity):
         FanEntityFeature.SET_SPEED
         | FanEntityFeature.OSCILLATE
         | FanEntityFeature.PRESET_MODE
-        | FanEntityFeature.TURN_OFF
-        | FanEntityFeature.TURN_ON
+        | FEATURE_TURN_OFF
+        | FEATURE_TURN_ON
     )
 
     def set_state(self, params: dict):

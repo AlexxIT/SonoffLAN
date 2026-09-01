@@ -57,7 +57,7 @@ PLATFORMS = [
     "remote",
     "switch",
     "number",
-    "select"
+    "select",
 ]
 
 CONFIG_SCHEMA = vol.Schema(

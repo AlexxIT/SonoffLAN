@@ -1975,7 +1975,7 @@ def test_issue1235():
     power: XSensor = next(e for e in entities if e.uid == "power")
     assert power.device_class is None
     assert power.native_unit_of_measurement is None
-    assert power.native_value is "off"
+    assert power.native_value == "off"
     assert power.state_class is None
 
 

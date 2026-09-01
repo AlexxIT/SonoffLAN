@@ -1,7 +1,6 @@
 from homeassistant.components.button import ButtonDeviceClass, ButtonEntity
 from homeassistant.components.script import ATTR_LAST_TRIGGERED
-from homeassistant.const import EntityCategory
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 
 from .core.const import DOMAIN
 from .core.entity import XEntity

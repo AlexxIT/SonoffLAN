@@ -1,11 +1,7 @@
 import time
 
-from homeassistant.components.light import (
-    ColorMode,
-    LightEntity,
-    LightEntityFeature,
-)
-from homeassistant.const import EntityCategory
+from homeassistant.components.light import ColorMode, LightEntity, LightEntityFeature
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.util import color
 
 from .core.const import DOMAIN
