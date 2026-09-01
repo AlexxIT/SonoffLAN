@@ -39,7 +39,7 @@ class XNumber(XEntity, NumberEntity):
 class XPulseWidth(XNumber):
     param = "pulseWidth"
 
-    _attr_device_class = NumberDeviceClass.DURATION
+    _attr_device_class = getattr(NumberDeviceClass, "DURATION")  # backward support
     _attr_entity_registry_enabled_default = False
 
     _attr_native_max_value = 36000

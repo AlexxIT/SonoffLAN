@@ -574,7 +574,7 @@ def test_sonoff_pow():
 
     pulse_width = next(e for e in entities if isinstance(e, XPulseWidth))
     assert pulse_width.native_value == 0.5
-    assert pulse_width.device_class == NumberDeviceClass.DURATION
+    assert pulse_width.device_class == getattr(NumberDeviceClass, "DURATION")
     assert pulse_width.native_unit_of_measurement == UnitOfTime.SECONDS
     assert pulse_width.entity_registry_enabled_default is False
 
