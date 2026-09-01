@@ -67,3 +67,20 @@ class XT5Effect(XEntity, ButtonEntity):
     async def async_press(self):
         if pre := self.device["params"].get("preEffects"):
             await self.ewelink.send(self.device, {"preEffects": pre})
+
+
+class XAlarmButton(XEntity, ButtonEntity):
+    """SNZB-09P (uiid 7056) - triggers the siren (confirmed working).
+
+    Sends `alarmSetting.test = true`. The device turns it back off on its
+    own once the configured Alarm Duration elapses, so no reset is sent.
+    """
+
+    params = {"alarmSetting"}
+    uid = "allarme"
+    _attr_icon = "mdi:bullhorn"
+
+    async def async_press(self):
+        setting = dict(self.device["params"].get("alarmSetting", {}))
+        setting["test"] = True
+        await self.ewelink.send(self.device, {"alarmSetting": setting})

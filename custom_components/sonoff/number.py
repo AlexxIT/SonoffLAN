@@ -78,3 +78,44 @@ class XSensitivity(XNumber):
     _attr_entity_registry_enabled_default = False
     _attr_native_max_value = 3
     _attr_native_min_value = 1
+
+
+# noinspection PyAbstractClass
+class XAlarmSettingNumber(XEntity, NumberEntity):
+    """Base class for SNZB-09P (uiid 7056) numbers nested inside `alarmSetting`.
+
+    See XAlarmSettingSwitch in switch.py for details - values reverse
+    engineered from device diagnostics, not official docs.
+    """
+
+    params = {"alarmSetting"}
+    field: str = None
+
+    def set_state(self, params: dict):
+        self._attr_native_value = params.get("alarmSetting", {}).get(self.field, 0)
+
+    async def async_set_native_value(self, value: float) -> None:
+        setting = dict(self.device["params"].get("alarmSetting", {}))
+        setting[self.field] = int(value)
+        await self.ewelink.send(self.device, {"alarmSetting": setting})
+
+
+class XAlarmDuration(XAlarmSettingNumber):
+    field = "duration"
+    uid = "alarm_duration"
+
+    _attr_native_min_value = 1
+    _attr_native_max_value = 180
+    _attr_native_step = 1
+    _attr_native_unit_of_measurement = "s"
+
+
+class XAlarmVolume(XAlarmSettingNumber):
+    """Guessed range 0-3 (app showed 'LOW') - verify on your own device."""
+
+    field = "volume"
+    uid = "alarm_volume"
+
+    _attr_native_min_value = 0
+    _attr_native_max_value = 3
+    _attr_native_step = 1
