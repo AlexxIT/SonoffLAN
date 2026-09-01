@@ -20,8 +20,8 @@ from homeassistant.components.switch import SwitchEntity
 from .ewelink import XDevice
 from ..alarm_control_panel import XPanelAlarm
 from ..binary_sensor import (
+    XAlarmPower,
     XBinarySensor,
-    XExternalPower,
     XHumanSensor,
     XLightSensor,
     XWaterSensor,
@@ -778,7 +778,7 @@ DEVICES = {
         XAlarmVolume,
         XAlarmSoundType,
         spec(XSensor, param="alarmType", uid="alarm_status"),
-        XExternalPower,
+        XAlarmPower,
         Battery,
         ZRSSI,
     ],

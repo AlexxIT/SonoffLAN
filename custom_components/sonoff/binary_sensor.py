@@ -98,7 +98,7 @@ class XWaterSensor(XEntity, BinarySensorEntity):
         self._attr_is_on = params[self.param] == 1
 
 
-class XExternalPower(XEntity, BinarySensorEntity):
+class XAlarmPower(XEntity, BinarySensorEntity):
     """SNZB-09P (uiid 7056) - whether it's on external/mains power."""
 
     param = "powerExternalState"

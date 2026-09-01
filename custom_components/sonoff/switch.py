@@ -189,16 +189,16 @@ class XAlarmSettingSwitch(XEntity, SwitchEntity):
     def set_state(self, params: dict):
         self._attr_is_on = bool(params.get("alarmSetting", {}).get(self.field))
 
-    async def _send(self, value: bool):
+    async def internal_send(self, value: bool):
         setting = dict(self.device["params"].get("alarmSetting", {}))
         setting[self.field] = value
         await self.ewelink.send(self.device, {"alarmSetting": setting})
 
     async def async_turn_on(self, *args, **kwargs):
-        await self._send(True)
+        await self.internal_send(True)
 
     async def async_turn_off(self, *args, **kwargs):
-        await self._send(False)
+        await self.internal_send(False)
 
 
 class XAlarmLight(XAlarmSettingSwitch):
