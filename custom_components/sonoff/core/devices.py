@@ -815,6 +815,14 @@ DEVICES = {
         Battery,
         ZRSSI,
     ],
+    # SNZB-02M https://github.com/AlexxIT/SonoffLAN/issues/1866
+    7057: [
+        spec(XSensor100, param="temperature"),
+        spec(XSensor100, param="humidity"),
+        spec(XSensor100, param="pressure"),
+        Battery,
+        ZRSSI,
+    ],
 }
 
 

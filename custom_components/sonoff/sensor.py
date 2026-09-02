@@ -17,6 +17,7 @@ from homeassistant.const import (
     UnitOfElectricPotential,
     UnitOfEnergy,
     UnitOfPower,
+    UnitOfPressure,
     UnitOfTemperature,
     UnitOfVolume,
 )
@@ -60,6 +61,7 @@ DEVICE_CLASSES = {
     "power_supply": SensorDeviceClass.POWER,
     "pm25": SensorDeviceClass.PM25,
     "pm10": SensorDeviceClass.PM10,
+    "pressure": SensorDeviceClass.PRESSURE,
     "remote_temperature": SensorDeviceClass.TEMPERATURE,
     "rssi": SensorDeviceClass.SIGNAL_STRENGTH,
     "temperature": SensorDeviceClass.TEMPERATURE,
@@ -80,6 +82,7 @@ UNITS = {
     "power_supply": UnitOfPower.WATT,
     "pm25": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     "pm10": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+    "pressure": UnitOfPressure.HPA,
     "remote_temperature": UnitOfTemperature.CELSIUS,
     "rssi": SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     "temperature": UnitOfTemperature.CELSIUS,
