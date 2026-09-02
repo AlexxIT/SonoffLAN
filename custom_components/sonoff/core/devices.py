@@ -764,7 +764,14 @@ DEVICES = {
         EnergyMonth,
     ],
     # SNZB-02WD, https://github.com/AlexxIT/SonoffLAN/issues/1612
-    7033: [XTempCorrection, XHumCorrection, Battery, ZRSSI],
+    7033: [
+        # Using raw values without correction
+        # https://github.com/AlexxIT/SonoffLAN/issues/1857
+        spec(XSensor, param="temperature"),
+        spec(XSensor, param="humidity"),
+        Battery,
+        ZRSSI,
+    ],
     # MINI-ZBRBS, https://github.com/AlexxIT/SonoffLAN/issues/1666
     7034: [XZBCover, LED, RSSI],
     # SNZB-02DR2
