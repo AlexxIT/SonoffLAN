@@ -13,7 +13,6 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.const import (
-    CONCENTRATION_PARTS_PER_MILLION,
     MAJOR_VERSION,
     MINOR_VERSION,
     STATE_ON,
@@ -56,6 +55,7 @@ from custom_components.sonoff.light import (
 from custom_components.sonoff.number import XNumber, XPulseWidth
 from custom_components.sonoff.select import XSelectStartup
 from custom_components.sonoff.sensor import (
+    CONCENTRATION_PARTS_PER_MILLION,
     XButtonKey,
     XButtonLocalKey,
     XCloudEnergyDualR3,

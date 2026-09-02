@@ -8,8 +8,8 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    CONCENTRATION_PARTS_PER_MILLION,
+    MAJOR_VERSION,
+    MINOR_VERSION,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     UnitOfElectricCurrent,
@@ -26,6 +26,15 @@ from .core.entity import XEntity
 from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
+
+if (MAJOR_VERSION, MINOR_VERSION) >= (2026, 7):
+    from homeassistant.const import UnitOfDensity, UnitOfRatio
+
+    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER = UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
+    CONCENTRATION_PARTS_PER_MILLION = UnitOfRatio.PARTS_PER_MILLION
+else:
+    from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION
 
 
 async def async_setup_entry(hass, config_entry, add_entities):
