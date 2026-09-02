@@ -52,7 +52,7 @@ from custom_components.sonoff.light import (
     XT5EffectStatus,
     XT5Light,
 )
-from custom_components.sonoff.number import XNumber, XPulseWidth
+from custom_components.sonoff.number import DEVICE_DURATION, XNumber, XPulseWidth
 from custom_components.sonoff.select import XSelectStartup
 from custom_components.sonoff.sensor import (
     CONCENTRATION_PARTS_PER_MILLION,
@@ -574,7 +574,7 @@ def test_sonoff_pow():
 
     pulse_width = next(e for e in entities if isinstance(e, XPulseWidth))
     assert pulse_width.native_value == 0.5
-    assert pulse_width.device_class == getattr(NumberDeviceClass, "DURATION")
+    assert pulse_width.device_class == DEVICE_DURATION
     assert pulse_width.native_unit_of_measurement == UnitOfTime.SECONDS
     assert pulse_width.entity_registry_enabled_default is False
 

@@ -16,6 +16,9 @@ async def async_setup_entry(hass, config_entry, add_entities):
     )
 
 
+DEVICE_DURATION = getattr(NumberDeviceClass, "DURATION", None)  # backward support
+
+
 # noinspection PyAbstractClass
 class XNumber(XEntity, NumberEntity):
     multiply: float = None
@@ -39,7 +42,7 @@ class XNumber(XEntity, NumberEntity):
 class XPulseWidth(XNumber):
     param = "pulseWidth"
 
-    _attr_device_class = getattr(NumberDeviceClass, "DURATION")  # backward support
+    _attr_device_class = DEVICE_DURATION
     _attr_entity_registry_enabled_default = False
 
     _attr_native_max_value = 36000
