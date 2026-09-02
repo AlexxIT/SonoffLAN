@@ -788,6 +788,8 @@ DEVICES = {
     7039: [XButtonKey, Battery, ZRSSI],
     # SWV-ZNE, https://github.com/AlexxIT/SonoffLAN/issues/1814
     7047: [spec(XBoolSwitch, param="switch_00", uid="switch"), Battery, ZRSSI],
+    # SNZB-06P24 https://github.com/AlexxIT/SonoffLAN/issues/1852
+    7051: [XHumanSensor, spec(XSensor, param="illumination", uid="illuminance")],
     # SNZB-02B
     7052: [
         spec(XSensor100, param="temperature"),
