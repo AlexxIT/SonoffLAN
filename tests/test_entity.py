@@ -2487,6 +2487,48 @@ def test_m5_matter():
     )
     assert button.state == ""
 
+    # this is a full state report after a relay command - it carries
+    # triggerType 11 and the stale localKeyPass of the LAST press, and
+    # must not be mistaken for a new press
+    # https://github.com/AlexxIT/SonoffLAN/issues/1835
+    setattr(button, "_attr_native_value", "")  # reset state
+    button.ewelink.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {
+                "sledOnline": "on",
+                "configure": [
+                    {"outlet": 0, "startup": "stay", "enableDelay": 0, "width": 29000},
+                    {"outlet": 1, "startup": "stay", "enableDelay": 0, "width": 22000},
+                    {"outlet": 2, "startup": "stay", "enableDelay": 0, "width": 2000},
+                ],
+                "switches": [
+                    {"outlet": 0, "switch": "on"},
+                    {"outlet": 1, "switch": "off"},
+                    {"outlet": 2, "switch": "on"},
+                ],
+                "triggerType": 11,
+                "lock": 0,
+                "localKeyPass": {"key": 0, "outlet": 2},
+            },
+            "seq": 3,
+        },
+    )
+    assert button.state == ""
+
+    # and a real press right after a state report still works
+    setattr(button, "_attr_native_value", "")  # reset state
+    button.ewelink.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {"triggerType": 11, "localKeyPass": {"key": 0, "outlet": 2}},
+            "seq": 4,
+        },
+    )
+    assert button.state == "button_3_single"
+
 
 def test_powct():
     entities = get_entitites({"extra": {"uiid": 190}, "params": {"supplyPower": 0}})
