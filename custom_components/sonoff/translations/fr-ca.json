@@ -23,7 +23,7 @@
         "data": {
           "mode": "Mode (auto est recommendé pour la pluspart des utilisateurs)",
           "homes": "Homes (laisser décoché pour \"current\" Home)",
-          "debug": "Page de débogage (Integration > Menu > Known issues)"
+          "debug": "Page de débogage (link in notification and log)"
         }
       }
     }

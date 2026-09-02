@@ -110,7 +110,7 @@ It is **highly recommended** that you use `mode: auto` and do not use `mode: loc
 
 ### Debug page
 
-Enable debug page in integration configuration (gear) via UI. Reload integrations page. Open: Integraion > Menu (top right dots) > Known issues.
+Enable debug page in integration configuration (gear) via UI. A link to the page will appear in the notification and in the HA log. The link is always random and is updated every time HA restarts.
 
 Debug page shows only integration logs and removes some private data. You can filter log and enable auto refresh (in seconds).
 

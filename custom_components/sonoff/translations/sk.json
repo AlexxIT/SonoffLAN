@@ -24,7 +24,7 @@
         "data": {
           "mode": "Režim (automatický sa odporúča pre väčšinu používateľov)",
           "homes": "Domácnosti (nechajte prázdne pre aktívnu domácnosť v mobilnej aplikácii)",
-          "debug": "Ladiaca stránka (Integrácia > Menu > Známe problémy)"
+          "debug": "Ladiaca stránka (link in notification and log)"
         }
       }
     }

@@ -23,7 +23,7 @@
         "data": {
           "mode": "Mod (çoğu kullanıcı için otomatik önerilir)",
           "homes": "Evler (\"Geçerli\" ev için işaretlemeden bırakın)",
-          "debug": "Hata ayıklama sayfası (Entegrasyon > Menü > Bilinen sorunlar)"
+          "debug": "Hata ayıklama sayfası (link in notification and log)"
         }
       }
     }

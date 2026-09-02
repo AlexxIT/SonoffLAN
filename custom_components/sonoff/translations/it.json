@@ -24,7 +24,7 @@
           "data": {
             "mode": "Modalità (per la maggior parte degli utenti lasciare su auto)",
             "homes": "Case (non specificare per selezionare quella di default sull'app)",
-            "debug": "Pagina di Debug (Integrazioni > Menu > Known issues)"
+            "debug": "Pagina di Debug (link in notification and log)"
           }
         }
       }

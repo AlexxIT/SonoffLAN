@@ -24,7 +24,7 @@
         "data": {
           "mode": "Modo (o modo automático é recomendado para a maioria dos utilizadores)",
           "homes": "Casas (manter desselecionado para a Casa \"atual\")",
-          "debug": "Página de depuração (Integração > Menu > Problemas conhecidos)"
+          "debug": "Página de depuração (link in notification and log)"
         }
       }
     }

@@ -23,7 +23,7 @@
 				"data": {
 					"mode": "الوضع (auto ينصح به لأغلب المستخدمين)",
 					"homes": "المنازل (اتركه فارغاً لاستخدام المنزل الحالي)",
-					"debug": "Debug صفحة الـ (Integration > Menu > Known issues)"
+					"debug": "Debug صفحة الـ (link in notification and log)"
 				}
 			}
 		}

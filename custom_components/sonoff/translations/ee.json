@@ -23,7 +23,7 @@
           "data": {
             "mode": "Režhiim (auto on soovitatav enamustel juhtudest)",
             "homes": "Kodud (Jäta tühjaks \"olemasoleva\" Kosu jaoks)",
-            "debug": "Debug leht (Integratsioon > Kolm täpii > Known issues)"
+            "debug": "Debug leht (link in notification and log)"
           }
         }
       }

@@ -24,7 +24,7 @@
         "data": {
           "mode": "Üzemmód (az automatikus ajánlott a legtöbb felhasználó számára)",
           "homes": "eWelink otthonok (hagyja üresen a \"My Home / Otthonom\" opciót)",
-          "debug": "Debug oldal (Integrációk > Sonoff \"hamburger\" menü > Ismert hibák)"
+          "debug": "Debug oldal (link in notification and log)"
         }
       }
     }

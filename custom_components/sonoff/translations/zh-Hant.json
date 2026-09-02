@@ -24,7 +24,7 @@
         "data": {
           "mode": "模式 (一般使用請選擇auto)",
           "homes": "家 (請留空)",
-          "debug": "除錯頁面 (整合 > 選單 > 已知問題)"
+          "debug": "除錯頁面 (link in notification and log)"
         }
       }
     }

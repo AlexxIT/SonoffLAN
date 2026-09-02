@@ -9,7 +9,7 @@ from datetime import datetime
 from logging import Logger
 
 from aiohttp import web
-from homeassistant.components import system_health
+from homeassistant.components import persistent_notification, system_health
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.system_info import async_get_system_info
@@ -48,9 +48,6 @@ async def system_health_info(hass: HomeAssistant):
         "local_online": f"{local_online} / {local_total}",
     }
 
-    if DebugView.url:
-        info["debug"] = {"type": "failed", "error": "", "more_info": DebugView.url}
-
     return info
 
 
@@ -58,15 +55,20 @@ async def setup_debug(hass: HomeAssistant, logger: Logger):
     view = DebugView(logger)
     hass.http.register_view(view)
 
+    # Unfortunately, the latest version of HA doesn't offer any other options for
+    # sharing the link with the user.
+    persistent_notification.async_create(
+        hass, f'<a href="{DebugView.url}" target="_blank">Debug page</a>', "Sonoff"
+    )
+
+    logger.info(f"Debug page: {DebugView.url}")
+
     source_hash = await hass.async_add_executor_job(xutils.source_hash)
 
     integration = hass.data["integrations"][DOMAIN]
     info = await async_get_system_info(hass)
     info[DOMAIN + "_version"] = f"{integration.version} ({source_hash})"
     logger.debug(f"SysInfo: {info}")
-
-    integration.manifest["issue_tracker"] = view.url
-    integration.__dict__.pop("manifest_json_fragment", None)  # drop cached_property
 
 
 class DebugView(logging.Handler, HomeAssistantView):

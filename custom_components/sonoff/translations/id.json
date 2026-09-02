@@ -23,7 +23,7 @@
           "data": {
             "mode": "Mode (otomatis direkomendasikan untuk sebagian besar pengguna)",
             "homes": "Rumah (biarkan tidak dicentang untuk Rumah \"saat ini\")",
-            "debug": "Halaman Debug (Integrasi > Menu > Masalah yang diketahui)"
+            "debug": "Halaman Debug (link in notification and log)"
           }
         }
       }
