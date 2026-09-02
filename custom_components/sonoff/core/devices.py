@@ -789,7 +789,12 @@ DEVICES = {
         ZRSSI
     ],
     # SNZB-03PR2 https://github.com/AlexxIT/SonoffLAN/issues/1824
-    7055: [XHumanSensor, spec(XSensor, param="illumination"), Battery, ZRSSI],
+    7055: [
+        XHumanSensor,
+        spec(XSensor, param="illumination", uid="illuminance"),
+        Battery,
+        ZRSSI,
+    ],
     # SNZB-09P (Indoor Siren)
     7056: [
         XAlarmButton,

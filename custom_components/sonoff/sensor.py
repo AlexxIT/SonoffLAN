@@ -8,6 +8,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
+    LIGHT_LUX,
     MAJOR_VERSION,
     MINOR_VERSION,
     PERCENTAGE,
@@ -53,6 +54,7 @@ DEVICE_CLASSES = {
     "current": SensorDeviceClass.CURRENT,
     "current_supply": SensorDeviceClass.CURRENT,
     "humidity": SensorDeviceClass.HUMIDITY,
+    "illuminance": SensorDeviceClass.ILLUMINANCE,
     "outdoor_temp": SensorDeviceClass.TEMPERATURE,
     "power": SensorDeviceClass.POWER,
     "power_supply": SensorDeviceClass.POWER,
@@ -72,6 +74,7 @@ UNITS = {
     "current": UnitOfElectricCurrent.AMPERE,
     "current_supply": UnitOfElectricCurrent.AMPERE,
     "humidity": PERCENTAGE,
+    "illuminance": LIGHT_LUX,
     "outdoor_temp": UnitOfTemperature.CELSIUS,
     "power": UnitOfPower.WATT,
     "power_supply": UnitOfPower.WATT,

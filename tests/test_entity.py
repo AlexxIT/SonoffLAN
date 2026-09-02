@@ -13,6 +13,7 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.const import (
+    LIGHT_LUX,
     MAJOR_VERSION,
     MINOR_VERSION,
     STATE_ON,
@@ -2802,5 +2803,7 @@ def test_human_7055():
     human: XHumanSensor = next(e for e in entities if e.uid == "occupancy")
     assert human.state == "off"
 
-    sensor: XSensor = next(e for e in entities if e.uid == "illumination")
+    sensor: XSensor = next(e for e in entities if e.uid == "illuminance")
     assert sensor.state == 361
+    assert sensor.device_class == SensorDeviceClass.ILLUMINANCE
+    assert sensor.native_unit_of_measurement == LIGHT_LUX
