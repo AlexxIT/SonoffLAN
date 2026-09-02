@@ -164,7 +164,9 @@ class XRemote(XEntity, RemoteEntity):
 
             # transform button name to channel number
             if not channel.isdigit():
-                child = next((k for k, v in self.childs.items() if v.name == channel), None)
+                child = next(
+                    (k for k, v in self.childs.items() if v.name == channel), None
+                )
                 if child is None:
                     _LOGGER.error(f"Unknown RF command: {channel}")
                     continue

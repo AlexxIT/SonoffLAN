@@ -795,7 +795,7 @@ DEVICES = {
         spec(XSensor100, param="temperature"),
         spec(XSensor100, param="humidity"),
         Battery,
-        ZRSSI
+        ZRSSI,
     ],
     # SNZB-03PR2 https://github.com/AlexxIT/SonoffLAN/issues/1824
     7055: [

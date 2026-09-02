@@ -1,3 +1,4 @@
+from homeassistant.components import media_source
 from homeassistant.components.media_player import (
     BrowseMedia,
     MediaClass,
@@ -6,7 +7,7 @@ from homeassistant.components.media_player import (
     MediaPlayerState,
 )
 from homeassistant.components.media_source import BrowseMediaSource
-from homeassistant.components import media_source
+
 from .core.const import DOMAIN
 from .core.entity import XEntity
 from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry

@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -7,7 +9,6 @@ from .core import xutils
 from .core.const import DOMAIN, PRIVATE_KEYS
 from .core.ewelink import XRegistry
 
-from copy import deepcopy
 
 async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigEntry):
     try:

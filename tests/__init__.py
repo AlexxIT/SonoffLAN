@@ -42,7 +42,9 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
         params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
 
     asyncio.create_task = lambda coro: coro.close()
-    asyncio.get_running_loop = lambda: type("", (), {"_thread_id": threading.get_ident()})
+    asyncio.get_running_loop = lambda: type(
+        "", (), {"_thread_id": threading.get_ident()}
+    )
 
     entities = []
 

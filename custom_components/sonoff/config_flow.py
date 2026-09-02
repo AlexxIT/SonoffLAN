@@ -80,9 +80,7 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=data_schema,
-            description_placeholders={
-                "ewelink_url": "https://www.ewelink.cc/"
-            },
+            description_placeholders={"ewelink_url": "https://www.ewelink.cc/"},
         )
 
     async def async_step_reauth(self, user_input=None):

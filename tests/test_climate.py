@@ -1,5 +1,6 @@
-from custom_components.sonoff.climate import XClimateTH, XThermostatTRVZB
 from homeassistant.components.climate import HVACMode
+
+from custom_components.sonoff.climate import XClimateTH, XThermostatTRVZB
 from . import init
 
 

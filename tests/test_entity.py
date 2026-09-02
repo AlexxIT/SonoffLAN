@@ -1,17 +1,15 @@
 import asyncio
 import time
+from datetime import timedelta
+from types import SimpleNamespace
 from typing import Union
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.fan import FanEntity, FanEntityFeature
-from homeassistant.components.light import (
-    ColorMode,
-    LightEntity,
-)
-from homeassistant.components.number import NumberDeviceClass
+from homeassistant.components.light import ColorMode, LightEntity
+from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.const import (
     LIGHT_LUX,
     MAJOR_VERSION,
@@ -25,8 +23,11 @@ from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.util import dt
 
 from custom_components.sonoff import CONFIG_SCHEMA, remote
-from custom_components.sonoff.binary_sensor import XBinarySensor, XHumanSensor, \
-    XRemoteSensor
+from custom_components.sonoff.binary_sensor import (
+    XBinarySensor,
+    XHumanSensor,
+    XRemoteSensor,
+)
 from custom_components.sonoff.button import XRemoteButton, XT5Effect
 from custom_components.sonoff.climate import XClimateNS, XThermostat
 from custom_components.sonoff.core import devices
@@ -76,9 +77,6 @@ from custom_components.sonoff.switch import (
     XZigbeeSwitches,
 )
 from . import DEVICEID, DummyRegistry, init, save_to
-
-from datetime import timedelta
-from types import SimpleNamespace
 
 
 def get_entitites(device: Union[dict, list], config: dict = None) -> list:

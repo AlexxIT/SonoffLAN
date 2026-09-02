@@ -52,8 +52,7 @@ def test_diagnostics_does_not_mutate_config():
         assert XRegistry.config["username"] == "user@example.com"
         assert XRegistry.config["password"] == "secret-password"
         assert (
-                XRegistry.config["devices"]["1000123456"]["devicekey"]
-                == "real-device-key"
+            XRegistry.config["devices"]["1000123456"]["devicekey"] == "real-device-key"
         )
     finally:
         XRegistry.config = original_config

@@ -1,39 +1,39 @@
 {
-    "config": {
-      "abort": {
-        "reauth_successful": "Re-autentifitseerimine õnnestus"
-      },
-      "error": {
-        "exists": "See konto on juba konfigureeritud",
-        "template": "{error}"
-      },
-      "step": {
-        "user": {
-          "description": "Sisesta oma [eWeLink account]({ewelink_url}) andmed",
-          "data": {
-            "username": "Email või telefon (DIY režhiimis suvaline)",
-            "password": "Parool (DIY režhiimis jäta tühjaks)"
-          }
-        }
-      }
+  "config": {
+    "abort": {
+      "reauth_successful": "Re-autentifitseerimine õnnestus"
     },
-    "options": {
-      "step": {
-        "init": {
-          "data": {
-            "mode": "Režhiim (auto on soovitatav enamustel juhtudest)",
-            "homes": "Kodud (Jäta tühjaks \"olemasoleva\" Kosu jaoks)",
-            "debug": "Debug leht (link in notification and log)"
-          }
-        }
-      }
+    "error": {
+      "exists": "See konto on juba konfigureeritud",
+      "template": "{error}"
     },
-    "system_health": {
-      "info": {
-        "version": "Versioon",
-        "cloud_online": "Pilveseadmeid online",
-        "local_online": "Lokaalseid seadmeid online",
-        "debug": "Debug leht"
+    "step": {
+      "user": {
+        "description": "Sisesta oma [eWeLink account]({ewelink_url}) andmed",
+        "data": {
+          "username": "Email või telefon (DIY režhiimis suvaline)",
+          "password": "Parool (DIY režhiimis jäta tühjaks)"
+        }
       }
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "mode": "Režhiim (auto on soovitatav enamustel juhtudest)",
+          "homes": "Kodud (Jäta tühjaks \"olemasoleva\" Kosu jaoks)",
+          "debug": "Debug leht (link in notification and log)"
+        }
+      }
+    }
+  },
+  "system_health": {
+    "info": {
+      "version": "Versioon",
+      "cloud_online": "Pilveseadmeid online",
+      "local_online": "Lokaalseid seadmeid online",
+      "debug": "Debug leht"
+    }
   }
+}

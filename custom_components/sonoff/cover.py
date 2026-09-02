@@ -1,8 +1,4 @@
-from homeassistant.components.cover import (
-    CoverDeviceClass,
-    CoverEntity,
-    CoverEntityFeature,
-)
+from homeassistant.components.cover import CoverDeviceClass, CoverEntity
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
