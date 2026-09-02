@@ -69,6 +69,16 @@ async def setup_debug(hass: HomeAssistant, logger: Logger):
     integration.__dict__.pop("manifest_json_fragment", None)  # drop cached_property
 
 
+class WarningPassthrough(logging.Handler):
+    """Forward actionable records to Home Assistant's root handlers."""
+
+    def __init__(self):
+        super().__init__(logging.WARNING)
+
+    def emit(self, record: logging.LogRecord) -> None:
+        logging.getLogger().handle(record)
+
+
 class DebugView(logging.Handler, HomeAssistantView):
     """Class generate web page with component debug logs."""
 
@@ -81,13 +91,17 @@ class DebugView(logging.Handler, HomeAssistantView):
         # https://waymoot.org/home/python_string/
         self.text = deque(maxlen=10000)
 
-        self.propagate_level = logger.getEffectiveLevel()
-
         # random url because without authorization!!!
         DebugView.url = f"/api/{DOMAIN}/{uuid.uuid4()}"
 
         logger.addHandler(self)
+        self.warning_passthrough = WarningPassthrough()
+        logger.addHandler(self.warning_passthrough)
         logger.setLevel(logging.DEBUG)
+        # Keep the optional protocol trace in the bounded debug page instead of
+        # forwarding every packet into Home Assistant's raw log stream. Warnings
+        # and errors are still forwarded through WarningPassthrough.
+        logger.propagate = False
 
     def handle(self, rec: logging.LogRecord):
         if isinstance(rec.args, dict):
@@ -100,10 +114,6 @@ class DebugView(logging.Handler, HomeAssistantView):
             exc = traceback.format_exception(*rec.exc_info, limit=1)
             msg += "|" + "".join(exc[-2:]).replace("\n", "|")
         self.text.append(msg)
-
-        # prevent debug to Hass log if user don't want it
-        if self.propagate_level > rec.levelno:
-            rec.levelno = -1
 
     async def get(self, request: web.Request):
         try:
