@@ -695,11 +695,12 @@ DEVICES = {
     7009: [XZigbeeLight],
     # ZBMicro, https://github.com/AlexxIT/SonoffLAN/issues/1525
     7010: [XSwitch, ZRSSI],
-    # https://github.com/AlexxIT/SonoffLAN/issues/1166
+    # SNZB-02D, https://github.com/AlexxIT/SonoffLAN/issues/1166
     7014: [
         spec(XSensor100, param="temperature"),
         spec(XSensor100, param="humidity"),
         Battery,
+        ZRSSI,
     ],
     # SNZB-06P
     7016: [XHumanSensor, XLightSensor, XSensitivity, ZRSSI],
