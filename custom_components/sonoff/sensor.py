@@ -8,6 +8,8 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
+    MAJOR_VERSION,
+    MINOR_VERSION,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     UnitOfElectricCurrent,
@@ -19,22 +21,20 @@ from homeassistant.const import (
 )
 from homeassistant.util import dt
 
-try:
-    from homeassistant.const import UnitOfDensity, UnitOfRatio
-except ImportError:
-    from homeassistant.const import (
-        CONCENTRATION_MICROGRAMS_PER_CUBIC_METER as MICROGRAMS_PER_CUBIC_METER,
-        CONCENTRATION_PARTS_PER_MILLION as PARTS_PER_MILLION,
-    )
-else:
-    MICROGRAMS_PER_CUBIC_METER = UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
-    PARTS_PER_MILLION = UnitOfRatio.PARTS_PER_MILLION
-
 from .core.const import DOMAIN
 from .core.entity import XEntity
 from .core.ewelink import SIGNAL_ADD_ENTITIES, XRegistry
 
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
+
+if (MAJOR_VERSION, MINOR_VERSION) >= (2026, 7):
+    from homeassistant.const import UnitOfDensity, UnitOfRatio
+
+    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER = UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
+    CONCENTRATION_PARTS_PER_MILLION = UnitOfRatio.PARTS_PER_MILLION
+else:
+    from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION
 
 
 async def async_setup_entry(hass, config_entry, add_entities):
@@ -67,7 +67,7 @@ DEVICE_CLASSES = {
 UNITS = {
     "battery": PERCENTAGE,
     "battery_voltage": UnitOfElectricPotential.VOLT,
-    "co2": PARTS_PER_MILLION,
+    "co2": CONCENTRATION_PARTS_PER_MILLION,
     "cpu_temperature": UnitOfTemperature.CELSIUS,
     "current": UnitOfElectricCurrent.AMPERE,
     "current_supply": UnitOfElectricCurrent.AMPERE,
@@ -75,8 +75,8 @@ UNITS = {
     "outdoor_temp": UnitOfTemperature.CELSIUS,
     "power": UnitOfPower.WATT,
     "power_supply": UnitOfPower.WATT,
-    "pm25": MICROGRAMS_PER_CUBIC_METER,
-    "pm10": MICROGRAMS_PER_CUBIC_METER,
+    "pm25": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+    "pm10": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     "remote_temperature": UnitOfTemperature.CELSIUS,
     "rssi": SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     "temperature": UnitOfTemperature.CELSIUS,
