@@ -250,6 +250,7 @@ class XThermostat(XEntity, ClimateEntity):
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.AUTO]
     _attr_max_temp = 45
     _attr_min_temp = 5
+    _attr_preset_mode = None
     _attr_preset_modes = ["manual", "programmed", "economical"]
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
@@ -269,7 +270,8 @@ class XThermostat(XEntity, ClimateEntity):
 
         if cache["switch"] == "on":
             # workState: 1=heating, 2=auto
-            self._attr_hvac_mode = self.hvac_modes[cache["workState"]]
+            # Some UIID 127 thermostats (ZK-H/ZKWY) do not report workState.
+            self._attr_hvac_mode = self.hvac_modes[cache.get("workState", 1)]
         else:
             self._attr_hvac_mode = HVACMode.OFF
 
