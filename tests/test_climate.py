@@ -1,6 +1,6 @@
 from homeassistant.components.climate import HVACMode
 
-from custom_components.sonoff.climate import XClimateTH, XThermostatTRVZB
+from custom_components.sonoff.climate import XClimateTH, XThermostat, XThermostatTRVZB
 from . import init
 
 
@@ -218,3 +218,77 @@ def test_trvzb_unknown_workmode():
     # Setting a known workMode after unknown ones should work
     climate.set_state({"workMode": "0"})
     assert climate.hvac_mode == HVACMode.HEAT
+
+
+def test_thermostat_without_workstate():
+    # Reduced UIID 127 ZKWY/CK-BL602-TC-01 payload, without account/device IDs.
+    reg, entities = init(
+        {
+            "extra": {"uiid": 127},
+            "params": {"switch": "on", "temperature": 35.8, "targetTemp": 38},
+        }
+    )
+    climate = next(e for e in entities if isinstance(e, XThermostat))
+    assert climate.hvac_mode == HVACMode.HEAT
+    assert climate.current_temperature == 35.8
+    assert climate.target_temperature == 38
+    assert climate.available
+
+    # Partial updates retain the cached power state and target temperature.
+    climate.internal_update({"temperature": 36.2})
+    assert climate.hvac_mode == HVACMode.HEAT
+    assert climate.current_temperature == 36.2
+    assert climate.target_temperature == 38
+
+    climate.internal_update({"switch": "off"})
+    assert climate.hvac_mode == HVACMode.OFF
+    climate.internal_update({"switch": "on", "targetTemp": 37.5})
+    assert climate.hvac_mode == HVACMode.HEAT
+    assert climate.target_temperature == 37.5
+
+    # Temperature-only commands must not add an unsupported workState field.
+    _, params = reg.call(climate.async_set_temperature(temperature=37))
+    assert params == {"targetTemp": 37}
+    _, params = reg.call(climate.async_set_hvac_mode(HVACMode.OFF))
+    assert params == {"switch": "off"}
+
+    # A cached temperature must not force an offline device to be available.
+    climate.device["online"] = False
+    climate.internal_update({"temperature": 36.2})
+    assert not climate.available
+    climate.device["online"] = True
+    climate.internal_update()
+    assert climate.available
+
+
+def test_thermostat_with_workstate():
+    reg, entities = init(
+        {
+            "extra": {"uiid": 127},
+            "params": {
+                "switch": "on",
+                "workState": 2,
+                "workMode": 2,
+                "temperature": 20,
+                "targetTemp": 22,
+            },
+        }
+    )
+    climate = next(e for e in entities if isinstance(e, XThermostat))
+    assert climate.hvac_mode == HVACMode.AUTO
+    assert climate.preset_mode == "programmed"
+
+    climate.internal_update({"temperature": 20.5})
+    assert climate.hvac_mode == HVACMode.AUTO
+    climate.internal_update({"workState": 1, "workMode": 1})
+    assert climate.hvac_mode == HVACMode.HEAT
+    assert climate.preset_mode == "manual"
+    climate.internal_update({"switch": "off"})
+    assert climate.hvac_mode == HVACMode.OFF
+
+    _, params = reg.call(climate.async_set_hvac_mode(HVACMode.AUTO))
+    assert params == {"switch": "on", "workState": 2}
+    _, params = reg.call(
+        climate.async_set_temperature(temperature=23, hvac_mode=HVACMode.HEAT)
+    )
+    assert params == {"switch": "on", "workState": 1, "targetTemp": 23}
