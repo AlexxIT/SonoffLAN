@@ -1823,13 +1823,270 @@ def test_t5():
     action: XT5Action = next(e for e in entities if isinstance(e, XT5Action))
     assert action.state == ""
 
+    # the first report only establishes the baseline
     action.internal_update(
         {"switches": [{"switch": "on", "outlet": 0}], "triggerType": 2}
+    )
+    assert action.state == ""
+
+    # a touch toggles the gang - outlet 0 is "on" in the fixture above
+    action.internal_update(
+        {"switches": [{"switch": "off", "outlet": 0}], "triggerType": 2}
     )
     assert action.state == "touch"
 
     action.internal_update({"slide": 2})
     assert action.state == "slide_2"
+
+
+def test_t5_action_phantom_touch():
+    """Periodic state reports must not be read as touches.
+
+    https://github.com/AlexxIT/SonoffLAN/issues/1373
+
+    `triggerType` is a sticky field describing the last state change, not a
+    fresh event. A multi-gang T5 repeats it in every state report, and the
+    integration polls the device once a minute (`localping`), so the v3.7.3
+    `"switches" in params` guard admits every report.
+    """
+    report = {
+        "switches": [
+            {"switch": "off", "outlet": 0},
+            {"switch": "off", "outlet": 1},
+            {"switch": "off", "outlet": 2},
+            {"switch": "off", "outlet": 3},
+        ],
+        "electromotor": 1,
+        "percentageControl": 0,
+        "calibState": False,
+        "triggerType": 2,
+        "lightSwitch": "off",
+        "lightMode": 1,
+        "shock": 1,
+        "doNotDisturb": 0,
+        "doNotDisturbTime": {"from": "22:00", "to": "07:00"},
+        "sledOnline": "off",
+        "fwVersion": "1.5.1",
+        "rssi": -36,
+    }
+
+    entities = get_entitites(
+        {"extra": {"uiid": 212}, "params": dict(report), "model": "T5-4C-86"}
+    )
+    action: XT5Action = next(e for e in entities if isinstance(e, XT5Action))
+    assert action.state == ""
+
+    # T5-4C fw 1.5.1, verbatim off the wire, nobody near the switch
+    action.internal_update(dict(report))
+    assert action.state == ""
+
+    # the same report a minute later differs only in rssi
+    action.internal_update(dict(report, rssi=-39))
+    assert action.state == ""
+
+    # a real touch changes the reported state
+    action.internal_update(
+        {"switches": [{"switch": "on", "outlet": 0}], "triggerType": 2}
+    )
+    assert action.state == "touch"
+
+
+def test_t5_1c_action():
+    """Single-gang T5. Payloads from the original report in issue #1373."""
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 209},
+            "params": {"switch": "off", "fwVersion": "1.3.1"},
+            "model": "T5-1C-86",
+        }
+    )
+    action: XT5Action = next(e for e in entities if isinstance(e, XT5Action))
+    assert action.state == ""
+
+    # poll reply on a 1-gang omits `switches` entirely - this is the only
+    # reason the v3.7.3 guard worked for single-gang devices
+    poll = {
+        "percentageControl": 0,
+        "calibState": False,
+        "triggerType": 2,
+        "fwVersion": "1.3.1",
+        "rssi": -79,
+    }
+    action.internal_update(dict(poll))
+    assert action.state == ""
+
+    # a real touch carries the outlet that changed
+    action.internal_update(dict(poll, switches=[{"switch": "on", "outlet": 0}], rssi=-91))
+    assert action.state == "touch"
+
+
+def test_t5_action_real_press():
+    """Verbatim LAN capture from a T5-4C (fw 1.5.1), SonoffLAN 3.12.2.
+
+    A physical press produces a *full* state report with the complete outlet
+    array - the same shape as the once-a-minute poll reply. Only the switch
+    values and `triggerType` differ, so the report shape cannot be used to
+    tell them apart.
+    """
+
+    def report(switches: str, trigger: int) -> dict:
+        return {
+            "switches": [
+                {"switch": "on" if c == "1" else "off", "outlet": i}
+                for i, c in enumerate(switches)
+            ],
+            "electromotor": 1,
+            "percentageControl": 0,
+            "calibState": False,
+            "triggerType": trigger,
+            "lightSwitch": "off",
+            "lightMode": 1,
+            "shock": 1,
+            "sledOnline": "off",
+            "fwVersion": "1.5.1",
+            "rssi": -37,
+        }
+
+    entities = get_entitites(
+        {"extra": {"uiid": 212}, "params": report("0000", 11), "model": "T5-4C-86"}
+    )
+    action: XT5Action = next(e for e in entities if isinstance(e, XT5Action))
+    assert action.state == ""
+
+    # poll replies while idle - `triggerType` still describes the last
+    # (network) change, nothing has happened
+    action.internal_update(report("0000", 11))
+    assert action.state == ""
+
+    # physical press on gang 4 - full report, triggerType flips to 2
+    action.internal_update(report("0001", 2))
+    assert action.state == "touch"
+    action._attr_native_value = ""
+
+    # the poll replies that follow repeat that report for as long as nothing
+    # else changes - this is the phantom touch from #1373
+    action.internal_update(report("0001", 2))
+    assert action.state == ""
+    action.internal_update(report("0001", 2))
+    assert action.state == ""
+
+    # gang 4 off, gang 1 on, gang 1 off - each is a real press
+    for switches in ("0000", "1000", "0000"):
+        action.internal_update(report(switches, 2))
+        assert action.state == "touch"
+        action._attr_native_value = ""
+
+    action.internal_update(report("0000", 2))
+    assert action.state == ""
+
+    # a network command reports triggerType 11 and must not emit a touch,
+    # but must still update the baseline
+    action.internal_update(report("0010", 11))
+    assert action.state == ""
+
+    # ...so a physical press right after it is still detected
+    action.internal_update(report("0000", 2))
+    assert action.state == "touch"
+    action._attr_native_value = ""
+
+    # a swipe arrives on its own
+    action.internal_update({"slide": 2})
+    assert action.state == "slide_2"
+
+
+def test_t5_action_report_sources():
+    """Cloud and LAN reports carry different keys for the same state.
+
+    The state dump the integration receives on setup has far more keys than
+    the LAN report that follows it. Comparing whole payloads would read that
+    as a change and emit a phantom touch on every reload, so only the switch
+    state is compared.
+    """
+    lan = {
+        "switches": [
+            {"switch": "off", "outlet": 0},
+            {"switch": "off", "outlet": 1},
+            {"switch": "off", "outlet": 2},
+            {"switch": "off", "outlet": 3},
+        ],
+        "electromotor": 1,
+        "percentageControl": 0,
+        "calibState": False,
+        "triggerType": 2,
+        "lightSwitch": "off",
+        "lightMode": 1,
+        "shock": 1,
+        "sledOnline": "off",
+        "fwVersion": "1.5.1",
+        "rssi": -40,
+    }
+    cloud = dict(
+        lan,
+        version=8,
+        configure=[{"startup": "stay", "outlet": i} for i in range(4)],
+        pulses=[{"pulse": "off", "outlet": i, "width": 500} for i in range(4)],
+        onEffects={"lightEffect": 0, "volume": 50},
+        timeZone=0,
+        rssi=-38,
+    )
+
+    entities = get_entitites(
+        {"extra": {"uiid": 212}, "params": dict(cloud), "model": "T5-4C-86"}
+    )
+    action: XT5Action = next(e for e in entities if isinstance(e, XT5Action))
+
+    # setup dump, then the first LAN report - same switch state, different keys
+    action.internal_update(dict(cloud))
+    assert action.state == ""
+    action.internal_update(dict(lan))
+    assert action.state == ""
+    action.internal_update(dict(lan, rssi=-44))
+    assert action.state == ""
+
+    # a real press is still detected after them
+    pressed = dict(lan)
+    pressed["switches"] = [
+        {"switch": "on" if i == 0 else "off", "outlet": i} for i in range(4)
+    ]
+    action.internal_update(pressed)
+    assert action.state == "touch"
+
+
+def test_t5_1gang_poll_reply_omits_switches():
+    """A 1-gang T5 poll reply has no `switches` at all (issue #1373).
+
+    The last known state must be carried forward, or the poll reply that
+    follows a real touch would itself look like a change.
+    """
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 209},
+            "params": {"switch": "off", "fwVersion": "1.3.1"},
+            "model": "T5-1C-86",
+        }
+    )
+    action: XT5Action = next(e for e in entities if isinstance(e, XT5Action))
+
+    poll = {
+        "percentageControl": 0,
+        "calibState": False,
+        "triggerType": 2,
+        "fwVersion": "1.3.1",
+        "rssi": -79,
+    }
+    action.internal_update(dict(poll))
+    assert action.state == ""
+    action.internal_update(dict(poll, rssi=-81))
+    assert action.state == ""
+
+    # real touch carries the outlet
+    action.internal_update(dict(poll, switches=[{"switch": "on", "outlet": 0}]))
+    assert action.state == "touch"
+    action._attr_native_value = ""
+
+    # the poll reply right after it omits `switches` again - not a change
+    action.internal_update(dict(poll))
+    assert action.state == ""
 
 
 def test_91():

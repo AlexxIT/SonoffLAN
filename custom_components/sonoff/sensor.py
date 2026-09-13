@@ -480,11 +480,40 @@ class XT5Action(XEventSesor):
     params = {"triggerType", "slide"}
     uid = "action"
 
+    def __init__(self, ewelink: XRegistry, device: dict):
+        super().__init__(ewelink, device)
+        self.last_switches = None
+
+    @staticmethod
+    def read_switches(params: dict) -> dict:
+        return {i["outlet"]: i["switch"] for i in params.get("switches") or []}
+
     def set_state(self, params: dict):
         # https://github.com/AlexxIT/SonoffLAN/issues/1373
-        if "switches" in params and params.get("triggerType") == 2:
-            self._attr_native_value = "touch"
-            asyncio.create_task(self.clear_state())
+        # `triggerType` describes how the device last changed state (2 - touch
+        # panel, 11 - network command). It is not an event - the device repeats
+        # the same value in every state report, and the integration polls the
+        # device once a minute (`localping`), so `triggerType == 2` alone
+        # matches every report until the next state change. Multi-gang T5 also
+        # sends the full `switches` array in those reports, so the presence of
+        # `switches` cannot separate them either. Only a change of the switch
+        # state is a new touch.
+        if "triggerType" in params:
+            # Carry the last known state forward: a 1-gang T5 omits `switches`
+            # from its poll reply, and cloud and LAN reports carry different
+            # sets of keys, so only the outlets actually reported are updated.
+            switches = {**(self.last_switches or {}), **self.read_switches(params)}
+            # The first report is a baseline, not an event - we cannot know
+            # whether anything changed before we started listening, and the
+            # state cached from the cloud may be stale.
+            if (
+                self.last_switches is not None
+                and params["triggerType"] == 2
+                and switches != self.last_switches
+            ):
+                self._attr_native_value = "touch"
+                asyncio.create_task(self.clear_state())
+            self.last_switches = switches
 
         # fix https://github.com/AlexxIT/SonoffLAN/issues/1252
         if (slide := params.get("slide")) and len(params) == 1:
