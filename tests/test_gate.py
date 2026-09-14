@@ -69,7 +69,7 @@ def test_continuous_opening_and_closing(make_gate):
     reg, gate = make_gate()
     assert gate.unique_id == DEVICEID
     assert gate.supported_features == 11  # open, close, stop, no position control
-    assert gate.assumed_state
+    assert not gate.assumed_state
     assert_gate(gate, "closed", "closed", False)
     command(reg, "on", "cmd-1")
     assert_gate(gate, "opening", "opening")
@@ -105,6 +105,94 @@ def test_pause_while_closing_does_not_claim_closed(make_gate):
     report(reg, 1, 10)
     command(reg, "pause", "stop")
     assert_gate(gate, "open", "stopped")
+
+
+@pytest.mark.parametrize("via_ha", [False, True])
+@pytest.mark.parametrize("fully_open", [False, True])
+def test_closing_pause_without_a_new_report_keeps_non_closed_position(
+    make_gate, via_ha, fully_open
+):
+    reg, gate = make_gate()
+    command(reg, "on", "open")
+    report(reg, 1, 1)
+    if fully_open:
+        report(reg, 1, 2)
+    else:
+        command(reg, "pause", "pause-open")
+
+    if via_ha:
+        reg.call(gate.async_close_cover())
+        reg.call(gate.async_stop_cover())
+    else:
+        command(reg, "off", "close")
+        command(reg, "pause", "pause-close")
+    assert_gate(gate, "open", "stopped")
+    assert gate.assumed_state
+    assert gate.hass.states.get(gate.entity_id).attributes["assumed_state"]
+
+    # Both directions remain available after the pause, even before a new 1.
+    reg.call(gate.async_open_cover())
+    assert_gate(gate, "opening", "opening")
+    reg.call(gate.async_stop_cover())
+    assert_gate(gate, "open", "stopped")
+    reg.call(gate.async_close_cover())
+    assert_gate(gate, "closing", "closing")
+    report(reg, 0, 3)
+    assert_gate(gate, "closed", "closed", False)
+
+
+def test_closing_pause_from_unknown_does_not_invent_position(make_gate):
+    reg, gate = make_gate(None)
+    command(reg, "off", "close")
+    command(reg, "pause", "stop")
+    assert_gate(gate, "unknown", "stopped")
+    assert gate.assumed_state
+
+
+def test_endstops_disable_redundant_commands_but_allow_reverse(make_gate):
+    reg, gate = make_gate()
+    assert not gate.hass.states.get(gate.entity_id).attributes.get("assumed_state")
+    reg.call(gate.async_close_cover())
+    reg.cloud.send.assert_not_called()
+    assert_gate(gate, "closed", "closed", False)
+
+    reg.call(gate.async_open_cover())
+    assert reg.cloud.send.call_args.args[1] == {"switch": "on"}
+    assert gate.assumed_state
+    report(reg, 1, 1)
+    assert gate.assumed_state  # One report is not the open endstop.
+    report(reg, 1, 2)
+    assert not gate.assumed_state
+    assert not gate.hass.states.get(gate.entity_id).attributes.get("assumed_state")
+    reg.cloud.send.reset_mock()
+    reg.call(gate.async_open_cover())
+    reg.cloud.send.assert_not_called()
+    assert_gate(gate, "open", "open", True)
+
+    # An idle stop does not lose the known endpoint or permit redundant opens.
+    reg.call(gate.async_stop_cover())
+    reg.cloud.send.reset_mock()
+    reg.call(gate.async_open_cover())
+    reg.cloud.send.assert_not_called()
+    assert_gate(gate, "open", "stopped", True)
+    reg.call(gate.async_close_cover())
+    assert reg.cloud.send.call_args.args[1] == {"switch": "off"}
+    assert gate.assumed_state
+    report(reg, 0, 3)
+    assert not gate.assumed_state
+    assert_gate(gate, "closed", "closed", False)
+
+
+def test_reconnect_reenables_commands_when_position_is_unknown(make_gate):
+    reg, gate = make_gate()
+    assert not gate.assumed_state
+    reg.cloud.set_online(False)
+    reg.cloud.set_online(True)
+    assert_gate(gate, "unknown", "unknown")
+    assert gate.assumed_state
+    reg.call(gate.async_close_cover())
+    assert reg.cloud.send.call_args.args[1] == {"switch": "off"}
+    assert_gate(gate, "closing", "closing")
 
 
 def test_pause_before_first_report_does_not_reuse_old_closed_state(make_gate):
@@ -177,7 +265,7 @@ def test_old_closed_report_cannot_override_a_new_opening(make_gate):
 
 
 def test_restart_does_not_restore_an_opening_sequence(make_gate):
-    reg, gate = make_gate()
+    reg, _gate = make_gate()
     command(reg, "on", "open")
     report(reg, 1, 1)
     restarted_reg, restarted_gate = make_gate(1)

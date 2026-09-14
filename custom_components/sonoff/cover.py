@@ -281,7 +281,6 @@ class XCover216Tracked(XCover216):
     """Opt-in tracking for gates which report doorState twice during opening."""
 
     event = True  # An initial snapshot is not a movement notification.
-    _attr_assumed_state = True  # Allow resuming an opening after a partial stop.
 
     def __init__(self, ewelink: XRegistry, device: dict):
         self._operation = "unknown"
@@ -309,6 +308,12 @@ class XCover216Tracked(XCover216):
     @property
     def extra_state_attributes(self):
         return {"operation_state": self._operation, "fully_open": self._fully_open}
+
+    @property
+    def assumed_state(self) -> bool:
+        # HA treats open without a percentage as fully open. Override that only
+        # between known endstops, so a partial stop can still resume either way.
+        return self._attr_is_closed is not True and self._fully_open is not True
 
     def set_state(self, params: dict):
         # State-only callbacks include query replies and omit notification IDs.
@@ -365,8 +370,11 @@ class XCover216Tracked(XCover216):
             self._operation = "stopped"
         else:
             self._operation = "opening" if command == "on" else "closing"
-            # A previous endstop value cannot establish position after a command.
-            self._attr_is_closed = None
+            # Opening invalidates a previous closed position. Keep a known
+            # non-closed position until a fresh device report confirms closure;
+            # this gate need not send another 1 while closing before a pause.
+            if self._attr_is_closed is not False:
+                self._attr_is_closed = None
             self._fully_open = None
         self._write_state()
 
@@ -442,9 +450,13 @@ class XCover216Tracked(XCover216):
             raise
 
     async def async_open_cover(self, **kwargs):
+        if self._fully_open is True:
+            return
         await self._async_command("on")
 
     async def async_close_cover(self, **kwargs):
+        if self._attr_is_closed is True:
+            return
         await self._async_command("off")
 
     async def async_stop_cover(self, **kwargs):

@@ -248,11 +248,17 @@ commands are retained; no additional cloud connection or position control is add
   changes it to `open`, with `fully_open: true`.
 - Closing commands keep the cover `closing` until a new device `doorState:0`
   confirms closure. A pause cancels the opening sequence without claiming closure.
+  A known non-closed position is retained during closing and pauses, even if no
+  new report arrives. If the position was already unknown, a pause keeps it unknown.
 - `operation_state` is `closed`, `opening`, `open`, `closing`, `stopped` or
   `unknown`. Home Assistant's cover state `open` can also mean partially open;
   use `fully_open` to distinguish inferred full opening (`true`), confirmed
   closure (`false`) and an unknown full-open position (`null`). Controls remain
-  available after a pause, through Home Assistant's assumed-state behaviour.
+  available after a partial stop, through Home Assistant's assumed-state behaviour.
+  At a known endstop, normal HA button rules apply: opening is disabled when fully
+  open, and closing when closed. The same redundant commands from HA services or
+  scripts are ignored without sending to the motor. The opposite direction remains
+  available. External app commands are still observed as new movement sequences.
 - Startup uses the available endstop snapshot without assuming movement. Cloud
   interruptions and device-offline reports discard movement and completion
   inference. A query/reconnection snapshot cannot restart or finish a sequence.
