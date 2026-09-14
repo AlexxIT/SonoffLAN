@@ -2089,6 +2089,59 @@ def test_t5_1gang_poll_reply_omits_switches():
     assert action.state == ""
 
 
+def test_t5_action_multifinger_tap():
+    """The multi-finger tap toggles the ambient light, not a relay.
+
+    Captured on a T5-3C (fw 1.5.1). The tap changes `lightSwitch` and leaves
+    `triggerType` untouched, so it is only reported while `triggerType` is
+    already 2. Comparing relays alone would miss it entirely.
+    """
+
+    def report(sw: str, light: str, trigger: int) -> dict:
+        return {
+            "switches": [
+                {"switch": "on" if c == "1" else "off", "outlet": i}
+                for i, c in enumerate(sw)
+            ],
+            "electromotor": 1,
+            "percentageControl": 0,
+            "calibState": False,
+            "triggerType": trigger,
+            "lightSwitch": light,
+            "lightMode": 1,
+            "shock": 1,
+            "sledOnline": "off",
+            "fwVersion": "1.5.1",
+            "rssi": -64,
+        }
+
+    entities = get_entitites(
+        {"extra": {"uiid": 211}, "params": report("001", "off", 11), "model": "T5-3C-86"}
+    )
+    action: XT5Action = next(e for e in entities if isinstance(e, XT5Action))
+
+    # idle poll replies
+    action.internal_update(report("001", "off", 11))
+    assert action.state == ""
+    action.internal_update(report("001", "off", 11))
+    assert action.state == ""
+
+    # button press on gang 3 - relay changes, triggerType flips to 2
+    action.internal_update(report("000", "off", 2))
+    assert action.state == "touch"
+    action._attr_native_value = ""
+
+    # multi-finger tap - ambient light toggles, no relay moves
+    action.internal_update(report("000", "on", 2))
+    assert action.state == "touch"
+    action._attr_native_value = ""
+
+    # the poll replies that follow repeat it verbatim - no more touches
+    for _ in range(3):
+        action.internal_update(report("000", "on", 2))
+        assert action.state == ""
+
+
 def test_91():
     entities = get_entitites({"extra": {"uiid": 91}, "params": {"op": 1}})
 
