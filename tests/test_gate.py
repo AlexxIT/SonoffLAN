@@ -364,6 +364,24 @@ def test_tracking_is_opt_in_and_only_for_uiid216(make_gate):
     assert type(default_again) is XCover216  # Shared device specification is unchanged.
 
 
+@pytest.mark.parametrize("status", ["online", "offline"])
+def test_existing_transport_callers_keep_their_return_contract(make_gate, status):
+    reg, gate = make_gate()
+    reg.cloud.send.return_value = status
+    loop = asyncio.new_event_loop()
+    try:
+        # Existing energy sensors inspect this result; do not change their logic.
+        assert loop.run_until_complete(reg.send(gate.device, query_cloud=False)) is None
+        assert (
+            loop.run_until_complete(
+                reg.send(gate.device, query_cloud=False, return_status=True)
+            )
+            == status
+        )
+    finally:
+        loop.close()
+
+
 def test_configuration_accepts_boolean_only():
     config = {"sonoff": {"devices": {DEVICEID: {"gate_state_tracking": True}}}}
     assert (

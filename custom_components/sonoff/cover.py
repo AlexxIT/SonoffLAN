@@ -427,7 +427,11 @@ class XCover216Tracked(XCover216):
         revision = self._revision
         try:
             result = await self.ewelink.send(
-                self.device, {"switch": command}, query_cloud=False, sequence=sequence
+                self.device,
+                {"switch": command},
+                query_cloud=False,
+                sequence=sequence,
+                return_status=True,
             )
             if result != "online":
                 raise HomeAssistantError("Gate command was not acknowledged")

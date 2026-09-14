@@ -95,6 +95,7 @@ class XRegistry(XRegistryBase):
         timeout_lan: int = 1,
         *,
         sequence: str | None = None,
+        return_status: bool = False,
     ) -> str | None:
         """Send command to device with LAN and Cloud. Usual params are same.
 
@@ -108,6 +109,7 @@ class XRegistry(XRegistryBase):
           ignored if params empty
         :param timeout_lan: optional custom LAN timeout
         :param sequence: optional command identity for consumers tracking echoes
+        :param return_status: opt in to the transport result; preserve legacy None otherwise
         """
         seq = sequence or await self.sequence()
 
@@ -151,7 +153,7 @@ class XRegistry(XRegistryBase):
         else:
             return
 
-        return ok
+        return ok if return_status else None
 
     async def send_bulk(self, device: XDevice, params: dict):
         assert "switches" in params
