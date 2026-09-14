@@ -34,6 +34,7 @@ from ..core.entity import XEntity
 from ..cover import (
     XCover,
     XCover216,
+    XCover216Tracked,
     XCoverDualR3,
     XCoverOP,
     XCoverT5,
@@ -846,6 +847,9 @@ def get_spec(device: dict) -> list:
         classes = SPEC_4CH
     else:
         classes = [XUnknown]
+
+    if uiid == 216 and device.get("gate_state_tracking") is True:
+        classes = [XCover216Tracked if cls is XCover216 else cls for cls in classes]
 
     # DualR3 in cover mode
     if uiid in [126, 165] and device["params"].get("workMode") == 2:

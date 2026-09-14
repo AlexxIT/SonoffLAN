@@ -87,6 +87,7 @@ CONFIG_SCHEMA = vol.Schema(
                             vol.Optional(CONF_NAME): cv.string,
                             vol.Optional(CONF_DEVICE_CLASS): vol.Any(str, list),
                             vol.Optional(CONF_DEVICEKEY): cv.string,
+                            vol.Optional("gate_state_tracking"): cv.boolean,
                         },
                         extra=vol.ALLOW_EXTRA,
                     ),

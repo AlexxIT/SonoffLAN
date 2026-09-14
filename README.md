@@ -20,6 +20,7 @@ Home Assistant custom component for control [Sonoff](https://www.itead.cc/) devi
 - [Configuration YAML](#configuration-yaml)
   * [Custom device_class](#custom-device-class)
   * [Custom devices](#custom-devices)
+  * [Gate state tracking](#gate-state-tracking)
   * [Custom sensors](#custom-sensors)
   * [Force update](#force-update)
   * [Preventing DB size growth](#preventing-db-size-growth)
@@ -224,6 +225,51 @@ sonoff:
       host: 192.168.1.123  # optional force device IP-address
       devicekey: xxx  # optional encription key (downloaded automatically from the cloud)
 ```
+
+### Gate state tracking
+
+CoolKit CK-BL602-TC-01 gates (UIID 216, including some VEVOR MD370/MD750
+controllers) can optionally track commands and cloud notifications. Enable this
+only for a gate whose firmware reports `doorState:1` once after **each** opening
+command (including a resume), and again when it reaches the open endstop:
+
+```yaml
+sonoff:
+  devices:
+    1000xxxxxx:
+      gate_state_tracking: true
+```
+
+The option defaults to disabled. The existing cover, unique ID and open/close/stop
+commands are retained; no additional cloud connection or position control is added.
+
+- Opening commands start a new sequence. The first identified device report keeps
+  the cover `opening`; the second distinct report in that uninterrupted sequence
+  changes it to `open`, with `fully_open: true`.
+- Closing commands keep the cover `closing` until a new device `doorState:0`
+  confirms closure. A pause cancels the opening sequence without claiming closure.
+- `operation_state` is `closed`, `opening`, `open`, `closing`, `stopped` or
+  `unknown`. Home Assistant's cover state `open` can also mean partially open;
+  use `fully_open` to distinguish inferred full opening (`true`), confirmed
+  closure (`false`) and an unknown full-open position (`null`). Controls remain
+  available after a pause, through Home Assistant's assumed-state behaviour.
+- Startup uses the available endstop snapshot without assuming movement. Cloud
+  interruptions and device-offline reports discard movement and completion
+  inference. A query/reconnection snapshot cannot restart or finish a sequence.
+- Only cloud `action:update` reports from `userAgent:device` with a `d_seq` count
+  towards opening completion. The last 128 identified reports/commands are kept
+  in memory to reject duplicate reports and local command echoes, also across
+  pauses and reconnects. Identifiers are compared for equality, not ordering.
+  Missing report identities or unqualified LAN replies invalidate the inference.
+
+This is an inference from an observed firmware behaviour, not an independent
+open-limit sensor. Opening, closing and stopped describe commands, not measured
+motor motion. A missing report can leave the cover `opening`; no travel-time timer
+announces completion. A replay with a new identity, an evicted old identity, or a
+missed external command cannot always be distinguished from a real notification.
+Validate continuous opening, pause/resume and direction reversal on your hardware
+before relying on `fully_open` in automations. The default behaviour of other
+devices is unchanged.
 
 ### Custom sensors
 

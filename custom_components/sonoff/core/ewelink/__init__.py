@@ -11,6 +11,7 @@ from .local import XRegistryLocal
 _LOGGER = logging.getLogger(__name__)
 
 SIGNAL_ADD_ENTITIES = "add_entities"
+SIGNAL_DEVICE_EVENT = "_event"
 LOCAL_TTL = 60
 
 
@@ -92,7 +93,9 @@ class XRegistry(XRegistryBase):
         cmd_lan: str = None,
         query_cloud: bool = True,
         timeout_lan: int = 1,
-    ) -> None:
+        *,
+        sequence: str | None = None,
+    ) -> str | None:
         """Send command to device with LAN and Cloud. Usual params are same.
 
         LAN will send new device state after update command, Cloud - don't.
@@ -104,8 +107,9 @@ class XRegistry(XRegistryBase):
         :param query_cloud: optional query Cloud state after update state,
           ignored if params empty
         :param timeout_lan: optional custom LAN timeout
+        :param sequence: optional command identity for consumers tracking echoes
         """
-        seq = await self.sequence()
+        seq = sequence or await self.sequence()
 
         if "parent" in device:
             main_device = device["parent"]
@@ -146,6 +150,8 @@ class XRegistry(XRegistryBase):
 
         else:
             return
+
+        return ok
 
     async def send_bulk(self, device: XDevice, params: dict):
         assert "switches" in params
@@ -237,6 +243,8 @@ class XRegistry(XRegistryBase):
             device["params"]["sledOnline"] = params["sledOnline"]
 
         self.dispatcher_send(did, params)
+        # Keep notification provenance separate from the existing state callbacks.
+        self.dispatcher_send(did + SIGNAL_DEVICE_EVENT, "cloud", msg)
 
     def local_update(self, msg: dict):
         mainid: str = msg["deviceid"]
@@ -306,6 +314,9 @@ class XRegistry(XRegistryBase):
         device["localrecv"] = ts
 
         self.dispatcher_send(realid, params)
+        self.dispatcher_send(
+            realid + SIGNAL_DEVICE_EVENT, "local", {**msg, "params": params}
+        )
 
         # send empty msg to main device for updating available flag
         if realid != mainid:
