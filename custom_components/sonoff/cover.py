@@ -287,6 +287,9 @@ class XCover216Tracked(XCover216):
         self._fully_open: bool | None = None
         self._opening_reports: int | None = None
         self._revision = 0
+        self._command_lock = asyncio.Lock()
+        self._stop_lock = asyncio.Lock()
+        self._command_request = 0
         # Bounded replay history, retained across pauses and reconnects. d_seq is
         # opaque: compare equality only, never ordering or device/app clocks.
         self._seen = deque(maxlen=128)
@@ -336,6 +339,7 @@ class XCover216Tracked(XCover216):
 
     def _forget_movement(self):
         self._revision += 1
+        self._command_request += 1
         self._operation = "unknown"
         self._fully_open = None
         self._opening_reports = None
@@ -359,9 +363,9 @@ class XCover216Tracked(XCover216):
             return str(value)
         return None
 
-    def _command(self, command: str, sequence: str | None):
+    def _command(self, command: str, sequence: str | None) -> bool:
         if sequence and not self._remember(("command", sequence, command)):
-            return
+            return False
         self._revision += 1
         self._opening_reports = 0 if command == "on" and sequence else None
         self._attr_is_opening = command == "on"
@@ -377,6 +381,7 @@ class XCover216Tracked(XCover216):
                 self._attr_is_closed = None
             self._fully_open = None
         self._write_state()
+        return True
 
     def _handle_event(self, source: str, msg: dict):
         params = msg.get("params", {})
@@ -395,7 +400,10 @@ class XCover216Tracked(XCover216):
             return  # Initial state, queries and reconnect snapshots never count.
         command = params.get("switch")
         if msg.get("userAgent") == "app" and command in ("on", "off", "pause"):
-            self._command(command, self._identity(msg.get("sequence")))
+            if self._command(command, self._identity(msg.get("sequence"))):
+                # A new external command supersedes a pending local reversal.
+                # Echoes of our own commands have already been remembered.
+                self._command_request += 1
             return
         if msg.get("userAgent") != "device":
             return
@@ -429,8 +437,14 @@ class XCover216Tracked(XCover216):
                 self._operation, self._fully_open = "unknown", None
         self._write_state()
 
-    async def _async_command(self, command: str):
+    async def _async_command(self, command: str, request: int):
         sequence = await self.ewelink.sequence()
+        if request != self._command_request:
+            return
+        if command == "on" and self._fully_open is True:
+            return
+        if command == "off" and self._attr_is_closed is True:
+            return
         self._command(command, sequence)
         revision = self._revision
         try:
@@ -449,15 +463,32 @@ class XCover216Tracked(XCover216):
                 self._write_state()
             raise
 
-    async def async_open_cover(self, **kwargs):
-        if self._fully_open is True:
+    async def _async_control(self, command: str):
+        # Serialize stop/start pairs. New requests supersede pending ones, so an
+        # explicit stop never leaves an older reversal queued to restart later.
+        self._command_request += 1
+        request = self._command_request
+        if command == "pause":
+            # Stop can bypass a movement awaiting acknowledgement. New movement
+            # must still wait for this stop to be acknowledged before starting.
+            async with self._stop_lock:
+                await self._async_command(command, request)
             return
-        await self._async_command("on")
+        async with self._command_lock:
+            async with self._stop_lock:
+                if request != self._command_request:
+                    return
+                if (command == "on" and self.is_closing) or (
+                    command == "off" and self.is_opening
+                ):
+                    await self._async_command("pause", request)
+            await self._async_command(command, request)
+
+    async def async_open_cover(self, **kwargs):
+        await self._async_control("on")
 
     async def async_close_cover(self, **kwargs):
-        if self._attr_is_closed is True:
-            return
-        await self._async_command("off")
+        await self._async_control("off")
 
     async def async_stop_cover(self, **kwargs):
-        await self._async_command("pause")
+        await self._async_control("pause")

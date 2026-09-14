@@ -259,6 +259,12 @@ commands are retained; no additional cloud connection or position control is add
   open, and closing when closed. The same redundant commands from HA services or
   scripts are ignored without sending to the motor. The opposite direction remains
   available. External app commands are still observed as new movement sequences.
+- Requesting the opposite direction from HA while movement is tracked first sends
+  `pause`, waits for its successful command acknowledgement, then sends the new
+  direction. No fixed delay is used. If stopping fails, the reverse command is not
+  sent. A newer HA or external app command, or an observation interruption, cancels
+  the pending continuation. The acknowledgement is not physical stop telemetry;
+  this sequence still needs validation on the particular controller.
 - Startup uses the available endstop snapshot without assuming movement. Cloud
   interruptions and device-offline reports discard movement and completion
   inference. A query/reconnection snapshot cannot restart or finish a sequence.

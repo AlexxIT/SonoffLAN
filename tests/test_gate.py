@@ -402,6 +402,301 @@ def test_ha_commands_keep_transport_and_deduplicate_their_echoes(make_gate):
     assert reg.cloud.send.call_count == 3  # No extra query can produce a false report.
 
 
+@pytest.mark.parametrize("initial,target", [("off", "on"), ("on", "off")])
+def test_direction_reversal_waits_for_stop_acknowledgement(make_gate, initial, target):
+    reg, gate = make_gate(1)
+    command(reg, initial, "initial")
+    loop = asyncio.new_event_loop()
+
+    async def scenario():
+        stopping, acknowledged = asyncio.Event(), asyncio.Event()
+
+        async def send(device, params, sequence, **kwargs):
+            # Echoes must not cancel the continuation or restart its sequence.
+            reg.cloud.dispatcher_send(
+                SIGNAL_UPDATE,
+                {
+                    "deviceid": DEVICEID,
+                    "action": "update",
+                    "userAgent": "app",
+                    "sequence": sequence,
+                    "params": params,
+                },
+            )
+            if params["switch"] == "pause":
+                stopping.set()
+                await acknowledged.wait()
+            return "online"
+
+        reg.cloud.send.side_effect = send
+        action = gate.async_open_cover if target == "on" else gate.async_close_cover
+        task = loop.create_task(action())
+        await asyncio.wait_for(stopping.wait(), timeout=1)
+        assert [c.args[1]["switch"] for c in reg.cloud.send.call_args_list] == ["pause"]
+        assert_gate(gate, "open", "stopped")
+        acknowledged.set()
+        await task
+
+    try:
+        loop.run_until_complete(scenario())
+    finally:
+        loop.close()
+    sent = reg.cloud.send.call_args_list
+    assert [c.args[1]["switch"] for c in sent] == ["pause", target]
+    assert sent[0].args[2] != sent[1].args[2]
+    expected = "opening" if target == "on" else "closing"
+    assert_gate(gate, expected, expected)
+    if target == "on":
+        report(reg, 1, 1)
+        assert_gate(gate, "opening", "opening")
+        report(reg, 1, 2)
+        assert_gate(gate, "open", "open", True)
+
+
+@pytest.mark.parametrize("failure", ["offline", "E#503", None, RuntimeError("offline")])
+def test_failed_stop_never_sends_the_reverse_command(make_gate, failure):
+    reg, gate = make_gate(1)
+    command(reg, "off", "closing")
+    if isinstance(failure, Exception):
+        reg.cloud.send.side_effect = failure
+    else:
+        reg.cloud.send.return_value = failure
+    with pytest.raises((HomeAssistantError, RuntimeError)):
+        reg.call(gate.async_open_cover())
+    assert [c.args[1]["switch"] for c in reg.cloud.send.call_args_list] == ["pause"]
+    assert_gate(gate, "unknown", "unknown")
+
+
+@pytest.mark.parametrize("new_command", ["pause", "on", "off"])
+def test_new_request_supersedes_a_pending_reversal(make_gate, new_command):
+    reg, gate = make_gate(1)
+    command(reg, "off", "closing")
+    loop = asyncio.new_event_loop()
+
+    async def scenario():
+        stopping, acknowledged = asyncio.Event(), asyncio.Event()
+
+        async def send(*args, **kwargs):
+            if reg.cloud.send.call_count == 1:
+                stopping.set()
+                await acknowledged.wait()
+            return "online"
+
+        reg.cloud.send.side_effect = send
+        first = loop.create_task(gate.async_open_cover())
+        await asyncio.wait_for(stopping.wait(), timeout=1)
+        action = {
+            "pause": gate.async_stop_cover,
+            "on": gate.async_open_cover,
+            "off": gate.async_close_cover,
+        }[new_command]
+        latest = loop.create_task(action())
+        await asyncio.sleep(0)  # Let the new request wait on the command lock.
+        assert reg.cloud.send.call_count == 1
+        acknowledged.set()
+        await asyncio.gather(first, latest)
+
+    try:
+        loop.run_until_complete(scenario())
+    finally:
+        loop.close()
+    assert [c.args[1]["switch"] for c in reg.cloud.send.call_args_list] == [
+        "pause",
+        new_command,
+    ]
+    expected = {
+        "pause": ("open", "stopped"),
+        "on": ("opening", "opening"),
+        "off": ("closing", "closing"),
+    }[new_command]
+    assert_gate(gate, *expected)
+
+
+@pytest.mark.parametrize("interruption", ["external_stop", "disconnect", "cancel"])
+def test_interrupted_reversal_never_restarts_the_gate(make_gate, interruption):
+    reg, gate = make_gate(1)
+    command(reg, "off", "closing")
+    loop = asyncio.new_event_loop()
+
+    async def scenario():
+        stopping, acknowledged = asyncio.Event(), asyncio.Event()
+
+        async def send(*args, **kwargs):
+            stopping.set()
+            await acknowledged.wait()
+            return "online"
+
+        reg.cloud.send.side_effect = send
+        task = loop.create_task(gate.async_open_cover())
+        await asyncio.wait_for(stopping.wait(), timeout=1)
+        if interruption == "external_stop":
+            reg.cloud.dispatcher_send(
+                SIGNAL_UPDATE,
+                {
+                    "deviceid": DEVICEID,
+                    "action": "update",
+                    "userAgent": "app",
+                    "sequence": "external",
+                    "params": {"switch": "pause"},
+                },
+            )
+        elif interruption == "disconnect":
+            reg.cloud.set_online(False)
+        else:
+            task.cancel()
+        acknowledged.set()
+        if interruption == "cancel":
+            with pytest.raises(asyncio.CancelledError):
+                await task
+        else:
+            await task
+
+    try:
+        loop.run_until_complete(scenario())
+    finally:
+        loop.close()
+    assert [c.args[1]["switch"] for c in reg.cloud.send.call_args_list] == ["pause"]
+    if interruption == "external_stop":
+        assert_gate(gate, "open", "stopped")
+    else:
+        assert_gate(
+            gate,
+            "unavailable" if interruption == "disconnect" else "unknown",
+            "unknown",
+        )
+
+
+def test_ordinary_device_report_during_stop_does_not_cancel_reversal(make_gate):
+    reg, gate = make_gate(1)
+    command(reg, "off", "closing")
+
+    async def send(device, params, *args, **kwargs):
+        if params["switch"] == "pause":
+            reg.cloud.dispatcher_send(
+                SIGNAL_UPDATE,
+                {
+                    "deviceid": DEVICEID,
+                    "action": "update",
+                    "userAgent": "device",
+                    "d_seq": 1,
+                    "params": {"doorState": 1},
+                },
+            )
+        return "online"
+
+    reg.cloud.send.side_effect = send
+    reg.call(gate.async_open_cover())
+    assert [c.args[1]["switch"] for c in reg.cloud.send.call_args_list] == [
+        "pause",
+        "on",
+    ]
+    report(reg, 1, 2)
+    assert_gate(gate, "opening", "opening")
+    report(reg, 1, 3)
+    assert_gate(gate, "open", "open", True)
+
+
+def test_stop_does_not_wait_for_a_movement_acknowledgement(make_gate):
+    reg, gate = make_gate()
+    loop = asyncio.new_event_loop()
+
+    async def scenario():
+        opening, acknowledged = asyncio.Event(), asyncio.Event()
+
+        async def send(device, params, *args, **kwargs):
+            if params["switch"] == "on":
+                opening.set()
+                await acknowledged.wait()
+            return "online"
+
+        reg.cloud.send.side_effect = send
+        task = loop.create_task(gate.async_open_cover())
+        await asyncio.wait_for(opening.wait(), timeout=1)
+        # An explicit stop must not wait for the opening command's ACK/timeout.
+        await asyncio.wait_for(gate.async_stop_cover(), timeout=1)
+        assert [c.args[1]["switch"] for c in reg.cloud.send.call_args_list] == [
+            "on",
+            "pause",
+        ]
+        assert_gate(gate, "unknown", "stopped")
+        acknowledged.set()
+        await task
+        assert_gate(gate, "unknown", "stopped")
+
+    try:
+        loop.run_until_complete(scenario())
+    finally:
+        loop.close()
+
+
+def test_new_movement_waits_for_an_explicit_stop_acknowledgement(make_gate):
+    reg, gate = make_gate(1)
+    loop = asyncio.new_event_loop()
+
+    async def scenario():
+        opening, stopping = asyncio.Event(), asyncio.Event()
+        open_ack, stop_ack = asyncio.Event(), asyncio.Event()
+
+        async def send(device, params, *args, **kwargs):
+            if params["switch"] == "on":
+                opening.set()
+                await open_ack.wait()
+            elif params["switch"] == "pause":
+                stopping.set()
+                await stop_ack.wait()
+            return "online"
+
+        reg.cloud.send.side_effect = send
+        first = loop.create_task(gate.async_open_cover())
+        await asyncio.wait_for(opening.wait(), timeout=1)
+        stop = loop.create_task(gate.async_stop_cover())
+        await asyncio.wait_for(stopping.wait(), timeout=1)
+        latest = loop.create_task(gate.async_close_cover())
+        open_ack.set()
+        await first
+        await asyncio.sleep(0)
+        assert [c.args[1]["switch"] for c in reg.cloud.send.call_args_list] == [
+            "on",
+            "pause",
+        ]
+        stop_ack.set()
+        await asyncio.gather(stop, latest)
+
+    try:
+        loop.run_until_complete(scenario())
+    finally:
+        loop.close()
+    assert [c.args[1]["switch"] for c in reg.cloud.send.call_args_list] == [
+        "on",
+        "pause",
+        "off",
+    ]
+    assert_gate(gate, "closing", "closing")
+
+
+def test_endstop_arriving_during_stop_avoids_redundant_close(make_gate):
+    reg, gate = make_gate(1)
+    command(reg, "on", "opening")
+
+    async def send(*args, **kwargs):
+        reg.cloud.dispatcher_send(
+            SIGNAL_UPDATE,
+            {
+                "deviceid": DEVICEID,
+                "action": "update",
+                "userAgent": "device",
+                "d_seq": 1,
+                "params": {"doorState": 0},
+            },
+        )
+        return "online"
+
+    reg.cloud.send.side_effect = send
+    reg.call(gate.async_close_cover())
+    assert [c.args[1]["switch"] for c in reg.cloud.send.call_args_list] == ["pause"]
+    assert_gate(gate, "closed", "closed", False)
+
+
 @pytest.mark.parametrize("failure", ["offline", "E#503", None, RuntimeError("offline")])
 def test_failed_command_does_not_leave_assumed_movement(make_gate, failure):
     reg, gate = make_gate()
