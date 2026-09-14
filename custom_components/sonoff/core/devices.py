@@ -804,6 +804,16 @@ DEVICES = {
         Battery,
         ZRSSI,
     ],
+    # MINI-ZB1GP https://github.com/AlexxIT/SonoffLAN/issues/1846
+    7054: [
+        Switch1,
+        spec(XSensor100, param="power"),
+        spec(XSensor100, param="current"),
+        spec(XSensor100, param="voltage"),
+        EnergyDay,
+        EnergyMonth,
+        ZRSSI,
+    ],
     # SNZB-03PR2 https://github.com/AlexxIT/SonoffLAN/issues/1824
     7055: [
         XHumanSensor,
