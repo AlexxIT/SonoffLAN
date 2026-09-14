@@ -647,11 +647,11 @@ DEVICES = {
     1000: [XButtonKey, Battery],
     # ZCL_HA_DEVICEID_ON_OFF_LIGHT, https://github.com/AlexxIT/SonoffLAN/issues/1195
     1256: [XSwitch],
-    # ZigbeeWhiteLight
+    # ZigbeeWhiteLight https://github.com/AlexxIT/SonoffLAN/issues/1557
     1257: [XLightD1],
-    # https://github.com/AlexxIT/SonoffLAN/issues/1557
+    # ZigbeeTunableWhiteLight https://github.com/AlexxIT/SonoffLAN/issues/1557
     1258: [XZigbeeColorTemp],
-    # https://github.com/AlexxIT/SonoffLAN/issues/972
+    # NON-OTA-GL(1514) https://github.com/AlexxIT/SonoffLAN/issues/972
     1514: [XZigbeeCover, spec(XSensor, param="battery", multiply=2)],
     # ZCL_HA_DEVICEID_TEMPERATURE_SENSOR
     1770: [
@@ -659,7 +659,7 @@ DEVICES = {
         spec(XSensor100, param="humidity"),
         Battery,
     ],
-    # https://github.com/AlexxIT/SonoffLAN/issues/1150
+    # SNZB-02D https://github.com/AlexxIT/SonoffLAN/issues/1150
     1771: [
         spec(XSensor100, param="temperature"),
         spec(XSensor100, param="humidity"),
@@ -689,7 +689,7 @@ DEVICES = {
     7003: [DoorLock, Battery, ZRSSI],
     # ZBMINIL2, https://github.com/AlexxIT/SonoffLAN/issues/1398
     7004: [XSwitch, ZRSSI],
-    # https://github.com/AlexxIT/SonoffLAN/issues/1283
+    # ZBCurtain https://github.com/AlexxIT/SonoffLAN/issues/1283
     7006: [XZigbeeCover, Battery],
     # CK-BL702-AL-01(7009_Z102LG03-1), https://github.com/AlexxIT/SonoffLAN/issues/1456
     7009: [XZigbeeLight],
