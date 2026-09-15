@@ -643,6 +643,17 @@ DEVICES = {
         LED,
         RSSI,
     ],
+    # MINI-1GSP https://github.com/AlexxIT/SonoffLAN/issues/1876
+    283: [
+        Switch1,
+        spec(XSensor100, param="power"),
+        spec(XSensor100, param="current"),
+        spec(XSensor100, param="voltage"),
+        EnergyDay,
+        EnergyMonth,
+        LED,
+        RSSI,
+    ],
     # zigbee_ON_OFF_SWITCH_1000
     1000: [XButtonKey, Battery],
     # ZCL_HA_DEVICEID_ON_OFF_LIGHT, https://github.com/AlexxIT/SonoffLAN/issues/1195

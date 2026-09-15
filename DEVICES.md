@@ -120,6 +120,7 @@
 | BASIC-1GSP                         | 276  | pow       | 1.0.4       | ---             | ???                                           |
 | S61STPF                            | 276  | pow       | 1.0.3       | ---             | Timeout on any local command!                 |
 | MINI-DIM                           | 277  | light/pow | 1.1.2       | plug            |                                               |
+| MINI-1GSP                          | 283  | pow       | 1.0.6       | plug            |                                               |
 | zigbee_ON_OFF_SWITCH_1000          | 1000 | button    |             |                 |                                               |
 | ZCL_HA_DEVICEID_ON_OFF_LIGHT       | 1256 | 1ch       |             |                 |                                               |
 | ZigbeeWhiteLight                   | 1257 | light     |             |                 |                                               |
