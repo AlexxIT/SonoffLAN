@@ -1788,7 +1788,7 @@ def test_minir4():
     action: XButtonKey = next(e for e in entities if e.uid == "action")
     assert action.state == ""
 
-    action.internal_update({"key": 0})
+    action.internal_update({"key": 0, "trigTime": "1762678199274"})
     assert action.state == "single"
 
 

@@ -431,12 +431,14 @@ class XButtonKey(XButtonBase):
     def set_state(self, params: dict):
         # skip stale events replayed after device reconnect
         # https://github.com/AlexxIT/SonoffLAN/issues/1669
+        # and accept events only with time...
+        # https://github.com/AlexxIT/SonoffLAN/issues/1880
         if trig_time := (params.get("trigTime") or params.get("actionTime")):
             if trig_time == self.last_trig_time:
                 return
             self.last_trig_time = trig_time
 
-        XButtonBase.set_state(self, params)
+            XButtonBase.set_state(self, params)
 
 
 class XButtonLocalKey(XButtonBase):
