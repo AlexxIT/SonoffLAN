@@ -2805,3 +2805,102 @@ def test_human_7055():
     assert sensor.state == 361
     assert sensor.device_class == SensorDeviceClass.ILLUMINANCE
     assert sensor.native_unit_of_measurement == LIGHT_LUX
+
+
+def test_hydro_duo():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1859
+    params = {
+        "availablePlanCount": 6,
+        "fwVersion": "1.1.0",
+        "isSupportVolume": True,
+        "battery": 100,
+        "supportPowConfig": 1,
+        "errorDetail": {
+            "waterShortage": False,
+            "waterLeakage": False,
+            "frostProtection": False,
+            "failsafe": False,
+            "waterShortage_1": False,
+            "failsafe_1": False,
+        },
+        "controlMode": "auto",
+        "switch_00": False,
+        "switch_01": False,
+        "childLock": False,
+        "subDevRssi": -69,
+        "subDeviceManufacturer": "SONOFF",
+        "defaultManualMode": "time",
+        "manualDuration": 10,
+        "manualRainDelayTime": "0",
+        "frostProtection": 5,
+        "waterLeakage": 1,
+        "waterShortage": 5,
+        "waterShortageClose": True,
+        "adjustByHumidity": {"value": 40, "enable": False},
+        "adjustByRain": {"value": 10, "enable": False},
+        "adjustByTemp": {"value": 0, "valueGal": 1, "enable": False},
+        "adjustBySeason": "0a0a0a0a0a0a0a0a0a0a0a0a",
+        "currentRecord_0": {
+            "startTime": "842359254",
+            "type": "time",
+            "endTime": "842359852",
+            "remainVolume": 65523,
+            "remainVolumeGal": 17309,
+            "remainVolumeImGal": 14413,
+        },
+        "isRunning": False,
+        "runningOutlet": 1,
+        "lastRecord_1": {
+            "startTime": "842375701",
+            "endTime": "842375761",
+            "volume": 30,
+            "volumeGal": 8,
+            "volumeImGal": 7,
+        },
+        "currentRecord_1": {
+            "startTime": "842375701",
+            "type": "time",
+            "endTime": "842375760",
+            "remainVolume": 65511,
+            "remainVolumeGal": 17306,
+            "remainVolumeImGal": 14410,
+        },
+        "subDevRssiSetting": {"active": 60, "duration": 5},
+        "volumeUsageHour": 0,
+        "durationUsage_0": 0,
+        "durationUsage_1": 0,
+        "volumeUnit": "l",
+        "tempUnit": 0,
+        "todayWaterUsage": 141,
+        "todayWaterUsageGal": 36,
+        "totalTimeUsage_0": 2,
+        "totalTimeUsage_1": 5,
+        "isImperialGal": True,
+        "lastRecord_0": {
+            "startTime": "842359254",
+            "endTime": "842359352",
+            "volume": 14,
+            "volumeGal": 4,
+            "volumeImGal": 3,
+        },
+        "nextRecord_1": "842429700",
+    }
+    entities = get_entitites({"extra": {"uiid": 7048}, "params": params})
+
+    switch: SwitchEntity = next(e for e in entities if e.uid == "a")
+    assert switch.state == "off"
+    assert switch.entity_id == "sonoff.sonoff_1000123abc_a"
+
+    sensor: XSensor = next(e for e in entities if e.uid == "water_today")
+    assert sensor.state == 141
+    assert sensor.device_class == SensorDeviceClass.WATER
+    assert sensor.native_unit_of_measurement == UnitOfVolume.LITERS
+
+    sensor: XSensor = next(e for e in entities if e.uid == "water_last_a")
+    assert sensor.state == 14
+    assert sensor.device_class == SensorDeviceClass.WATER
+    assert sensor.native_unit_of_measurement == UnitOfVolume.LITERS
+
+    sensor: XSensor = next(e for e in entities if e.uid == "time_total_a")
+    assert sensor.state == 2
+    assert sensor.native_unit_of_measurement == UnitOfTime.MINUTES

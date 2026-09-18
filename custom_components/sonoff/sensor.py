@@ -19,6 +19,7 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfPressure,
     UnitOfTemperature,
+    UnitOfTime,
     UnitOfVolume,
 )
 from homeassistant.util import dt
@@ -66,6 +67,10 @@ DEVICE_CLASSES = {
     "rssi": SensorDeviceClass.SIGNAL_STRENGTH,
     "temperature": SensorDeviceClass.TEMPERATURE,
     "voltage": SensorDeviceClass.VOLTAGE,
+    "water": SensorDeviceClass.WATER,
+    "water_today": SensorDeviceClass.WATER,
+    "water_last_a": SensorDeviceClass.WATER,
+    "water_last_b": SensorDeviceClass.WATER,
 }
 
 UNITS = {
@@ -86,8 +91,13 @@ UNITS = {
     "remote_temperature": UnitOfTemperature.CELSIUS,
     "rssi": SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     "temperature": UnitOfTemperature.CELSIUS,
+    "time_total_a": UnitOfTime.MINUTES,
+    "time_total_b": UnitOfTime.MINUTES,
     "voltage": UnitOfElectricPotential.VOLT,
     "water": UnitOfVolume.LITERS,
+    "water_today": UnitOfVolume.LITERS,
+    "water_last_a": UnitOfVolume.LITERS,
+    "water_last_b": UnitOfVolume.LITERS,
 }
 
 
@@ -552,6 +562,14 @@ class XTodayWaterUsage(XSensor):
         # https://github.com/AlexxIT/SonoffLAN/issues/1497
         # https://github.com/AlexxIT/SonoffLAN/issues/1608
         value = next(params[k] for k in self.params if k in params)
+        XSensor.set_state(self, value=value)
+
+
+class XSubSensor(XSensor):
+    sub: str = None
+
+    def set_state(self, params: dict = None, value: float = None):
+        value = params.get(self.param, {}).get(self.sub)
         XSensor.set_state(self, value=value)
 
 

@@ -145,6 +145,16 @@ class XBoolSwitch(XEntity, SwitchEntity):
         await self.ewelink.send(self.device, {self.param: False})
 
 
+class XSwitchSWV(XBoolSwitch):
+    async def async_turn_on(self):
+        params = {self.param: True, "controlMode": "manual"}
+        await self.ewelink.send(self.device, params)
+
+    async def async_turn_off(self):
+        params = {self.param: False, "controlMode": "manual"}
+        await self.ewelink.send(self.device, params)
+
+
 class XT5WorkMode(XEntity, SwitchEntity):
     params = {"workMode"}
     uid = "curtain_mode"
