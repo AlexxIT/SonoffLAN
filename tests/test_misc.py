@@ -2,7 +2,12 @@ import asyncio
 import json
 
 from custom_components.sonoff.core.devices import spec
-from custom_components.sonoff.core.ewelink import XDevice, XRegistry, XRegistryLocal
+from custom_components.sonoff.core.ewelink import (
+    SIGNAL_UPDATE,
+    XDevice,
+    XRegistry,
+    XRegistryLocal,
+)
 from custom_components.sonoff.core.ewelink.local import decrypt, encrypt
 from custom_components.sonoff.fan import XFan
 from custom_components.sonoff.light import XLightL1
@@ -54,6 +59,30 @@ def test_issue_1160():
         "9b0810bc-557a-406c-8266-614767890531",
     )
     assert payload == {"switches": [{"outlet": 0, "switch": "off"}]}
+
+
+def test_issue_1885():
+    updates = []
+    registry = XRegistryLocal(None)
+    registry.dispatcher_connect(SIGNAL_UPDATE, updates.append)
+
+    for encrypted in (False, "false"):
+        registry._handler3(
+            DEVICEID,
+            "192.168.1.2:8081",
+            {
+                "id": DEVICEID,
+                "type": "plug",
+                "encrypt": encrypted,
+                "data1": '{"temperature":"25.6","humidity":"54.8","co2":520}',
+            },
+        )
+
+    assert updates[0]["params"] == updates[1]["params"] == {
+        "temperature": "25.6",
+        "humidity": "54.8",
+        "co2": 520,
+    }
 
 
 def test_issue_1333():
