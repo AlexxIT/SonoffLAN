@@ -492,11 +492,22 @@ class XT5Action(XEventSesor):
     params = {"triggerType", "slide"}
     uid = "action"
 
+    def __init__(self, ewelink: XRegistry, device: dict):
+        # remember initial state so the first update is not reported as a touch
+        self.last_switches = device["params"].get("switches")
+        super().__init__(ewelink, device)
+
     def set_state(self, params: dict):
         # https://github.com/AlexxIT/SonoffLAN/issues/1373
-        if "switches" in params and params.get("triggerType") == 2:
-            self._attr_native_value = "touch"
-            asyncio.create_task(self.clear_state())
+        # T5 repeats its full state about once a minute and keeps triggerType
+        # latched on 2 after a touch, so triggerType alone is not an event -
+        # only a changed switches state means a new touch happened
+        if switches := params.get("switches"):
+            changed = self.last_switches is not None and switches != self.last_switches
+            self.last_switches = switches
+            if changed and params.get("triggerType") == 2:
+                self._attr_native_value = "touch"
+                asyncio.create_task(self.clear_state())
 
         # fix https://github.com/AlexxIT/SonoffLAN/issues/1252
         if (slide := params.get("slide")) and len(params) == 1:

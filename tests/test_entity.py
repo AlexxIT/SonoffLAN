@@ -1832,6 +1832,44 @@ def test_t5():
     assert action.state == "slide_2"
 
 
+def test_t5_action_repeat():
+    # T5 announces its full state about once a minute over zeroconf and keeps
+    # triggerType latched on 2 after a touch
+    # https://github.com/AlexxIT/SonoffLAN/issues/1373
+    state = {
+        "switches": [{"outlet": 0, "switch": "off"}],
+        "electromotor": 1,
+        "percentageControl": 0,
+        "calibState": False,
+        "triggerType": 2,
+        "lightSwitch": "off",
+        "lightMode": 0,
+        "sledOnline": "on",
+        "fwVersion": "1.5.1",
+        "rssi": -64,
+    }
+    entities = get_entitites(
+        {"extra": {"uiid": 211}, "params": dict(state), "model": "T5-1C-86"}
+    )
+
+    action: XT5Action = next(e for e in entities if isinstance(e, XT5Action))
+    assert action.state == ""
+
+    # repeated announce of the same state is not a touch
+    action.internal_update(dict(state))
+    assert action.state == ""
+
+    # rssi drift is not a touch either
+    action.internal_update(dict(state, rssi=-71))
+    assert action.state == ""
+
+    # real touch changes the switches state
+    action.internal_update(
+        dict(state, switches=[{"outlet": 0, "switch": "on"}], rssi=-71)
+    )
+    assert action.state == "touch"
+
+
 def test_91():
     entities = get_entitites({"extra": {"uiid": 91}, "params": {"op": 1}})
 
