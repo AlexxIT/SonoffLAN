@@ -2529,6 +2529,82 @@ def test_m5_matter():
     assert button.state == "button_3_single"
 
 
+def test_m5_matter_2ch():
+    # M5 Matter 2CH, outlet 0 detached, outlet 1 normal relay
+    # log from @hillseven: https://github.com/AlexxIT/SonoffLAN/pull/1865
+    # on this model a REAL press of the detached button also tags the local
+    # state report triggerType 11, so the click must survive on the separate
+    # minimal message that follows it
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 162},
+            "params": {"localKeyPass": {"key": 0, "outlet": 0}},
+        }
+    )
+
+    button: XButtonLocalKey = next(e for e in entities if e.uid == "action")
+    assert button.state == ""
+
+    state_report = {
+        "sledOnline": "on",
+        "offBrightness": 10,
+        "relaySeparations": [
+            {"outlet": 0, "enable": 1},
+            {"outlet": 1, "enable": 0},
+        ],
+        "switches": [
+            {"outlet": 0, "switch": "on"},
+            {"outlet": 1, "switch": "off"},
+        ],
+        "triggerType": 11,
+        "lock": 0,
+        "localKeyPass": {"outlet": 0, "key": 0},
+    }
+
+    # real press of the detached button - the local state report is skipped...
+    button.ewelink.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {"deviceid": DEVICEID, "params": dict(state_report), "seq": 582},
+    )
+    assert button.state == ""
+
+    # ...and the click arrives on the minimal message ~150ms later
+    button.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {"deviceid": DEVICEID, "params": {"localKeyPass": {"outlet": 0, "key": 0}}},
+    )
+    assert button.state == "button_1_single"
+
+    # HA commands outlet 1 - same shaped report, same stale localKeyPass of
+    # outlet 0, fresh seq, but nobody pressed anything
+    setattr(button, "_attr_native_value", "")  # reset state
+    commanded = dict(state_report)
+    commanded["switches"] = [
+        {"outlet": 0, "switch": "on"},
+        {"outlet": 1, "switch": "on"},
+    ]
+    button.ewelink.local.dispatcher_send(
+        SIGNAL_UPDATE,
+        {"deviceid": DEVICEID, "params": commanded, "seq": 586},
+    )
+    assert button.state == ""
+
+    # and the cloud echo of that command carries no localKeyPass at all
+    button.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {
+            "deviceid": DEVICEID,
+            "params": {
+                "switches": [
+                    {"outlet": 0, "switch": "on"},
+                    {"outlet": 1, "switch": "on"},
+                ]
+            },
+        },
+    )
+    assert button.state == ""
+
+
 def test_powct():
     entities = get_entitites({"extra": {"uiid": 190}, "params": {"supplyPower": 0}})
     assert any(e.uid.endswith("supply") for e in entities if e.uid)
