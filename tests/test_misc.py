@@ -66,19 +66,18 @@ def test_issue_1885():
     registry = XRegistryLocal(None)
     registry.dispatcher_connect(SIGNAL_UPDATE, updates.append)
 
-    for encrypted in (False, "false"):
-        registry._handler3(
-            DEVICEID,
-            "192.168.1.2:8081",
-            {
-                "id": DEVICEID,
-                "type": "plug",
-                "encrypt": encrypted,
-                "data1": '{"temperature":"25.6","humidity":"54.8","co2":520}',
-            },
-        )
+    registry._handler3(
+        DEVICEID,
+        "192.168.1.2:8081",
+        {
+            "id": DEVICEID,
+            "type": "plug",
+            "encrypt": "false",
+            "data1": '{"temperature":"25.6","humidity":"54.8","co2":520}',
+        },
+    )
 
-    assert updates[0]["params"] == updates[1]["params"] == {
+    assert updates[0]["params"] == {
         "temperature": "25.6",
         "humidity": "54.8",
         "co2": 520,

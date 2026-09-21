@@ -137,11 +137,7 @@ class XRegistryLocal(XRegistryBase):
         if host:
             msg["host"] = host
 
-        encrypted = data.get("encrypt")
-        if isinstance(encrypted, str):
-            encrypted = encrypted.lower() == "true"
-
-        if encrypted:
+        if data.get("encrypt") == "true":
             msg["data"] = raw
             msg["iv"] = data["iv"]
         elif raw:  # no data field from zbbridgeu
