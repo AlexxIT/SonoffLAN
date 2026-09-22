@@ -141,7 +141,7 @@ class XEntity(Entity):
         if led := self.device["params"].get("sledOnline"):
             # device response with current status if we change any param
             await self.ewelink.send(
-                self.device, params_lan={"sledOnline": led}, cmd_lan="sledonline"
+                self.device, params_lan={"sledOnline": led}, cmd_lan="sledOnline"
             )
         else:
             await self.ewelink.send(self.device)
