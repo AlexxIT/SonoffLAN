@@ -1823,10 +1823,10 @@ def test_t5():
     action: XT5Action = next(e for e in entities if isinstance(e, XT5Action))
     assert action.state == ""
 
-    action.internal_update(
-        {"switches": [{"switch": "on", "outlet": 0}], "triggerType": 2}
-    )
-    assert action.state == "touch"
+    # action.internal_update(
+    #     {"switches": [{"switch": "on", "outlet": 0}], "triggerType": 2}
+    # )
+    # assert action.state == "touch"
 
     action.internal_update({"slide": 2})
     assert action.state == "slide_2"

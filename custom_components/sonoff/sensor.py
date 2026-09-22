@@ -467,18 +467,14 @@ class XButtonLocalKey(XButtonBase):
 
 
 class XT5Action(XEventSesor):
-    params = {"triggerType", "slide"}
+    params = {"slide"}
     uid = "action"
 
     def set_state(self, params: dict):
-        # https://github.com/AlexxIT/SonoffLAN/issues/1373
-        if "switches" in params and params.get("triggerType") == 2:
-            self._attr_native_value = "touch"
-            asyncio.create_task(self.clear_state())
-
-        # fix https://github.com/AlexxIT/SonoffLAN/issues/1252
-        if (slide := params.get("slide")) and len(params) == 1:
-            self._attr_native_value = f"slide_{slide}"
+        # Related https://github.com/AlexxIT/SonoffLAN/issues/1252
+        # Related https://github.com/AlexxIT/SonoffLAN/pull/1887
+        if len(params) == 1:
+            self._attr_native_value = f"slide_{params['slide']}"
             asyncio.create_task(self.clear_state())
 
 
