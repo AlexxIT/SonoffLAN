@@ -43,6 +43,10 @@ class XRegistry(XRegistryBase):
             did = device["deviceid"]
             try:
                 device.update(self.config["devices"][did])
+
+                if "host" in device:
+                    device["local"] = False
+                    device["localfail"] = device["localping"] = device["localrecv"] = 0
             except Exception:
                 pass
 
