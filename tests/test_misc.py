@@ -1484,6 +1484,51 @@ def test_active_mdns_pull_uses_home_assistant_shared_zeroconf():
     assert calls == [(shared, device, 750)]
 
 
+def test_bounded_mdns_pull_uses_direct_capture_after_shared_failure():
+    # noinspection PyTypeChecker
+    registry: XRegistry = XRegistry(None)
+    device = XDevice(deviceid=DEVICEID)
+    calls = []
+
+    async def shared(dev, **kwargs):
+        calls.append(("shared", dev, kwargs))
+        return False
+
+    async def direct(dev, **kwargs):
+        calls.append(("direct", dev, kwargs))
+        return True
+
+    registry.local.pull_mdns = shared
+    registry.local.pull_mdns_direct = direct
+
+    assert asyncio.run(registry._pull_mdns_bounded(device, timeout_ms=750))
+    assert calls == [
+        ("shared", device, {"timeout_ms": 750}),
+        ("direct", device, {"timeout_ms": 750}),
+    ]
+
+
+def test_bounded_mdns_pull_skips_direct_capture_when_shared_succeeds():
+    # noinspection PyTypeChecker
+    registry: XRegistry = XRegistry(None)
+    device = XDevice(deviceid=DEVICEID)
+    calls = []
+
+    async def shared(dev, **kwargs):
+        calls.append(("shared", dev, kwargs))
+        return True
+
+    async def direct(dev, **kwargs):
+        calls.append(("direct", dev, kwargs))
+        return True
+
+    registry.local.pull_mdns = shared
+    registry.local.pull_mdns_direct = direct
+
+    assert asyncio.run(registry._pull_mdns_bounded(device, timeout_ms=750))
+    assert calls == [("shared", device, {"timeout_ms": 750})]
+
+
 def test_active_mdns_pull_evicts_cached_record_and_forces_query(monkeypatch):
     removed = []
     requests = []
@@ -1678,6 +1723,46 @@ def test_issue_1160():
         "9b0810bc-557a-406c-8266-614767890531",
     )
     assert payload == {"switches": [{"outlet": 0, "switch": "off"}]}
+
+
+def test_issue_1885():
+    updates = []
+    registry = XRegistryLocal(None)
+    registry.dispatcher_connect(SIGNAL_UPDATE, updates.append)
+
+    for encrypted in (False, "false"):
+        registry._handler3(
+            DEVICEID,
+            "192.168.1.2:8081",
+            {
+                "id": DEVICEID,
+                "type": "plug",
+                "encrypt": encrypted,
+                "data1": '{"temperature":"25.6","humidity":"54.8","co2":520}',
+            },
+        )
+
+    assert updates[0]["params"] == updates[1]["params"] == {
+        "temperature": "25.6",
+        "humidity": "54.8",
+        "co2": 520,
+    }
+
+
+def test_encrypt_uses_compact_json():
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        captured = {}
+
+        def dumps(data, **kwargs):
+            captured.update(kwargs)
+            return json.dumps(data, **kwargs)
+
+        monkeypatch.setattr(
+            "custom_components.sonoff.core.ewelink.local.json.dumps", dumps
+        )
+        encrypt({"data": {"switches": [{"outlet": 0, "switch": "off"}]}}, "abc")
+
+    assert captured["separators"] == (",", ":")
 
 
 def test_issue_1333():

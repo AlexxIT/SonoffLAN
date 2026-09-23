@@ -127,6 +127,10 @@ class XRegistry(XRegistryBase):
             try:
                 cfg = self.config["devices"][did]
                 device.update(cfg)
+                if cfg.get("host"):
+                    device["localfail"] = device["localping"] = device["localrecv"] = 0
+                    device.pop("localconnectfail", None)
+                    device.pop("localconnectfail_at", None)
                 if LAN_ONLY and cfg.get("devicekey"):
                     device["devicekey"] = cfg["devicekey"]
             except Exception:
@@ -610,7 +614,9 @@ class XRegistry(XRegistryBase):
         self, device: XDevice, timeout_ms: int = LOCAL_MDNS_PULL_TIMEOUT_MS
     ) -> bool:
         async with self._mdns_semaphore:
-            return await self.local.pull_mdns(device, timeout_ms=timeout_ms)
+            if await self.local.pull_mdns(device, timeout_ms=timeout_ms):
+                return True
+            return await self.local.pull_mdns_direct(device, timeout_ms=timeout_ms)
 
     async def _await_sensor_telemetry(self, device: XDevice, poll_ts: float):
         try:

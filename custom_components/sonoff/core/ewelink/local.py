@@ -14,12 +14,13 @@ import json
 import logging
 import os
 import re
+import socket
 
 import aiohttp
 from aiohttp.hdrs import CONTENT_TYPE
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from zeroconf import DNSQuestionType, ServiceStateChange, Zeroconf
+from zeroconf import DNSIncoming, DNSQuestionType, DNSText, ServiceStateChange, Zeroconf
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo
 
 from .base import SIGNAL_CONNECTED, SIGNAL_UPDATE, XDevice, XRegistryBase
@@ -47,8 +48,28 @@ def parse_deviceid_from_service_name(name: str) -> str | None:
     return match.group(1)
 
 
+def decode_txt_record(raw: bytes) -> dict[str, str | None]:
+    """Decode DNS-SD length-prefixed TXT properties."""
+    properties: dict[str, str | None] = {}
+    offset = 0
+    while offset < len(raw):
+        size = raw[offset]
+        offset += 1
+        end = offset + size
+        if end > len(raw):
+            return {}
+        item = raw[offset:end]
+        offset = end
+        key, separator, value = item.partition(b"=")
+        try:
+            properties[key.decode()] = value.decode() if separator else None
+        except UnicodeDecodeError:
+            continue
+    return properties
+
+
 def encrypt(payload: dict, devicekey: str):
-    plaintext = json.dumps(payload["data"]).encode("utf-8")
+    plaintext = json.dumps(payload["data"], separators=(",", ":")).encode("utf-8")
     key = hashlib.md5(devicekey.encode("utf-8")).digest()
     iv = os.urandom(16)
 
@@ -167,6 +188,81 @@ class XRegistryLocal(XRegistryBase):
             return False
         return await self._pull_mdns_from(self.zeroconf, device, timeout_ms)
 
+    async def pull_mdns_direct(self, device: XDevice, timeout_ms: int = 1500) -> bool:
+        """Capture one fresh device publication without another Zeroconf instance."""
+        if "sledOnline" not in device.get("params", {}) or not device.get("host"):
+            return False
+
+        device_host = device["host"].rsplit(":", 1)[0]
+        listener = route = None
+        try:
+            route = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            route.connect((device_host, 5353))
+            source_ip = route.getsockname()[0]
+            route.close()
+            route = None
+
+            listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.bind(("", 5353))
+            membership = socket.inet_aton("224.0.0.251") + socket.inet_aton(source_ip)
+            listener.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, membership)
+            listener.setblocking(False)
+
+            result = await self.send(
+                device,
+                {"sledOnline": device["params"]["sledOnline"]},
+                "sledonline",
+                timeout=max(1, min(3, int(timeout_ms / 1000) or 1)),
+            )
+            if result not in ("ack", "online", "online_no_data"):
+                return False
+            if result == "online":
+                return True
+
+            loop = asyncio.get_running_loop()
+            deadline = loop.time() + timeout_ms / 1000
+            while remaining := deadline - loop.time():
+                if remaining <= 0:
+                    break
+                try:
+                    packet, address = await asyncio.wait_for(
+                        loop.sock_recvfrom(listener, 9000), remaining
+                    )
+                except asyncio.TimeoutError:
+                    break
+                if address[0] != device_host:
+                    continue
+
+                incoming = DNSIncoming(packet)
+                if not incoming.valid:
+                    continue
+                for record in incoming.answers():
+                    if not isinstance(record, DNSText):
+                        continue
+                    if parse_deviceid_from_service_name(record.name) != device["deviceid"]:
+                        continue
+                    properties = decode_txt_record(record.text)
+                    if not properties:
+                        continue
+                    self._handler3(
+                        device["deviceid"],
+                        device["host"],
+                        properties,
+                        service_name=record.name,
+                    )
+                    return True
+        except (OSError, ValueError) as e:
+            _LOGGER.debug(
+                f"{device['deviceid']} <= Local0 | Direct mDNS capture", exc_info=e
+            )
+        finally:
+            if route:
+                route.close()
+            if listener:
+                listener.close()
+        return False
+
     async def _pull_mdns_from(
         self, zeroconf: Zeroconf, device: XDevice, timeout_ms: int
     ) -> bool:
@@ -228,7 +324,11 @@ class XRegistryLocal(XRegistryBase):
         if service_name:
             msg["mdns_service"] = service_name
 
-        if data.get("encrypt"):
+        encrypted = data.get("encrypt")
+        if isinstance(encrypted, str):
+            encrypted = encrypted.lower() == "true"
+
+        if encrypted:
             if not raw:
                 return
             msg["data"] = raw

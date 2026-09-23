@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.0.9
+
+- Send compact JSON in encrypted LAN commands so MINIR4M and other strict firmware accepts actuation payloads.
+- Treat string Zeroconf `encrypt` flags as booleans so plaintext mDNS telemetry is not misclassified as encrypted.
+- Reset LAN probe counters when a device host is supplied in YAML so stale cached reachability state is cleared on startup.
+
+## 4.0.8
+
+- Recover real-time LAN telemetry when Home Assistant's shared Zeroconf socket stops receiving after a network interruption.
+- Keep shared Zeroconf as the primary path, then use a short-lived device-specific UDP listener to capture a fresh `sledonline` publication without creating another Zeroconf instance.
+- Accept fallback telemetry only from the configured device IP and matching eWeLink device ID.
+
 ## 4.0.7
 
 - Use Home Assistant's shared Zeroconf instance for active reads, removing the private resolver that Home Assistant rejected during `4.0.6` startup.
