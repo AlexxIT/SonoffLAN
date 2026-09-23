@@ -7,6 +7,7 @@ from homeassistant.config_entries import ConfigEntry, SOURCE_IMPORT
 from homeassistant.const import (
     CONF_DEVICES,
     CONF_DEVICE_CLASS,
+    CONF_HOST,
     CONF_MODE,
     CONF_NAME,
     CONF_PASSWORD,
@@ -87,6 +88,10 @@ CONFIG_SCHEMA = vol.Schema(
                             vol.Optional(CONF_NAME): cv.string,
                             vol.Optional(CONF_DEVICE_CLASS): vol.Any(str, list),
                             vol.Optional(CONF_DEVICEKEY): cv.string,
+                            # Static LAN address (`ip` or `ip:port`) for devices that
+                            # can't be found via zeroconf, ex. when HA and the device
+                            # sit on different subnets/VLANs but are otherwise routable.
+                            vol.Optional(CONF_HOST): cv.string,
                         },
                         extra=vol.ALLOW_EXTRA,
                     ),
