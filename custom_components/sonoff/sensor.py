@@ -449,6 +449,11 @@ class XButtonKey(XButtonBase):
             self.last_trig_time = trig_time
 
             XButtonBase.set_state(self, params)
+        elif len(params) == 1:
+            # ...or a bare key without time: some MINIR4M firmwares send
+            # a physical press this way, while full state reports are skipped
+            # https://github.com/AlexxIT/SonoffLAN/issues/1892
+            XButtonBase.set_state(self, params)
 
 
 class XButtonLocalKey(XButtonBase):

@@ -1792,6 +1792,32 @@ def test_minir4():
     assert action.state == "single"
 
 
+def test_minir4m_action_without_time():
+    # https://github.com/AlexxIT/SonoffLAN/issues/1880
+    # https://github.com/AlexxIT/SonoffLAN/issues/1892
+    params = {
+        "fwVersion": "1.2.0",
+        "sledOnline": "on",
+        "swMode": 2,
+        "swCtrlReverse": "off",
+        "relaySeparation": 1,
+        "switches": [{"outlet": 0, "switch": "on"}],
+        "key": 0,
+    }
+    entities = get_entitites({"extra": {"uiid": 138}, "params": params})
+
+    action: XButtonKey = next(e for e in entities if e.uid == "action")
+    assert action.state == ""
+
+    # full state report with stale key (e.g. after relay toggle), skip
+    action.internal_update({**params, "switches": [{"outlet": 0, "switch": "off"}]})
+    assert action.state == ""
+
+    # physical press: cloud sends only key, without trigTime or actionTime
+    action.internal_update({"key": 0})
+    assert action.state == "single"
+
+
 def test_t5():
     entities = get_entitites(
         {
