@@ -38,9 +38,6 @@ except ImportError:  # Home Assistant before the unit enums were introduced
 
 from homeassistant.util import dt
 
-from homeassistant.core import callback
-from homeassistant.helpers.event import async_track_time_interval
-
 from .core.const import DOMAIN
 from .core.entity import XEntity
 from .core.ewelink import LAN_ONLY, SIGNAL_ADD_ENTITIES, XRegistry
@@ -51,7 +48,8 @@ CONCENTRATION_PARTS_PER_MILLION = CONCENTRATION_PPM
 PARALLEL_UPDATES = 0  # fix entity_platform parallel_updates Semaphore
 SCAN_INTERVAL = timedelta(seconds=15)
 LOCAL_POWER_POLL_UIIDS = {32, 181, 182, 190, 262, 277}
-LOCAL_POWER_TELEMETRY_UIDS = {"current", "power", "voltage"}
+LOCAL_POWER_REPORT_DELTAS = {"current": 0.05, "power": 1.0, "voltage": 1.0}
+RSSI_REPORTING = (30.0, 300.0, 3.0)
 
 
 async def async_setup_entry(hass, config_entry, add_entities):
@@ -143,12 +141,8 @@ class XSensor(XEntity, SensorEntity):
         XEntity.__init__(self, ewelink, device)
 
         reporting = device.get("reporting", {}).get(self.uid)
-        if (
-            self.uid in LOCAL_POWER_TELEMETRY_UIDS
-            and device.get("extra", {}).get("uiid") in LOCAL_POWER_POLL_UIIDS
-        ):
-            self._attr_force_update = True
-
+        if reporting is None:
+            reporting = self._default_lan_reporting(device)
         if reporting:
             self.report_mint, self.report_maxt, self.report_delta = reporting
             self.report_ts = time.time()
@@ -160,6 +154,30 @@ class XSensor(XEntity, SensorEntity):
             and device["params"].get("sledOnline")
         ):
             self._attr_should_poll = True
+
+    def _default_lan_reporting(self, device: dict):
+        if self.uid == "rssi":
+            return RSSI_REPORTING
+
+        if (
+            not LAN_ONLY
+            or self.uid not in LOCAL_POWER_REPORT_DELTAS
+            or device.get("extra", {}).get("uiid") not in LOCAL_POWER_POLL_UIIDS
+        ):
+            return None
+
+        try:
+            max_interval = max(
+                1.0, min(float(device.get("update_interval", 30)), 300.0)
+            )
+        except (TypeError, ValueError):
+            max_interval = 30.0
+
+        return (
+            min(5.0, max_interval),
+            max_interval,
+            LOCAL_POWER_REPORT_DELTAS[self.uid],
+        )
 
     def set_state(self, params: dict = None, value: float = None):
         if params:
@@ -634,35 +652,7 @@ class XConnection(XEntity, BinarySensorEntity):
     def internal_update(self, params: dict = None):
         local = self.ewelink.local_available(self.device)
 
-        recv = self.device.get("localrecv") or 0
-        telemetry_at = self.device.get("localtelemetry_at") or 0
-        connect_fail_at = self.device.get("localconnectfail_at") or 0
-        switch_at = self.device.get("localswitch_at") or 0
-        now = time.time()
-        attrs = {
-            "localrecv_age_s": round(now - recv, 1) if recv else None,
-            "localsensorfail": self.device.get("localsensorfail", 0),
-            "localsensornodata": self.device.get("localsensornodata", 0),
-            "localsensor_ack_at": self.device.get("localsensorack_at"),
-            "localsensor_ok_at": self.device.get("localsensorok"),
-            "localsensor_nodata_at": self.device.get("localsensornodata_at"),
-            "localsensor_fail_at": self.device.get("localsensorfail_at"),
-            "localtelemetry_at": telemetry_at or None,
-            "localtelemetry_age_s": round(now - telemetry_at, 1)
-            if telemetry_at
-            else None,
-            "localconnectfail": self.device.get("localconnectfail", 0),
-            "localconnectfail_at": connect_fail_at or None,
-            "localconnectfail_age_s": round(now - connect_fail_at, 1)
-            if connect_fail_at
-            else None,
-            "localswitch_at": switch_at or None,
-            "localswitch_age_s": round(now - switch_at, 1) if switch_at else None,
-            "localswitchpending": self.device.get("localswitchpending"),
-            "localswitchnodata": self.device.get("localswitchnodata", 0),
-            "localswitch_nodata_at": self.device.get("localswitchnodata_at"),
-            "host": self.device.get("host"),
-        }
+        attrs = {"host": self.device.get("host")}
 
         change = False
         if self._attr_is_on != local:
@@ -674,14 +664,3 @@ class XConnection(XEntity, BinarySensorEntity):
 
         if change and self.hass:
             self._async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        await super().async_added_to_hass()
-
-        @callback
-        def _refresh(_now):
-            self.internal_update(None)
-
-        self.async_on_remove(
-            async_track_time_interval(self.hass, _refresh, timedelta(seconds=15))
-        )

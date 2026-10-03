@@ -26,7 +26,7 @@ This project is a LAN-only fork of [AlexxIT/SonoffLAN](https://github.com/AlexxI
 - Exposes local, per-channel inching enable, duration, and action controls when a device reports `pulses` support.
 - Retries unreachable devices and restores entity availability when a device returns.
 - Supports a `1` to `300` second device-specific telemetry watchdog interval, with a `30` second default.
-- Exposes optional connection diagnostics for local receive age, telemetry acknowledgements, missing telemetry, and connection failures.
+- Exposes an optional Connection binary sensor for actual LAN reachability.
 - Refreshes the eWeLink device inventory and local encryption keys during integration setup without starting cloud control or cloud state updates.
 
 ## LAN-Only Boundary
@@ -83,9 +83,9 @@ Allowed values are `1` through `300` seconds. Restart Home Assistant after chang
 
 A value saved through the device's **Update interval** control overrides YAML for that device. This keeps existing YAML defaults intact while allowing normal adjustments from the Home Assistant UI.
 
-LAN callbacks reset the device timer. The integration sends a direct local refresh only after the device has been silent for the configured interval, so normal callbacks remain authoritative instead of being duplicated by blind polling. Power-monitoring devices use their firmware-specific recovery path. S40 and compatible standalone power plugs are refreshed with `sledonline` while preserving the device's current LED setting. Devices that reject `getState` automatically use mDNS state polling instead. A shorter interval cannot make firmware generate new measurements more quickly than it permits, and one-second intervals increase local network traffic.
+LAN callbacks reset the device timer. The integration sends a direct local refresh only after the device has been silent for that device's configured interval, so normal callbacks remain authoritative instead of being duplicated by blind polling. Power-monitoring devices use their firmware-specific recovery path. S40 and compatible standalone power plugs are refreshed with `sledonline` while preserving the device's current LED setting. Devices that reject `getState` automatically use mDNS state polling instead. A shorter interval cannot make firmware generate new measurements more quickly than it permits; on devices that publish full telemetry in response, a one-second setting also receives that device's full local meter payload at that configured cadence.
 
-Each device also provides a disabled-by-default diagnostic **Connection** binary sensor. It reports **Connected** only while the device has a usable LAN path and **Disconnected** after the local transport is lost or repeated direct connection attempts fail. LAN receive, telemetry, polling, and switch-confirmation diagnostics remain available as attributes.
+Each device also provides a disabled-by-default diagnostic **Connection** binary sensor. It reports **Connected** only while the device has a usable LAN path and **Disconnected** after repeated direct connection failures. Its `host` attribute identifies the currently used local endpoint. The entity intentionally does not publish polling timestamps or retry counters, because those transient diagnostics do not represent a connection-state change.
 
 ### Local Inching Controls
 
@@ -123,14 +123,9 @@ Repeated connection failures mark a device unavailable. The integration continue
 
 From **Settings > Devices & services > SonoffLANonly**, open the integration menu and download diagnostics. Connection diagnostic entities are disabled by default; enable one from the device entity list when troubleshooting.
 
-Connection attributes include:
+The Connection entity has one stable attribute:
 
-- `localrecv_age_s`: age of the last local callback.
-- `localsensor_ack_at`: last successful LAN telemetry-request acknowledgement.
-- `localsensor_ok_at`: last callback containing recognised telemetry.
-- `localsensornodata`: consecutive acknowledged requests that produced no telemetry.
-- `localsensorfail`: failed telemetry requests.
-- `localconnectfail`: consecutive local transport failures.
+- `host`: the current local host and port used for the device.
 
 Before opening an issue, confirm the device is reachable from the Home Assistant host and include the Home Assistant version, SonoffLANonly version, model, UIID, relevant logs, and sanitized diagnostics. Never publish account credentials or device keys.
 

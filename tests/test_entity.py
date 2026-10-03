@@ -512,12 +512,23 @@ def test_power_entity_telemetry_polled_via_run_forever(monkeypatch):
     power.ewelink.send_local = send_local
     asyncio.run(power.ewelink.update_local(power.device, 20))
 
-    assert power.should_poll is False
-    assert current.should_poll is False
-    assert voltage.should_poll is False
-    assert power.force_update is True
-    assert current.force_update is True
-    assert voltage.force_update is True
+    assert power.should_poll is True
+    assert current.should_poll is True
+    assert voltage.should_poll is True
+    assert power.force_update is False
+    assert current.force_update is False
+    assert voltage.force_update is False
+    assert (power.report_mint, power.report_maxt, power.report_delta) == (5, 15, 1)
+    assert (current.report_mint, current.report_maxt, current.report_delta) == (
+        5,
+        15,
+        0.05,
+    )
+    assert (voltage.report_mint, voltage.report_maxt, voltage.report_delta) == (
+        5,
+        15,
+        1,
+    )
     assert calls == [
         (power.device, "sledonline", {"sledOnline": "on"})
     ]
@@ -569,27 +580,10 @@ def test_connection_sensor_exposes_lan_polling_diagnostics():
     assert conn.device_class == BinarySensorDeviceClass.CONNECTIVITY
     assert conn.is_on is True
     assert conn.available is True
-    conn.device.update(
-        {
-            "localrecv": time.time() - 12,
-            "localsensorfail": 2,
-            "localsensornodata": 3,
-            "localsensorack_at": 1000.0,
-            "localsensorok": 1100.0,
-            "localsensornodata_at": 950.0,
-            "localtelemetry_at": 1100.0,
-        }
-    )
+    conn.device.update({"localsensorfail": 2, "localconnectfail": 1})
     conn.internal_update(None)
     attrs = conn._attr_extra_state_attributes
-    assert attrs["localsensorfail"] == 2
-    assert attrs["localsensornodata"] == 3
-    assert attrs["localsensor_ack_at"] == 1000.0
-    assert attrs["localsensor_ok_at"] == 1100.0
-    assert attrs["localsensor_nodata_at"] == 950.0
-    assert attrs["localtelemetry_at"] == 1100.0
-    assert attrs["localtelemetry_age_s"] >= 12
-    assert attrs["localrecv_age_s"] >= 12
+    assert attrs == {"host": "192.168.1.2:8081"}
 
     conn.ewelink.local.online = False
     conn.internal_update(None)
@@ -643,9 +637,7 @@ def test_power_sensor_stays_available_after_missing_telemetry_callbacks():
     assert power.internal_available()
 
 
-def test_connection_diagnostics_age_refreshes_without_dispatcher(monkeypatch):
-    t0 = 1000.0
-    monkeypatch.setattr("custom_components.sonoff.sensor.time.time", lambda: t0)
+def test_connection_diagnostics_ignore_normal_telemetry_timestamps():
     entities = get_entitites(
         {
             "extra": {"uiid": 182},
@@ -655,13 +647,11 @@ def test_connection_diagnostics_age_refreshes_without_dispatcher(monkeypatch):
         }
     )
     conn = next(e for e in entities if getattr(e, "uid", None) == "connection")
-    conn.device["localtelemetry_at"] = 900.0
+    attrs = conn._attr_extra_state_attributes.copy()
+    conn.device["localrecv"] = 1000.0
+    conn.device["localtelemetry_at"] = 1000.0
     conn.internal_update(None)
-    assert conn._attr_extra_state_attributes["localtelemetry_age_s"] == 100.0
-
-    monkeypatch.setattr("custom_components.sonoff.sensor.time.time", lambda: 1120.0)
-    conn.internal_update(None)
-    assert conn._attr_extra_state_attributes["localtelemetry_age_s"] == 220.0
+    assert conn._attr_extra_state_attributes == attrs
 
 
 def test_nospec():

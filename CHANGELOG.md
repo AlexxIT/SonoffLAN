@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.0.10
+
+- Stop force-writing local current, power, and voltage callbacks to Home Assistant; normal entity reporting now filters repetitive meter updates while preserving each device's configured update interval.
+- Apply the same local reporting behavior to supported power devices when no device-specific reporting rule is configured.
+- Keep the optional Connection binary sensor focused on actual LAN reachability and its current endpoint instead of publishing changing polling counters and timestamp ages.
+
 ## 4.0.9
 
 - Send compact JSON in encrypted LAN commands so MINIR4M and other strict firmware accepts actuation payloads.
