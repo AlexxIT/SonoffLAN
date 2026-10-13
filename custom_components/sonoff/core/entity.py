@@ -1,5 +1,7 @@
 import logging
 
+from homeassistant.core import async_get_hass
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityCategory
 
@@ -36,6 +38,17 @@ NAMES = {
     "pulse": "INCHING",
     "pulseWidth": "INCHING Duration",
 }
+
+
+def get_via_device_id(did: str) -> str | None:
+    try:
+        hass = async_get_hass()
+        device_registry = dr.async_get(hass)
+        device_entries = device_registry.async_get_devices(identifiers={(DOMAIN, did)})
+        for device_entry in device_entries:
+            return device_entry.id
+    except:  # noqa
+        return None
 
 
 class XEntity(Entity):
@@ -100,7 +113,8 @@ class XEntity(Entity):
         ewelink.dispatcher_connect(deviceid, self.internal_update)
 
         if parent := device.get("parent"):
-            self._attr_device_info["via_device"] = (DOMAIN, parent["deviceid"])
+            if via_device_id := get_via_device_id(parent["deviceid"]):
+                self._attr_device_info["via_device_id"] = via_device_id
             ewelink.dispatcher_connect(parent["deviceid"], self.internal_parent_update)
 
     @property
