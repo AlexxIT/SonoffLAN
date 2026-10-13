@@ -863,6 +863,10 @@ DEVICES = {
     ],
 }
 
+# Not the best solution, but anyway. This may be fixed in the future.
+# TRV Gen2 https://github.com/AlexxIT/SonoffLAN/issues/1893
+DEVICES[7049] = DEVICES[7017]
+
 
 def get_spec(device: dict) -> list:
     uiid = device["extra"]["uiid"]
