@@ -646,6 +646,8 @@ DEVICES = {
         LED,
         RSSI,
     ],
+    # NSPanel86PB-Relay https://github.com/AlexxIT/SonoffLAN/issues/1908
+    278: SPEC_2CH,
     # MINI-1GSP https://github.com/AlexxIT/SonoffLAN/issues/1876
     283: [
         Switch1,
