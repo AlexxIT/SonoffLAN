@@ -69,6 +69,7 @@ from ..number import (
     XPulseWidth,
     XSensitivity,
     XTempCorrectionNumber,
+    XEffectSpeed,
 )
 from ..remote import XRemote
 from ..select import XSelectStartup, XStartup
@@ -460,7 +461,7 @@ DEVICES = {
     # ZBBridge-P, https://github.com/AlexxIT/SonoffLAN/issues/857
     168: [RSSI],
     # Sonoff L3-5M-P
-    173: [XLightL3, RSSI],
+    173: [XLightL3, XEffectSpeed, RSSI],
     # Sonoff R5 (6-key remote) https://github.com/AlexxIT/SonoffLAN/issues/731
     174: [XButtonKey],
     # Sonoff S-Mate https://github.com/AlexxIT/SonoffLAN/issues/731

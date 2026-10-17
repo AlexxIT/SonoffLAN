@@ -756,7 +756,16 @@ class XLightL3(XLightL1):
             rgb_color = self.rgb_color
         if brightness is None and rgb_color is not None:
             brightness = self.brightness
-        return super().get_params(brightness, color_temp_kelvin, rgb_color, effect)
+        params = super().get_params(brightness, color_temp_kelvin, rgb_color, effect)
+
+        if effect and effect in self.modes:
+            custom_speed = self.device.get("params", {}).get("effect_speed", 50)
+
+            for key in list(params.keys()):
+                if key.startswith("speed"):
+                    params[key] = int(custom_speed)
+
+        return params
 
 
 B02_MODE_PAYLOADS = {
