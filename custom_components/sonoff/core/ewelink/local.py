@@ -216,8 +216,8 @@ class XRegistryLocal(XRegistryBase):
                 # some devices don't support getState command
                 # https://github.com/AlexxIT/SonoffLAN/issues/1442
                 # https://github.com/AlexxIT/SonoffLAN/issues/1907
-                if command == "getState" and isinstance(e, ContentTypeError):
-                    _LOGGER.debug(f"{log} <= {e.message}")
+                if command == "getState":
+                    _LOGGER.debug(f"{log} <= OK, but: {e}")
                     return "online"
 
                 _LOGGER.debug(f"{log} !! Error: {e}")
