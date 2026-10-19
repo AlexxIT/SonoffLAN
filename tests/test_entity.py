@@ -1714,6 +1714,19 @@ def test_lx_entity():
     }
 
 
+def test_l3_transition_speed():
+    device = {
+        "extra": {"uiid": 173},
+        "params": {},
+    }
+    entities = get_entitites(device)
+    light: XLightL3 = entities[0]
+
+    payload = light.get_params(None, None, None, "7 Color Wave", transition=75)
+    assert payload["speed35"] == 75
+    assert payload["bright35"] == 100
+
+
 def test_light_136():
     # https://github.com/AlexxIT/SonoffLAN/pull/892
     entities = get_entitites(
