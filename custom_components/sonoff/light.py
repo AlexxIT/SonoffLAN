@@ -52,7 +52,7 @@ class XLight(XEntity, LightEntity):
         if self.param in params:
             self._attr_is_on = params[self.param] == "on"
 
-    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect, transition: float = None) -> dict:
         pass
 
     async def async_turn_on(
@@ -71,7 +71,7 @@ class XLight(XEntity, LightEntity):
         elif hs_color:
             rgb_color = color.color_hs_to_RGB(*hs_color)
 
-        if transition:
+        if transition and not effect:
             await self.transiton(brightness, color_temp_kelvin, rgb_color, transition)
             return
 
@@ -79,8 +79,8 @@ class XLight(XEntity, LightEntity):
             await self.async_turn_off()
             return
 
-        if brightness or color_temp_kelvin or rgb_color or effect:
-            params = self.get_params(brightness, color_temp_kelvin, rgb_color, effect)
+        if brightness or color_temp_kelvin or rgb_color or effect or transition:
+            params = self.get_params(brightness, color_temp_kelvin, rgb_color, effect, transition=transition)
         else:
             params = None
 
@@ -145,7 +145,7 @@ class XDimmer(XLight):
         if "bright" in params:
             self._attr_brightness = conv(params["bright"], 10, 100, 1, 255)
 
-    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect, transition: float = None) -> dict:
         if brightness:
             return {"bright": conv(brightness, 1, 255, 10, 100)}
 
@@ -161,7 +161,7 @@ class XLight57(XLight):
         if "channel0" in params:
             self._attr_brightness = conv(int(params["channel0"]), 25, 255, 1, 255)
 
-    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect, transition: float = None) -> dict:
         if brightness:
             return {"channel0": str(conv(brightness, 1, 255, 25, 255))}
 
@@ -176,7 +176,7 @@ class XLightD1(XLight):
         if "brightness" in params:
             self._attr_brightness = conv(params["brightness"], 0, 100, 1, 255)
 
-    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect, transition: float = None) -> dict:
         if brightness:
             # brightness can be only with switch=on in one message (error 400)
             # the purpose of the mode is unclear
@@ -279,7 +279,7 @@ class XLightB1(XLight):
                     int(params["channel4"]),
                 )
 
-    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect, transition: float = None) -> dict:
         if brightness or color_temp_kelvin:
             ch = str(conv(brightness or self.brightness or 255, 1, 255, 25, 255))
             if not color_temp_kelvin:
@@ -356,7 +356,7 @@ class XLightL1(XLight):
                 (k for k, v in self.modes.items() if v["mode"] == params["mode"]), None
             )
 
-    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect, transition: float = None) -> dict:
         params = {}
         if effect:
             params.update(self.modes[effect])
@@ -750,16 +750,19 @@ class XLightL3(XLightL1):
                 None,
             )
 
-    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect, transition: float = None) -> dict:
         # fix https://github.com/AlexxIT/SonoffLAN/issues/1394
         if brightness is not None and rgb_color is None:
             rgb_color = self.rgb_color
         if brightness is None and rgb_color is not None:
             brightness = self.brightness
-        params = super().get_params(brightness, color_temp_kelvin, rgb_color, effect)
+        params = super().get_params(brightness, color_temp_kelvin, rgb_color, effect, transition=transition)
 
         if effect and effect in self.modes:
-            custom_speed = self.device.get("params", {}).get("effect_speed", 50)
+            if transition is not None:
+                custom_speed = conv(int(transition), 1, 100, 1, 100)
+            else:
+                custom_speed = 50
 
             for key in list(params.keys()):
                 if key.startswith("speed"):
@@ -832,7 +835,7 @@ class XLightB02(XLight):
                 self.max_color_temp_kelvin,
             )
 
-    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect, transition: float = None) -> dict:
         if brightness or color_temp_kelvin:
             return {
                 "ltype": "white",
@@ -910,7 +913,7 @@ class XLightB05B(XLightB02):
                 state.get("b", 0),
             )
 
-    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect) -> dict:
+    def get_params(self, brightness, color_temp_kelvin, rgb_color, effect, transition: float = None) -> dict:
         if color_temp_kelvin:
             return {
                 "ltype": "white",
@@ -941,9 +944,9 @@ class XLightB05B(XLightB02):
             }
         if brightness:
             if self.color_mode == ColorMode.COLOR_TEMP:
-                return self.get_params(brightness, self.color_temp_kelvin, None, None)
+                return self.get_params(brightness, self.color_temp_kelvin, None, None, transition=transition)
             else:
-                return self.get_params(brightness, None, self.rgb_color, None)
+                return self.get_params(brightness, None, self.rgb_color, None, transition=transition)
         if effect is not None:
             return {"ltype": effect, effect: B05_MODE_PAYLOADS[effect]}
 

@@ -1,11 +1,5 @@
-from homeassistant.components.number import (
-    NumberDeviceClass,
-    NumberEntity,
-    NumberMode,
-    RestoreNumber,
-)
+from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
 from homeassistant.const import UnitOfTemperature, UnitOfTime
-from homeassistant.helpers.entity import EntityCategory
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -130,36 +124,3 @@ class XAlarmVolume(XAlarmSettingNumber):
     _attr_native_min_value = 0
     _attr_native_max_value = 3
     _attr_native_step = 1
-
-
-class XEffectSpeed(XEntity, RestoreNumber):
-    uid = "effect_speed"
-
-    _attr_entity_category = EntityCategory.CONFIG
-    _attr_icon = "mdi:speedometer"
-    _attr_native_min_value = 1
-    _attr_native_max_value = 100
-    _attr_native_step = 1
-    _attr_native_value = 50
-
-    def set_state(self, params: dict):
-        if "effect_speed" in params:
-            self._attr_native_value = params["effect_speed"]
-
-    async def async_added_to_hass(self) -> None:
-        await super().async_added_to_hass()
-        if (
-            last_data := await self.async_get_last_number_data()
-        ) and last_data.native_value is not None:
-            self._attr_native_value = last_data.native_value
-            self.device.setdefault("params", {})["effect_speed"] = int(
-                last_data.native_value
-            )
-        else:
-            self.device.setdefault("params", {})["effect_speed"] = 50
-
-    async def async_set_native_value(self, value: float) -> None:
-        val = int(value)
-        self._attr_native_value = val
-        self.device.setdefault("params", {})["effect_speed"] = val
-        self.async_write_ha_state()
