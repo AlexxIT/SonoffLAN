@@ -1,3 +1,4 @@
+from homeassistant.components.climate import ClimateEntity
 import asyncio
 import time
 from datetime import timedelta
@@ -1359,6 +1360,11 @@ def test_ns_panel():
     state = clim.hass.states.get(clim.entity_id)
     assert state.state == "off"
     assert state.attributes == {
+        **(
+            {"temperature_unit": "°C"}
+            if hasattr(ClimateEntity, "native_temperature_unit")
+            else {}
+        ),
         "hvac_modes": ["off", "cool", "auto"],
         "min_temp": 16,
         "max_temp": 31,
@@ -1386,6 +1392,11 @@ def test_ns_panel():
     assert state.state == "auto"
     # no target temperature
     assert state.attributes == {
+        **(
+            {"temperature_unit": "°C"}
+            if hasattr(ClimateEntity, "native_temperature_unit")
+            else {}
+        ),
         "hvac_modes": ["off", "cool", "auto"],
         "min_temp": 16,
         "max_temp": 31,
@@ -1614,6 +1625,11 @@ def test_thermostat():
     therm: XThermostat = entities[0]
     assert therm.state == "auto"
     assert therm.state_attributes == {
+        **(
+            {"temperature_unit": "°C"}
+            if hasattr(ClimateEntity, "native_temperature_unit")
+            else {}
+        ),
         "current_temperature": 29,
         "temperature": 20,
         "preset_mode": "manual",
