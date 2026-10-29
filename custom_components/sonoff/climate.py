@@ -1,3 +1,5 @@
+from operator import attrgetter
+
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
     ClimateEntityFeature,
@@ -27,8 +29,36 @@ FEATURE_TURN_OFF = getattr(ClimateEntityFeature, "TURN_OFF", 0)
 FEATURE_TURN_ON = getattr(ClimateEntityFeature, "TURN_ON", 0)
 
 
+class XClimateEntity(ClimateEntity):
+    _attr_native_current_temperature = None
+    _attr_native_target_temperature = None
+    _attr_native_target_temperature_high = None
+    _attr_native_target_temperature_low = None
+
+    # Home Assistant before 2026.11 reads the legacy property names.
+    if not hasattr(ClimateEntity, "native_temperature_unit"):
+        native_temperature_unit = property(attrgetter("_attr_native_temperature_unit"))
+        native_current_temperature = property(
+            attrgetter("_attr_native_current_temperature")
+        )
+        native_target_temperature = property(
+            attrgetter("_attr_native_target_temperature")
+        )
+        native_target_temperature_high = property(
+            attrgetter("_attr_native_target_temperature_high")
+        )
+        native_target_temperature_low = property(
+            attrgetter("_attr_native_target_temperature_low")
+        )
+        temperature_unit = native_temperature_unit
+        current_temperature = native_current_temperature
+        target_temperature = native_target_temperature
+        target_temperature_high = native_target_temperature_high
+        target_temperature_low = native_target_temperature_low
+
+
 # noinspection PyAbstractClass
-class XClimateTH(XEntity, ClimateEntity):
+class XClimateTH(XEntity, XClimateEntity):
     params = {"targets", "deviceType", "currentTemperature", "temperature"}
 
     _attr_entity_registry_enabled_default = False
@@ -36,9 +66,9 @@ class XClimateTH(XEntity, ClimateEntity):
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.COOL, HVACMode.DRY]
     _attr_max_temp = 99
     _attr_min_temp = -40
-    _attr_target_temperature_high = None
-    _attr_target_temperature_low = None
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_target_temperature_high = None
+    _attr_native_target_temperature_low = None
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 1
     _heat_mode_flag = False
 
@@ -56,8 +86,8 @@ class XClimateTH(XEntity, ClimateEntity):
             hi, lo = params["targets"]
 
             self._heat_mode_flag = lo["reaction"]["switch"] == "on"
-            self._attr_target_temperature_high = float(hi["targetHigh"])
-            self._attr_target_temperature_low = float(lo["targetLow"])
+            self._attr_native_target_temperature_high = float(hi["targetHigh"])
+            self._attr_native_target_temperature_low = float(lo["targetLow"])
 
             if params["deviceType"] == "normal":
                 self._attr_hvac_mode = HVACMode.OFF
@@ -74,18 +104,18 @@ class XClimateTH(XEntity, ClimateEntity):
                 value = round(value, 1)
             else:
                 value = int(params.get("currentHumidity") or params["humidity"])
-            self._attr_current_temperature = value
+            self._attr_native_current_temperature = value
         except Exception:
             pass
 
     def get_targets(self, heat: bool) -> list:
         return [
             {
-                "targetHigh": str(self.target_temperature_high),
+                "targetHigh": str(self.native_target_temperature_high),
                 "reaction": {"switch": "off" if heat else "on"},
             },
             {
-                "targetLow": str(self.target_temperature_low),
+                "targetLow": str(self.native_target_temperature_low),
                 "reaction": {"switch": "on" if heat else "off"},
             },
         ]
@@ -118,7 +148,7 @@ class XClimateTH(XEntity, ClimateEntity):
         hvac_mode: str = None,
         target_temp_high: float = None,
         target_temp_low: float = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         heat = self._heat_mode_flag
         if hvac_mode is None:
@@ -150,13 +180,13 @@ class XClimateTH(XEntity, ClimateEntity):
 
 
 # noinspection PyAbstractClass
-class XClimateNS(XEntity, ClimateEntity):
+class XClimateNS(XEntity, XClimateEntity):
     params = {"ATCEnable", "ATCMode", "temperature", "tempCorrection"}
 
     _attr_entity_registry_enabled_default = False
     _attr_max_temp = 31
     _attr_min_temp = 16
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
 
     _attr_supported_features = (
@@ -190,15 +220,15 @@ class XClimateNS(XEntity, ClimateEntity):
                 self.set_hvac_attr(HVACMode.OFF)
 
         if "ATCExpect0" in params:
-            self._attr_target_temperature = cache["ATCExpect0"]
+            self._attr_native_target_temperature = cache["ATCExpect0"]
 
         # correction could be optional
         # https://github.com/AlexxIT/SonoffLAN/issues/812
         if "temperature" in params or "tempCorrection" in params:
             try:
                 # https://github.com/AlexxIT/SonoffLAN/issues/1100
-                self._attr_current_temperature = cache["temperature"]
-                self._attr_current_temperature += cache.get("tempCorrection", 0)
+                self._attr_native_current_temperature = cache["temperature"]
+                self._attr_native_current_temperature += cache.get("tempCorrection", 0)
             except:
                 pass
 
@@ -244,7 +274,7 @@ class XClimateNS(XEntity, ClimateEntity):
 
 
 # noinspection PyAbstractClass
-class XThermostat(XEntity, ClimateEntity):
+class XThermostat(XEntity, XClimateEntity):
     params = {"switch", "targetTemp", "temperature", "workMode", "workState"}
 
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.AUTO]
@@ -252,7 +282,7 @@ class XThermostat(XEntity, ClimateEntity):
     _attr_min_temp = 5
     _attr_preset_mode = None
     _attr_preset_modes = ["manual", "programmed", "economical"]
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
 
     _attr_supported_features = (
@@ -279,9 +309,9 @@ class XThermostat(XEntity, ClimateEntity):
             self._attr_preset_mode = self.preset_modes[params["workMode"] - 1]
 
         if "targetTemp" in params:
-            self._attr_target_temperature = params["targetTemp"]
+            self._attr_native_target_temperature = params["targetTemp"]
         if "temperature" in params:
-            self._attr_current_temperature = params["temperature"]
+            self._attr_native_current_temperature = params["temperature"]
 
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:
         i = self.hvac_modes.index(hvac_mode)
@@ -297,7 +327,7 @@ class XThermostat(XEntity, ClimateEntity):
         temperature: float = None,
         hvac_mode: str = None,
         preset_mode: str = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         if hvac_mode is None:
             params = {}
@@ -324,14 +354,14 @@ TRVZB_PRESET_MODES = {
 TRVZB_ACTIONS = {"0": HVACAction.OFF, "1": HVACAction.HEATING}
 
 
-class XThermostatTRVZB(XEntity, ClimateEntity):
+class XThermostatTRVZB(XEntity, XClimateEntity):
     params = {"workMode", "workState", "curTargetTemp", "temperature"}
 
     _attr_hvac_mode = None
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF, HVACMode.AUTO]
     _attr_max_temp = 35
     _attr_min_temp = 4
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = 0.5
 
     _attr_supported_features = (
@@ -356,11 +386,11 @@ class XThermostatTRVZB(XEntity, ClimateEntity):
 
         if "curTargetTemp" in cache:
             # FW 1.4.0+ may send as int or string; ensure numeric
-            self._attr_target_temperature = int(cache["curTargetTemp"]) * 0.1
+            self._attr_native_target_temperature = int(cache["curTargetTemp"]) * 0.1
 
         if "temperature" in cache:
             # FW 1.4.0+ sends temperature as string (e.g. "205")
-            self._attr_current_temperature = int(cache["temperature"]) * 0.1
+            self._attr_native_current_temperature = int(cache["temperature"]) * 0.1
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         await self.async_set_temperature(hvac_mode=hvac_mode)

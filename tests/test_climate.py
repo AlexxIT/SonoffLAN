@@ -127,10 +127,10 @@ def test_trvzb_fw14():
     assert climate is not None
 
     # FW 1.4.0+ sends temperature as string "205" = 20.5°C
-    assert climate.current_temperature == 20.5
+    assert climate.native_current_temperature == 20.5
 
     # Target temp from int
-    assert climate.target_temperature == 27.0
+    assert climate.native_target_temperature == 27.0
 
     # HVAC mode from string workMode
     assert climate.hvac_mode == HVACMode.HEAT
@@ -174,13 +174,13 @@ def test_trvzb_string_temperature_update():
     climate = next(e for e in entities if isinstance(e, XThermostatTRVZB))
 
     # Initial state: string temp "195" = 19.5°C
-    assert climate.current_temperature == 19.5
+    assert climate.native_current_temperature == 19.5
     assert climate.hvac_mode == HVACMode.AUTO
 
     # Simulate firmware update pushing new string temperature
     climate.set_state({"temperature": "225", "curTargetTemp": 240})
-    assert climate.current_temperature == 22.5
-    assert climate.target_temperature == 24.0
+    assert climate.native_current_temperature == 22.5
+    assert climate.native_target_temperature == 24.0
 
 
 def test_trvzb_unknown_workmode():
@@ -204,8 +204,8 @@ def test_trvzb_unknown_workmode():
     climate = next(e for e in entities if isinstance(e, XThermostatTRVZB))
 
     # Temperature should still parse correctly
-    assert climate.current_temperature == 18.0
-    assert climate.target_temperature == 20.0
+    assert climate.native_current_temperature == 18.0
+    assert climate.native_target_temperature == 20.0
 
     # Unknown workMode should not crash; hvac_mode left at default (None)
     # since no known workMode was ever set
@@ -213,7 +213,7 @@ def test_trvzb_unknown_workmode():
 
     # Updating with another unknown workMode should not crash
     climate.set_state({"workMode": "5", "temperature": "190"})
-    assert climate.current_temperature == 19.0
+    assert climate.native_current_temperature == 19.0
 
     # Setting a known workMode after unknown ones should work
     climate.set_state({"workMode": "0"})
@@ -230,21 +230,21 @@ def test_thermostat_without_workstate():
     )
     climate = next(e for e in entities if isinstance(e, XThermostat))
     assert climate.hvac_mode == HVACMode.HEAT
-    assert climate.current_temperature == 35.8
-    assert climate.target_temperature == 38
+    assert climate.native_current_temperature == 35.8
+    assert climate.native_target_temperature == 38
     assert climate.available
 
     # Partial updates retain the cached power state and target temperature.
     climate.internal_update({"temperature": 36.2})
     assert climate.hvac_mode == HVACMode.HEAT
-    assert climate.current_temperature == 36.2
-    assert climate.target_temperature == 38
+    assert climate.native_current_temperature == 36.2
+    assert climate.native_target_temperature == 38
 
     climate.internal_update({"switch": "off"})
     assert climate.hvac_mode == HVACMode.OFF
     climate.internal_update({"switch": "on", "targetTemp": 37.5})
     assert climate.hvac_mode == HVACMode.HEAT
-    assert climate.target_temperature == 37.5
+    assert climate.native_target_temperature == 37.5
 
     # Temperature-only commands must not add an unsupported workState field.
     _, params = reg.call(climate.async_set_temperature(temperature=37))
@@ -292,3 +292,38 @@ def test_thermostat_with_workstate():
         climate.async_set_temperature(temperature=23, hvac_mode=HVACMode.HEAT)
     )
     assert params == {"switch": "on", "workState": 1, "targetTemp": 23}
+
+
+def test_climate_import_uses_supported_temperature_api(caplog):
+    import importlib
+
+    from custom_components.sonoff import climate
+
+    caplog.clear()
+    importlib.reload(climate)
+    assert not any(
+        "provides the deprecated" in record.getMessage() for record in caplog.records
+    )
+
+
+def test_range_hvac_targets_use_native_values(caplog):
+    _, entities = init(
+        {
+            "extra": {"uiid": 15},
+            "params": {
+                "deviceType": "temperature",
+                "currentTemperature": "18.8",
+                "targets": [
+                    {"targetHigh": "20", "reaction": {"switch": "off"}},
+                    {"targetLow": "10", "reaction": {"switch": "on"}},
+                ],
+            },
+        }
+    )
+    climate = next(entity for entity in entities if isinstance(entity, XClimateTH))
+    caplog.clear()
+    assert climate.get_targets(True) == [
+        {"targetHigh": "20.0", "reaction": {"switch": "off"}},
+        {"targetLow": "10.0", "reaction": {"switch": "on"}},
+    ]
+    assert not any("deprecated" in record.getMessage() for record in caplog.records)
