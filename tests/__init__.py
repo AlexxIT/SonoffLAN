@@ -33,7 +33,9 @@ class DummyRegistry(XRegistry):
 
 
 # noinspection PyTypeChecker
-def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
+def init(
+    device: dict, config: dict = None, include_sta_mac: bool = True
+) -> (XRegistry, List[XEntity]):
     devices = [device] if isinstance(device, dict) else device
     for device in devices:
         device.setdefault("name", "Device1")
@@ -45,7 +47,8 @@ def init(device: dict, config: dict = None) -> (XRegistry, List[XEntity]):
         device.setdefault("localrecv", 0)
         device.setdefault("extra", {"uiid": 0})
         params = device.setdefault("params", {})
-        params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
+        if include_sta_mac:
+            params.setdefault("staMac", "FF:FF:FF:FF:FF:FF")
 
     asyncio.create_task = lambda coro: coro.close()
     asyncio.get_running_loop = lambda: type(

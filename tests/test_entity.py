@@ -460,6 +460,16 @@ def test_simple_switch():
     assert rssi.entity_registry_enabled_default is False
 
 
+def test_device_without_station_mac_omits_connections():
+    _, entities = init(
+        {"extra": {"uiid": 182}, "params": {"switch": "on"}},
+        include_sta_mac=False,
+    )
+
+    switch: XSwitch = entities[0]
+    assert "connections" not in switch.device_info
+
+
 def test_minidim_does_not_advertise_or_send_cloud_only_transition():
     entities = get_entitites(
         {

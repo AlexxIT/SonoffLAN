@@ -91,15 +91,18 @@ class XEntity(Entity):
         if hw_version is not None:
             hw_version = str(hw_version)
 
-        self._attr_device_info = DeviceInfo(
-            connections=connections,
-            identifiers={(DOMAIN, deviceid)},
-            manufacturer=device.get("brandName"),
-            model=device.get("productModel"),
-            name=device["name"],
-            sw_version=params.get("fwVersion"),
-            hw_version=hw_version,
-        )
+        device_info = {
+            "identifiers": {(DOMAIN, deviceid)},
+            "manufacturer": device.get("brandName"),
+            "model": device.get("productModel"),
+            "name": device["name"],
+            "sw_version": params.get("fwVersion"),
+            "hw_version": hw_version,
+        }
+        if connections:
+            device_info["connections"] = connections
+
+        self._attr_device_info = DeviceInfo(**device_info)
 
         try:
             self.internal_update(None if self.event else params)
