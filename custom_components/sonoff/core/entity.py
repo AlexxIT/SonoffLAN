@@ -4,6 +4,7 @@ from homeassistant.core import async_get_hass
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityCategory
+from homeassistant.helpers.typing import UNDEFINED
 
 from .const import DOMAIN
 from .ewelink import XDevice, XRegistry
@@ -88,7 +89,7 @@ class XEntity(Entity):
         params: dict = device["params"]
 
         connections = (
-            {(CONNECTION_NETWORK_MAC, params["staMac"])} if "staMac" in params else None
+            {(CONNECTION_NETWORK_MAC, params["staMac"])} if "staMac" in params else UNDEFINED
         )
 
         hw_version = device.get("extra", {}).get("uiid")
