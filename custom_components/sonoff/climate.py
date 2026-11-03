@@ -1,5 +1,3 @@
-from operator import attrgetter
-
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
     ClimateEntityFeature,
@@ -29,6 +27,7 @@ FEATURE_TURN_OFF = getattr(ClimateEntityFeature, "TURN_OFF", 0)
 FEATURE_TURN_ON = getattr(ClimateEntityFeature, "TURN_ON", 0)
 
 
+# noinspection property-definition,final
 class XClimateEntity(ClimateEntity):
     _attr_native_current_temperature = None
     _attr_native_target_temperature = None
@@ -37,19 +36,28 @@ class XClimateEntity(ClimateEntity):
 
     # Home Assistant before 2026.11 reads the legacy property names.
     if not hasattr(ClimateEntity, "native_temperature_unit"):
-        native_temperature_unit = property(attrgetter("_attr_native_temperature_unit"))
-        native_current_temperature = property(
-            attrgetter("_attr_native_current_temperature")
-        )
-        native_target_temperature = property(
-            attrgetter("_attr_native_target_temperature")
-        )
-        native_target_temperature_high = property(
-            attrgetter("_attr_native_target_temperature_high")
-        )
-        native_target_temperature_low = property(
-            attrgetter("_attr_native_target_temperature_low")
-        )
+        _attr_native_temperature_unit = None
+
+        @property
+        def native_temperature_unit(self):
+            return self._attr_native_temperature_unit
+
+        @property
+        def native_current_temperature(self):
+            return self._attr_native_current_temperature
+
+        @property
+        def native_target_temperature(self):
+            return self._attr_native_target_temperature
+
+        @property
+        def native_target_temperature_high(self):
+            return self._attr_native_target_temperature_high
+
+        @property
+        def native_target_temperature_low(self):
+            return self._attr_native_target_temperature_low
+
         temperature_unit = native_temperature_unit
         current_temperature = native_current_temperature
         target_temperature = native_target_temperature

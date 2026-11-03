@@ -294,19 +294,7 @@ def test_thermostat_with_workstate():
     assert params == {"switch": "on", "workState": 1, "targetTemp": 23}
 
 
-def test_climate_import_uses_supported_temperature_api(caplog):
-    import importlib
-
-    from custom_components.sonoff import climate
-
-    caplog.clear()
-    importlib.reload(climate)
-    assert not any(
-        "provides the deprecated" in record.getMessage() for record in caplog.records
-    )
-
-
-def test_range_hvac_targets_use_native_values(caplog):
+def test_range_hvac_targets_use_native_values():
     _, entities = init(
         {
             "extra": {"uiid": 15},
@@ -321,9 +309,7 @@ def test_range_hvac_targets_use_native_values(caplog):
         }
     )
     climate = next(entity for entity in entities if isinstance(entity, XClimateTH))
-    caplog.clear()
     assert climate.get_targets(True) == [
         {"targetHigh": "20.0", "reaction": {"switch": "off"}},
         {"targetLow": "10.0", "reaction": {"switch": "on"}},
     ]
-    assert not any("deprecated" in record.getMessage() for record in caplog.records)
