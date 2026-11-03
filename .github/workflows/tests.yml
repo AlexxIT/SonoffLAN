@@ -37,5 +37,34 @@ jobs:
           python -m pip install pytest \
             "${{ matrix.ha == 'latest' && 'homeassistant' || format('homeassistant=={0}.*', matrix.ha) }}"
 
+      - name: Install component dependencies
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          import homeassistant
+
+          ha = Path(homeassistant.__file__).parent
+          requirements = set()
+
+          for component in ["zeroconf"]:
+              manifest = ha / "components" / component / "manifest.json"
+              requirements.update(json.loads(manifest.read_text()).get("requirements", []))
+
+          if requirements:
+              subprocess.run(
+                  [
+                      sys.executable, "-m", "pip", "install",
+                      "-c", str(ha / "package_constraints.txt"),
+                      *requirements,
+                  ],
+                  check=True,
+              )
+          PY
+
       - name: Run tests
         run: python -m pytest tests/ -v
