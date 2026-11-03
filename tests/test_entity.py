@@ -11,7 +11,6 @@ from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import (
-    EntityCategory,
     LIGHT_LUX,
     MAJOR_VERSION,
     MINOR_VERSION,
@@ -21,6 +20,7 @@ from homeassistant.const import (
     UnitOfVolume,
 )
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.util import dt
 
 from custom_components.sonoff import CONFIG_SCHEMA, remote
