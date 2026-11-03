@@ -11,6 +11,7 @@ from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import (
+    EntityCategory,
     LIGHT_LUX,
     MAJOR_VERSION,
     MINOR_VERSION,
@@ -2553,6 +2554,7 @@ def test_t5_effect():
         "rgb_color": (197, 0, 255),
         "xy_color": (0.309, 0.12),
     }
+    assert light.entity_category == EntityCategory.CONFIG
 
     sound: XT5EffectSound = next(e for e in entities if e.uid == "effect_sound")
     assert sound.name == "Device1 Effect Sound"

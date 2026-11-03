@@ -72,8 +72,10 @@ class XEntity(Entity):
             self._attr_unique_id = f"{device['deviceid']}_{self.uid}"
 
             if not self.uid.isdigit():
-                self._attr_entity_category = ENTITY_CATEGORIES.get(self.uid)
-                self._attr_icon = ICONS.get(self.uid)
+                if self.uid in  ENTITY_CATEGORIES and not self.entity_category:
+                    self._attr_entity_category = ENTITY_CATEGORIES.get(self.uid)
+                if self.uid in ICONS and not self.icon:
+                    self._attr_icon = ICONS.get(self.uid)
 
                 s = NAMES.get(self.uid) or self.uid.title().replace("_", " ")
                 self._attr_name = f"{device['name']} {s}"
