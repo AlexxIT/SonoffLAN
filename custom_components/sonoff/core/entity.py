@@ -87,23 +87,19 @@ class XEntity(Entity):
         deviceid: str = device["deviceid"]
         params: dict = device["params"]
 
-        connections = (
-            {(CONNECTION_NETWORK_MAC, params["staMac"])} if "staMac" in params else None
-        )
-
-        hw_version = device.get("extra", {}).get("uiid")
-        if hw_version is not None:
-            hw_version = str(hw_version)
-
         self._attr_device_info = DeviceInfo(
-            connections=connections,
             identifiers={(DOMAIN, deviceid)},
             manufacturer=device.get("brandName"),
             model=device.get("productModel"),
             name=device["name"],
             sw_version=params.get("fwVersion"),
-            hw_version=hw_version,
         )
+
+        if hw_version := device.get("extra", {}).get("uiid"):
+            self._attr_device_info["hw_version"] = str(hw_version)
+
+        if mac := params.get("staMac"):
+            self._attr_device_info["connections"] = {(CONNECTION_NETWORK_MAC, mac)}
 
         try:
             self.internal_update(None if self.event else params)
