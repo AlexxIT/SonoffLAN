@@ -1,0 +1,41 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: HA ${{ matrix.ha }} / Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ha: "2023.2"
+            python: "3.10"
+          - ha: "latest"
+            python: "3.14"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest \
+            "${{ matrix.ha == 'latest' && 'homeassistant' || format('homeassistant=={0}.*', matrix.ha) }}"
+
+      - name: Run tests
+        run: python -m pytest tests/ -v
