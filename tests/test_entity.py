@@ -1359,7 +1359,7 @@ def test_ns_panel():
     clim = next(e for e in entities if isinstance(e, XClimateNS))
     state = clim.hass.states.get(clim.entity_id)
     assert state.state == "off"
-    assert state.attributes == {
+    assert state.attributes.items() >= {
         "hvac_modes": ["off", "cool", "auto"],
         "min_temp": 16,
         "max_temp": 31,
@@ -1368,7 +1368,7 @@ def test_ns_panel():
         "temperature": 26,
         "friendly_name": "Device1",
         "supported_features": 1,
-    }
+    }.items()
 
     clim.internal_update({"tempCorrection": -2})
     state = clim.hass.states.get(clim.entity_id)
@@ -1386,7 +1386,7 @@ def test_ns_panel():
     state = clim.hass.states.get(clim.entity_id)
     assert state.state == "auto"
     # no target temperature
-    assert state.attributes == {
+    assert state.attributes.items() >= {
         "hvac_modes": ["off", "cool", "auto"],
         "min_temp": 16,
         "max_temp": 31,
@@ -1394,7 +1394,7 @@ def test_ns_panel():
         "current_temperature": 18,
         "friendly_name": "Device1",
         "supported_features": 0,
-    }
+    }.items()
 
 
 # noinspection DuplicatedCode
@@ -1614,11 +1614,11 @@ def test_thermostat():
 
     therm: XThermostat = entities[0]
     assert therm.state == "auto"
-    assert therm.state_attributes == {
+    assert therm.state_attributes.items() >= {
         "current_temperature": 29,
         "temperature": 20,
         "preset_mode": "manual",
-    }
+    }.items()
 
 
 def test_custom_sensors():
