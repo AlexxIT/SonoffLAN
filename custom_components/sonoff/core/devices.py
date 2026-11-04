@@ -770,6 +770,8 @@ DEVICES = {
     ],
     # MINI-ZB2GS-L https://github.com/AlexxIT/SonoffLAN/issues/1701
     7029: [Switch1, Switch2, spec(XButtonLocalKey, uid="action")],
+    # ZBM5-3C-80/86 https://github.com/AlexxIT/SonoffLAN/issues/1915
+    7030: [Switch1, Switch2, Switch3, ZRSSI],
     # S60ZBTPF, https://github.com/AlexxIT/SonoffLAN/issues/1615
     7032: [
         Switch1,
