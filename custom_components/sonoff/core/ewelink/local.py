@@ -180,7 +180,11 @@ class XRegistryLocal(XRegistryBase):
         if "devicekey" in device:
             payload = encrypt(payload, device["devicekey"])
 
-        host = device["host"]
+        host = device.get("host")
+        if not host:
+            _LOGGER.debug(f"{device['deviceid']} !! Local4 | No host for device")
+            return "offline"
+
         if ":" not in host:
             host += ":8081"  # default port, some devices may have another
 
