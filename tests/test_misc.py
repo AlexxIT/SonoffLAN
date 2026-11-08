@@ -117,3 +117,9 @@ def test_cloud_zigbee_offline():
 
     registry.cloud_update({"deviceid": DEVICEID, "params": {"temperature": 0}})
     assert registry.devices[DEVICEID]["online"] is True
+
+
+async def test_issue_1928():
+    registry = XRegistryLocal(None)
+    device = {"deviceid": DEVICEID}
+    assert await registry.send(device) == "offline"
