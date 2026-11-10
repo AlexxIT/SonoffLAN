@@ -117,3 +117,36 @@ def test_cloud_zigbee_offline():
 
     registry.cloud_update({"deviceid": DEVICEID, "params": {"temperature": 0}})
     assert registry.devices[DEVICEID]["online"] is True
+
+
+def test_send_returns_status():
+    # XCloudEnergyPOWR3.get_update() checks the result of XRegistry.send(),
+    # without it the energy request repeats on every poll instead of hourly
+    # and the cloud query after it brings back stale power values
+    async def ok(*args, **kwargs):
+        return "online"
+
+    async def fail(*args, **kwargs):
+        return "timeout"
+
+    # noinspection PyTypeChecker
+    reg = XRegistry(None)
+    reg.cloud.online = True
+    reg.local.online = True
+    device: XDevice = {"deviceid": DEVICEID, "online": True, "local": True}
+
+    loop = asyncio.new_event_loop()
+
+    reg.local.send, reg.cloud.send = ok, fail
+    assert loop.run_until_complete(reg.send(device, {"getHoursKwh": {}})) == "online"
+
+    reg.local.send, reg.cloud.send = fail, ok
+    assert loop.run_until_complete(reg.send(device, {"getHoursKwh": {}})) == "online"
+
+    reg.local.send, reg.cloud.send = fail, fail
+    assert loop.run_until_complete(reg.send(device, {"getHoursKwh": {}})) == "timeout"
+
+    device["online"] = device["local"] = False
+    assert loop.run_until_complete(reg.send(device, {"getHoursKwh": {}})) is None
+
+    loop.close()
