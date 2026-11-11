@@ -1,4 +1,5 @@
 from homeassistant.components.switch import SwitchEntity
+from homeassistant.helpers.entity import EntityCategory
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -221,3 +222,78 @@ class XAlarmVoice(XAlarmSettingSwitch):
     field = "voice"
     uid = "alarm_sound"
     _attr_icon = "mdi:volume-high"
+
+
+class XFullCompTimeEnable(XEntity, SwitchEntity):
+    """MINI-RBS (uiid 258) - enable switch of "extra time" (`fullCompTime`)."""
+
+    params = {"fullCompTime"}
+    uid = "extra_time_enable"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_entity_registry_enabled_default = False
+    _attr_icon = "mdi:timer-plus-outline"
+
+    def set_state(self, params: dict):
+        self._attr_is_on = bool(params["fullCompTime"].get("enable"))
+
+    async def _set(self, enable: bool):
+        comp = dict(self.device["params"].get("fullCompTime") or {"time": 120000})
+        comp["enable"] = enable
+        self.device["params"]["fullCompTime"] = comp
+        await self.ewelink.send(
+            self.device, {"fullCompTime": comp}, cmd_lan="fullCompTime", query_cloud=False
+        )
+        self._attr_is_on = enable
+        self._async_write_ha_state()
+
+    async def async_turn_on(self, **kwargs):
+        await self._set(True)
+
+    async def async_turn_off(self, **kwargs):
+        await self._set(False)
+
+
+def _auto_upgrade(device: dict) -> dict:
+    au = device["params"].get("autoUpgrade") or {}
+    return {"enable": bool(au.get("enable")), "range": list(au.get("range") or ["02:00", "04:00"])}
+
+
+async def _send_auto_upgrade(entity: XEntity, au: dict):
+    """The device accepts `autoUpgrade` only via Cloud (`/zeroconf/autoUpgrade`
+    returns 404 on fw 1.0.4), so `auto` mode is required. In `auto` mode the
+    failed LAN attempt falls back to the Cloud.
+    """
+    entity.device["params"]["autoUpgrade"] = au
+    await entity.ewelink.send(
+        entity.device, {"autoUpgrade": au}, cmd_lan="autoUpgrade", query_cloud=False
+    )
+
+
+class XAutoUpgradeSwitch(XEntity, SwitchEntity):
+    """MINI-RBS (uiid 258) - firmware auto update on/off (`autoUpgrade`).
+
+    Writing works only via Cloud: requires `auto` mode (does nothing in `local`).
+    The update window is set with the `XAutoUpgradeStart/End` time entities.
+    """
+
+    params = {"autoUpgrade"}
+    uid = "auto_upgrade"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_entity_registry_enabled_default = False
+    _attr_icon = "mdi:update"
+
+    def set_state(self, params: dict):
+        self._attr_is_on = bool(params["autoUpgrade"].get("enable"))
+
+    async def _set(self, enable: bool):
+        au = _auto_upgrade(self.device)
+        au["enable"] = enable
+        await _send_auto_upgrade(self, au)
+        self._attr_is_on = enable
+        self._async_write_ha_state()
+
+    async def async_turn_on(self, **kwargs):
+        await self._set(True)
+
+    async def async_turn_off(self, **kwargs):
+        await self._set(False)

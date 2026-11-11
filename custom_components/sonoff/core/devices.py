@@ -16,6 +16,7 @@ from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.light import ColorMode, LightEntity
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
+from homeassistant.helpers.entity import EntityCategory
 
 from .ewelink import XDevice
 from ..alarm_control_panel import XPanelAlarm
@@ -28,7 +29,7 @@ from ..binary_sensor import (
     XWiFiDoor,
     XZigbeeMotion,
 )
-from ..button import XAlarmButton, XButton, XT5Effect
+from ..button import XAlarmButton, XButton, XCalibrateButton, XT5Effect
 from ..climate import XClimateNS, XClimateTH, XThermostat, XThermostatTRVZB
 from ..core.entity import XEntity
 from ..cover import (
@@ -66,13 +67,17 @@ from ..media_player import XPanelBuzzer
 from ..number import (
     XAlarmDuration,
     XAlarmVolume,
+    XFullCompTime,
     XPulseWidth,
     XSensitivity,
     XTempCorrectionNumber,
 )
 from ..remote import XRemote
-from ..select import XSelectStartup, XStartup
+from ..select import XMotorDirection, XSwMode, XSelectStartup, XStartup
 from ..sensor import (
+    XCalibState,
+    XDeviceID,
+    XIPAddress,
     XAlarmSoundType,
     XButtonKey,
     XButtonLocalKey,
@@ -97,9 +102,11 @@ from ..sensor import (
     XWiFiDoorBattery,
 )
 from ..switch import (
+    XAutoUpgradeSwitch,
     XAlarmLight,
     XAlarmVoice,
     XBoolSwitch,
+    XFullCompTimeEnable,
     XIntSwitch,
     XPanelScreen,
     XSwitch,
@@ -111,6 +118,7 @@ from ..switch import (
     XToggle,
     XZigbeeSwitches,
 )
+from ..time import XAutoUpgradeEnd, XAutoUpgradeStart
 
 # supported custom device_class
 DEVICE_CLASS = {
@@ -162,6 +170,11 @@ Battery = spec(XSensor, param="battery")
 LED = spec(XToggle, param="sledOnline", uid="led", enabled=False)
 RSSI = spec(XSensor, param="rssi", enabled=False)
 PULSE = spec(XToggle, param="pulse", enabled=False)
+# diagnostic read-only sensors for MINI-RBS (uiid 258), disabled by default
+_DIAG = dict(enabled=False, _attr_entity_category=EntityCategory.DIAGNOSTIC)
+WiFiSSID = spec(XSensor, param="ssid", **_DIAG)
+WiFiBSSID = spec(XSensor, param="bssid", **_DIAG)
+MACAddress = spec(XSensor, param="staMac", **_DIAG)
 ZRSSI = spec(XSensor, param="subDevRssi", uid="rssi", enabled=False)
 
 SPEC_SWITCH = [XSwitch, LED, RSSI, PULSE, XPulseWidth]
@@ -590,7 +603,25 @@ DEVICES = {
     # ZbBridge-U https://github.com/AlexxIT/SonoffLAN/issues/1494
     243: [LED],
     # https://github.com/AlexxIT/SonoffLAN/issues/1634
-    258: [XCover, LED, RSSI],
+    258: [
+        XCover,
+        LED,
+        RSSI,
+        XCalibrateButton,
+        XMotorDirection,
+        XFullCompTime,
+        XFullCompTimeEnable,
+        XCalibState,
+        XSwMode,
+        XAutoUpgradeSwitch,
+        XAutoUpgradeStart,
+        XAutoUpgradeEnd,
+        WiFiSSID,
+        WiFiBSSID,
+        MACAddress,
+        XIPAddress,
+        XDeviceID,
+    ],
     # CK-BL602-SWP1-02(262), https://github.com/AlexxIT/SonoffLAN/issues/1630
     262: [
         Switch1,

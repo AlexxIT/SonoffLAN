@@ -1,3 +1,5 @@
+import asyncio
+
 from homeassistant.components.button import ButtonDeviceClass, ButtonEntity
 from homeassistant.components.script import ATTR_LAST_TRIGGERED
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
@@ -83,3 +85,23 @@ class XAlarmButton(XEntity, ButtonEntity):
         setting = dict(self.device["params"].get("alarmSetting", {}))
         setting["test"] = True
         await self.ewelink.send(self.device, {"alarmSetting": setting})
+
+
+class XCalibrateButton(XEntity, ButtonEntity):
+    """MINI-RBS (uiid 258) - starts the roller shutter travel calibration.
+
+    Same procedure as the eWeLink app: reset (`calibration=0`), then start
+    (`calibration=3`). The motor then runs the full travel by itself (about
+    two minutes) and ends with `calibState=1`. Works over LAN and Cloud.
+    """
+
+    params = {"calibState"}
+    uid = "calibrate"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_icon = "mdi:ruler"
+    _attr_entity_registry_enabled_default = False
+
+    async def async_press(self):
+        await self.ewelink.send(self.device, {"calibration": 0}, cmd_lan="calibration")
+        await asyncio.sleep(3)
+        await self.ewelink.send(self.device, {"calibration": 3}, cmd_lan="calibration")
