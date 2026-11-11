@@ -35,5 +35,30 @@
       "local_online": "Dispositivos locales online",
       "debug": "Página de depuración"
     }
+  },
+  "entity": {
+    "select": {
+      "motor_direction": {
+        "state": {
+          "forward": "Normal",
+          "reverse": "Invertido"
+        }
+      },
+      "sw_mode": {
+        "state": {
+          "follow": "Seguimiento",
+          "toggle": "Conmutación",
+          "momentary": "Pulsador"
+        }
+      }
+    },
+    "sensor": {
+      "calib_state": {
+        "state": {
+          "uncalibrated": "Sin calibrar",
+          "calibrated": "Calibrado"
+        }
+      }
+    }
   }
 }

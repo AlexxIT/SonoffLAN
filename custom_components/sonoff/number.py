@@ -1,5 +1,6 @@
 from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
 from homeassistant.const import UnitOfTemperature, UnitOfTime
+from homeassistant.helpers.entity import EntityCategory
 
 from .core.const import DOMAIN
 from .core.entity import XEntity
@@ -124,3 +125,35 @@ class XAlarmVolume(XAlarmSettingNumber):
     _attr_native_min_value = 0
     _attr_native_max_value = 3
     _attr_native_step = 1
+
+
+class XFullCompTime(XNumber):
+    """MINI-RBS (uiid 258) - "extra time" of the eWeLink app (`fullCompTime`).
+
+    Value is milliseconds on the device. Accepted over LAN and Cloud.
+    """
+
+    param = "fullCompTime"
+    uid = "extra_time"
+
+    _attr_device_class = DEVICE_DURATION
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_entity_registry_enabled_default = False
+    _attr_icon = "mdi:timer-plus"
+    _attr_native_min_value = 1
+    _attr_native_max_value = 600
+    _attr_native_step = 1
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
+
+    def set_state(self, params: dict):
+        self._attr_native_value = params["fullCompTime"]["time"] / 1000
+
+    async def async_set_native_value(self, value: float) -> None:
+        comp = dict(self.device["params"].get("fullCompTime") or {})
+        comp.update(enable=True, time=int(value * 1000))
+        self.device["params"]["fullCompTime"] = comp
+        await self.ewelink.send(
+            self.device, {"fullCompTime": comp}, cmd_lan="fullCompTime", query_cloud=False
+        )
+        self._attr_native_value = value
+        self._async_write_ha_state()

@@ -37,6 +37,19 @@ NAMES = {
     "pm10": "PM10",
     "pulse": "INCHING",
     "pulseWidth": "INCHING Duration",
+    "calibState": "Calibration state",
+    "extra_time": "Extra time",
+    "motor_direction": "Motor direction",
+    "ssid": "Wi-Fi SSID",
+    "bssid": "Wi-Fi BSSID",
+    "staMac": "MAC address",
+    "ip_address": "IP address",
+    "device_id": "Device ID",
+    "sw_mode": "Control mode",
+    "extra_time_enable": "Extra time enabled",
+    "auto_upgrade": "Auto update",
+    "auto_upgrade_start": "Auto update from",
+    "auto_upgrade_end": "Auto update to",
 }
 
 

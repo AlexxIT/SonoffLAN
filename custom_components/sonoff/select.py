@@ -92,3 +92,57 @@ class XStartup(XEntity, SelectEntity):
 
     async def async_select_option(self, option: str):
         await self.ewelink.send(self.device, {self.param: option})
+
+
+class XMotorDirection(XEntity, SelectEntity):
+    """MINI-RBS (uiid 258) - motor direction.
+
+    Swap it if the cover shows "open" while it is physically closed. The device
+    accepts `motorDir` over LAN (`/zeroconf/motorDir`), but only reports it via
+    Cloud, so in LAN mode the state is unknown until the first change.
+    """
+
+    params = {"motorDir"}
+    uid = "motor_direction"
+    _attr_translation_key = "motor_direction"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_icon = "mdi:swap-vertical"
+    _attr_options = ["forward", "reverse"]
+    _attr_entity_registry_enabled_default = False
+
+    def set_state(self, params: dict):
+        self._attr_current_option = params["motorDir"]
+
+    async def async_select_option(self, option: str):
+        await self.ewelink.send(
+            self.device, {"motorDir": option}, cmd_lan="motorDir", query_cloud=False
+        )
+        self._attr_current_option = option
+        self._async_write_ha_state()
+
+
+class XSwMode(XEntity, SelectEntity):
+    """MINI-RBS (uiid 258) - wall switch control mode (eWeLink app "Modo Control").
+
+    Note the lowercase LAN command: `/zeroconf/swmode` works, `/zeroconf/swMode`
+    returns 404 on fw 1.0.4.
+    """
+
+    params = {"swMode"}
+    uid = "sw_mode"
+    _attr_translation_key = "sw_mode"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_icon = "mdi:light-switch"
+    _attr_options = ["follow", "toggle", "momentary"]
+    _attr_entity_registry_enabled_default = False
+    _modes = {1: "follow", 2: "toggle", 3: "momentary"}
+
+    def set_state(self, params: dict):
+        self._attr_current_option = self._modes.get(params["swMode"])
+
+    async def async_select_option(self, option: str):
+        value = next(k for k, v in self._modes.items() if v == option)
+        await self.ewelink.send(
+            self.device, {"swMode": value}, cmd_lan="swmode", query_cloud=False
+        )
+        self._attr_current_option = option
