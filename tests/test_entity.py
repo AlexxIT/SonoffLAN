@@ -2439,6 +2439,36 @@ def test_zb2gs():
     assert button.state == "button_1_single"
 
 
+def test_zbm5_3c():
+    # ZBM5-3C in detached relay mode reports button presses as localKeyPass
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 7030},
+            "params": {
+                "switches": [
+                    {"switch": "on", "outlet": 0},
+                    {"switch": "off", "outlet": 1},
+                    {"switch": "off", "outlet": 2},
+                ],
+                "relaySeparations": [
+                    {"enable": 1, "outlet": 0},
+                    {"enable": 0, "outlet": 1},
+                    {"enable": 0, "outlet": 2},
+                ],
+            },
+        }
+    )
+
+    button: XButtonLocalKey = next(e for e in entities if e.uid == "action")
+    assert button.state == ""
+
+    button.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE,
+        {"deviceid": DEVICEID, "params": {"localKeyPass": {"key": 0, "outlet": 0}}},
+    )
+    assert button.state == "button_1_single"
+
+
 def test_powct():
     entities = get_entitites({"extra": {"uiid": 190}, "params": {"supplyPower": 0}})
     assert any(e.uid.endswith("supply") for e in entities if e.uid)
