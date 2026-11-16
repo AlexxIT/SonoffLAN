@@ -2283,6 +2283,54 @@ def test_swv():
     assert water.unit_of_measurement == UnitOfVolume.LITERS
 
 
+def test_issue1938():
+    # Zigbee plug UIID 7020 uses boolean switch state
+    entities = get_entitites(
+        {
+            "extra": {"uiid": 7020},
+            "params": {
+                "switch": True,
+                "power": 19.82,
+                "voltage": 242.19,
+                "current": 0.17,
+                "subDevRssi": -54,
+            },
+        }
+    )
+
+    switch: XBoolSwitch = entities[0]
+    assert isinstance(switch, XBoolSwitch)
+    assert switch.unique_id == DEVICEID
+    assert switch.state == "on"
+
+    switch.ewelink.cloud.dispatcher_send(
+        SIGNAL_UPDATE, {"deviceid": DEVICEID, "params": {"switch": False}}
+    )
+    assert switch.state == "off"
+
+    # noinspection PyTypeChecker
+    registry: DummyRegistry = switch.ewelink
+
+    await_(switch.async_turn_on())
+    assert registry.send_args[1] == {"switch": True}
+
+    await_(switch.async_turn_off())
+    assert registry.send_args[1] == {"switch": False}
+
+    power: XSensor = next(e for e in entities if e.uid == "power")
+    assert power.state == 19.82
+
+    voltage: XSensor = next(e for e in entities if e.uid == "voltage")
+    assert voltage.state == 242.19
+
+    current: XSensor = next(e for e in entities if e.uid == "current")
+    assert current.state == 0.17
+
+    rssi: XSensor = next(e for e in entities if e.uid == "rssi")
+    assert rssi.unique_id == DEVICEID + "_rssi"
+    assert rssi.state == -54
+
+
 def test_mosquitto():
     entities = get_entitites(
         {
