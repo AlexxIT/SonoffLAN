@@ -305,11 +305,12 @@ class XRegistry(XRegistryBase):
             device["host"] = params["host"] = msg["host"]
             device["localtype"] = msg["localtype"]
 
-        ts = time.time()
-        device["local"] = True
-        device["localfail"] = 0
-        device["localping"] = ts + 59  # one second less than a minute
-        device["localrecv"] = ts
+        if "host" in device:
+            ts = time.time()
+            device["local"] = True
+            device["localfail"] = 0
+            device["localping"] = ts + 59  # one second less than a minute
+            device["localrecv"] = ts
 
         self.dispatcher_send(realid, params)
 
