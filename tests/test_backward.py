@@ -1,3 +1,5 @@
+import logging
+
 from homeassistant.const import REQUIRED_PYTHON_VER
 
 from custom_components.sonoff import *
@@ -38,6 +40,38 @@ def test_backward():
     assert XRemote
     assert XSensor
     assert XSwitch
+
+
+def test_debug_view_keeps_protocol_debug_out_of_root_logs():
+    logger = logging.getLogger("sonoff_test_debug_view")
+    root = logging.getLogger()
+    capture = _CaptureLogHandler()
+    old_level, old_propagate = logger.level, logger.propagate
+    root.addHandler(capture)
+    try:
+        view = DebugView(logger)
+        logger.debug("protocol trace")
+        logger.warning("actionable warning")
+
+        assert any("protocol trace" in line for line in view.text)
+        assert [record.getMessage() for record in capture.records] == [
+            "actionable warning"
+        ]
+    finally:
+        logger.removeHandler(view)
+        logger.removeHandler(view.warning_passthrough)
+        logger.setLevel(old_level)
+        logger.propagate = old_propagate
+        root.removeHandler(capture)
+
+
+class _CaptureLogHandler(logging.Handler):
+    def __init__(self):
+        super().__init__(logging.DEBUG)
+        self.records = []
+
+    def emit(self, record):
+        self.records.append(record)
 
 
 def test_2024_1_cached_properties():
