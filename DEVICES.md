@@ -159,3 +159,4 @@
 | SNZB-03PR2                         | 7055 | sensor    | 1.0.5       | ---             |                                               |
 | SNZB-09P                           | 7056 | alarm     |             |                 |                                               |
 | SNZB-02M                           | 7057 | sensor    | 1.0.2       | ---             |                                               |
+| SNZB-02UL                          | 7062 | sensor    | 1.0.3       |                 |                                               |

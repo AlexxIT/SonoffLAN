@@ -874,6 +874,13 @@ DEVICES = {
         Battery,
         ZRSSI,
     ],
+    # SNZB-02UL https://github.com/AlexxIT/SonoffLAN/issues/1934
+    7062: [
+        spec(XSensor100, param="temperature"),
+        spec(XSensor100, param="humidity"),
+        Battery,
+        ZRSSI,
+    ],
 }
 
 # Not the best solution, but anyway. This may be fixed in the future.
