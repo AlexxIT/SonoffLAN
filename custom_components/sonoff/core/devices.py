@@ -761,7 +761,7 @@ DEVICES = {
     ],
     # SNZB-05P, https://github.com/AlexxIT/SonoffLAN/issues/1496
     7019: [XWaterSensor, Battery],
-    # Zigbee plug with power meter, https://github.com/AlexxIT/SonoffLAN/issues/1938
+    # https://github.com/AlexxIT/SonoffLAN/issues/1938
     7020: [
         # uid="" keeps the unique_id of the generic switch used before
         spec(XBoolSwitch, param="switch", uid=""),

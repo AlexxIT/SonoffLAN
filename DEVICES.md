@@ -120,6 +120,7 @@
 | BASIC-1GSP                         | 276  | pow       | 1.0.4       | ---             | ???                                           |
 | S61STPF                            | 276  | pow       | 1.0.3       | ---             | Timeout on any local command!                 |
 | MINI-DIM                           | 277  | light/pow | 1.1.2       | plug            |                                               |
+| NSPanel86PB-Relay                  | 278  | 2ch       | 4.9.2       |                 | NSPanel Pro Gen2                              |
 | MINI-1GSP                          | 283  | pow       | 1.0.6       | plug            |                                               |
 | zigbee_ON_OFF_SWITCH_1000          | 1000 | button    |             |                 |                                               |
 | ZCL_HA_DEVICEID_ON_OFF_LIGHT       | 1256 | 1ch       |             |                 |                                               |
@@ -144,8 +145,10 @@
 | SNZB-06P                           | 7016 | sensor    |             | ---             |                                               |
 | TRVZB                              | 7017 | climate   |             | ---             |                                               |
 | SNZB-05P                           | 7019 | sensor    |             | ---             |                                               |
+|                                    | 7020 | pow       | 1.0.4       |                 | Zigbee smart plug                             |
 | SWV                                | 7027 | ch1       |             | ---             |                                               |
 | MINI-ZB2GS-L                       | 7029 | ch2       |             | ---             |                                               |
+| ZBM5-3C-80/86                      | 7030 | 3ch       | 1.0.6       |                 | Model SN-MG22-ZBM5                            |
 | S60ZBTPF                           | 7032 | pow       | 2.0.2       | ---             |                                               |
 | SNZB-02LD                          | 7033 |           | 1.1.0       |                 |                                               |
 | MINI-ZBRBS                         | 7034 | cover     |             | ---             |                                               |
@@ -153,6 +156,7 @@
 | SNZB-01M                           | 7039 | button    | ---         | ---             |                                               |
 | SWV-ZNE                            | 7047 | 1ch       | 1.0.8       | ---             |                                               |
 | SWV-ZF2E                           | 7048 | 2ch       |             | ---             |                                               |
+| TRV-ZBT                            | 7049 | climate   |             |                 | SONOFF TRV Gen2                               |
 | SNZB-06P24                         | 7051 | sensor    |             | ---             |                                               |
 | SNZB-02B                           | 7052 | sensor    |             | ---             |                                               |
 | MINI-ZB1GP                         | 7054 | pow       |             | ---             |                                               |
