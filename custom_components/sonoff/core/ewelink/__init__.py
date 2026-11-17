@@ -96,7 +96,7 @@ class XRegistry(XRegistryBase):
         cmd_lan: str = None,
         query_cloud: bool = True,
         timeout_lan: int = 1,
-    ) -> None:
+    ) -> str | None:
         """Send command to device with LAN and Cloud. Usual params are same.
 
         LAN will send new device state after update command, Cloud - don't.
@@ -149,7 +149,9 @@ class XRegistry(XRegistryBase):
                 await self.cloud.send(device, timeout=0)
 
         else:
-            return
+            return None
+
+        return ok
 
     async def send_bulk(self, device: XDevice, params: dict):
         assert "switches" in params
