@@ -99,6 +99,7 @@ from ..sensor import (
 from ..switch import (
     XAlarmLight,
     XAlarmVoice,
+    XAutoControlSwitch,
     XBoolSwitch,
     XIntSwitch,
     XPanelScreen,
@@ -470,7 +471,7 @@ DEVICES = {
         XSwitchTH,
         XTemperatureTH,
         XHumidityTH,
-        spec(XIntSwitch, param="autoControlEnabled", uid="auto_mode", enabled=False),
+        spec(XAutoControlSwitch, param="autoControlEnabled", uid="auto_mode", enabled=False),
         LED,
         RSSI,
     ],
