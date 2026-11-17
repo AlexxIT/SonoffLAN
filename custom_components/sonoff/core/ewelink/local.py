@@ -114,10 +114,7 @@ class XRegistryLocal(XRegistryBase):
                 host = f"{addr}:{info.port}" if info.port else str(addr)
                 break
             else:
-                if info.server and info.port:
-                    host = f"{info.server}:{info.port}"
-                else:
-                    host = None
+                host = None
 
             data = {
                 k.decode(): v.decode() if isinstance(v, bytes) else v
@@ -129,7 +126,7 @@ class XRegistryLocal(XRegistryBase):
         except Exception as e:
             _LOGGER.debug(f"{deviceid} <= Local0 | Zeroconf error", exc_info=e)
 
-    def _handler3(self, deviceid: str, host: str, data: dict):
+    def _handler3(self, deviceid: str, host: str | None, data: dict):
         """Step 3. Process new data from device."""
 
         raw = "".join([data[f"data{i}"] for i in range(1, 5, 1) if f"data{i}" in data])
