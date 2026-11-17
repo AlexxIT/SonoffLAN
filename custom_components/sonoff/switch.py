@@ -133,6 +133,22 @@ class XIntSwitch(XEntity, SwitchEntity):
     async def async_turn_off(self):
         await self.ewelink.send_cloud(self.device, {self.param: 0})
 
+class XAutoControlSwitch(XIntSwitch):
+    """TH Elite automatic control over LAN."""
+
+    async def async_turn_on(self, **kwargs):
+        await self.ewelink.send(
+            self.device,
+            {self.param: 1},
+            cmd_lan="autoControlEnabled",
+        )
+
+    async def async_turn_off(self):
+        await self.ewelink.send(
+            self.device,
+            {self.param: 0},
+            cmd_lan="autoControlEnabled",
+        )
 
 class XBoolSwitch(XEntity, SwitchEntity):
     def set_state(self, params: dict):
