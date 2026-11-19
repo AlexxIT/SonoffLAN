@@ -7,6 +7,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.const import (
     LIGHT_LUX,
     MAJOR_VERSION,
@@ -589,3 +590,51 @@ class XConnection(XEntity, SensorEntity):
             self._attr_native_value = value
             if self.hass:
                 self._async_write_ha_state()
+
+
+class XCalibState(XEntity, SensorEntity):
+    """MINI-RBS (uiid 258) - calibration state: 0 - not calibrated, 1 - calibrated.
+    Any other value is reported as unknown."""
+
+    params = {"calibState"}
+    uid = "calibState"
+    _attr_translation_key = "calib_state"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ["uncalibrated", "calibrated"]
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+
+    def set_state(self, params: dict):
+        self._attr_native_value = {0: "uncalibrated", 1: "calibrated"}.get(
+            params["calibState"]
+        )
+
+
+class XDeviceInfoSensor(XEntity, SensorEntity):
+    """Diagnostic sensor with a static device attribute (IP, device ID)."""
+
+    _attr_available = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+    attr: str = None
+
+    def internal_update(self, params: dict = None):
+        value = self.device.get(self.attr)
+        if self.attr == "host" and value:
+            value = str(value).split(":")[0]  # drop the port
+        if self._attr_native_value != value:
+            self._attr_native_value = value
+            if self.hass:
+                self._async_write_ha_state()
+
+
+class XIPAddress(XDeviceInfoSensor):
+    uid = "ip_address"
+    attr = "host"
+    _attr_icon = "mdi:ip-network"
+
+
+class XDeviceID(XDeviceInfoSensor):
+    uid = "device_id"
+    attr = "deviceid"
+    _attr_icon = "mdi:identifier"

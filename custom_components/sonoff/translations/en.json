@@ -36,5 +36,30 @@
       "local_online": "Local devices online",
       "debug": "Debug page"
     }
+  },
+  "entity": {
+    "select": {
+      "motor_direction": {
+        "state": {
+          "forward": "Forward",
+          "reverse": "Reverse"
+        }
+      },
+      "sw_mode": {
+        "state": {
+          "follow": "Follow",
+          "toggle": "Toggle",
+          "momentary": "Momentary"
+        }
+      }
+    },
+    "sensor": {
+      "calib_state": {
+        "state": {
+          "uncalibrated": "Not calibrated",
+          "calibrated": "Calibrated"
+        }
+      }
+    }
   }
 }
