@@ -225,6 +225,11 @@ sonoff:
       devicekey: xxx  # optional encription key (downloaded automatically from the cloud)
 ```
 
+`host` is useful when the device can't be found via zeroconf/mDNS discovery, ex. when
+Hass and the device sit on different subnets/VLANs that are routable but don't relay
+multicast traffic. Setting `host` here makes the integration poll that address
+directly instead of waiting for a discovery packet that will never arrive.
+
 ### Custom sensors
 
 If you want some additional device attributes as sensors:
