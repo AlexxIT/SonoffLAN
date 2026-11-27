@@ -88,6 +88,15 @@ class XEntity(Entity):
 
         deviceid: str = device["deviceid"]
         params: dict = device["params"]
+        parent = device.get("parent")
+
+        optional_device_info = {}
+        if hw_version := device.get("extra", {}).get("uiid"):
+            optional_device_info["hw_version"] = str(hw_version)
+        if mac := params.get("staMac"):
+            optional_device_info["connections"] = {(CONNECTION_NETWORK_MAC, mac)}
+        if parent and (via_device_id := get_via_device_id(parent["deviceid"])):
+            optional_device_info["via_device_id"] = via_device_id
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, deviceid)},
@@ -95,13 +104,8 @@ class XEntity(Entity):
             model=device.get("productModel"),
             name=device["name"],
             sw_version=params.get("fwVersion"),
+            **optional_device_info,
         )
-
-        if hw_version := device.get("extra", {}).get("uiid"):
-            self._attr_device_info["hw_version"] = str(hw_version)
-
-        if mac := params.get("staMac"):
-            self._attr_device_info["connections"] = {(CONNECTION_NETWORK_MAC, mac)}
 
         try:
             self.internal_update(None if self.event else params)
@@ -110,9 +114,7 @@ class XEntity(Entity):
 
         ewelink.dispatcher_connect(deviceid, self.internal_update)
 
-        if parent := device.get("parent"):
-            if via_device_id := get_via_device_id(parent["deviceid"]):
-                self._attr_device_info["via_device_id"] = via_device_id
+        if parent:
             ewelink.dispatcher_connect(parent["deviceid"], self.internal_parent_update)
 
     @property
